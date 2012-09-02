@@ -78,7 +78,6 @@ namespace CryGameCode.Entities.AngryBoids
 						{
 							var playerCamera = Actor.Client as PlayerCamera;
 							playerCamera.TargetEntity = CurrentBoid;
-
 							Fire(Renderer.ScreenToWorld(e.X, e.Y));
 						}
 					}
@@ -101,13 +100,19 @@ namespace CryGameCode.Entities.AngryBoids
 		private void Fire(Vec3 mousePosWorld)
 		{
 			state = LauncherState.Firing;
-
 			var targetDir = Vec3.ClampXYZ(Position - mousePosWorld, -MaxPullDistance, MaxPullDistance);
 			targetDir.X = 0;
-
 			CurrentBoid.Physics.Resting = false;
+
 			CurrentBoid.Launch(targetDir * LauncherStrength);
-			remainingBoids.Remove(CurrentBoid);
+
+			for (int i = 0; i < remainingBoids.Count; i++)
+			{
+				if (remainingBoids[i] == CurrentBoid)
+					remainingBoids.RemoveAt(i);
+			}
+
+			currentBoid = null;
 		}
 
 		/// <summary>
@@ -145,11 +150,15 @@ namespace CryGameCode.Entities.AngryBoids
 		/// <summary>
 		/// Quick shortcut for accessing the current boid
 		/// </summary>
+		TheBoringOne currentBoid;
 		private TheBoringOne CurrentBoid
 		{
 			get
 			{
-				return remainingBoids.First();
+				if (currentBoid == null)
+					currentBoid = remainingBoids.First();
+
+				return currentBoid;
 			}
 		}
 

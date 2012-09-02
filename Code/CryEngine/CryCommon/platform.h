@@ -22,6 +22,10 @@
 #define _WIN32_WINNT 0x0600
 #endif
 
+#if (_MSC_VER >= 1700)
+	#include <Xkeycheck.h>
+#endif
+
 // Alignment support.
 #if defined(_MSC_VER)
 	#define alignof _alignof

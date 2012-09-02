@@ -7,23 +7,7 @@ namespace CryGameCode.Entities
 	{
 		public override void OnSpawn()
 		{
-			spawnedPort.Activate();
 		}
-
-		#region Entity Flownode ports
-		[Port(Name = "Physicalize", Description = "")]
-		public void Physicalize()
-		{
-			LoadObject(Model);
-
-			Physics.Mass = Mass;
-			Physics.Type = PhysicalizationType.Rigid;
-			Physics.Stiffness = 70;
-		}
-
-		[Port(Name = "OnSpawn", Description = "")]
-		public OutputPort spawnedPort;
-		#endregion
 
 		#region Editor Properties
 		[EditorProperty(Min=0, Max=100)]
@@ -44,11 +28,15 @@ namespace CryGameCode.Entities
 		[EditorProperty(Type=EntityPropertyType.Dialogue)]
 		public string DialogueSelector { get; set; }
 
-		[EditorProperty(Type=EntityPropertyType.Color)]
-		public Vec3 ColorSelector { get; set; }
+		[EditorPropertyFolder]
+		struct Vectors
+		{
+			[EditorProperty(Type = EntityPropertyType.Color)]
+			public Vec3 ColorSelector { get; set; }
 
-		[EditorProperty]
-		public Vec3 VectorTest { get; set; }
+			[EditorProperty]
+			public Vec3 VectorTest { get; set; }
+		}
 
 		[EditorProperty(Type=EntityPropertyType.Sequence)]
 		public string SequenceTest { get; set; }

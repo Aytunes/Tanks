@@ -97,6 +97,7 @@
   <ItemGroup>
     <Compile Include="Entities\Boids\AngryBoidBase.cs" />
     <Compile Include="Entities\Boids\TheBoringOne.cs" />
+    <Compile Include="Entities\Lights\Light.cs" />
     <Compile Include="Entities\Physics\DestroyableEntity.cs" />
     <Compile Include="Entities\Physics\Dragon.cs" />
     <Compile Include="Entities\Physics\Launcher.cs" />

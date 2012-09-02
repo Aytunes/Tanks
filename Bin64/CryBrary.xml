@@ -34,6 +34,22 @@
             This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
             </summary>
         </member>
+        <member name="M:CryEngine.EntityBase.Link(System.String,CryEngine.EntityId,CryEngine.Quat,CryEngine.Vec3)">
+            <summary>
+            Links to another entity, becoming the parent. Any change to the parent object is propagated to all child (linked) objects.
+            </summary>
+            <param name="linkName"></param>
+            <param name="otherEntityId"></param>
+            <param name="relativeRot"></param>
+            <param name="relativePos"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.Unlink(CryEngine.EntityId)">
+            <summary>
+            Removes an entity link, see Link.
+            </summary>
+            <param name="otherEntityId"></param>
+        </member>
         <member name="P:CryEngine.EntityBase.Position">
             <summary>
             Sets / gets the world space entity position.
