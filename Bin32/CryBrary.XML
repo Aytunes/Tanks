@@ -50,6 +50,14 @@
             </summary>
             <param name="otherEntityId"></param>
         </member>
+        <member name="M:CryEngine.EntityBase.LoadLight(CryEngine.LightParams,System.Int32)">
+            <summary>
+            Loads a light source to the specified slot, or to the next available slot.
+            </summary>
+            <param name="parameters"></param>
+            <param name="slot"></param>
+            <returns>The slot where the light source was loaded, or -1 if loading failed.</returns>
+        </member>
         <member name="P:CryEngine.EntityBase.Position">
             <summary>
             Sets / gets the world space entity position.
@@ -117,6 +125,11 @@
             <summary>
             Determines if this is an AI actor class.
             Only applied when UseMonoActor is set to true.
+            </summary>
+        </member>
+        <member name="T:CryEngine.Texture">
+            <summary>
+            TODO
             </summary>
         </member>
         <member name="T:CryEngine.NativeActor">
@@ -980,6 +993,14 @@
             </summary>
             <param name="parent"></param>
         </member>
+        <member name="M:CryEngine.Entity.OnPropertyChanged(System.String,CryEngine.EntityPropertyType,System.String)">
+            <summary>
+            Called when the user changes a property from within the Editor.
+            </summary>
+            <param name="propertyName"></param>
+            <param name="propertyType"></param>
+            <param name="valueString"></param>
+        </member>
         <member name="M:CryEngine.Entity.LoadObject(System.String,System.Int32)">
             <summary>
             Loads a mesh for this entity. Can optionally load multiple meshes using entity slots.
@@ -1210,16 +1231,7 @@
             Represents a Lua ScriptTable.
             </summary>
         </member>
-        <member name="M:CryEngine.Lua.ScriptTable.CallMethod``1(System.String,System.Object[])">
-            <summary>
-            
-            </summary>
-            <typeparam name="T">Boolean, Integer, Float or String.</typeparam>
-            <param name="methodName"></param>
-            <param name="args"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.Lua.ScriptTable.GetValue``1(System.String)">
+        <member name="M:CryEngine.Lua.ScriptTable.GetValue(System.String)">
             <summary>
             Gets a value within the table.
             </summary>
@@ -1234,9 +1246,9 @@
             <param name="name"></param>
             <returns></returns>
         </member>
-        <member name="P:CryEngine.Lua.ScriptTable.IsSubtable">
+        <member name="P:CryEngine.Lua.ScriptTable.HandleRef">
             <summary>
-            Determines if this is a SmartScriptTable, retrieved from a ScriptTable.
+            Handle to the native IScriptTable object
             </summary>
         </member>
         <member name="T:CryEngine.Collision">
@@ -5141,7 +5153,6 @@
         <member name="T:CryEngine.EntityPropertyType">
             <summary>
             Defines the list of supported editor types.
-            Bool is not currently functioning.
             </summary>
         </member>
         <member name="M:CryEngine.CVar.Register(System.String,System.Int32,System.String,CryEngine.CVarFlags)">
