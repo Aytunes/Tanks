@@ -76,7 +76,7 @@ namespace CryGameCode.Entities.AngryBoids
 					{
 						if(state == LauncherState.Held)
 						{
-							var playerCamera = Actor.Client as PlayerCamera;
+							var playerCamera = Actor.Client as Player;
 							playerCamera.TargetEntity = CurrentBoid;
 							Fire(Renderer.ScreenToWorld(e.X, e.Y));
 						}
@@ -120,7 +120,7 @@ namespace CryGameCode.Entities.AngryBoids
 		/// </summary>
 		public void PostFire()
 		{
-			var playerCamera = Actor.Client as PlayerCamera;
+			var playerCamera = Actor.Client as Player;
 			playerCamera.TargetEntity = CurrentBoid;
 
 			CurrentBoid.Position = Position;

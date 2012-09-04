@@ -1,6 +1,7 @@
 <EntityScheduler>
 	<!-- game rules -->
 	<Class name="DeathMatch" policy="rule"/>
+	<Class name="MultiplayerSample" policy="rule"/>
 		
 	<!-- actors -->
 	<Class name="Player" policy="dude" own="own"/>

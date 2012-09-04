@@ -95,15 +95,14 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\Actor\Player.cs" />
     <Compile Include="Entities\Boids\AngryBoidBase.cs" />
     <Compile Include="Entities\Boids\TheBoringOne.cs" />
     <Compile Include="Entities\Lights\Light.cs" />
+    <Compile Include="Entities\Physics\Bouncer.cs" />
     <Compile Include="Entities\Physics\DestroyableEntity.cs" />
     <Compile Include="Entities\Physics\Dragon.cs" />
     <Compile Include="Entities\Physics\Launcher.cs" />
-    <Compile Include="Entities\Physics\Bouncer.cs" />
-    <Compile Include="Entities\Player\PlayerCamera.cs" />
-    <Compile Include="Entities\Enemies\BaseEnemy.cs" />
     <Compile Include="Entities\Physics\Rigidbody.cs" />
     <Compile Include="Entities\SampleEntity.cs" />
     <Compile Include="Entities\SpawnPoint.cs" />
@@ -112,8 +111,8 @@
     <Compile Include="FlowNodes\Math\Mult.cs" />
     <Compile Include="FlowNodes\SampleNode.cs" />
     <Compile Include="FlowNodes\Testing\TestALLThePortTypes.cs" />
+    <Compile Include="GameRules\MultiplayerSample.cs" />
     <Compile Include="GameRules\SinglePlayer.cs" />
-    <Compile Include="UI\Test.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Libs\Config\defaultProfile.xml">

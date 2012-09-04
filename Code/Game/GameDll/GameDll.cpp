@@ -8,15 +8,14 @@
 
 	-------------------------------------------------------------------------
 	History:
-	- 2:8:2004   10:38 : Created by Márcio Martins
+	- 2:8:2004   10:38 : Created by Marcio Martins
 
 *************************************************************************/
 #include "StdAfx.h"
 #include "Game.h"
 #include "GameStartup.h"
-#include "Editor\EditorGame.h"
+#include "EditorGame.h"
 
-#include "StartupSettings.h"
 #include <CryLibrary.h>
 
 extern "C"
@@ -43,7 +42,23 @@ extern "C"
 	}
 }
 
+
+/*
+ * this section makes sure that the framework dll is loaded and cleaned up
+ * at the appropriate time
+ */
+
 #if !defined(_LIB) && !defined(PS3)
+
+static HMODULE s_frameworkDLL;
+
+static void CleanupFrameworkDLL()
+{
+	assert( s_frameworkDLL );
+	CryFreeLibrary( s_frameworkDLL );
+	s_frameworkDLL = 0;
+}
+
 HMODULE GetFrameworkDLL(const char* binariesDir)
 {
 	MEMSTAT_CONTEXT_FMT(EMemStatContextTypes::MSC_Other, 0, "Load %s",GAME_FRAMEWORK_FILENAME );
@@ -62,29 +77,5 @@ HMODULE GetFrameworkDLL(const char* binariesDir)
 	}
 	return s_frameworkDLL;
 }
-#endif
 
-IGameFramework *GetFramework(const char *binariesDir)
-{
-	GetFrameworkDLL(binariesDir);
-
-	if (!s_frameworkDLL)
-	{
-		// failed to open the framework dll
-		CryFatalError("Failed to open the GameFramework DLL!");
-		
-		return false;
-	}
-
-	IGameFramework::TEntryFunction CreateGameFramework = (IGameFramework::TEntryFunction)CryGetProcAddress(s_frameworkDLL, DLL_INITFUNC_CREATEGAMEFRAMEWORK );
-
-	if (!CreateGameFramework)
-	{
-		// the dll is not a framework dll
-		CryFatalError("Specified GameFramework DLL is not valid!");
-
-		return false;
-	}
-
-	return CreateGameFramework();
-}
+#endif // !defined(_LIB) && !defined(PS3)

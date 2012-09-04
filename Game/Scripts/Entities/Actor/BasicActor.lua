@@ -830,68 +830,6 @@ function BasicActor:RemoveActor()
 	end
 end
 
-
---TODO/FIXME:there should be BasicHuman and BasicAlien derived from BasicActor that inherit the Reset function, not this..
-function BasicActor:ResetCommon(bFromInit, bIsReload)
-	--self:Hide(0);
-	
-	--revive it
-	self.actor:Revive();
-
-	--set health
-	local health = self.Properties.Damage.health;
-	if (g_gameRules and not g_gameRules:IsMultiplayer() and self.actor:IsPlayer()) then
-		health = System.GetCVar("g_playerHealthValue");
-	end
-	self.actor:SetMaxHealth(health);
-	self.lastHealth = self.actor:GetHealth();
-
-	--sounds
-	self:StopSounds();
-	BasicActor.InitSoundTables(self);
-	
-	--reset events
-	self:StopEvent("all");
-	
-	-- drop grab, if present
-	self:DropObject();
-	
-	--
-	self:RemoveDecals();
-	self:EnableDecals(0, true);
-	
-	--
-	self.lastDeathImpulse = 0;
-	self.bodyUnseen = 0;
-	self:KillTimer(DEAD_TIMER);
-	self:KillTimer(DEADANIM_TIMER);
-	
-	self:KillTimer(PAIN_TIMER);
-	self:KillTimer(BLOOD_POOL_TIMER);
-	self.painSoundTriggered = nil;
-	
-	--to save some performace, the effects timer for AI will be different.
-	if (self.actor:IsPlayer()) then
-		self:SetTimer(ACTOREFFECTS_TIMER, 100);
-	else
-		self:SetTimer(ACTOREFFECTS_TIMER, 500);
-	end
-			
-	if (self.lastSpawnPoint) then
-		self.lastSpawnPoint = 0;
-	end
-	
-	self.AI = {};
-
-	if (not System.IsEditor()) then	
-		if (self.inventory and self.gameParams.ammoCapacity) then
-			for ammo,capacity in pairs(self.gameParams.ammoCapacity) do
-				self.inventory:SetAmmoCapacity(ammo, capacity);
-			end
-		end
-	end
-end
-
 --------------------------------------------------------------------------
 function BasicActor:GetCollisionDamageThreshold()      
   return self.collisionDamageThreshold or 0;
@@ -929,32 +867,6 @@ function BasicActor:GetColliderEnergyScale(collider)
 	end
 
 	return 1;
-end
-
--- Call some initial code for actor spawn and respawn
-function BasicActor:InitialSetup(bIsReload)
-	BasicActor.Reset(self, true, bIsReload);
-end
-
-function BasicActor:Reset(bFromInit, bIsReload)
-
-	BasicActor.ResetCommon(self, bFromInit, bIsReload);
-		
-	--misc resetting
-	self.actor:SetMovementTarget(g_Vectors.v000,g_Vectors.v000,g_Vectors.v000,1);
-	self.lastVehicleId = nil;
-	self.AI.theVehicle = nil;
-		
-	self:ResetBleeding();
-	
-	--E3 hacks
-	BasicActor.ActorLink(self);
-
-	if (bFromInit and CryAction.IsServer()) then
-		if (g_gameRules and g_gameRules.EquipActor) then
-			g_gameRules:EquipActor(self);
-		end
-	end
 end
 
 function BasicActor:ResetLoad()
@@ -2368,10 +2280,7 @@ function BasicActor:OnSpawn(bIsReload)
 	-- For Players needs to figure out if it is required to call InitialSetup (and Reset) at this point
 	if (self.ai) then
 		BasicAI.OnSpawn(self,bIsReload);
-	else
-		self:InitialSetup(bIsReload);
 	end
-
 end
 
 function BasicActor:OnRevive()
@@ -2393,9 +2302,7 @@ end
 
 function BasicActor:ScriptEvent(event,value,str)
 	
-	if (event == "cloaking") then
-		self:OnCloaking(value);
-	elseif (event == "animationevent") then
+	if (event == "animationevent") then
 		if ( self.AnimationEvent ) then
 			self:AnimationEvent(str,value);
 		end
@@ -2676,101 +2583,6 @@ function BasicActor:ActorLink(entName)
 	end
 end
 
--------------------------------------------------------------------------
--- state means:
---0 off
---1 chameleon
---2 refraction
---3 temperature
--------------------------------------------------------------------------
-function BasicActor:OnCloaking(state)
-	
-	local stats = self.actorStats;
-	
-	if (state~=0) then
-		if (state == 3) then
-			self.camoStartTime = _time;
-					
-			self:PlaySoundEvent("Sounds/interface:suit:suit_deep_freeze", g_Vectors.v000, g_Vectors.v010, 0, SOUND_SEMANTIC_PLAYER_FOLEY);
-			self:PlaySoundEvent("Sounds/interface:suit:breathing_in_mask_cold_oneshot", g_Vectors.v000, g_Vectors.v010, 0, SOUND_SEMANTIC_PLAYER_FOLEY);
-						
-			if (self.actor:GetChannel()>0) then
-				--System.SetScreenFx("ScreenFrost_Amount", 0);
-				self.camoFading = true;
-				self.camoState = true;
-			end
-		end
-
-		--Log(self:GetName().." Cloaking::"..state);
-		
-	else
-		local lastState = self.lastCloakState or 1;
-		if (lastState == 3) then
-			if (self.actor:GetChannel()>0) then
-				self.camoFading = true;
-				self.camoState = false;
-			end
-		end
-
-		--Log(self:GetName().." UnCloaking::"..lastState);
-	end
-	
-	self.lastCloakState = state;
-	
-	if AI then
-		if(state == 1) then
-			AI.ChangeParameter(self.id, AIPARAM_CLOAK_SCALE, 1);
-		elseif(state == 2) then
-			AI.ChangeParameter(self.id, AIPARAM_CLOAK_SCALE, 1);
-		elseif(state == 3) then
-			AI.ChangeParameter(self.id, AIPARAM_CLOAK_SCALE, 0);
-			AI.ChangeParameter(self.id, AIPARAM_HEATSCALE, 0);
-		else
-			AI.ChangeParameter(self.id, AIPARAM_CLOAK_SCALE, 0);
-			AI.ChangeParameter(self.id, AIPARAM_HEATSCALE, 1);
-		end
-	end
---	AI.ChangeParameter(self.id, AIPARAM_HEATSCALE, stats.heatDamp);
-end
-
-function BasicActor:SetCloakType(cloakType)
-	local params = 
-	{
-		nanoSuit =
-		{
-			--cloaking
-			cloakType = 2,
-			cloakEnergyCost = 10.0,
-			cloakHealthCost = 0.0,
-			cloakVisualDamp = 0.5,
-			cloakSoundDamp = 0.1,
-			cloakHeatDamp = 1.0,
-			cloakHudMessage = "normal_cloak",
-		},
-	};
-	
-	local nanoSuit = params.nanoSuit;
-	if (cloakType and cloakType == 2) then
-		nanoSuit.cloakType = 2;
-		nanoSuit.cloakEnergyCost = 20.0;
-		nanoSuit.cloakHealthCost = 0.0;
-		nanoSuit.cloakVisualDamp = 1.0;
-		nanoSuit.cloakSoundDamp = 0.5;
-		nanoSuit.cloakHeatDamp = 1.0;
-		nanoSuit.cloakHudMessage = "alien_cloak";
-	elseif (cloakType and cloakType == 3) then
-		nanoSuit.cloakType = 3;
-		nanoSuit.cloakEnergyCost = 25.0;
-		nanoSuit.cloakHealthCost = 3.0;
-		nanoSuit.cloakVisualDamp = 0.5;
-		nanoSuit.cloakSoundDamp = 0.5;
-		nanoSuit.cloakHeatDamp = 0.0;
-		nanoSuit.cloakHudMessage = "temperature_cloak";
-	end
-	
-	self.actor:SetParams(params);
-end
-
 -----------------------------------------------------------------------------------------------------
 function BasicActor:GetDamageImpulseMultiplier()
 	return 1
@@ -2871,10 +2683,6 @@ function TestLink(entName)
 		g_localActor:SetLocalPos({x=0,y=1,z=1});
 		g_localActor:SetLocalAngles({x=0,y=0,z=0});
 	end
-end
-
-function TestCloak(cloakType)
-	g_localActor:SetCloakType(cloakType);
 end
 
 function TestStances()

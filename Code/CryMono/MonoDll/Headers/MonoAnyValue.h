@@ -38,7 +38,7 @@ enum EMonoAnyType
 /// <summary>
 /// Simple class used to easily convert common C++ types to their C# equivalents.
 /// </summary>
-struct MonoAnyValue
+struct MonoAnyValue : public ISerializable
 {
 	MonoAnyValue() : type(eMonoAnyType_Unknown) { };
 	MonoAnyValue(bool value) : type(eMonoAnyType_Boolean) { b = value; }
@@ -51,6 +51,46 @@ struct MonoAnyValue
 	MonoAnyValue(string value) : type(eMonoAnyType_String) { str = value.c_str(); }
 	MonoAnyValue(Vec3 value) : type(eMonoAnyType_Vec3) { vec3.x = value.x; vec3.y = value.y; vec3.z = value.z; }
 	MonoAnyValue(Ang3 value) : type(eMonoAnyType_Vec3) { vec3.x = value.x; vec3.y = value.y; vec3.z = value.z; }
+
+	virtual void SerializeWith(TSerialize ser) override
+	{
+		ser.EnumValue("type", type, eMonoAnyType_Unknown, eMonoAnyType_Last);
+
+		switch(type)
+		{
+		case eMonoAnyType_Boolean:
+			ser.Value("boolean", b, 'bool');
+			break;
+		case eMonoAnyType_UnsignedInteger:
+		case eMonoAnyType_UnsignedShort:
+			ser.Value("uint", u, 'ui32');
+			break;
+		case eMonoAnyType_Integer:
+		case eMonoAnyType_Short:
+			ser.Value("int", i, 'i32');
+			break;
+		case eMonoAnyType_Float:
+			ser.Value("float", f);
+			break;
+		case eMonoAnyType_Vec3:
+			ser.Value("vec", Vec3(vec3.x, vec3.y, vec3.z));
+			break;
+		case eMonoAnyType_String:
+			{
+				if(ser.IsWriting())
+				{
+					serializedString = string(str);
+					ser.Value("str", serializedString); 
+				}
+				else
+				{
+					ser.Value("str", serializedString);
+					str = serializedString.c_str();
+				}
+			}
+			break;
+		}
+	}
 
 	void *GetValue()
 	{
@@ -83,6 +123,8 @@ struct MonoAnyValue
 		const char*		str;
 		struct { float x,y,z; } vec3;
 	};
+
+	string serializedString;
 };
 
 #endif //__MONO_ANY_VALUE__

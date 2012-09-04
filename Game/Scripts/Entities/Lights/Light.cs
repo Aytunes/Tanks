@@ -18,7 +18,7 @@ namespace CryGameCode.Entities.Lights
 			Activate(Activated);
 		}
 
-		protected override void OnPropertyChanged(string propertyName, EntityPropertyType propertyType, string valueString)
+		protected override void OnPropertyChanged(System.Reflection.MemberInfo memberInfo, EntityPropertyType propertyType, object newValue)
 		{
 			Activate(Activated, true);
 		}

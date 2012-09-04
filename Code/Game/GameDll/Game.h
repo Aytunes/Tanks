@@ -8,7 +8,7 @@
   
  -------------------------------------------------------------------------
   History:
-  - 3:8:2004   11:23 : Created by Márcio Martins
+  - 3:8:2004   11:23 : Created by Marcio Martins
 
 *************************************************************************/
 #ifndef __GAME_H__
@@ -25,16 +25,56 @@
 #include <IActorSystem.h>
 #include <StlUtils.h>
 #include "RayCastQueue.h"
+#include "ClientSynchedStorage.h"
+#include "ServerSynchedStorage.h"
+#include "ClientGameTokenSynch.h"
+#include "ServerGameTokenSynch.h"
+#include "Audio/GameAudio.h"
 #include <IntersectionTestQueue.h>
+#include "ILevelSystem.h"
 
-#include "GameSettings.h"
+
+
+
+
+#define GAME_NAME				"CryENGINE3"
+#define GAME_LONGNAME		"CryENGINE3_Sample"
+
+#define ACTIONMAP_DEFAULT_PROFILE	"libs/config/defaultProfile.xml"
 
 struct ISystem;
 struct IConsole;
 
+class	CScriptBind_Actor;
+class CScriptBind_Item;
+class CScriptBind_Weapon;
+class CScriptBind_GameRules;
+class CScriptBind_Game;
+class CScriptBind_HUD;
+
+class CWeaponSystem;
+
 struct IActionMap;
 struct IActionFilter;
+class  CGameActions;
+class CGameRules;
+class CSynchedStorage;
+class CClientSynchedStorage;
+class CServerSynchedStorage;
+class CClientGameTokenSynch;
+class CServerGameTokenSynch;
+struct SCVars;
+struct SItemStrings;
+class CItemSharedParamsList;
+class CWeaponSharedParamsList;
+class CSPAnalyst;
+class CGameAudio;
 class CCameraManager;
+
+//HIT DEATH REACTIONSYSTEM
+class CScriptBind_HitDeathReactions;
+class CHitDeathReactionsSystem;
+//~HIT DEATH REACTIONSYSTEM
 
 // when you add stuff here, also update in CGame::RegisterGameObjectEvents
 enum ECryGameEvent
@@ -68,18 +108,21 @@ enum ECryGameEvent
 	eCGE_OpenParachute,
   eCGE_Turret_LockedTarget,
   eCGE_Turret_LostTarget,
+	eCGE_ReactionEnd
 };
 
 static const int GLOBAL_SERVER_IP_KEY						=	1000;
 static const int GLOBAL_SERVER_PUBLIC_PORT_KEY	= 1001;
 static const int GLOBAL_SERVER_NAME_KEY					=	1002;
 
-class CGame : public IGame, public ISystemEventListener
+class CGame :
+  public IGame, public IGameFrameworkListener, public ISystemEventListener
 {
 public:
   typedef bool (*BlockingConditionFunction)();
   typedef RayCastQueue<41> GlobalRayCaster;
-  typedef IntersectionTestQueue<43> GlobalIntersectionTester;
+	typedef IntersectionTestQueue<43> GlobalIntersectionTester;
+
 public:
 	CGame();
 	VIRTUAL ~CGame();
@@ -89,35 +132,55 @@ public:
 	VIRTUAL bool  CompleteInit();
 	VIRTUAL void  Shutdown();
 	VIRTUAL int   Update(bool haveFocus, unsigned int updateFlags);
-	VIRTUAL void  ConfigureGameChannel(bool isServer, IProtocolBuilder *pBuilder) {}
+	VIRTUAL void  ConfigureGameChannel(bool isServer, IProtocolBuilder *pBuilder);
 	VIRTUAL void  EditorResetGame(bool bStart);
 	VIRTUAL void  PlayerIdSet(EntityId playerId);
 	VIRTUAL string  InitMapReloading();
 	VIRTUAL bool IsReloading() { return m_bReload; }
 	VIRTUAL IGameFramework *GetIGameFramework() { return m_pFramework; }
 
-	VIRTUAL const char *GetLongName() { return GAME_TITLE; }
-	VIRTUAL const char *GetName() { return GAME_TITLE; }
+	VIRTUAL const char *GetLongName();
+	VIRTUAL const char *GetName();
 
 	VIRTUAL void GetMemoryStatistics(ICrySizer * s) const;
 
-	VIRTUAL void OnClearPlayerIds() {}
+	VIRTUAL void OnClearPlayerIds();
 	//auto-generated save game file name
-	VIRTUAL IGame::TSaveGameName CreateSaveGameName() { return CRY_SAVEGAME_FILENAME + (TSaveGameName)CRY_SAVEGAME_FILE_EXT; }
+	VIRTUAL IGame::TSaveGameName CreateSaveGameName();
 	//level names were renamed without changing the file/directory
 	VIRTUAL const char* GetMappedLevelName(const char *levelName) const;
-
-	virtual IGameStateRecorder* CreateGameStateRecorder(IGameplayListener* pL)  { return NULL; } 
 	// 
+	VIRTUAL IGameStateRecorder* CreateGameStateRecorder(IGameplayListener* pL);
+
 	VIRTUAL const bool DoInitialSavegame() const { return true; }
 
 	VIRTUAL void CreateLobbySession( const SGameStartParams* pGameStartParams ) {;}
 	VIRTUAL void DeleteLobbySession() {;}
 
-	virtual void RegisterGameFlowNodes() {}
+	VIRTUAL void RegisterGameFlowNodes();
 	// ~IGame
 
+  // IGameFrameworkListener
+  VIRTUAL void OnPostUpdate(float fDeltaTime);
+  VIRTUAL void OnSaveGame(ISaveGame* pSaveGame);
+  VIRTUAL void OnLoadGame(ILoadGame* pLoadGame);
+	VIRTUAL void OnLevelEnd(const char* nextLevel) {};
+  VIRTUAL void OnActionEvent(const SActionEvent& event);
+  // ~IGameFrameworkListener
+
   void BlockingProcess(BlockingConditionFunction f);
+  void GameChannelDestroyed(bool isServer);  
+
+	CScriptBind_HitDeathReactions* GetHitDeathReactionsScriptBind() { return m_pScriptBindHitDeathReactions; }
+	ILINE CHitDeathReactionsSystem& GetHitDeathReactionsSystem() const { CRY_ASSERT(m_pHitDeathReactionsSystem); return *m_pHitDeathReactionsSystem; }
+
+	VIRTUAL CScriptBind_Actor *GetActorScriptBind() { return m_pScriptBindActor; }
+	VIRTUAL CScriptBind_Item *GetItemScriptBind() { return m_pScriptBindItem; }
+	VIRTUAL CScriptBind_Weapon *GetWeaponScriptBind() { return m_pScriptBindWeapon; }
+	VIRTUAL CScriptBind_GameRules *GetGameRulesScriptBind() { return m_pScriptBindGameRules; }
+	VIRTUAL CWeaponSystem *GetWeaponSystem() { return m_pWeaponSystem; };
+	VIRTUAL CItemSharedParamsList *GetItemSharedParamsList() { return m_pItemSharedParamsList; };
+	VIRTUAL CWeaponSharedParamsList *GetWeaponSharedParamsList() { return m_pWeaponSharedParamsList; }
 
 	VIRTUAL uint32 AddGameWarning(const char* stringId, const char* paramMessage, IGameWarningsListener* pListener = NULL) { return 1; }
 	VIRTUAL void RenderGameWarnings() {}
@@ -128,30 +191,75 @@ public:
 	VIRTUAL const uint8* GetDRMKey();
 	VIRTUAL const char* GetDRMFileList();
 
-	// camera stuff (new tp cam)
-	CCameraManager *GetCameraManager() { return m_pCameraManager; }
-	ILINE GlobalRayCaster& GetRayCaster() { assert(m_pRayCaster); return *m_pRayCaster; }
-	GlobalIntersectionTester& GetIntersectionTester() { assert(m_pIntersectionTester); return *m_pIntersectionTester; }
-
-	static void DumpMemInfo(const char* format, ...) PRINTF_PARAMS(1, 2);
-
-	VIRTUAL void LoadActionMaps(const char* filename);
-
 	// ISystemEventListener
 	virtual void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam);
 	// ~ISystemEventListener
 
+	CGameActions&	Actions() const {	return *m_pGameActions;	};
+
+	CGameRules *GetGameRules() const;
+	virtual IGameAudio *GetGameAudio() const { return m_pGameAudio; }
+	
+	// camera stuff (new tp cam)
+	CCameraManager *GetCameraManager();
+  ILINE GlobalRayCaster& GetRayCaster() { assert(m_pRayCaster); return *m_pRayCaster; }
+	GlobalIntersectionTester& GetIntersectionTester() { assert(m_pIntersectionTester); return *m_pIntersectionTester; }
+
+	ILINE CSynchedStorage *GetSynchedStorage() const
+	{
+		if (m_pServerSynchedStorage && gEnv->bServer)
+			return m_pServerSynchedStorage;
+
+		return m_pClientSynchedStorage;
+	}
+
+	ILINE CServerSynchedStorage *GetServerSynchedStorage() const
+	{
+		return m_pServerSynchedStorage;
+	}
+
+	ILINE CServerGameTokenSynch *GetServerGameTokenSynch() const
+	{
+		return m_pServerGameTokenSynch;
+	}
+
+	ILINE CClientGameTokenSynch *GetClientGameTokenSynch() const
+	{
+		return m_pClientGameTokenSynch;
+	}
+
+	void ResetServerGameTokenSynch(void);
+
+	CSPAnalyst* GetSPAnalyst() const { return m_pSPAnalyst; }
+
+	const string& GetLastSaveGame(string &levelName);
+	const string& GetLastSaveGame() { string tmp; return GetLastSaveGame(tmp); }
+	bool LoadLastSave();
+	void PostSerialize();
+
+  ILINE SCVars *GetCVars() {return m_pCVars;}
+	static void DumpMemInfo(const char* format, ...) PRINTF_PARAMS(1, 2);
+
+	VIRTUAL void LoadActionMaps(const char* filename);
+
 protected:
+	VIRTUAL void InitScriptBinds();
+	VIRTUAL void ReleaseScriptBinds();
+
 	VIRTUAL void CheckReloadLevel();
+
+	// These funcs live in GameCVars.cpp
+	VIRTUAL void RegisterConsoleVars();
+	VIRTUAL void RegisterConsoleCommands();
+	VIRTUAL void UnregisterConsoleCommands();
 
 	VIRTUAL void RegisterGameObjectEvents();
 
 	// marcok: this is bad and evil ... should be removed soon
 	static void CmdRestartGame(IConsoleCmdArgs *pArgs);
-#ifndef _RELEASE
 	static void CmdDumpAmmoPoolStats(IConsoleCmdArgs *pArgs);
+
 	static void CmdDumpSS(IConsoleCmdArgs *pArgs);
-#endif
 
 	static void CmdLastInv(IConsoleCmdArgs *pArgs);
 	static void CmdName(IConsoleCmdArgs *pArgs);
@@ -166,44 +274,84 @@ protected:
 	static void CmdReloadItems(IConsoleCmdArgs *pArgs);
 	static void CmdLoadActionmap(IConsoleCmdArgs *pArgs);
   static void CmdReloadGameRules(IConsoleCmdArgs *pArgs);
-  static void CmdReloadScripts(IConsoleCmdArgs *pArgs);
   static void CmdNextLevel(IConsoleCmdArgs* pArgs);
-  static void CmdStartKickVoting(IConsoleCmdArgs* pArgs);
-  static void CmdStartNextMapVoting(IConsoleCmdArgs* pArgs);
-  static void CmdVote(IConsoleCmdArgs* pArgs);
+	static void CmdReloadHitDeathReactions(IConsoleCmdArgs* pArgs);
+	static void CmdDumpHitDeathReactionsAssetUsage(IConsoleCmdArgs* pArgs);
 
   static void CmdQuickGame(IConsoleCmdArgs* pArgs);
   static void CmdQuickGameStop(IConsoleCmdArgs* pArgs);
-  static void CmdBattleDustReload(IConsoleCmdArgs* pArgs);
   static void CmdLogin(IConsoleCmdArgs* pArgs);
 	static void CmdLoginProfile(IConsoleCmdArgs* pArgs);
   static void CmdCryNetConnect(IConsoleCmdArgs* pArgs);
-#ifndef _RELEASE
 	static void CmdTestPathfinder(IConsoleCmdArgs* pArgs);
-#endif
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	IGameFramework			*m_pFramework;
 	IConsole						*m_pConsole;
 
+	CWeaponSystem				*m_pWeaponSystem;
+
 	bool								m_bReload;
 
+	// script binds
+	CScriptBind_Actor		*m_pScriptBindActor;
+	CScriptBind_Item		*m_pScriptBindItem;
+	CScriptBind_Weapon	*m_pScriptBindWeapon;
+	CScriptBind_GameRules*m_pScriptBindGameRules;
+	CScriptBind_Game    *m_pScriptBindGame;
+
+	//menus
+
+	IActionMap					*m_pDebugAM;
 	IActionMap					*m_pDefaultAM;
+	IActionMap					*m_pMultiplayerAM;
+	CGameActions				*m_pGameActions;	
 	IPlayerProfileManager* m_pPlayerProfileManager;
 
+	CServerSynchedStorage	*m_pServerSynchedStorage;
+	CClientSynchedStorage	*m_pClientSynchedStorage;
+
+	CClientGameTokenSynch	*m_pClientGameTokenSynch;
+	CServerGameTokenSynch *m_pServerGameTokenSynch;
+
+	CSPAnalyst          *m_pSPAnalyst;
 	bool								m_inDevMode;
 
 	EntityId m_uiPlayerID;
 
+	SCVars*	m_pCVars;
+	SItemStrings						*m_pItemStrings;
+	CItemSharedParamsList		*m_pItemSharedParamsList;
+	CWeaponSharedParamsList *m_pWeaponSharedParamsList;
 	string                 m_lastSaveGame;
 
-	GlobalRayCaster *m_pRayCaster;
+  GlobalRayCaster* m_pRayCaster;
 	GlobalIntersectionTester* m_pIntersectionTester;
 
 	typedef std::map<string, string, stl::less_stricmp<string> > TLevelMapMap;
 	TLevelMapMap m_mapNames;
 
+	CGameAudio			*m_pGameAudio;
+
 	// new tp camera stuff
 	CCameraManager *m_pCameraManager;
+
+	CScriptBind_HitDeathReactions* m_pScriptBindHitDeathReactions;
+	CHitDeathReactionsSystem*	m_pHitDeathReactionsSystem;
 };
 
 extern CGame *g_pGame;
@@ -211,5 +359,13 @@ extern CGame *g_pGame;
 #define SAFE_HARDWARE_MOUSE_FUNC(func)\
 	if(gEnv->pHardwareMouse)\
 		gEnv->pHardwareMouse->func
+
+
+//////////////////////////////////////////////////////////////////////////////
+inline CCameraManager * CGame::GetCameraManager()
+{
+	return m_pCameraManager;
+}
+
 
 #endif //__GAME_H__

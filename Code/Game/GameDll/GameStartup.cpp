@@ -7,7 +7,7 @@ $DateTime$
 
 -------------------------------------------------------------------------
 History:
-- 2:8:2004   15:20 : Created by Márcio Martins
+- 2:8:2004   15:20 : Created by Marcio Martins
 
 *************************************************************************/
 
@@ -15,28 +15,29 @@ History:
 #include "GameStartup.h"
 #include "Game.h"
 
-#include "GameSettings.h"
-#include "StartupSettings.h"
-
 #include <StringUtils.h>
 #include <CryFixedString.h>
 #include <CryLibrary.h>
 #include <platform_impl.h>
 #include <INetworkService.h>
 
-#include <CryExtension/CryCreateClassInstance.h> 
-
 #include <LoadSeq.h>
 
-#include <IHardwareMouse.h>
-#include <ICryPak.h>
+#include "IHardwareMouse.h"
+#include "ICryPak.h"
 #include <ILocalizationManager.h>
 
-#include "Editor/GameRealtimeRemoteUpdate.h"
+#include <IJobManager.h>
 
 #if defined(WIN32) && !defined(XENON)
 #include <WindowsX.h> // for SubclassWindow()
 #endif
+
+#if defined(ENABLE_STATS_AGENT)
+#include "StatsAgent.h"
+#endif
+
+#include <CryExtension/CryCreateClassInstance.h>
 
 #ifdef __LINK_GCOV__
 extern "C" void __gcov_flush(void);
@@ -130,9 +131,9 @@ public:
 };
 static CSystemEventListner_Game g_system_event_listener_game;
 
-IGame* CGameStartup::m_pMod = nullptr;
+IGame* CGameStartup::m_pMod = NULL;
 IGameRef CGameStartup::m_modRef;
-IGameFramework* CGameStartup::m_pFramework = nullptr;
+IGameFramework* CGameStartup::m_pFramework = NULL;
 
 HMODULE CGameStartup::m_modDll = 0;
 HMODULE CGameStartup::m_frameworkDll = 0;
@@ -156,7 +157,7 @@ CGameStartup::~CGameStartup()
 	if (m_pMod)
 	{
 		m_pMod->Shutdown();
-		m_pMod = NULL;
+		m_pMod = 0;
 	}
 
 	if (m_modDll)
@@ -175,7 +176,9 @@ IGameRef CGameStartup::Init(SSystemInitParams &startupParams)
 	LOADING("game_startup");
 
 	if (!InitFramework(startupParams))
+	{
 		return 0;
+	}
 
 	// Configuration for this game
 	ICVar *pCVar = gEnv->pConsole->GetCVar("ai_CompatibilityMode");
@@ -188,9 +191,14 @@ IGameRef CGameStartup::Init(SSystemInitParams &startupParams)
 	IConsole* pConsole = gEnv->pConsole;
 	startupParams.pSystem = pSystem;
 
+#if defined(ENABLE_STATS_AGENT)
+	const ICmdLineArg *pPipeArg = pSystem->GetICmdLine()->FindArg(eCLAT_Pre,"lt_pipename");
+	CStatsAgent::CreatePipe( pPipeArg );
+#endif
+
 	InitCryMono();
 
-	REGISTER_COMMAND("g_loadMod", RequestLoadMod, VF_NULL, "");
+	REGISTER_COMMAND("g_loadMod", RequestLoadMod,VF_NULL,"");
 
 	// load the appropriate game/mod
 	const ICmdLineArg *pModArg = pSystem->GetICmdLine()->FindArg(eCLAT_Pre,"MOD");
@@ -205,7 +213,7 @@ IGameRef CGameStartup::Init(SSystemInitParams &startupParams)
 	}
 	else
 	{
-		pOut = Reset(GAME_TITLE);
+		pOut = Reset(GAME_NAME);
 	}
 
 	// Load all localized strings.
@@ -224,12 +232,6 @@ IGameRef CGameStartup::Init(SSystemInitParams &startupParams)
 		pSystem->ExecuteCommandLine();
 
 	pSystem->GetISystemEventDispatcher()->RegisterListener( &g_system_event_listener_game );
-
-	// Creates and starts the realtime update system listener.
-	if (pSystem->IsDevMode())
-	{
-		CGameRealtimeRemoteUpdateListener::GetGameRealtimeRemoteUpdateListener().Enable(true);
-	}
 
 	GCOV_FLUSH;
 
@@ -308,7 +310,7 @@ IGameRef CGameStartup::Reset(const char *pModName)
 	m_modDll = 0;
 	string modPath;
 	
-	if (stricmp(pModName, GAME_TITLE) != 0)
+	if (stricmp(pModName, GAME_NAME) != 0)
 	{
 		modPath.append("Mods\\");
 		modPath.append(pModName);
@@ -361,6 +363,10 @@ void CGameStartup::Shutdown()
 	AllowAccessibilityShortcutKeys(true);
 #endif
 
+#if defined(ENABLE_STATS_AGENT)
+	CStatsAgent::ClosePipe();
+#endif
+
 	// we are not dynamically allocated (see GameDll.cpp)... therefore
 	// we must not call delete here (it will cause big problems)...
 	// call the destructor manually instead
@@ -398,7 +404,13 @@ int CGameStartup::Update(bool haveFocus, unsigned int updateFlags)
 
 	// update the game
 	if (m_pMod)
+	{
 		returnCode = m_pMod->Update(haveFocus, updateFlags);
+	}
+
+#if defined(ENABLE_STATS_AGENT)
+	CStatsAgent::Update();
+#endif
 
 	// ghetto fullscreen detection, because renderer does not provide any kind of listener
 	if (gEnv && gEnv->pSystem && gEnv->pConsole)
