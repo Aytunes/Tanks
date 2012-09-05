@@ -127,6 +127,16 @@
             Only applied when UseMonoActor is set to true.
             </summary>
         </member>
+        <member name="F:CryEngine.ProjectSettings.BugReportLink">
+            <summary>
+            Designates what link will be opened when the user presses 'Report Bug' in the exception form.
+            </summary>
+        </member>
+        <member name="F:CryEngine.ProjectSettings.ExceptionMessage">
+            <summary>
+            Message displayed in the exception form when an exception has been thrown.
+            </summary>
+        </member>
         <member name="T:CryEngine.Texture">
             <summary>
             TODO
@@ -850,7 +860,7 @@
             The base class for all entities in the game world.
             </summary>
         </member>
-        <member name="M:CryEngine.Entity.Spawn``1(System.String,CryEngine.Vec3,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
+        <member name="M:CryEngine.Entity.Spawn``1(System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
             <summary>
             Spawn a new instance of entity type T.
             </summary>
@@ -993,7 +1003,7 @@
             </summary>
             <param name="parent"></param>
         </member>
-        <member name="M:CryEngine.Entity.OnPropertyChanged(System.String,CryEngine.EntityPropertyType,System.String)">
+        <member name="M:CryEngine.Entity.OnPropertyChanged(System.Reflection.MemberInfo,CryEngine.EntityPropertyType,System.Object)">
             <summary>
             Called when the user changes a property from within the Editor.
             </summary>
@@ -1235,7 +1245,6 @@
             <summary>
             Gets a value within the table.
             </summary>
-            <typeparam name="T"></typeparam>
             <param name="name"></param>
             <returns></returns>
         </member>
@@ -4558,14 +4567,6 @@
             </summary>
             <param name="isEditor"></param>
             <param name="isDedicated"></param>
-        </member>
-        <member name="M:CryEngine.Network.InitializeNetwork(System.Boolean,System.Boolean,System.Boolean)">
-            <summary>
-            Initializes variables which change, i.e. IsServer.
-            </summary>
-            <param name="isMultiplayer"></param>
-            <param name="isClient"></param>
-            <param name="isServer"></param>
         </member>
         <member name="M:CryEngine.Input.RegisterAction(System.String,CryEngine.ActionMapEventDelegate)">
             <summary>
