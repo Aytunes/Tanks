@@ -58,6 +58,14 @@
             <param name="slot"></param>
             <returns>The slot where the light source was loaded, or -1 if loading failed.</returns>
         </member>
+        <member name="M:CryEngine.EntityBase.LoadObject(System.String,System.Int32)">
+            <summary>
+            Loads a mesh for this entity. Can optionally load multiple meshes using entity slots.
+            </summary>
+            <param name="name"></param>
+            <param name="slotNumber"></param>
+            <returns></returns>
+        </member>
         <member name="P:CryEngine.EntityBase.Position">
             <summary>
             Sets / gets the world space entity position.
@@ -1010,14 +1018,6 @@
             <param name="propertyName"></param>
             <param name="propertyType"></param>
             <param name="valueString"></param>
-        </member>
-        <member name="M:CryEngine.Entity.LoadObject(System.String,System.Int32)">
-            <summary>
-            Loads a mesh for this entity. Can optionally load multiple meshes using entity slots.
-            </summary>
-            <param name="name"></param>
-            <param name="slotNumber"></param>
-            <returns></returns>
         </member>
         <member name="T:CryEngine.EntityPhysics">
             <summary>
@@ -5388,7 +5388,7 @@
             <remarks>Useful when exceptions are caught and data is still needed from them</remarks>
             <param name="ex"></param>
         </member>
-        <member name="M:CryEngine.Debug.DisplayException(System.Exception)">
+        <member name="M:CryEngine.Debug.DisplayException(System.Exception,System.Boolean)">
             <summary>
             Displays an exception via the CryMono exception form.
             </summary>

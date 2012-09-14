@@ -36,7 +36,7 @@ namespace CryGameCode.FlowNodes.Testing
 		[Port(Name = "String Test")]
 		public void StringInput(string value = "woo default value") { stringOutput.Activate(value); }
 
-		[Port(Name = "Vec3 Test")]
+		[Port(Name = "Vec3 Test", Type = PortType.Color)]
 		public void Vec3Input(Vec3 value) { vec3Output.Activate(value); }
 
 		[Port(Name = "EntityId Test")]

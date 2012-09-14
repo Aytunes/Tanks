@@ -17,7 +17,7 @@ namespace CryGameCode
 			if (!Network.IsServer)
 				return;
 
-			var player = Actor.Create<Player>(channelId, "Player");
+			var player = Actor.Create<Player>(channelId, playerName);
 			if (player == null)
 			{
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
