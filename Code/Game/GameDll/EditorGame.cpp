@@ -464,10 +464,5 @@ IEquipmentSystemInterface* CEditorGame::GetIEquipmentSystemInterface()
 
 const char * CEditorGame::GetGameRulesName()
 {
-	const char *pGameRulesName = "SinglePlayer";
-	if (s_pEditorGame->m_bUsingMultiplayerGameRules)
-	{
-		pGameRulesName = "DeathMatch";
-	}
-	return pGameRulesName;
+	return gEnv->pConsole->GetCVar("sv_gamerules")->GetString();
 }
