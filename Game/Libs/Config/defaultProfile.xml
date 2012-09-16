@@ -129,10 +129,10 @@
 		<action name="prev_spectator_target" onPress="1" keyboard="left" xboxpad="xi_dpad_right" ps3pad="pad_right"/>
 		<action name="next_spectator_target" onPress="1" keyboard="right" xboxpad="xi_dpad_left" ps3pad="pad_left"/>
 		<action name="revive" onPress="1" keyboard="mouse1" xboxpad="xi_triggerr_btn" ps3pad="pad_r2"/>
-		<action name="moveleft" onPress="1" onRelease="1" retriggerable="1" keyboard="a" />
-		<action name="moveright" onPress="1" onRelease="1" retriggerable="1" keyboard="d" />
-		<action name="moveforward" onPress="1" onRelease="1" retriggerable="1" keyboard="w" />
-		<action name="moveback" onPress="1" onRelease="1" retriggerable="1" keyboard="s" />
+		<action name="moveleft" onHold="1" retriggerable="1" keyboard="a" />
+		<action name="moveright" onHold="1" retriggerable="1" keyboard="d" />
+		<action name="moveforward" onHold="1" retriggerable="1" keyboard="w" />
+		<action name="moveback" onHold="1" retriggerable="1" keyboard="s" />
 		<action name="jump" onPress="1" onRelease="1" keyboard="space" xboxpad="xi_a" ps3pad="pad_cross"/>
 		<action name="crouch" onPress="1" onRelease="0" retriggerable="1" keyboard="lctrl" xboxpad="xi_b" ps3pad="pad_circle"/>
 		<action name="prone" onPress="1" onHold="1" keyboard="z" />
