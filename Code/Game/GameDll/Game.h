@@ -45,15 +45,6 @@
 struct ISystem;
 struct IConsole;
 
-class	CScriptBind_Actor;
-class CScriptBind_Item;
-class CScriptBind_Weapon;
-class CScriptBind_GameRules;
-class CScriptBind_Game;
-class CScriptBind_HUD;
-
-class CWeaponSystem;
-
 struct IActionMap;
 struct IActionFilter;
 class  CGameActions;
@@ -64,17 +55,8 @@ class CServerSynchedStorage;
 class CClientGameTokenSynch;
 class CServerGameTokenSynch;
 struct SCVars;
-struct SItemStrings;
-class CItemSharedParamsList;
-class CWeaponSharedParamsList;
 class CSPAnalyst;
 class CGameAudio;
-class CCameraManager;
-
-//HIT DEATH REACTIONSYSTEM
-class CScriptBind_HitDeathReactions;
-class CHitDeathReactionsSystem;
-//~HIT DEATH REACTIONSYSTEM
 
 // when you add stuff here, also update in CGame::RegisterGameObjectEvents
 enum ECryGameEvent
@@ -150,7 +132,7 @@ public:
 	//level names were renamed without changing the file/directory
 	VIRTUAL const char* GetMappedLevelName(const char *levelName) const;
 	// 
-	VIRTUAL IGameStateRecorder* CreateGameStateRecorder(IGameplayListener* pL);
+	VIRTUAL IGameStateRecorder* CreateGameStateRecorder(IGameplayListener* pL) { return nullptr; }
 
 	VIRTUAL const bool DoInitialSavegame() const { return true; }
 
@@ -171,17 +153,6 @@ public:
   void BlockingProcess(BlockingConditionFunction f);
   void GameChannelDestroyed(bool isServer);  
 
-	CScriptBind_HitDeathReactions* GetHitDeathReactionsScriptBind() { return m_pScriptBindHitDeathReactions; }
-	ILINE CHitDeathReactionsSystem& GetHitDeathReactionsSystem() const { CRY_ASSERT(m_pHitDeathReactionsSystem); return *m_pHitDeathReactionsSystem; }
-
-	VIRTUAL CScriptBind_Actor *GetActorScriptBind() { return m_pScriptBindActor; }
-	VIRTUAL CScriptBind_Item *GetItemScriptBind() { return m_pScriptBindItem; }
-	VIRTUAL CScriptBind_Weapon *GetWeaponScriptBind() { return m_pScriptBindWeapon; }
-	VIRTUAL CScriptBind_GameRules *GetGameRulesScriptBind() { return m_pScriptBindGameRules; }
-	VIRTUAL CWeaponSystem *GetWeaponSystem() { return m_pWeaponSystem; };
-	VIRTUAL CItemSharedParamsList *GetItemSharedParamsList() { return m_pItemSharedParamsList; };
-	VIRTUAL CWeaponSharedParamsList *GetWeaponSharedParamsList() { return m_pWeaponSharedParamsList; }
-
 	VIRTUAL uint32 AddGameWarning(const char* stringId, const char* paramMessage, IGameWarningsListener* pListener = NULL) { return 1; }
 	VIRTUAL void RenderGameWarnings() {}
 	VIRTUAL void RemoveGameWarning(const char* stringId) {}
@@ -200,8 +171,6 @@ public:
 	CGameRules *GetGameRules() const;
 	virtual IGameAudio *GetGameAudio() const { return m_pGameAudio; }
 	
-	// camera stuff (new tp cam)
-	CCameraManager *GetCameraManager();
   ILINE GlobalRayCaster& GetRayCaster() { assert(m_pRayCaster); return *m_pRayCaster; }
 	GlobalIntersectionTester& GetIntersectionTester() { assert(m_pIntersectionTester); return *m_pIntersectionTester; }
 
@@ -243,9 +212,6 @@ public:
 	VIRTUAL void LoadActionMaps(const char* filename);
 
 protected:
-	VIRTUAL void InitScriptBinds();
-	VIRTUAL void ReleaseScriptBinds();
-
 	VIRTUAL void CheckReloadLevel();
 
 	// These funcs live in GameCVars.cpp
@@ -257,26 +223,17 @@ protected:
 
 	// marcok: this is bad and evil ... should be removed soon
 	static void CmdRestartGame(IConsoleCmdArgs *pArgs);
-	static void CmdDumpAmmoPoolStats(IConsoleCmdArgs *pArgs);
 
 	static void CmdDumpSS(IConsoleCmdArgs *pArgs);
 
-	static void CmdLastInv(IConsoleCmdArgs *pArgs);
 	static void CmdName(IConsoleCmdArgs *pArgs);
 	static void CmdTeam(IConsoleCmdArgs *pArgs);
 	static void CmdLoadLastSave(IConsoleCmdArgs *pArgs);
-	static void CmdSpectator(IConsoleCmdArgs *pArgs);
-	static void CmdJoinGame(IConsoleCmdArgs *pArgs);
-	static void CmdKill(IConsoleCmdArgs *pArgs);
-  static void CmdVehicleKill(IConsoleCmdArgs *pArgs);
 	static void CmdRestart(IConsoleCmdArgs *pArgs);
 	static void CmdSay(IConsoleCmdArgs *pArgs);
-	static void CmdReloadItems(IConsoleCmdArgs *pArgs);
 	static void CmdLoadActionmap(IConsoleCmdArgs *pArgs);
   static void CmdReloadGameRules(IConsoleCmdArgs *pArgs);
   static void CmdNextLevel(IConsoleCmdArgs* pArgs);
-	static void CmdReloadHitDeathReactions(IConsoleCmdArgs* pArgs);
-	static void CmdDumpHitDeathReactionsAssetUsage(IConsoleCmdArgs* pArgs);
 
   static void CmdQuickGame(IConsoleCmdArgs* pArgs);
   static void CmdQuickGameStop(IConsoleCmdArgs* pArgs);
@@ -303,18 +260,7 @@ protected:
 	IGameFramework			*m_pFramework;
 	IConsole						*m_pConsole;
 
-	CWeaponSystem				*m_pWeaponSystem;
-
 	bool								m_bReload;
-
-	// script binds
-	CScriptBind_Actor		*m_pScriptBindActor;
-	CScriptBind_Item		*m_pScriptBindItem;
-	CScriptBind_Weapon	*m_pScriptBindWeapon;
-	CScriptBind_GameRules*m_pScriptBindGameRules;
-	CScriptBind_Game    *m_pScriptBindGame;
-
-	//menus
 
 	IActionMap					*m_pDebugAM;
 	IActionMap					*m_pDefaultAM;
@@ -334,9 +280,6 @@ protected:
 	EntityId m_uiPlayerID;
 
 	SCVars*	m_pCVars;
-	SItemStrings						*m_pItemStrings;
-	CItemSharedParamsList		*m_pItemSharedParamsList;
-	CWeaponSharedParamsList *m_pWeaponSharedParamsList;
 	string                 m_lastSaveGame;
 
   GlobalRayCaster* m_pRayCaster;
@@ -346,12 +289,6 @@ protected:
 	TLevelMapMap m_mapNames;
 
 	CGameAudio			*m_pGameAudio;
-
-	// new tp camera stuff
-	CCameraManager *m_pCameraManager;
-
-	CScriptBind_HitDeathReactions* m_pScriptBindHitDeathReactions;
-	CHitDeathReactionsSystem*	m_pHitDeathReactionsSystem;
 };
 
 extern CGame *g_pGame;
@@ -359,13 +296,5 @@ extern CGame *g_pGame;
 #define SAFE_HARDWARE_MOUSE_FUNC(func)\
 	if(gEnv->pHardwareMouse)\
 		gEnv->pHardwareMouse->func
-
-
-//////////////////////////////////////////////////////////////////////////////
-inline CCameraManager * CGame::GetCameraManager()
-{
-	return m_pCameraManager;
-}
-
 
 #endif //__GAME_H__

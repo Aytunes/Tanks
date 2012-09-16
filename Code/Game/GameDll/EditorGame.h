@@ -23,7 +23,6 @@
 #include <IEditorGame.h>
 
 struct IGameStartup;
-class CEquipmentSystemInterface;
 
 class CEditorGame :
 	public IEditorGame
@@ -47,7 +46,7 @@ public:
 
 	VIRTUAL IFlowSystem * GetIFlowSystem();
 	VIRTUAL IGameTokenSystem* GetIGameTokenSystem();
-	VIRTUAL IEquipmentSystemInterface* GetIEquipmentSystemInterface();
+	VIRTUAL IEquipmentSystemInterface* GetIEquipmentSystemInterface() { return nullptr; }
 
 	VIRTUAL bool SupportsMultiplayerGameRules() { return true; }
 	VIRTUAL void ToggleMultiplayerGameRules();
@@ -66,7 +65,6 @@ private:
 
 	IGameRef			m_pGame;
 	IGameStartup	*m_pGameStartup;
-	CEquipmentSystemInterface* m_pEquipmentSystemInterface;
 
 	bool          m_bEnabled;
 	bool          m_bGameMode;

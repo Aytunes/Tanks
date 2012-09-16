@@ -18,26 +18,6 @@
 
 #include "StdAfx.h"
 #include "Game.h"
-#include "Player.h"
-//
-#include "Item.h"
-#include "Weapon.h"
-#include "VehicleWeapon.h"
-#include "AmmoPickup.h"
-#include "Binocular.h"
-#include "C4.h"
-#include "C4Detonator.h"
-#include "DebugGun.h"
-#include "PlayerFeature.h"
-#include "ReferenceWeapon.h"
-#include "OffHand.h"
-#include "Fists.h"
-#include "Lam.h"
-#include "GunTurret.h"
-#include "ThrowableWeapon.h"
-#include "RocketLauncher.h"
-#include "AIGrenade.h"
-#include "Accessory.h"
 
 #include "ScriptControlledPhysics.h"
 
@@ -92,45 +72,6 @@
 void InitGameFactory(IGameFramework *pFramework)
 {
 	assert(pFramework);
-
-	REGISTER_FACTORY(pFramework, "NullAI", CPlayer, true);
-	HIDE_FROM_EDITOR("NullAI");
-
-	REGISTER_FACTORY(pFramework, "Player", CPlayer, false);
-	REGISTER_FACTORY(pFramework, "Grunt", CPlayer, true);
-
-	REGISTER_FACTORY(pFramework, "Civilian", CPlayer, true);
-	HIDE_FROM_EDITOR("Civilian");
-
-	// Items
-	REGISTER_FACTORY(pFramework, "Item", CItem, false);
-	REGISTER_FACTORY(pFramework, "PlayerFeature", CPlayerFeature, false);
-	REGISTER_FACTORY(pFramework, "LAM", CLam, false);
-	REGISTER_FACTORY(pFramework, "Accessory", CAccessory, false);
-
-	// Weapons
-	REGISTER_FACTORY(pFramework, "Weapon", CWeapon, false);
-	REGISTER_FACTORY(pFramework, "VehicleWeapon", CVehicleWeapon, false);
-	REGISTER_FACTORY(pFramework, "AmmoPickup", CAmmoPickup, false);
-	REGISTER_FACTORY(pFramework, "AVMine", CThrowableWeapon, false);
-	REGISTER_FACTORY(pFramework, "Claymore", CThrowableWeapon, false);
-	REGISTER_FACTORY(pFramework, "Binocular", CBinocular, false);
-	REGISTER_FACTORY(pFramework, "C4", CC4, false);
-	REGISTER_FACTORY(pFramework, "C4Detonator", CC4Detonator, false);
-	REGISTER_FACTORY(pFramework, "DebugGun", CDebugGun, false);
-	REGISTER_FACTORY(pFramework, "ReferenceWeapon", CReferenceWeapon, false);
-	REGISTER_FACTORY(pFramework, "OffHand", COffHand, false);
-	REGISTER_FACTORY(pFramework, "Fists", CFists, false);
-	REGISTER_FACTORY(pFramework, "GunTurret", CGunTurret, false);
-	REGISTER_FACTORY(pFramework, "RocketLauncher", CRocketLauncher, false);
-	REGISTER_FACTORY(pFramework, "AIGrenade", CAIGrenade, false);
-		
-	// vehicle objects
-	IVehicleSystem* pVehicleSystem = pFramework->GetIVehicleSystem();
-
-#define REGISTER_VEHICLEOBJECT(name, obj) \
-	REGISTER_FACTORY((IVehicleSystem*)pVehicleSystem, name, obj, false); \
-	obj::m_objectId = pVehicleSystem->AssignVehicleObjectId();
 
 	//GameRules
 	REGISTER_FACTORY(pFramework, "GameRules", CGameRules, false);

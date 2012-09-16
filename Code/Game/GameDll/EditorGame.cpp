@@ -21,10 +21,7 @@
 #include "ILevelSystem.h"
 #include "IMovementController.h"
 #include "IItemSystem.h"
-#include "ItemParamReader.h"
-#include "EquipmentSystemInterface.h"
 #include "GameCVars.h"
-#include "Actor.h"
 #include "GameRules.h"
 
 #define EDITOR_SERVER_PORT 0xed17
@@ -36,8 +33,7 @@ struct IGameStartup;
 //------------------------------------------------------------------------
 CEditorGame::CEditorGame()
 : m_pGame(0),
-	m_pGameStartup(0),
-	m_pEquipmentSystemInterface(0)
+	m_pGameStartup(0)
 {
 	m_bEnabled = false;
 	m_bGameMode = false;
@@ -92,7 +88,6 @@ void CEditorGame::ToggleMultiplayerGameRules()
 //------------------------------------------------------------------------
 CEditorGame::~CEditorGame()
 {
-	SAFE_DELETE(m_pEquipmentSystemInterface);
 	s_pEditorGame = NULL;
 
 	SAFE_RELEASE(s_pEditorGameMode);
@@ -140,7 +135,6 @@ bool CEditorGame::Init(ISystem *pSystem,IGameToEditorInterface *pGameToEditorInt
 	}
 
 	InitUIEnums(pGameToEditorInterface);
-	m_pEquipmentSystemInterface = new CEquipmentSystemInterface(this, pGameToEditorInterface);
 
 	gEnv->bServer = true;
 	gEnv->bMultiplayer = false;
@@ -217,7 +211,7 @@ bool CEditorGame::SetGameMode(bool bGameMode)
 
 		pGameFramework->OnEditorSetGameMode(bGameMode);
 
-		CActor *pActor = static_cast<CActor*>(m_pGame->GetIGameFramework()->GetClientActor());
+		IActor *pActor = m_pGame->GetIGameFramework()->GetClientActor();
 		if (pActor)
 		{
 			if (bGameMode)
@@ -226,11 +220,7 @@ bool CEditorGame::SetGameMode(bool bGameMode)
 				const Vec3 pos = pActor->GetEntity()->GetWorldPos();
 				const Quat rot = pActor->GetEntity()->GetWorldRotation();
 				const int teamId = g_pGame->GetGameRules()->GetTeam(pActor->GetEntityId());
-				pActor->NetReviveAt(pos, rot, teamId);
-			}
-			else
-			{
-				pActor->Reset(true);
+				g_pGame->GetGameRules()->RevivePlayer(pActor, pos, rot, teamId);
 			}
 		}
 	}
@@ -454,12 +444,6 @@ void CEditorGame::InitActionEnums(IGameToEditorInterface* pGTE)
 		pGTE->SetUIEnums("action_filter", allFilters, numFilters);
 		delete[] allFilters;
 	}
-}
-
-
-IEquipmentSystemInterface* CEditorGame::GetIEquipmentSystemInterface()
-{
-	return m_pEquipmentSystemInterface;
 }
 
 const char * CEditorGame::GetGameRulesName()

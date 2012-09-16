@@ -13,26 +13,18 @@
 #include "StdAfx.h"
 #include "GameCVars.h"
 #include "GameRules.h"
-#include "ItemSharedParams.h"
-#include "WeaponSharedParams.h"
 
 #include <INetwork.h>
 #include <IGameObject.h>
 #include <IActorSystem.h>
 #include <IItemSystem.h>
-#include "WeaponSystem.h"
 #include "ServerSynchedStorage.h"
-#include "ItemString.h"
 #include "NetInputChainDebug.h"
 #include "INetworkService.h"
 
 #include <IPathfinder.h>
-#include "Player.h"
 
 #include <IVehicleSystem.h>
-
-#include "HitDeathReactions.h"
-#include "HitDeathReactionsSystem.h"
 
 static void BroadcastChangeSafeMode( ICVar * )
 {
@@ -1076,14 +1068,6 @@ void CmdEndVideoCapture(IConsoleCmdArgs *pArgs)
 	CaptureVideo(false, pArgs);
 }
 
-
-//------------------------------------------------------------------------
-void CmdDumpItemNameTable(IConsoleCmdArgs *pArgs)
-{
-	SharedString::CSharedString::DumpNameTable();
-}
-
-
 //------------------------------------------------------------------------
 void CmdGoto(IConsoleCmdArgs *pArgs)
 {
@@ -1235,22 +1219,14 @@ void CGame::RegisterConsoleCommands()
 
 	REGISTER_COMMAND("loadactionmap", CmdLoadActionmap, VF_NULL, "Loads a key configuration file");
 	REGISTER_COMMAND("restartgame", CmdRestartGame, VF_NULL, "Restarts CryENGINE completely.");
-	REGISTER_COMMAND("i_dump_ammo_pool_stats", CmdDumpAmmoPoolStats, VF_NULL, "Dumps statistics related to the weapon ammo pool.");
 
-	REGISTER_COMMAND("lastinv", CmdLastInv, VF_NULL, "Selects last inventory item used.");
 	REGISTER_COMMAND("name", CmdName, VF_RESTRICTEDMODE, "Sets player name.");
 	REGISTER_COMMAND("team", CmdTeam, VF_RESTRICTEDMODE, "Sets player team.");
 	REGISTER_COMMAND("loadLastSave", CmdLoadLastSave, VF_NULL, "Loads the last savegame if available.");
-	REGISTER_COMMAND("spectator", CmdSpectator, VF_NULL, "Sets the player as a spectator.");
-	REGISTER_COMMAND("join_game", CmdJoinGame, VF_RESTRICTEDMODE, "Enter the current ongoing game.");
-	REGISTER_COMMAND("kill", CmdKill, VF_RESTRICTEDMODE, "Kills the player.");
-  REGISTER_COMMAND("v_kill", CmdVehicleKill, VF_CHEAT, "Kills the players vehicle.");
 	REGISTER_COMMAND("sv_restart", CmdRestart, VF_NULL, "Restarts the round.");
 	REGISTER_COMMAND("sv_say", CmdSay, VF_NULL, "Broadcasts a message to all clients.");
-	REGISTER_COMMAND("i_reload", CmdReloadItems, VF_NULL, "Reloads item scripts.");
 
 	REGISTER_COMMAND("dumpss", CmdDumpSS, VF_NULL, "test synched storage.");
-	REGISTER_COMMAND("dumpnt", CmdDumpItemNameTable, VF_NULL, "Dump ItemString table.");
 
   REGISTER_COMMAND("g_reloadGameRules", CmdReloadGameRules, VF_NULL, "Reload GameRules script");
   REGISTER_COMMAND("g_quickGame", CmdQuickGame, VF_NULL, "Quick connect to good server.");
@@ -1274,9 +1250,6 @@ void CGame::RegisterConsoleCommands()
 
 	REGISTER_COMMAND("StartVideoCapture", CmdStartVideoCapture, VF_NULL, "sets special settings for nice video captures and starts capturing.");
 	REGISTER_COMMAND("EndVideoCapture", CmdEndVideoCapture, VF_NULL, "ends capturing and restores the original settings.");
-
-	REGISTER_COMMAND("g_hitDeathReactions_reload", CmdReloadHitDeathReactions, VF_CHEAT, "Reloads hitDeathReactions for the specified actor, or for everyone if not specified");
-	REGISTER_COMMAND("g_hitDeathReactions_dumpAssetUsage", CmdDumpHitDeathReactionsAssetUsage, VF_CHEAT, "Dumps information about asset usage in the system, streaming, and so.");
 }
 
 //------------------------------------------------------------------------
@@ -1328,16 +1301,6 @@ void CGame::UnregisterConsoleCommands()
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdLastInv(IConsoleCmdArgs *pArgs)
-{
-	if (!gEnv->IsClient())
-		return;
-
-	if (CActor *pClientActor=static_cast<CActor *>(g_pGame->GetIGameFramework()->GetClientActor()))
-		pClientActor->SelectLastItem(true);
-}
-
-//------------------------------------------------------------------------
 void CGame::CmdName(IConsoleCmdArgs *pArgs)
 {
 	if (!gEnv->IsClient())
@@ -1382,86 +1345,6 @@ void CGame::CmdLoadLastSave(IConsoleCmdArgs *pArgs)
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdSpectator(IConsoleCmdArgs *pArgs)
-{
-	if (!gEnv->IsClient())
-		return;
-
-	IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
-	if (!pClientActor)
-		return;
-
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	if (pGameRules)
-	{
-		int mode=2;
-		if (pArgs->GetArgCount()==2)
-			mode=atoi(pArgs->GetArg(1));
-		pGameRules->ChangeSpectatorMode(pGameRules->GetActorByEntityId(pClientActor->GetEntityId()), mode, 0, true);
-	}
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdJoinGame(IConsoleCmdArgs *pArgs)
-{
-	if (!gEnv->IsClient())
-		return;
-
-	IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
-	if (!pClientActor)
-		return;
-
-	if (g_pGame->GetGameRules()->GetTeamCount()>0)
-		return;
-	
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	if (pGameRules)
-		pGameRules->ChangeSpectatorMode(pGameRules->GetActorByEntityId(pClientActor->GetEntityId()), 0, 0, true);
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdKill(IConsoleCmdArgs *pArgs)
-{
-	if (!gEnv->IsClient())
-		return;
-
-	IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
-	if (!pClientActor)
-		return;
-
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	if (pGameRules)
-	{
-		HitInfo suicideInfo(pClientActor->GetEntityId(), pClientActor->GetEntityId(), pClientActor->GetEntityId(),
-			1000, 0, 0, -1, 0, ZERO, ZERO, ZERO);
-		pGameRules->ClientHit(suicideInfo);
-	}
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdVehicleKill(IConsoleCmdArgs *pArgs)
-{
-  if (!gEnv->IsClient())
-    return;
-
-  IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
-  if (!pClientActor)
-    return;
-
-  IVehicle* pVehicle = pClientActor->GetLinkedVehicle();
-  if (!pVehicle)
-    return;
-  
-  CGameRules *pGameRules = g_pGame->GetGameRules();
-  if (pGameRules)
-  {
-    HitInfo suicideInfo(pVehicle->GetEntityId(), pVehicle->GetEntityId(), pVehicle->GetEntityId(),
-      10000, 0, 0, -1, 0, pVehicle->GetEntity()->GetWorldPos(), ZERO, ZERO);
-    pGameRules->ClientHit(suicideInfo);
-  }
-}
-
-//------------------------------------------------------------------------
 void CGame::CmdRestart(IConsoleCmdArgs *pArgs)
 {
 	if(g_pGame && g_pGame->GetGameRules())
@@ -1493,21 +1376,6 @@ void CGame::CmdRestartGame(IConsoleCmdArgs *pArgs)
 {
 	GetISystem()->Relaunch(true);
 	GetISystem()->Quit();
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdDumpAmmoPoolStats(IConsoleCmdArgs *pArgs)
-{
-	g_pGame->GetWeaponSystem()->DumpPoolSizes();
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdReloadItems(IConsoleCmdArgs *pArgs)
-{
-	g_pGame->GetItemSharedParamsList()->Reset();
-	g_pGame->GetWeaponSharedParamsList()->Reset();
-	g_pGame->GetIGameFramework()->GetIItemSystem()->Reload();
-	g_pGame->GetWeaponSystem()->Reload();
 }
 
 //------------------------------------------------------------------------
@@ -1876,46 +1744,4 @@ void CGame::CmdTestPathfinder(IConsoleCmdArgs *pArgs)
 	g_vel.zero();
 
 	pPathFinder->RequestPathTo(start, end, endDir, pRequester, true, -1, 0.0f, 0.0f);
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdReloadHitDeathReactions(IConsoleCmdArgs* pArgs)
-{
-		g_pGame->GetHitDeathReactionsSystem().Reload();
-
-		if (pArgs->GetArgCount() > 1)
-		{
-				IEntity* pEntity = gEnv->pEntitySystem->FindEntityByName(pArgs->GetArg(1));
-				if (pEntity)
-				{
-						IActor* pIActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(pEntity->GetId());
-						if (pIActor && (pIActor->GetActorClass() == CPlayer::GetActorClassType()))
-						{
-								CPlayer* pActor = static_cast<CPlayer*>(pIActor);
-								CHitDeathReactionsPtr pHitDeathReactions = pActor->GetHitDeathReactions();
-								if (pHitDeathReactions)
-										pHitDeathReactions->Reload();
-						}
-				}
-		}
-		else
-		{
-				IActorIteratorPtr pIt = g_pGame->GetIGameFramework()->GetIActorSystem()->CreateActorIterator();
-				while (IActor* pIActor = pIt->Next())
-				{
-						if (pIActor->GetActorClass() == CPlayer::GetActorClassType())
-						{
-								CPlayer* pActor = static_cast<CPlayer*>(pIActor);
-								CHitDeathReactionsPtr pHitDeathReactions = pActor->GetHitDeathReactions();
-								if (pHitDeathReactions)
-										pHitDeathReactions->Reload();
-						}
-				}
-		}
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdDumpHitDeathReactionsAssetUsage(IConsoleCmdArgs* pArgs)
-{
-		g_pGame->GetHitDeathReactionsSystem().DumpHitDeathReactionsAssetUsage();
 }

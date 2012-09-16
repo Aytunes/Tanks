@@ -18,7 +18,6 @@
 
 #include "GameRules.h"
 #include "Audio/GameAudio.h"
-#include "WeaponSystem.h"
 
 #include <ICryPak.h>
 #include <CryPath.h>
@@ -32,19 +31,7 @@
 #include <IScaleformGFx.h>
 #include <IPlatformOS.h>
 
-#include "ScriptBind_Actor.h"
-#include "ScriptBind_Item.h"
-#include "ScriptBind_Weapon.h"
-#include "ScriptBind_GameRules.h"
-#include "ScriptBind_Game.h"
-
-#include "Camera/CameraManager.h"
 #include "GameFactory.h"
-
-#include "ItemSharedParams.h"
-#include "WeaponSharedParams.h"
-
-#include "Nodes/G2FlowBaseNode.h"
 
 #include "ServerSynchedStorage.h"
 #include "ClientSynchedStorage.h"
@@ -54,17 +41,11 @@
 #include "ISaveGame.h"
 #include "ILoadGame.h"
 #include "CryPath.h"
-#include "GameStateRecorder.h"
 #include <IPathfinder.h>
 
 #include "IMaterialEffects.h"
 
-#include "Player.h"
-
 #include "ICheckPointSystem.h"
-
-#include "ScriptBind_HitDeathReactions.h"
-#include "HitDeathReactionsSystem.h"
 
 #define GAME_DEBUG_MEM  // debug memory usage
 #undef  GAME_DEBUG_MEM
@@ -81,10 +62,6 @@ int OnImpulse( const EventPhys *pEvent )
 #define GAME_DEBUG_MEM  // debug memory usage
 #undef  GAME_DEBUG_MEM
 
-// Needed for the Game02 specific flow node
-CG2AutoRegFlowNodeBase *CG2AutoRegFlowNodeBase::m_pFirst=0;
-CG2AutoRegFlowNodeBase *CG2AutoRegFlowNodeBase::m_pLast=0;
-
 CGame *g_pGame = 0;
 SCVars *g_pGameCVars = 0;
 CGameActions *g_pGameActions = 0;
@@ -92,9 +69,6 @@ CGameActions *g_pGameActions = 0;
 CGame::CGame()
 : m_pFramework(0),
 	m_pConsole(0),
-	m_pWeaponSystem(0),
-	m_pScriptBindActor(0),
-	m_pScriptBindGame(0),
 	m_pPlayerProfileManager(0),
 	m_pGameAudio(0),
 	m_pServerSynchedStorage(0),
@@ -104,8 +78,6 @@ CGame::CGame()
 	m_uiPlayerID(~0),
 	m_pSPAnalyst(0),
 	m_pRayCaster(0),
-	m_pScriptBindHitDeathReactions(0),
-	m_pHitDeathReactionsSystem(NULL),
 	m_pIntersectionTester(NULL)
 {
 	m_pCVars = new SCVars();
@@ -115,7 +87,6 @@ CGame::CGame()
 	g_pGame = this;
 	m_bReload = false;
 	m_inDevMode = false;
-	m_pCameraManager = new CCameraManager();
 
 	m_pDefaultAM = 0;
 	m_pMultiplayerAM = 0;
@@ -128,21 +99,15 @@ CGame::~CGame()
   m_pFramework->EndGameContext();
   m_pFramework->UnregisterListener(this);
 	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
-  ReleaseScriptBinds();
 	SAFE_DELETE(m_pGameAudio);
 	//SAFE_DELETE(m_pCameraManager);
 	SAFE_DELETE(m_pSPAnalyst);
-	m_pWeaponSystem->Release();
-	SAFE_DELETE(m_pItemStrings);
-	SAFE_DELETE(m_pItemSharedParamsList);
-	SAFE_DELETE(m_pWeaponSharedParamsList);
 	SAFE_DELETE(m_pCVars);
 	g_pGame = 0;
 	g_pGameCVars = 0;
 	g_pGameActions = 0;
 	SAFE_DELETE(m_pRayCaster);
 	SAFE_DELETE(m_pGameActions);
-	SAFE_DELETE(m_pHitDeathReactionsSystem);
 	SAFE_DELETE(m_pIntersectionTester);
 	gEnv->pGame = 0;
 }
@@ -262,15 +227,7 @@ bool CGame::Init(IGameFramework *pFramework)
 	RegisterConsoleCommands();
 	RegisterGameObjectEvents();
 
-	// Initialize static item strings
-	m_pItemStrings = new SItemStrings();
-
-	m_pItemSharedParamsList = new CItemSharedParamsList();
-	m_pWeaponSharedParamsList = new CWeaponSharedParamsList();
-
 	LoadActionMaps( ACTIONMAP_DEFAULT_PROFILE );
-
-	InitScriptBinds();
 
 	//load user levelnames for ingame text and savegames
 	XmlNodeRef lnames = GetISystem()->LoadXmlFromFile(PathUtil::GetGameFolder() + "/Scripts/GameRules/LevelNames.xml");
@@ -304,8 +261,6 @@ bool CGame::Init(IGameFramework *pFramework)
 	m_pFramework->SetGameGUID(CRYSIS_GUID);
 
 	gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
-	m_pHitDeathReactionsSystem = new CHitDeathReactionsSystem;
-	CRY_ASSERT(m_pHitDeathReactionsSystem);
 
 	// TEMP
 	// Load the action map beforehand (see above)
@@ -446,12 +401,6 @@ bool CGame::Init(IGameFramework *pFramework)
 	DumpMemInfo("CGame::Init end");
 #endif
 
-	m_pWeaponSystem = new CWeaponSystem(this, GetISystem());
-
-	const char* itemFolder = "scripts/entities/items/xml";
-	m_pFramework->GetIItemSystem()->Scan(itemFolder);
-	m_pWeaponSystem->Scan(itemFolder);
-
 	return true;
 }
 
@@ -470,24 +419,12 @@ bool CGame::CompleteInit()
 	DumpMemInfo("CGame::CompleteInit");
 #endif
 
-	gEnv->pMonoScriptSystem->RegisterFlownodes();
-
 	return true;
 }
 
 void CGame::RegisterGameFlowNodes()
 {
-	// Initialize Game02 flow nodes
-	if (IFlowSystem *pFlow = m_pFramework->GetIFlowSystem())
-	{
-		CG2AutoRegFlowNodeBase *pFactory = CG2AutoRegFlowNodeBase::m_pFirst;
-
-		while (pFactory)
-		{
-			pFlow->RegisterType( pFactory->m_sClassName,pFactory );
-			pFactory = pFactory->m_pNext;
-		}
-	}
+	gEnv->pMonoScriptSystem->RegisterFlownodes();
 }
 
 void CGame::ResetServerGameTokenSynch()
@@ -531,11 +468,7 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 	}
 
 	if (m_pFramework->IsGamePaused() == false)
-	{
-		m_pWeaponSystem->Update(frameTime);
-
 		m_pGameAudio->Update();
-	}
 
 	m_pFramework->PostUpdate( true, updateFlags );
 
@@ -664,10 +597,8 @@ void CGame::OnPostUpdate(float fDeltaTime)
 
 void CGame::OnSaveGame(ISaveGame* pSaveGame)
 {
-	IActor*		pActor = GetIGameFramework()->GetClientActor();
-	CPlayer*	pPlayer = static_cast<CPlayer*>(pActor);
-	GetGameRules()->PlayerPosForRespawn(pPlayer, true);
-
+	IActor *pActor = GetIGameFramework()->GetClientActor();
+	
 	//save difficulty
 	pSaveGame->AddMetadata("sp_difficulty", g_pGameCVars->g_difficultyLevel);
 
@@ -849,26 +780,6 @@ void CGame::LoadActionMaps(const char* filename)
 	m_pGameActions->Init();
 }
 
-void CGame::InitScriptBinds()
-{
-	m_pScriptBindActor = new CScriptBind_Actor(m_pFramework->GetISystem());
-	m_pScriptBindItem = new CScriptBind_Item(m_pFramework->GetISystem(), m_pFramework);
-	m_pScriptBindWeapon = new CScriptBind_Weapon(m_pFramework->GetISystem(), m_pFramework);
-	m_pScriptBindGameRules = new CScriptBind_GameRules(m_pFramework->GetISystem(), m_pFramework);
-	m_pScriptBindGame = new CScriptBind_Game(m_pFramework->GetISystem(), m_pFramework);
-	m_pScriptBindHitDeathReactions = new CScriptBind_HitDeathReactions(m_pFramework->GetISystem(), m_pFramework);
-}
-
-void CGame::ReleaseScriptBinds()
-{
-	SAFE_DELETE(m_pScriptBindActor);
-	SAFE_DELETE(m_pScriptBindItem);
-	SAFE_DELETE(m_pScriptBindWeapon);
-	SAFE_DELETE(m_pScriptBindGameRules);
-	SAFE_DELETE(m_pScriptBindGame);
-	SAFE_DELETE(m_pScriptBindHitDeathReactions);
-}
-
 void CGame::CheckReloadLevel()
 {
 	if(!m_bReload)
@@ -951,20 +862,8 @@ void CGame::RegisterGameObjectEvents()
 void CGame::GetMemoryStatistics(ICrySizer * s) const
 {
 	s->Add(*this);
-	m_pWeaponSystem->GetMemoryUsage(s);
 
-	s->Add(*m_pScriptBindActor);
-	s->Add(*m_pScriptBindItem);
-	s->Add(*m_pScriptBindWeapon);
-	s->Add(*m_pScriptBindGameRules);
-	s->Add(*m_pScriptBindGame);
-	s->Add(*m_pScriptBindHitDeathReactions);
 	s->Add(*m_pGameActions);
-
-
-
-	m_pItemSharedParamsList->GetMemoryUsage(s);
-	m_pWeaponSharedParamsList->GetMemoryUsage(s);
 
 	if (m_pPlayerProfileManager)
 	  m_pPlayerProfileManager->GetMemoryUsage(s);
@@ -980,9 +879,6 @@ void CGame::GetMemoryStatistics(ICrySizer * s) const
 
 	if (m_pClientGameTokenSynch)
 		m_pClientGameTokenSynch->GetMemoryUsage(s);
-
-	if (m_pHitDeathReactionsSystem)
-			m_pHitDeathReactionsSystem->GetMemoryUsage(s);
 }
 
 void CGame::OnClearPlayerIds()
@@ -1035,83 +931,6 @@ const string& CGame::GetLastSaveGame(string &levelName)
 
 	return m_lastSaveGame;
 }
-
-bool RespawnIfDead(CActor *pActor)
-{
-	if(pActor && pActor->IsDead())
-	{
-		pActor->StandUp();
-
-		pActor->Revive();
-
-		pActor->SetHealth(pActor->GetMaxHealth());
-
-		pActor->HolsterItem(true);
-
-		pActor->HolsterItem(false);
-
-		if( IEntity *pEntity = pActor->GetEntity() )
-		{
-			pEntity->GetAI()->Event(AIEVENT_ENABLE, NULL);
-		}
-
-		return true;
-	}
-
-	return false;
-}
-
-
-bool CGame::LoadLastSave()
-{
-	if (gEnv->bMultiplayer)
-		return false;
-
-	bool bLoadSave = true;
-	if (gEnv->IsEditor())
-	{
-		ICVar* pAllowSaveLoadInEditor = gEnv->pConsole->GetCVar("g_allowSaveLoadInEditor");
-		if (pAllowSaveLoadInEditor)
-		{
-			bLoadSave = (pAllowSaveLoadInEditor->GetIVal() != 0);
-		}
-		else
-		{
-			bLoadSave = false;
-		}
-
-		if (!bLoadSave) // Wont go through normal path which reloads hud, reload here
-		{
-			g_pGame->PostSerialize();
-		}
-	}
-
-	bool bSuccess = true;
-
-	if (bLoadSave)
-	{
-		if(g_pGameCVars->g_enableSlimCheckpoints)
-			bSuccess = GetIGameFramework()->GetICheckpointSystem()->LoadLastCheckpoint();
-		else
-		{
-			const string& file = g_pGame->GetLastSaveGame();
-
-			if(file.length())
-			{
-				if(!g_pGame->GetIGameFramework()->LoadGame(file.c_str(), true))
-					bSuccess = g_pGame->GetIGameFramework()->LoadGame(file.c_str(), false);
-			}
-		}
-	}
-	else
-	{
-		CActor* pPlayer = static_cast<CActor*>(GetIGameFramework()->GetClientActor());
-		bSuccess = RespawnIfDead( pPlayer );
-	}
-
-	return bSuccess;
-}
-
 
 void CGame::PostSerialize()
 {
@@ -1195,17 +1014,6 @@ const char* CGame::GetMappedLevelName(const char *levelName) const
 }
 
 
-IGameStateRecorder* CGame::CreateGameStateRecorder(IGameplayListener* pL)
-{
-	CGameStateRecorder* pGSP = new CGameStateRecorder();
-	
-	if(pGSP)
-		pGSP->RegisterListener(pL);
-
-	return (IGameStateRecorder*)pGSP;
-
-}
-
 void CGame::OnSystemEvent( ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam )
 {
 		switch (event)
@@ -1228,8 +1036,6 @@ void CGame::OnSystemEvent( ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam 
 				{
 						SAFE_DELETE(m_pRayCaster);
 						SAFE_DELETE(m_pIntersectionTester);
-
-						m_pHitDeathReactionsSystem->Reset();
 				}
 				break;
 		}

@@ -21,16 +21,11 @@
 #include "Game.h"
 #include <IGameObject.h>
 #include <IGameRulesSystem.h>
-#include "Actor.h"
 #include "SynchedStorage.h"
 #include <queue>
 #include "IViewSystem.h"
-#include "CinematicInput.h"
 
 #include <MonoCommon.h>
-
-class CActor;
-class CPlayer;
 
 struct IGameObject;
 struct IActorSystem;
@@ -97,10 +92,6 @@ class CGameRules
 public:
 
 	typedef std::vector<EntityId>								TPlayers;
-	typedef std::vector<EntityId>								TSpawnLocations;
-	typedef std::vector<EntityId>								TSpawnGroups;
-	typedef std::map<EntityId, TSpawnLocations>	TSpawnGroupMap;
-	typedef std::map<EntityId, int>							TBuildings;
 
 	struct SGameRulesListener
 	{
@@ -170,6 +161,22 @@ public:
 	virtual void SendChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char *msg);
 	virtual bool CanReceiveChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId) const;
 
+	virtual void ClientSimpleHit(const SimpleHitInfo &simpleHitInfo) {}
+	virtual void ServerSimpleHit(const SimpleHitInfo &simpleHitInfo) {}
+	virtual void ClientHit(const HitInfo &hitInfo) {}
+	virtual void ServerHit(const HitInfo &hitInfo) {}
+
+	virtual int GetHitTypeId(const char *type) const { return 0; }
+	virtual const char *GetHitType(int id) const { return ""; }
+
+	virtual void OnVehicleDestroyed(EntityId id) {}
+	virtual void OnVehicleSubmerged(EntityId id, float ratio) {}
+
+	virtual void AddHitListener(IHitListener* pHitListener) {}
+	virtual void RemoveHitListener(IHitListener* pHitListener) {}
+
+	virtual bool IsFrozen(EntityId id) const { return false; }
+
 	virtual void ForbiddenAreaWarning(bool active, int timer, EntityId targetId);
 
 	virtual void ResetGameTime();
@@ -206,51 +213,40 @@ public:
 	virtual void UnregisterConsoleCommands(IConsole *pConsole);
 	virtual void RegisterConsoleVars(IConsole *pConsole);
 
-	virtual void OnRevive(CActor *pActor, const Vec3 &pos, const Quat &rot, int teamId);
-	virtual void OnReviveInVehicle(CActor *pActor, EntityId vehicleId, int seatId, int teamId);
-	virtual void OnKill(CActor *pActor, EntityId shooterId, const char *weaponClassName, int damage, int material, int hit_type);
-	virtual void OnVehicleDestroyed(EntityId id);
-	virtual void OnVehicleSubmerged(EntityId id, float ratio);
+	virtual void OnRevive(IActor *pActor, const Vec3 &pos, const Quat &rot, int teamId);
+	virtual void OnReviveInVehicle(IActor *pActor, EntityId vehicleId, int seatId, int teamId);
+	virtual void OnKill(IActor *pActor, EntityId shooterId, const char *weaponClassName, int damage, int material, int hit_type);
 	virtual void OnTextMessage(ETextMessageType type, const char *msg,
 		const char *p0=0, const char *p1=0, const char *p2=0, const char *p3=0);
 	virtual void OnChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char *msg, bool teamChatOnly);
 	virtual void OnKillMessage(EntityId targetId, EntityId shooterId, const char *weaponClassName, float damage, int material, int hit_type);
 
-	CActor *GetActorByChannelId(int channelId) const;
-	CActor *GetActorByEntityId(EntityId entityId) const;
+	IActor *GetActorByChannelId(int channelId) const;
+	IActor *GetActorByEntityId(EntityId entityId) const;
 	ILINE const char *GetActorNameByEntityId(EntityId entityId) const
 	{
-		CActor *pActor=GetActorByEntityId(entityId);
+		IActor *pActor=GetActorByEntityId(entityId);
 		if (pActor)
 			return pActor->GetEntity()->GetName();
 		return 0;
 	}
-	ILINE const char *GetActorName(CActor *pActor) const { return pActor->GetEntity()->GetName(); };
+	ILINE const char *GetActorName(IActor *pActor) const { return pActor->GetEntity()->GetName(); };
 	int GetChannelId(EntityId entityId) const;
 	bool IsDead(EntityId entityId) const;
-	bool IsSpectator(EntityId entityId) const;
 	void ShowScores(bool show);
 	void KnockActorDown( EntityId actorEntityId );
 
 	//------------------------------------------------------------------------
 	// player
-	virtual CActor *SpawnPlayer(int channelId, const char *name, const char *className, const Vec3 &pos, const Ang3 &angles);
-	virtual CActor *ChangePlayerClass(int channelId, const char *className);
-	virtual void RevivePlayer(CActor *pActor, const Vec3 &pos, const Ang3 &angles, int teamId=0, bool clearInventory=true);
-	virtual void RevivePlayerInVehicle(CActor *pActor, EntityId vehicleId, int seatId, int teamId=0, bool clearInventory=true);
-	virtual void RenamePlayer(CActor *pActor, const char *name);
+	virtual void RevivePlayer(IActor *pActor, const Vec3 &pos, const Quat &angles, int teamId=0, bool clearInventory=true);
+	virtual void RevivePlayerInVehicle(IActor *pActor, EntityId vehicleId, int seatId, int teamId=0, bool clearInventory=true);
+	virtual void RenamePlayer(IActor *pActor, const char *name);
 	virtual string VerifyName(const char *name, IEntity *pEntity=0);
 	virtual bool IsNameTaken(const char *name, IEntity *pEntity=0);
-	virtual void KillPlayer(IActor* pTarget, const bool inDropItem, const bool inDoRagdoll, const HitInfo &inHitInfo);
-	virtual void MovePlayer(CActor *pActor, const Vec3 &pos, const Ang3 &angles);
-	virtual void ChangeSpectatorMode(CActor *pActor, uint8 mode, EntityId target, bool resetAll);
-	virtual void RequestNextSpectatorTarget(CActor* pActor, int change);
-	virtual void ChangeTeam(CActor *pActor, int teamId);
-	virtual void ChangeTeam(CActor *pActor, const char *teamName);
+	virtual void ChangeTeam(IActor *pActor, int teamId);
+	virtual void ChangeTeam(IActor *pActor, const char *teamName);
 	//tagging time serialization limited to 0-60sec
-	virtual void AddTaggedEntity(EntityId shooter, EntityId targetId, bool temporary = false, float time = 15.0f);
 	virtual int GetPlayerCount(bool inGame=false) const;
-	virtual int GetSpectatorCount(bool inGame=false) const;
 	virtual EntityId GetPlayer(int idx);
 	virtual void GetPlayers(TPlayers &players);
 	virtual bool IsPlayerInGame(EntityId playerId) const;
@@ -275,71 +271,6 @@ public:
 	virtual int GetChannelTeam(int channelId) const;
 
 	//------------------------------------------------------------------------
-	// materials
-	virtual int RegisterHitMaterial(const char *materialName);
-	virtual int GetHitMaterialId(const char *materialName) const;
-	virtual ISurfaceType *GetHitMaterial(int id) const;
-	virtual int GetHitMaterialIdFromSurfaceId(int surfaceId) const;
-	virtual void ResetHitMaterials();
-
-	//------------------------------------------------------------------------
-	// hit type
-	virtual int RegisterHitType(const char *type);
-	virtual int GetHitTypeId(const char *type) const;
-	virtual const char *GetHitType(int id) const;
-	virtual void ResetHitTypes();
-
-	//------------------------------------------------------------------------
-	// freezing
-	virtual bool IsFrozen(EntityId entityId) const { return false; }
-
-	//------------------------------------------------------------------------
-	// spawn
-	virtual void AddSpawnLocation(EntityId location);
-	virtual void RemoveSpawnLocation(EntityId id);
-	virtual int GetSpawnLocationCount() const;
-	virtual EntityId GetSpawnLocation(int idx) const;
-	virtual void GetSpawnLocations(TSpawnLocations &locations) const;
-	virtual bool IsSpawnLocationSafe(EntityId playerId, EntityId spawnLocationId, float safeDistance, bool ignoreTeam, float zoffset) const;
-	virtual bool IsSpawnLocationFarEnough(EntityId spawnLocationId, float minDistance, const Vec3 &testPosition) const;
-	virtual bool TestSpawnLocationWithEnvironment(EntityId spawnLocationId, EntityId playerId, float offset=0.0f, float height=0.0f) const;
-	virtual EntityId GetSpawnLocation(EntityId playerId, bool ignoreTeam, bool includeNeutral, EntityId groupId=0, float minDistToDeath=0.0f, const Vec3 &deathPos=Vec3(0,0,0), float *pZOffset=0) const;
-	virtual EntityId GetFirstSpawnLocation(int teamId=0, EntityId groupId=0) const;
-
-	//------------------------------------------------------------------------
-	// spawn groups
-	virtual void AddSpawnGroup(EntityId groupId);
-	virtual void AddSpawnLocationToSpawnGroup(EntityId groupId, EntityId location);
-	virtual void RemoveSpawnLocationFromSpawnGroup(EntityId groupId, EntityId location);
-	virtual void RemoveSpawnGroup(EntityId groupId);
-	virtual EntityId GetSpawnLocationGroup(EntityId spawnId) const;
-	virtual int GetSpawnGroupCount() const;
-	virtual EntityId GetSpawnGroup(int idx) const;
-	virtual void GetSpawnGroups(TSpawnLocations &groups) const;
-	virtual bool IsSpawnGroup(EntityId id) const;
-
-	virtual void RequestSpawnGroup(EntityId spawnGroupId);
-	virtual void SetPlayerSpawnGroup(EntityId playerId, EntityId spawnGroupId);
-	virtual EntityId GetPlayerSpawnGroup(CActor *pActor);
-
-	virtual void SetTeamDefaultSpawnGroup(int teamId, EntityId spawnGroupId);
-	virtual EntityId GetTeamDefaultSpawnGroup(int teamId);
-	virtual void CheckSpawnGroupValidity(EntityId spawnGroupId);
-
-	//------------------------------------------------------------------------
-	// spectator
-	virtual void AddSpectatorLocation(EntityId location);
-	virtual void RemoveSpectatorLocation(EntityId id);
-	virtual int GetSpectatorLocationCount() const;
-	virtual EntityId GetSpectatorLocation(int idx) const;
-	virtual void GetSpectatorLocations(TSpawnLocations &locations) const;
-	virtual EntityId GetRandomSpectatorLocation() const;
-	virtual EntityId GetInterestingSpectatorLocation() const;
-
-	void CreateScriptHitInfo(SmartScriptTable &scriptHitInfo, const HitInfo &hitInfo);
-	static void CreateHitInfoFromScript(const SmartScriptTable &scriptHitInfo, HitInfo &hitInfo);
-
-	//------------------------------------------------------------------------
 	// game	
 	virtual void Restart();
 	virtual void NextLevel();
@@ -349,18 +280,6 @@ public:
 	virtual void GameOver(int localWinner);
 	virtual void EndGameNear(EntityId id);
 
-	virtual void ClientSimpleHit(const SimpleHitInfo &simpleHitInfo);
-	virtual void ServerSimpleHit(const SimpleHitInfo &simpleHitInfo);
-
-  virtual void ClientHit(const HitInfo &hitInfo);
-	virtual void ServerHit(const HitInfo &hitInfo);
-	virtual void ProcessServerHit(const HitInfo &hitInfo);
-	void ProcessLocalHit(const HitInfo& hitInfo, float fCausedDamage = 0.0f);
-
-	void CullEntitiesInExplosion(const ExplosionInfo &explosionInfo);
-	virtual void ServerExplosion(const ExplosionInfo &explosionInfo);
-	virtual void ClientExplosion(const ExplosionInfo &explosionInfo);
-	
 	virtual void CreateEntityRespawnData(EntityId entityId);
 	virtual bool HasEntityRespawnData(EntityId entityId) const;
 	virtual void ScheduleEntityRespawn(EntityId entityId, bool unique, float timer);
@@ -370,17 +289,11 @@ public:
 	virtual void AbortEntityRemoval(EntityId entityId);
 
 	virtual void UpdateEntitySchedules(float frameTime);
-  virtual void ProcessQueuedExplosions();
-	virtual void ProcessServerExplosion(const ExplosionInfo &explosionInfo);
 	
 	virtual void ForceScoreboard(bool force);
 	virtual void FreezeInput(bool freeze);
 
-	virtual bool IsProjectile(EntityId id) const;
-
 	virtual void ShowStatus();
-
-	int GetCurrentStateId() const { return m_currentStateId; }
 
 	//misc 
 	// Next time CGameRules::OnCollision is called, it will skip this entity and return false
@@ -434,7 +347,6 @@ public:
 	void ForceSynchedStorageSynch(int channel);
 
 
-	void PlayerPosForRespawn(CPlayer* pPlayer, bool save);
 	void SPNotifyPlayerKill(EntityId targetId, EntityId weaponId, bool bHeadShot);
 
 	string GetPlayerName(int channelId, bool bVerifyName = false);
@@ -492,19 +404,6 @@ public:
 		}
 	};
 
-	struct RadioMessageParams
-	{
-		EntityId			sourceId;
-		uint8					msg;
-
-		RadioMessageParams(){};
-		RadioMessageParams(EntityId src,int _msg):
-			sourceId(src),
-			msg(_msg)
-			{
-			};
-		void SerializeWith(TSerialize ser);
-	};
 	struct TextMessageParams
 	{
 		uint8	type;
@@ -589,31 +488,6 @@ public:
 		}
 	};
 
-	struct SpectatorModeParams
-	{
-		EntityId	entityId;
-		uint8			mode;
-		EntityId	targetId;
-		bool			resetAll;
-
-		SpectatorModeParams() {};
-		SpectatorModeParams(EntityId _entityId, uint8 _mode, EntityId _target, bool _reset)
-			: entityId(_entityId),
-				mode(_mode),
-				targetId(_target),
-				resetAll(_reset)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("entityId", entityId, 'eid');
-			ser.Value("mode", mode, 'ui3');
-			ser.Value("targetId", targetId, 'eid');
-			ser.Value("resetAll", resetAll, 'bool');
-		}
-	};
-
 	struct RenameEntityParams
 	{
 		EntityId	entityId;
@@ -670,78 +544,15 @@ public:
 		void SerializeWith(TSerialize ser) {};
 	};
 
-
-	struct SpawnGroupParams
-	{
-		EntityId entityId;
-		SpawnGroupParams() {};
-		SpawnGroupParams(EntityId entId)
-			: entityId(entId)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("entityId", entityId, 'eid');
-		}
-	};
-
-	struct TempRadarTaggingParams
-	{
-		EntityId  entityId;
-		float			m_time;
-		TempRadarTaggingParams() : entityId(0), m_time(0.0f) {};
-		TempRadarTaggingParams(EntityId entId, float time = 15.0f)
-			: entityId(entId), m_time(time)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("entityId", entityId, 'eid');
-			ser.Value("time", m_time, 'tm63');
-		}
-	};
-
-	struct DamageIndicatorParams
-	{
-		DamageIndicatorParams() {};
-		DamageIndicatorParams(EntityId shtId, EntityId wpnId): shooterId(shtId), weaponId(wpnId) {};
-
-		EntityId shooterId;
-		EntityId weaponId;
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("shooterId", shooterId, 'eid');
-			ser.Value("weaponId", weaponId, 'eid');
-		}
-	};
-
-	DECLARE_SERVER_RMI_NOATTACH(SvRequestSimpleHit, SimpleHitInfo, eNRT_ReliableUnordered);
-	DECLARE_SERVER_RMI_NOATTACH(SvRequestHit, HitInfo, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClExplosion, ExplosionInfo, eNRT_ReliableUnordered);
-
 	DECLARE_SERVER_RMI_NOATTACH(SvRequestChatMessage, ChatMessageParams, eNRT_ReliableUnordered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClChatMessage, ChatMessageParams, eNRT_ReliableUnordered);
-
-	DECLARE_CLIENT_RMI_NOATTACH(ClTaggedEntity, EntityParams, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClTempRadarEntity, TempRadarTaggingParams, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClBoughtItem, BoolParam, eNRT_ReliableUnordered);
 
 	DECLARE_SERVER_RMI_NOATTACH(SvRequestRename, RenameEntityParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClRenameEntity, RenameEntityParams, eNRT_ReliableOrdered);
 
 	DECLARE_SERVER_RMI_NOATTACH(SvRequestChangeTeam, ChangeTeamParams, eNRT_ReliableOrdered);
-	DECLARE_SERVER_RMI_NOATTACH(SvRequestSpectatorMode, SpectatorModeParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClSetTeam, SetTeamParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClTextMessage, TextMessageParams, eNRT_ReliableUnordered);
-
-	DECLARE_CLIENT_RMI_NOATTACH(ClAddSpawnGroup, SpawnGroupParams, eNRT_ReliableOrdered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClRemoveSpawnGroup, SpawnGroupParams, eNRT_ReliableOrdered);
-
-	DECLARE_CLIENT_RMI_NOATTACH(ClHitIndicator, NoParams, eNRT_UnreliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClDamageIndicator, DamageIndicatorParams, eNRT_UnreliableUnordered);
 
 	DECLARE_CLIENT_RMI_NOATTACH(ClForbiddenAreaWarning, ForbiddenAreaWarningParams, eNRT_ReliableOrdered); // needs to be ordered to respect enter->leave->enter transitions
 
@@ -755,9 +566,6 @@ public:
 
 	DECLARE_CLIENT_RMI_NOATTACH(ClPlayerJoined, RenameEntityParams, eNRT_ReliableUnordered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClPlayerLeft, RenameEntityParams, eNRT_ReliableUnordered);
-
-	virtual void AddHitListener(IHitListener* pHitListener);
-	virtual void RemoveHitListener(IHitListener* pHitListener);
 
 	virtual void AddGameRulesListener(SGameRulesListener* pRulesListener);
 	virtual void RemoveGameRulesListener(SGameRulesListener* pRulesListener);
@@ -802,10 +610,7 @@ public:
 	typedef std::map<EntityId, SEntityRespawn>			TEntityRespawnMap;
 	typedef std::map<EntityId, SEntityRemovalData>	TEntityRemovalMap;
 
-	typedef std::vector<IHitListener*> THitListenerVec;
-
 protected:
-	static void CmdDebugSpawns(IConsoleCmdArgs *pArgs);
 	static void CmdDebugTeams(IConsoleCmdArgs *pArgs);
 
 	void CreateScriptExplosionInfo(SmartScriptTable &scriptExplosionInfo, const ExplosionInfo &explosionInfo);
@@ -814,75 +619,6 @@ protected:
 	void CommitAffectedEntitiesSet(SmartScriptTable &scriptExplosionInfo, TExplosionAffectedEntities &affectedEnts);
 	void ChatLog(EChatMessageType type, EntityId sourceId, EntityId targetId, const char *msg);
 
-	// Some explosion processing
-	void ProcessClientExplosionScreenFX(const ExplosionInfo &explosionInfo);
-	void ProcessExplosionMaterialFX(const ExplosionInfo &explosionInfo);
-
-	// fill source/target dependent params in m_collisionTable
-	void PrepCollision(int src, int trg, const SGameCollision& event, IEntity* pTarget);
-
-	void CallScript(IScriptTable *pScript, const char *name)
-	{
-		if (!pScript || pScript->GetValueType(name) != svtFunction)
-			return;
-		m_pScriptSystem->BeginCall(pScript, name); m_pScriptSystem->PushFuncParam(m_script);
-		m_pScriptSystem->EndCall();
-	};
-	template<typename P1>
-	void CallScript(IScriptTable *pScript, const char *name, const P1 &p1)
-	{
-		if (!pScript || pScript->GetValueType(name) != svtFunction)
-			return;
-		m_pScriptSystem->BeginCall(pScript, name); m_pScriptSystem->PushFuncParam(m_script);
-		m_pScriptSystem->PushFuncParam(p1);
-		m_pScriptSystem->EndCall();
-	};
-	template<typename P1, typename P2>
-	void CallScript(IScriptTable *pScript, const char *name, const P1 &p1, const P2 &p2)
-	{
-		if (!pScript || pScript->GetValueType(name) != svtFunction)
-			return;
-		m_pScriptSystem->BeginCall(pScript, name); m_pScriptSystem->PushFuncParam(m_script);
-		m_pScriptSystem->PushFuncParam(p1); m_pScriptSystem->PushFuncParam(p2);
-		m_pScriptSystem->EndCall();
-	};
-	template<typename P1, typename P2, typename P3>
-	void CallScript(IScriptTable *pScript, const char *name, const P1 &p1, const P2 &p2, const P3 &p3)
-	{
-		if (!pScript || pScript->GetValueType(name) != svtFunction)
-			return;
-		m_pScriptSystem->BeginCall(pScript, name); m_pScriptSystem->PushFuncParam(m_script);
-		m_pScriptSystem->PushFuncParam(p1); m_pScriptSystem->PushFuncParam(p2); m_pScriptSystem->PushFuncParam(p3);
-		m_pScriptSystem->EndCall();
-	};
-	template<typename P1, typename P2, typename P3, typename P4>
-	void CallScript(IScriptTable *pScript, const char *name, const P1 &p1, const P2 &p2, const P3 &p3, const P4 &p4)
-	{
-		if (!pScript || pScript->GetValueType(name) != svtFunction)
-			return;
-		m_pScriptSystem->BeginCall(pScript, name); m_pScriptSystem->PushFuncParam(m_script);
-		m_pScriptSystem->PushFuncParam(p1); m_pScriptSystem->PushFuncParam(p2); m_pScriptSystem->PushFuncParam(p3); m_pScriptSystem->PushFuncParam(p4);
-		m_pScriptSystem->EndCall();
-	};
-	template<typename P1, typename P2, typename P3, typename P4, typename P5>
-	void CallScript(IScriptTable *pScript, const char *name, const P1 &p1, const P2 &p2, const P3 &p3, const P4 &p4, const P5 &p5)
-	{
-		if (!pScript || pScript->GetValueType(name) != svtFunction)
-			return;
-		m_pScriptSystem->BeginCall(pScript, name); m_pScriptSystem->PushFuncParam(m_script);
-		m_pScriptSystem->PushFuncParam(p1); m_pScriptSystem->PushFuncParam(p2); m_pScriptSystem->PushFuncParam(p3); m_pScriptSystem->PushFuncParam(p4); m_pScriptSystem->PushFuncParam(p5);
-		m_pScriptSystem->EndCall();
-	};
-	template<typename P1, typename P2, typename P3, typename P4, typename P5, typename P6>
-	void CallScript(IScriptTable *pScript, const char *name, P1 &p1, P2 &p2, P3 &p3, P4 &p4, P5 &p5, P6 &p6)
-	{
-		if (!pScript || pScript->GetValueType(name) != svtFunction)
-			return;
-		m_pScriptSystem->BeginCall(pScript, name); m_pScriptSystem->PushFuncParam(m_script);
-		m_pScriptSystem->PushFuncParam(p1); m_pScriptSystem->PushFuncParam(p2); m_pScriptSystem->PushFuncParam(p3); m_pScriptSystem->PushFuncParam(p4); m_pScriptSystem->PushFuncParam(p5); m_pScriptSystem->PushFuncParam(p6);
-		m_pScriptSystem->EndCall();
-	};
-	
 	IGameFramework			*m_pGameFramework;
 	IGameplayRecorder		*m_pGameplayRecorder;
 	ISystem							*m_pSystem;
@@ -890,15 +626,6 @@ protected:
 	IEntitySystem				*m_pEntitySystem;
 	IScriptSystem				*m_pScriptSystem;
 	IMaterialManager		*m_pMaterialManager;
-	SmartScriptTable		m_script;
-	SmartScriptTable		m_clientScript;
-	SmartScriptTable		m_serverScript;
-	SmartScriptTable		m_clientStateScript;
-	SmartScriptTable		m_serverStateScript;
-	HSCRIPTFUNCTION			m_onCollisionFunc;
-	SmartScriptTable		m_collisionTable;
-	SmartScriptTable		m_collisionTableSource;
-	SmartScriptTable		m_collisionTableTarget;
 
 	INetChannel					*m_pClientNetChannel;
 
@@ -911,34 +638,9 @@ protected:
 	TChannelTeamIdMap		m_channelteams;
 	int									m_teamIdGen;
 
-	THitMaterialMap			m_hitMaterials;
-	int									m_hitMaterialIdGen;
-
-	THitTypeMap					m_hitTypes;
-	int									m_hitTypeIdGen;
-
-	SmartScriptTable		m_scriptHitInfo;
-	SmartScriptTable		m_scriptExplosionInfo;
-  
-  typedef std::queue<ExplosionInfo> TExplosionQueue;
-  TExplosionQueue     m_queuedExplosions;
-
-	typedef std::queue<HitInfo> THitQueue;
-	THitQueue						m_queuedHits;
-	int									m_processingHit;	
-
 	TEntityRespawnDataMap	m_respawndata;
 	TEntityRespawnMap			m_respawns;
 	TEntityRemovalMap			m_removals;
-
-	TSpawnLocations			m_spawnLocations;
-	TSpawnGroupMap			m_spawnGroups;
-
-	TSpawnLocations			m_spectatorLocations;
-
-	int									m_currentStateId;
-
-	THitListenerVec     m_hitListeners;
 
 	CTimeValue					m_endTime;	// time the game will end. 0 for unlimited
 	CTimeValue					m_roundEndTime;	// time the round will end. 0 for unlimited
@@ -955,8 +657,6 @@ protected:
 	bool                m_timeOfDayInitialized;
 
 	bool                m_explosionScreenFX;
-
-	CCinematicInput			m_cinematicInput;
 
 	IMonoObject *m_pScript;
 };
