@@ -18,7 +18,7 @@ namespace CryGameCode.Entities
 		{
 			viewParams.FieldOfView = Math.DegreesToRadians(60);
 
-			if (TargetEntity != null)
+			if (TargetEntity != null && !TargetEntity.IsDestroyed)
 			{
 				viewParams.Position = TargetEntity.Position + new Vec3(0, 0, cameraDistanceZ);
 				viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(Math.DegreesToRadians(-90), 0, 0));

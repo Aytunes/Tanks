@@ -17,6 +17,13 @@ namespace CryGameCode.Tanks
 			Input.RegisterAction("moveback", OnMoveBack);
 		}
 
+		protected override bool OnRemove()
+		{
+			Input.UnregisterActions(this);
+
+			return true;
+		}
+
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
 			switch (e.MouseEvent)

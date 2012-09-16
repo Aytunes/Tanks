@@ -116,6 +116,11 @@
             Gets / sets the entity flags.
             </summary>
         </member>
+        <member name="P:CryEngine.EntityBase.IsDestroyed">
+            <summary>
+            Set to true when the entity has been removed from the CryENGINE world.
+            </summary>
+        </member>
         <member name="M:CryEngine.Actor.InternalSpawn(CryEngine.ActorInfo,System.Int32)">
             <summary>
             Initializes the player.
@@ -4497,6 +4502,20 @@
             </summary>
             <param name="actionName"></param>
             <param name="eventDelegate"></param>
+        </member>
+        <member name="M:CryEngine.Input.UnregisterAction(CryEngine.ActionMapEventDelegate)">
+            <summary>
+            Removes the delegate from
+            </summary>
+            <param name="eventDelegate"></param>
+            <returns>The number of removed actions</returns>
+        </member>
+        <member name="M:CryEngine.Input.UnregisterActions(System.Object)">
+            <summary>
+            Removes all actions linked to the specified object.
+            </summary>
+            <param name="owner"></param>
+            <returns>The number of removed actions</returns>
         </member>
         <member name="F:CryEngine.KeyEvent.OnPress">
             <summary>
