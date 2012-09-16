@@ -121,6 +121,16 @@
             Set to true when the entity has been removed from the CryENGINE world.
             </summary>
         </member>
+        <member name="P:CryEngine.EntityBase.EntityHandleRef">
+            <summary>
+            IEntity handle
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityBase.AnimatedCharacterHandleRef">
+            <summary>
+            IAnimatedCharacter handle
+            </summary>
+        </member>
         <member name="M:CryEngine.Actor.InternalSpawn(CryEngine.ActorInfo,System.Int32)">
             <summary>
             Initializes the player.
