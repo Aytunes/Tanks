@@ -276,7 +276,7 @@ public:
 	void SetEntityId(EntityId id) { m_id = id; };
 	EntityId GetEntityId() { return m_id; }
 
-	void UpdateAttachment(IAttachment *pIAttachment,const QuatT &m, float fZoomAdjustedDistanceFromCamera, uint32 OnRender )
+	virtual void UpdateAttachment(IAttachment *pIAttachment,const QuatT &m, float fZoomAdjustedDistanceFromCamera, uint32 OnRender )
 	{
 		const QuatT& quatT = pIAttachment->GetAttWorldAbsolute();
 		

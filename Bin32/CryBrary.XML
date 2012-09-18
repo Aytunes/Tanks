@@ -138,6 +138,11 @@
             <param name="actorInfo"></param>
             <param name="channelId"></param>
         </member>
+        <member name="P:CryEngine.Attachment.AttachmentEntity">
+            <summary>
+            Used internally to allow repositioning attachments
+            </summary>
+        </member>
         <member name="F:CryEngine.ProjectSettings.BugReportLink">
             <summary>
             Designates what link will be opened when the user presses 'Report Bug' in the exception form.

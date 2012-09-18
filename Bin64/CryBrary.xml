@@ -116,6 +116,21 @@
             Gets / sets the entity flags.
             </summary>
         </member>
+        <member name="P:CryEngine.EntityBase.IsDestroyed">
+            <summary>
+            Set to true when the entity has been removed from the CryENGINE world.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityBase.EntityHandleRef">
+            <summary>
+            IEntity handle
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityBase.AnimatedCharacterHandleRef">
+            <summary>
+            IAnimatedCharacter handle
+            </summary>
+        </member>
         <member name="M:CryEngine.Actor.InternalSpawn(CryEngine.ActorInfo,System.Int32)">
             <summary>
             Initializes the player.
@@ -123,16 +138,9 @@
             <param name="actorInfo"></param>
             <param name="channelId"></param>
         </member>
-        <member name="F:CryEngine.ActorAttribute.useMonoActor">
+        <member name="P:CryEngine.Attachment.AttachmentEntity">
             <summary>
-            Utilize the C++ Actor class contained within CryMono.dll
-            Otherwise the engine will require one created in the game dll. 
-            </summary>
-        </member>
-        <member name="F:CryEngine.ActorAttribute.isAI">
-            <summary>
-            Determines if this is an AI actor class.
-            Only applied when UseMonoActor is set to true.
+            Used internally to allow repositioning attachments
             </summary>
         </member>
         <member name="F:CryEngine.ProjectSettings.BugReportLink">
@@ -152,72 +160,7 @@
         </member>
         <member name="T:CryEngine.NativeActor">
             <summary>
-            Used for non-CryMono actors.
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.Position">
-            <summary>
-            view position
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.Rotation">
-            <summary>
-            view orientation
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.Nearplane">
-            <summary>
-            custom near clipping plane, 0 means use engine defaults
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.GroundOnly">
-            <summary>
-            view shake status
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.ShakingRatio">
-            <summary>
-            whats the amount of shake, from 0.0 to 1.0
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.CurrentShakeQuat">
-            <summary>
-            what the current angular shake
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.CurrentShakeShift">
-            <summary>
-            what is the current translational shake
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.TargetId">
-            <summary>
-            Who we're watching. 0 == nobody.
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.TargetPosition">
-            <summary>
-            Where the target was.
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.FrameTime">
-            <summary>
-            current dt.
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.AngleVelocity">
-            <summary>
-            previous rate of change of angle.
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.Velocity">
-            <summary>
-            previous rate of change of dist between target and camera.
-            </summary>
-        </member>
-        <member name="F:CryEngine.Native.ViewParams.Distance">
-            <summary>
-            previous dist of cam from target
+            Represents an actor with a custom IActor implementation outside of CryMono.dll.
             </summary>
         </member>
         <member name="T:CryEngine.Async.Jobs.AsyncJob`1">
@@ -860,7 +803,7 @@
         </member>
         <member name="T:CryEngine.NativeEntity">
             <summary>
-            Used for non-CryMono entities, i.e. Lua / C++ such.
+            Represents an entity registered outside of CryMono, e.g. in CryGame.dll.
             </summary>
         </member>
         <member name="T:CryEngine.Entity">
@@ -4574,6 +4517,20 @@
             </summary>
             <param name="actionName"></param>
             <param name="eventDelegate"></param>
+        </member>
+        <member name="M:CryEngine.Input.UnregisterAction(CryEngine.ActionMapEventDelegate)">
+            <summary>
+            Removes the delegate from
+            </summary>
+            <param name="eventDelegate"></param>
+            <returns>The number of removed actions</returns>
+        </member>
+        <member name="M:CryEngine.Input.UnregisterActions(System.Object)">
+            <summary>
+            Removes all actions linked to the specified object.
+            </summary>
+            <param name="owner"></param>
+            <returns>The number of removed actions</returns>
         </member>
         <member name="F:CryEngine.KeyEvent.OnPress">
             <summary>

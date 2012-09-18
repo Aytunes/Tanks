@@ -2,7 +2,7 @@
 
 namespace CryGameCode.Tanks
 {
-	public class Tank : Entity
+	public abstract class Tank : Entity
 	{
 		static Tank()
 		{
@@ -12,12 +12,14 @@ namespace CryGameCode.Tanks
 			CVar.RegisterFloat("g_tankTurretTurnSpeed", ref tankTurretTurnSpeed);
 		}
 
+		public abstract string Model { get; }
+
 		public override void OnSpawn()
 		{
-			Input.MouseEvents += ProcessMouseEvents;
+			var random = new System.Random();
+			LoadObject(Model);
 
-			// TODO: Allow picking tank
-			LoadObject("objects/tanks/tank_laser.cdf");
+			Turret = GetAttachment("turret");
 
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Mass = 500;
@@ -27,6 +29,10 @@ namespace CryGameCode.Tanks
 			Input.RegisterAction("moveleft", OnMoveLeft);
 			Input.RegisterAction("moveforward", OnMoveForward);
 			Input.RegisterAction("moveback", OnMoveBack);
+
+			Input.RegisterAction("attack1", OnShoot);
+
+			Input.MouseEvents += ProcessMouseEvents;
 
 			ReceiveUpdates = true;
 		}
@@ -42,20 +48,12 @@ namespace CryGameCode.Tanks
 
 		public override void OnUpdate()
 		{
-			Vec3 mousePos = Renderer.ScreenToWorld((int)Input.MousePosition.X, (int)Input.MousePosition.Y);
+			var moveRequest = new EntityMovementRequest();
+			moveRequest.type = EntityMoveType.Normal;
+			moveRequest.velocity = VelocityRequest;
 
-			Debug.DrawSphere(mousePos, 0.3f, Color.Red, 2);
-
-			Vec3 dir = mousePos - Position;
-
-			float yaw = Math.RadiansToDegrees(Math.Atan2(dir.Y, dir.X)) - 90;
-			yaw = Math.ClampAngle(yaw, tankTurretMinAngle, tankTurretMaxAngle);
-			yaw = Math.DegreesToRadians(yaw);
-
-			var rot = Rotation;
-
-			rot.SetRotationZ(yaw);
-			Rotation = rot;
+			Velocity = VelocityRequest;
+			//AddMovement(ref moveRequest);
 		}
 
 		private void ProcessMouseEvents(MouseEventArgs e)
@@ -67,7 +65,18 @@ namespace CryGameCode.Tanks
 					{
 						var mousePos = Renderer.ScreenToWorld(e.X, e.Y);
 
-						
+						Debug.DrawSphere(mousePos, 0.3f, Color.Red, 2);
+
+						Vec3 dir = mousePos - Turret.Position;
+
+						float yaw = Math.RadiansToDegrees(Math.Atan2(dir.Y, dir.X)) - 90;
+						yaw = Math.ClampAngle(yaw, tankTurretMinAngle, tankTurretMaxAngle);
+						yaw = Math.DegreesToRadians(yaw);
+
+						var rot = Turret.Rotation;
+
+						rot.SetRotationZ(yaw);
+						Turret.Rotation = rot;
 					}
 					break;
 			}
@@ -77,40 +86,40 @@ namespace CryGameCode.Tanks
 		{
 			Debug.LogAlways("Moving right");
 
-			Position += Rotation.Column0 * 1;
+			VelocityRequest += Rotation.Column0 * 10;
 		}
 
 		private void OnMoveLeft(ActionMapEventArgs e)
 		{
 			Debug.LogAlways("Moving left");
 
-			//Position += Rotation.Column0 * -1;
-
-			var moveRequest = new EntityMovementRequest();
-			moveRequest.type = EntityMoveType.Normal;
-			moveRequest.velocity = Rotation.Column0 * -10;
-
-			AddMovement(ref moveRequest);
+			VelocityRequest = Rotation.Column0 * -10;
 		}
 
 		private void OnMoveForward(ActionMapEventArgs e)
 		{
 			Debug.LogAlways("Moving forward");
 
-			Position += Rotation.Column1 * 1;
+			VelocityRequest += Rotation.Column1 * 10;
 		}
 
 		private void OnMoveBack(ActionMapEventArgs e)
 		{
 			Debug.LogAlways("Moving back");
 
-			Position += Rotation.Column1 * -1;
+			VelocityRequest += Rotation.Column1 * -10;
 		}
 
-		Vec3 Angles;
+		private void OnShoot(ActionMapEventArgs e)
+		{
+			Debug.LogAlways("shoot");
+		}
 
-		static float tankTurretMinAngle = -20;
-		static float tankTurretMaxAngle = 80;
+		Attachment Turret { get; set; }
+		Vec3 VelocityRequest { get; set; }
+
+		static float tankTurretMinAngle = -180;
+		static float tankTurretMaxAngle = 180;
 
 		static float tankTurretTurnSpeed = 250;
 	}
