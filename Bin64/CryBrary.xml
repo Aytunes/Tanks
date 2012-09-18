@@ -138,10 +138,161 @@
             <param name="actorInfo"></param>
             <param name="channelId"></param>
         </member>
-        <member name="P:CryEngine.Attachment.AttachmentEntity">
+        <member name="T:CryEngine.Entity">
             <summary>
-            Used internally to allow repositioning attachments
+            The base class for all entities in the game world.
             </summary>
+        </member>
+        <member name="M:CryEngine.Entity.Spawn``1(System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
+            <summary>
+            Spawn a new instance of entity type T.
+            </summary>
+            <typeparam name="T">The entity type</typeparam>
+            <param name="name"></param>
+            <param name="pos"></param>
+            <param name="rot"></param>
+            <param name="scale"></param>
+            <param name="autoInit"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CryEngine.Entity.Get``1(CryEngine.EntityId)">
+            <summary>
+            Get an entity by its unique ID.
+            </summary>
+            <param name="entityId">The ID as an unsigned integer.</param>
+            <returns>A reference to the entity.</returns>
+            <remarks>If the entity does not exist in the managed space, this function will attempt to find
+            a C++ entity with the specified ID></remarks>
+        </member>
+        <member name="M:CryEngine.Entity.Get(CryEngine.EntityId)">
+            <summary>
+            Get an entity by its unique ID.
+            </summary>
+            <param name="entityId">The ID as an unsigned integer.</param>
+            <returns>A reference to the entity.</returns>
+            <remarks>If the entity does not exist in the managed space, this function will attempt to find
+            a C++ entity with the specified ID></remarks>
+        </member>
+        <member name="M:CryEngine.Entity.Find(System.String)">
+            <summary>
+            Get an entity by name.
+            </summary>
+            <param name="name">The name of the entity.</param>
+            <returns>A reference to the entity.</returns>
+            <remarks>If multiple entities have the same name, it will return the first found.
+            Consider using IDs where necessary.</remarks>
+        </member>
+        <member name="M:CryEngine.Entity.GetByClass(System.String)">
+            <summary>
+            Gets an array of entities that are of a given class.
+            </summary>
+            <param name="className">The entity class to search for.</param>
+            <returns>An array of entities.</returns>
+        </member>
+        <member name="M:CryEngine.Entity.GetByClass``1">
+            <summary>
+            Gets an array of entities that are of a given class.
+            </summary>
+            <typeparam name="T">The entity class to search for.</typeparam>
+            <returns>An array of entities of type T.</returns>
+        </member>
+        <member name="M:CryEngine.Entity.InternalSpawn(CryEngine.EntityInfo)">
+            <summary>
+            Initializes the entity, not recommended to set manually.
+            </summary>
+            <param name="entInfo">Struct containing the IEntity pointer and EntityId.</param>
+            <returns>IsEntityFlowNode</returns>
+        </member>
+        <member name="M:CryEngine.Entity.OnRemove">
+            <summary>
+            Called when the entity is being removed.
+            </summary>
+            <returns>True to allow removal, false to deny.</returns>
+        </member>
+        <member name="M:CryEngine.Entity.OnReset(System.Boolean)">
+            <summary>
+            Called when resetting the state of the entity in Editor.
+            </summary>
+            <param name="enteringGame">true if currently entering gamemode, false if exiting.</param>
+        </member>
+        <member name="M:CryEngine.Entity.OnStartGame">
+            <summary>
+            Called when game is started (games may start multiple times)
+            </summary>
+        </member>
+        <member name="M:CryEngine.Entity.OnStartLevel">
+            <summary>
+            Called when the level is started.
+            </summary>
+        </member>
+        <member name="M:CryEngine.Entity.OnEnterArea(CryEngine.EntityId,System.Int32)">
+            <summary>
+            Sent when entity enters to the area proximity.
+            </summary>
+            <param name="entityId"></param>
+            <param name="areaEntityId"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnMoveInsideArea(CryEngine.EntityId,System.Int32,System.Single)">
+            <summary>
+            Sent when entity moves inside the area proximity.
+            </summary>
+            <param name="entityId"></param>
+            <param name="areaId"></param>
+            <param name="fade"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnLeaveArea(CryEngine.EntityId,System.Int32)">
+            <summary>
+            Sent when entity leaves the area proximity.
+            </summary>
+            <param name="entityId"></param>
+            <param name="areaEntityId"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnCollision(CryEngine.EntityId,CryEngine.Vec3,CryEngine.Vec3,System.Int16,CryEngine.Vec3)">
+            <summary>
+            Sent on entity collision.
+            </summary>
+            <param name="targetEntityId"></param>
+            <param name="hitPos"></param>
+            <param name="dir"></param>
+            <param name="materialId"></param>
+            <param name="contactNormal"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnInit">
+            <summary>
+            Called after level has been loaded, is not called on serialization.
+            Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
+            </summary>
+        </member>
+        <member name="M:CryEngine.Entity.OnMove">
+            <summary>
+            Called when the entities local or world transformation matrix changes. (Position / Rotation / Scale)
+            </summary>
+        </member>
+        <member name="M:CryEngine.Entity.OnAttach(CryEngine.EntityId)">
+            <summary>
+            Called whenever another entity has been linked to this entity.
+            </summary>
+            <param name="child"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnDetach(CryEngine.EntityId)">
+            <summary>
+            Called whenever another entity has been unlinked from this entity.
+            </summary>
+            <param name="child"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnDetachThis(CryEngine.EntityId)">
+            <summary>
+            Called whenever this entity is unliked from another entity.
+            </summary>
+            <param name="parent"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnPropertyChanged(System.Reflection.MemberInfo,CryEngine.EntityPropertyType,System.Object)">
+            <summary>
+            Called when the user changes a property from within the Editor.
+            </summary>
+            <param name="propertyName"></param>
+            <param name="propertyType"></param>
+            <param name="valueString"></param>
         </member>
         <member name="F:CryEngine.ProjectSettings.BugReportLink">
             <summary>
@@ -805,162 +956,6 @@
             <summary>
             Represents an entity registered outside of CryMono, e.g. in CryGame.dll.
             </summary>
-        </member>
-        <member name="T:CryEngine.Entity">
-            <summary>
-            The base class for all entities in the game world.
-            </summary>
-        </member>
-        <member name="M:CryEngine.Entity.Spawn``1(System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
-            <summary>
-            Spawn a new instance of entity type T.
-            </summary>
-            <typeparam name="T">The entity type</typeparam>
-            <param name="name"></param>
-            <param name="pos"></param>
-            <param name="rot"></param>
-            <param name="scale"></param>
-            <param name="autoInit"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.Entity.Get``1(CryEngine.EntityId)">
-            <summary>
-            Get an entity by its unique ID.
-            </summary>
-            <param name="entityId">The ID as an unsigned integer.</param>
-            <returns>A reference to the entity.</returns>
-            <remarks>If the entity does not exist in the managed space, this function will attempt to find
-            a C++ entity with the specified ID></remarks>
-        </member>
-        <member name="M:CryEngine.Entity.Get(CryEngine.EntityId)">
-            <summary>
-            Get an entity by its unique ID.
-            </summary>
-            <param name="entityId">The ID as an unsigned integer.</param>
-            <returns>A reference to the entity.</returns>
-            <remarks>If the entity does not exist in the managed space, this function will attempt to find
-            a C++ entity with the specified ID></remarks>
-        </member>
-        <member name="M:CryEngine.Entity.Find(System.String)">
-            <summary>
-            Get an entity by name.
-            </summary>
-            <param name="name">The name of the entity.</param>
-            <returns>A reference to the entity.</returns>
-            <remarks>If multiple entities have the same name, it will return the first found.
-            Consider using IDs where necessary.</remarks>
-        </member>
-        <member name="M:CryEngine.Entity.GetByClass(System.String)">
-            <summary>
-            Gets an array of entities that are of a given class.
-            </summary>
-            <param name="className">The entity class to search for.</param>
-            <returns>An array of entities.</returns>
-        </member>
-        <member name="M:CryEngine.Entity.GetByClass``1">
-            <summary>
-            Gets an array of entities that are of a given class.
-            </summary>
-            <typeparam name="T">The entity class to search for.</typeparam>
-            <returns>An array of entities of type T.</returns>
-        </member>
-        <member name="M:CryEngine.Entity.InternalSpawn(CryEngine.EntityInfo)">
-            <summary>
-            Initializes the entity, not recommended to set manually.
-            </summary>
-            <param name="entInfo">Struct containing the IEntity pointer and EntityId.</param>
-            <returns>IsEntityFlowNode</returns>
-        </member>
-        <member name="M:CryEngine.Entity.OnRemove">
-            <summary>
-            Called when the entity is being removed.
-            </summary>
-            <returns>True to allow removal, false to deny.</returns>
-        </member>
-        <member name="M:CryEngine.Entity.OnReset(System.Boolean)">
-            <summary>
-            Called when resetting the state of the entity in Editor.
-            </summary>
-            <param name="enteringGame">true if currently entering gamemode, false if exiting.</param>
-        </member>
-        <member name="M:CryEngine.Entity.OnStartGame">
-            <summary>
-            Called when game is started (games may start multiple times)
-            </summary>
-        </member>
-        <member name="M:CryEngine.Entity.OnStartLevel">
-            <summary>
-            Called when the level is started.
-            </summary>
-        </member>
-        <member name="M:CryEngine.Entity.OnEnterArea(CryEngine.EntityId,System.Int32)">
-            <summary>
-            Sent when entity enters to the area proximity.
-            </summary>
-            <param name="entityId"></param>
-            <param name="areaEntityId"></param>
-        </member>
-        <member name="M:CryEngine.Entity.OnMoveInsideArea(CryEngine.EntityId,System.Int32,System.Single)">
-            <summary>
-            Sent when entity moves inside the area proximity.
-            </summary>
-            <param name="entityId"></param>
-            <param name="areaId"></param>
-            <param name="fade"></param>
-        </member>
-        <member name="M:CryEngine.Entity.OnLeaveArea(CryEngine.EntityId,System.Int32)">
-            <summary>
-            Sent when entity leaves the area proximity.
-            </summary>
-            <param name="entityId"></param>
-            <param name="areaEntityId"></param>
-        </member>
-        <member name="M:CryEngine.Entity.OnCollision(CryEngine.EntityId,CryEngine.Vec3,CryEngine.Vec3,System.Int16,CryEngine.Vec3)">
-            <summary>
-            Sent on entity collision.
-            </summary>
-            <param name="targetEntityId"></param>
-            <param name="hitPos"></param>
-            <param name="dir"></param>
-            <param name="materialId"></param>
-            <param name="contactNormal"></param>
-        </member>
-        <member name="M:CryEngine.Entity.OnInit">
-            <summary>
-            Called after level has been loaded, is not called on serialization.
-            Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
-            </summary>
-        </member>
-        <member name="M:CryEngine.Entity.OnMove">
-            <summary>
-            Called when the entities local or world transformation matrix changes. (Position / Rotation / Scale)
-            </summary>
-        </member>
-        <member name="M:CryEngine.Entity.OnAttach(CryEngine.EntityId)">
-            <summary>
-            Called whenever another entity has been linked to this entity.
-            </summary>
-            <param name="child"></param>
-        </member>
-        <member name="M:CryEngine.Entity.OnDetach(CryEngine.EntityId)">
-            <summary>
-            Called whenever another entity has been unlinked from this entity.
-            </summary>
-            <param name="child"></param>
-        </member>
-        <member name="M:CryEngine.Entity.OnDetachThis(CryEngine.EntityId)">
-            <summary>
-            Called whenever this entity is unliked from another entity.
-            </summary>
-            <param name="parent"></param>
-        </member>
-        <member name="M:CryEngine.Entity.OnPropertyChanged(System.Reflection.MemberInfo,CryEngine.EntityPropertyType,System.Object)">
-            <summary>
-            Called when the user changes a property from within the Editor.
-            </summary>
-            <param name="propertyName"></param>
-            <param name="propertyType"></param>
-            <param name="valueString"></param>
         </member>
         <member name="T:CryEngine.EntityPhysics">
             <summary>
