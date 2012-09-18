@@ -12,7 +12,8 @@ namespace CryGameCode.Tanks
 			CVar.RegisterFloat("g_tankTurretTurnSpeed", ref tankTurretTurnSpeed);
 		}
 
-		public abstract string Model { get; }
+		public string Model { get { return "objects/tanks/tank_generic.cdf"; } }
+		public abstract string TurretModel { get; }
 
 		public override void OnSpawn()
 		{
@@ -20,6 +21,7 @@ namespace CryGameCode.Tanks
 			LoadObject(Model);
 
 			Turret = GetAttachment("turret");
+			Turret.LoadObject(TurretModel);
 
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Mass = 500;
@@ -69,7 +71,7 @@ namespace CryGameCode.Tanks
 
 						Vec3 dir = mousePos - Turret.Position;
 
-						float yaw = Math.RadiansToDegrees(Math.Atan2(dir.Y, dir.X)) - 90;
+						float yaw = Math.RadiansToDegrees(Math.Atan2(dir.Y, dir.X));
 						yaw = Math.ClampAngle(yaw, tankTurretMinAngle, tankTurretMaxAngle);
 						yaw = Math.DegreesToRadians(yaw);
 

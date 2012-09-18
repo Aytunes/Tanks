@@ -7,6 +7,6 @@ namespace CryGameCode.Tanks
 {
 	public class LaserTank : Tank
 	{
-		public override string Model { get { return "objects/tanks/tank_laser.cdf"; } }
+		public override string TurretModel { get { return "objects/tanks/turret_laser.chr"; } }
 	}
 }
