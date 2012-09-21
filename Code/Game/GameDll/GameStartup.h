@@ -82,8 +82,6 @@ private:
 
 	static void SetupModSupport();
 
-	static bool InitCryMono();
-
 	static IGame						*m_pMod;
 	static IGameRef				m_modRef;
 	static IGameFramework	*m_pFramework;
@@ -98,8 +96,6 @@ private:
 
 	static HMODULE				m_systemDll;
 	static HWND						m_hWnd;
-
-	static IMonoPtr m_pCryMono;
 };
 
 
