@@ -1,7 +1,7 @@
-<Material MtlFlags="524290" Shader="Vegetation" GenMask="400800000" StringGenMask="%LEAVES%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.31576276,0.31576276,0.31576276" Specular="0.050000001,0.050000001,0.050000001" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.5">
+<Material MtlFlags="524290" Shader="Vegetation" GenMask="400800000" StringGenMask="%LEAVES%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.25902736,0.25902736,0.25902736" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.5">
  <Textures>
   <Texture Map="Diffuse" File="objects/tank_env_assets/natural/grasses/temple_grass_diff.tif"/>
   <Texture Map="Bumpmap" File="objects/tank_env_assets/natural/grasses/temple_grass_ddn.tif"/>
  </Textures>
- <PublicParams bendDetailLeafAmplitude="0.523" BackShadowBias="1" FresnelPower="4" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" FresnelScale="1" FresnelBias="1" CapOpacityFalloff="1" BackViewDep="0.5" BackDiffuseMultiplier="4" BackDiffuse="0.051122054,0.11657578,0.0090214908" IndirectColor="0.25,0.25,0.25"/>
+ <PublicParams bendDetailLeafAmplitude="0.523" BackShadowBias="1" FresnelPower="4" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" FresnelScale="1" FresnelBias="1" CapOpacityFalloff="1" BackViewDep="0.5" BackDiffuseMultiplier="0.69700003" BackDiffuse="0.10615607,0.24680044,0.017936433" IndirectColor="0.25,0.25,0.25"/>
 </Material>
