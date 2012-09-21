@@ -1,4 +1,4 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="mat_metal" MatTemplate="" Diffuse="0.50543249,0.50543249,0.50543249" Specular="1.3740617,1.3740617,1.3740617" Emissive="0,0,0" Shininess="68" Opacity="1">
+<Material MtlFlags="524288" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="mat_metal" MatTemplate="" Diffuse="0.14497213,0.14497213,0.14497213" Specular="0.94402277,0.70269221,0.43387753" Emissive="0,0,0" Shininess="68" Opacity="1">
  <Textures>
   <Texture Map="Diffuse" File="objects/tank_env_assets/scifi/drill_diff.tif"/>
   <Texture Map="Specular" File="objects/tank_env_assets/scifi/drill_spec.tif"/>
