@@ -1,3 +1,6 @@
 [submodule "Code/Plugin_SDK"]
 	path = Code/Plugin_SDK
 	url = git://github.com/i59/Plugin_SDK.git
+[submodule "Code/CryMono"]
+	path = Code/CryMono
+	url = git://github.com/inkdev/CryMono.git
