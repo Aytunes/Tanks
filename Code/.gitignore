@@ -1,3 +1,0 @@
-# We don't want the subrepo, but we do want the headers
-CryMono/
-!CryMono/MonoDLL/Headers/
