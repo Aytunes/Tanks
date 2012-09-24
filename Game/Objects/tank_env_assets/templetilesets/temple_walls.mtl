@@ -1,6 +1,6 @@
 <Material MtlFlags="524544">
  <SubMaterials>
-  <Material Name="Bricks" MtlFlags="524416" Shader="Illum" GenMask="2018044020" StringGenMask="%BLENDLAYER%DISPLACEMENT_MAPPING%GLOSS_DIFFUSEALPHA%PARALLAX_OCCLUSION_MAPPING%PN_TESSELLATION%VERTCOLORS" SurfaceType="" MatTemplate="" Diffuse="0.50543249,0.50543249,0.50543249" Specular="1,1,1" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="Bricks" MtlFlags="524416" Shader="Illum" GenMask="2018044020" StringGenMask="%BLENDLAYER%DISPLACEMENT_MAPPING%GLOSS_DIFFUSEALPHA%PARALLAX_OCCLUSION_MAPPING%PN_TESSELLATION%VERTCOLORS" SurfaceType="" MatTemplate="" Diffuse="0.34402567,0.34402567,0.34402567" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/textures/wall_diff.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/templetilesets/textures/wall_ddn.tif"/>
@@ -10,7 +10,7 @@
    </Textures>
    <PublicParams BlendFalloff="0.75" FresnelPower="4" BlendLayer2Tiling="1" PomDisplacement="0.031800002" BlendMaskRotation="0" FresnelScale="1" FresnelBias="1" SelfShadowStrength="3" HeightBias="1" BlendFactor="11.94" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="Stone" MtlFlags="524416" Shader="Illum" GenMask="40020" StringGenMask="%BLENDLAYER%GLOSS_DIFFUSEALPHA" SurfaceType="" MatTemplate="" Diffuse="0.50543249,0.50543249,0.50543249" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="Stone" MtlFlags="524416" Shader="Illum" GenMask="40020" StringGenMask="%BLENDLAYER%GLOSS_DIFFUSEALPHA" SurfaceType="" MatTemplate="" Diffuse="0.34402567,0.34402567,0.34402567" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/textures/rock_diff.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/templetilesets/textures/rock_ddn.tif"/>
@@ -20,14 +20,14 @@
    </Textures>
    <PublicParams BlendFalloff="0.5" FresnelPower="4" BlendLayer2Tiling="1" BlendMaskRotation="0" FresnelScale="1" FresnelBias="1" BlendFactor="4.1399999" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="grassbase" MtlFlags="524416" Shader="Illum" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.2801244,0.2801244,0.2801244" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="grassbase" MtlFlags="524416" Shader="Illum" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.12752977,0.12752977,0.12752977" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="materials/terrain/textures/bettergrass_diff.tif"/>
     <Texture Map="Bumpmap" File="materials/terrain/textures/bettergrass_ddn.tif"/>
    </Textures>
    <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="grass" MtlFlags="524418" Shader="Vegetation" GenMask="400800000" StringGenMask="%LEAVES%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.31576276,0.31576276,0.31576276" Specular="0.051122054,0.11926401,0.011126082" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.5">
+  <Material Name="grass" MtlFlags="524418" Shader="Vegetation" GenMask="400800000" StringGenMask="%LEAVES%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.16687226,0.16687226,0.16687226" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.5">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/natural/grasses/temple_grass_diff.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/natural/grasses/temple_grass_ddn.tif"/>

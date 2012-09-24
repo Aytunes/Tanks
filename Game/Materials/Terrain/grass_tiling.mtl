@@ -1,4 +1,4 @@
-<Material MtlFlags="524288" Shader="Terrain.Layer" GenMask="200080000" StringGenMask="%GLOSS_MAP%TEMP_TERRAIN" SurfaceType="mat_grass" MatTemplate="" Diffuse="0.37361506,0.99139285,0.22331043" Specular="0.052735031,0.052735031,0.052735031" Emissive="0,0,0" Shininess="80" Opacity="1">
+<Material MtlFlags="524288" Shader="Terrain.Layer" GenMask="200080000" StringGenMask="%GLOSS_MAP%TEMP_TERRAIN" SurfaceType="mat_grass" MatTemplate="" Diffuse="0.56049919,0.99139285,0.42590532" Specular="0.052735031,0.052735031,0.052735031" Emissive="0,0,0" Shininess="80" Opacity="1">
  <Textures>
   <Texture Map="Diffuse" File="materials/terrain/textures/grass_tiling_diff.tif">
    <TexMod TileU="0.60000002" TileV="0.60000002"/>
