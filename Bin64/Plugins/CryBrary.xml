@@ -6438,6 +6438,11 @@
             <returns>The filepath to the Scripts folder as a string, ex:
             <example>"C:\CryENGINE3\Game\Scripts"</example></returns>
         </member>
+        <member name="M:CryEngine.Initialization.ScriptManager.RegisterFlownodes">
+            <summary>
+            Called from GameDll
+            </summary>
+        </member>
         <member name="M:CryEngine.Initialization.ScriptManager.LoadAssembly(System.String)">
             <summary>
             Loads a C# assembly by location, creates a shadow-copy and generates debug database (mdb).
