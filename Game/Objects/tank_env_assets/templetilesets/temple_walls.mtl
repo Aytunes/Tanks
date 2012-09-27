@@ -20,19 +20,26 @@
    </Textures>
    <PublicParams BlendFalloff="0.5" FresnelPower="4" BlendLayer2Tiling="1" BlendMaskRotation="0" FresnelScale="1" FresnelBias="1" BlendFactor="4.1399999" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="grassbase" MtlFlags="524416" Shader="Illum" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.12752977,0.12752977,0.12752977" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="grassbase" MtlFlags="524416" Shader="Illum" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.27583286,0.27583286,0.27583286" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="materials/terrain/textures/bettergrass_diff.tif"/>
     <Texture Map="Bumpmap" File="materials/terrain/textures/bettergrass_ddn.tif"/>
    </Textures>
    <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="grass" MtlFlags="524418" Shader="Vegetation" GenMask="400800000" StringGenMask="%LEAVES%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.16687226,0.16687226,0.16687226" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.5">
+  <Material Name="grass" MtlFlags="524450" Shader="Vegetation" GenMask="400200000" StringGenMask="%GRASS%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.16687226,0.16687226,0.16687226" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.5">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/natural/grasses/temple_grass_diff.tif"/>
-    <Texture Map="Bumpmap" File="objects/tank_env_assets/natural/grasses/temple_grass_ddn.tif"/>
    </Textures>
-   <PublicParams bendDetailLeafAmplitude="0.523" BackShadowBias="1" FresnelPower="4" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" FresnelScale="1" FresnelBias="1" CapOpacityFalloff="1" BackViewDep="0.5" BackDiffuseMultiplier="4" BackDiffuse="0,0,0" IndirectColor="0.25,0.25,0.25"/>
+   <PublicParams bendDetailLeafAmplitude="0.523" BackShadowBias="1" FresnelPower="4" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" blendWithTerrainAmount="0.5" FresnelScale="1" FresnelBias="1" BackViewDep="0.5" BackDiffuseMultiplier="4" BackDiffuse="0,0,0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="SubMtl5" MtlFlags="524416" Shader="Illum" GenMask="8080000" StringGenMask="%GLOSS_MAP%PARALLAX_OCCLUSION_MAPPING" SurfaceType="" MatTemplate="" Diffuse="0.20835964,0.13035227,0.065753885" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/textures/floortiles_diff.tif"/>
+    <Texture Map="Specular" File="objects/tank_env_assets/templetilesets/textures/floortiles_spec.dds"/>
+    <Texture Map="Bumpmap" File="objects/tank_env_assets/templetilesets/textures/floortiles_ddn.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" PomDisplacement="0.025" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" SelfShadowStrength="3" HeightBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
  </SubMaterials>
  <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
