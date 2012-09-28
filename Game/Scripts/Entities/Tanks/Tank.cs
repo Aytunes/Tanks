@@ -17,13 +17,12 @@ namespace CryGameCode.Tanks
 
 		public override void OnSpawn()
 		{
-			var random = new System.Random();
 			LoadObject(Model);
 
 			Turret = GetAttachment("turret");
 			Turret.LoadObject(TurretModel);
 
-			Physics.Type = PhysicalizationType.Rigid;
+			Physics.Type = PhysicalizationType.Living;
 			Physics.Mass = 500;
 			Physics.Resting = false;
 
@@ -50,12 +49,18 @@ namespace CryGameCode.Tanks
 
 		public override void OnUpdate()
 		{
+			
+		}
+
+		protected override void OnPrePhysicsUpdate()
+		{
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
 			moveRequest.velocity = VelocityRequest;
 
-			Velocity = VelocityRequest;
-			//AddMovement(ref moveRequest);
+			//Velocity = VelocityRequest;
+			moveRequest.rotation = Quat.Identity;
+			AddMovement(ref moveRequest);
 		}
 
 		private void ProcessMouseEvents(MouseEventArgs e)
