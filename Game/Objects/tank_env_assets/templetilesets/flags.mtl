@@ -1,19 +1,19 @@
 <Material MtlFlags="524544">
  <SubMaterials>
-  <Material Name="metalframe" MtlFlags="524416" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="" MatTemplate="" Diffuse="0.12752977,0.12752977,0.12752977" Specular="0.26735809,0.26735809,0.26735809" Emissive="0,0,0" Shininess="55" Opacity="1">
+  <Material Name="metalframe" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.12752977,0.12752977,0.12752977" Specular="0.26735809,0.26735809,0.26735809" Emissive="0,0,0" Shininess="55" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/flags/metal_diff.dds"/>
     <Texture Map="Specular" File="objects/tank_env_assets/templetilesets/flags/metal_spec.dds"/>
    </Textures>
    <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="flag" MtlFlags="524418" Shader="Illum" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.42590532,0.42590532,0.42590532" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.43000001">
+  <Material Name="flag" MtlFlags="524418" Shader="Illum" GenMask="100000000" StringGenMask="%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.42590532,0.42590532,0.42590532" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.43000001">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/flags/red_flag.tif"/>
    </Textures>
    <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="flag" MtlFlags="524418" Shader="Illum" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.15728073,0.15728073,0.15728073" Specular="0,0,0" Emissive="0,0,0" Shininess="255" Opacity="1" AlphaTest="0.41">
+  <Material Name="flag" MtlFlags="524418" Shader="Illum" GenMask="100000000" StringGenMask="%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.089193508,0.089193508,0.089193508" Specular="0,0,0" Emissive="0,0,0" Shininess="255" Opacity="1" AlphaTest="0.41">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/flags/blue_flag.tif"/>
    </Textures>
