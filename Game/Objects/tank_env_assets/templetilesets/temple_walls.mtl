@@ -1,6 +1,6 @@
 <Material MtlFlags="524544">
  <SubMaterials>
-  <Material Name="Bricks" MtlFlags="524416" Shader="Illum" GenMask="2118044020" StringGenMask="%BLENDLAYER%DISPLACEMENT_MAPPING%GLOSS_DIFFUSEALPHA%PARALLAX_OCCLUSION_MAPPING%PN_TESSELLATION%TESSELLATION%VERTCOLORS" SurfaceType="" MatTemplate="" Diffuse="0.34402567,0.34402567,0.34402567" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="Bricks" MtlFlags="524416" Shader="Illum" GenMask="2118044020" StringGenMask="%BLENDLAYER%DISPLACEMENT_MAPPING%GLOSS_DIFFUSEALPHA%PARALLAX_OCCLUSION_MAPPING%PN_TESSELLATION%TESSELLATION%VERTCOLORS" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.34402567,0.34402567,0.34402567" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/textures/wall_diff.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/templetilesets/textures/wall_ddn.tif"/>
@@ -10,7 +10,7 @@
    </Textures>
    <PublicParams BlendFalloff="0.75" FresnelPower="4" BlendLayer2Tiling="1" PomDisplacement="0.031800002" BlendMaskRotation="0" FresnelScale="1" FresnelBias="1" SelfShadowStrength="3" HeightBias="1" BlendFactor="11.94" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="Stone" MtlFlags="524416" Shader="Illum" GenMask="100040020" StringGenMask="%BLENDLAYER%GLOSS_DIFFUSEALPHA%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.34402567,0.34402567,0.34402567" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="Stone" MtlFlags="524416" Shader="Illum" GenMask="100040020" StringGenMask="%BLENDLAYER%GLOSS_DIFFUSEALPHA%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.34402567,0.34402567,0.34402567" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/textures/rock_diff.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/templetilesets/textures/rock_ddn.tif"/>

@@ -1,4 +1,4 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.14198029,0.14198029,0.14198029" Specular="0.36859095,0.48195225,0.54179835" Emissive="0,0,0" Shininess="10" Opacity="1">
+<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_metal_thick" MatTemplate="" Diffuse="0.14198029,0.14198029,0.14198029" Specular="0.36859095,0.48195225,0.54179835" Emissive="0,0,0" Shininess="10" Opacity="1">
  <Textures>
   <Texture Map="Diffuse" File="objects/tank_env_assets/scifi/crate_diff.tif"/>
   <Texture Map="Specular" File="objects/tank_env_assets/scifi/crate_spec.tif"/>

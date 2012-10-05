@@ -1,6 +1,6 @@
 <Material MtlFlags="524544">
  <SubMaterials>
-  <Material Name="metalframe" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.12752977,0.12752977,0.12752977" Specular="0.26735809,0.26735809,0.26735809" Emissive="0,0,0" Shininess="55" Opacity="1">
+  <Material Name="metalframe" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_metal" MatTemplate="" Diffuse="0.12752977,0.12752977,0.12752977" Specular="0.26735809,0.26735809,0.26735809" Emissive="0,0,0" Shininess="55" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/flags/metal_diff.dds"/>
     <Texture Map="Specular" File="objects/tank_env_assets/templetilesets/flags/metal_spec.dds"/>
