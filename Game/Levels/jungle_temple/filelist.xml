@@ -1,6 +1,6 @@
 <download name="jungle_temple" type="Map">
  <index src="filelist.xml" dest="filelist.xml"/>
  <files>
-  <file src="level.pak" dest="level.pak" size="8948142" md5="7e15e961fecc620b90423b22d7bb2b74"/>
+  <file src="level.pak" dest="level.pak" size="8987050" md5="49ff4ff05cbc438ef3bcf927bbf7b36e"/>
  </files>
 </download>
