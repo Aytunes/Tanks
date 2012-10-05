@@ -44,3 +44,8 @@ Editor/UI/WipFeatures.xml
 Editor/EditorLayout.xml
 error.bmp
 *BinTemp*
+*.tga
+*.tif
+*.max
+*.obj
+*.psd
