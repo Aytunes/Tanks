@@ -19,6 +19,9 @@ namespace CryGameCode.Tanks
 			jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
 
 			var rocket = Entity.Spawn<Rocket>("1337rocket", jointAbsolute.T, Turret.Rotation);
+
+			var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash");
+			muzzleFlash.Spawn(jointAbsolute.T);
 		}
 	}
 }
