@@ -1,5 +1,5 @@
 <CharacterDefinition>
- <Model File="objects/tanks/tank_chassis.chr" Material="objects/tanks/tank_turrets"/>
+ <Model File="objects/tanks/tank_chassis.chr" Material="objects/tanks/tank_turrets_red"/>
  <AttachmentList>
   <Attachment AName="track_left" Type="CA_BONE" Rotation="1,0,0,0" Position="0,0,0" BoneName="tank_root" Binding="objects/tanks/track_left.cgf" Flags="0"/>
   <Attachment AName="track_right" Type="CA_BONE" Rotation="1,0,0,0" Position="0,0,0" BoneName="tank_root" Binding="objects/tanks/track_right.cgf" Flags="0"/>

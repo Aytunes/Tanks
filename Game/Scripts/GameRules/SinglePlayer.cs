@@ -46,6 +46,7 @@ namespace CryGameCode
 			var tank = Entity.Spawn<HeavyTank>(player.Name);
 
 			player.TargetEntity = tank;
+			tank.Owner = tank;
 
 			var spawnpoints = Entity.GetByClass<SpawnPoint>();
 			foreach (var spawnpoint in spawnpoints)
@@ -56,5 +57,12 @@ namespace CryGameCode
 
 			player.Init();
 		}
+
+		public bool IsTeamValid(string team)
+		{
+			return Teams.Contains(team);
+		}
+
+		public string[] Teams = new string[] { "red", "blue" };
 	}
 }

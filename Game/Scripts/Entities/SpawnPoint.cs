@@ -1,5 +1,7 @@
 ﻿using CryEngine;
 
+using CryGameCode.Tanks;
+
 namespace CryGameCode
 {
 	[Entity(Category = "Others", EditorHelper = "Objects/Tanks/tank_chassis.cgf", Icon = "", Flags = EntityClassFlags.Default)]
@@ -23,6 +25,9 @@ namespace CryGameCode
 				entity.Position = Position;
 				entity.Rotation = Rotation;
 
+				if (entity is Tank && Team != null)
+					(entity as Tank).Team = Team;
+
 				Debug.LogAlways("Spawned entity {0} with id {1} at {2},{3},{4}", entity.Name, entity.Id, Position.X, Position.Y, Position.Z);
 				return true;
 			}
@@ -37,5 +42,8 @@ namespace CryGameCode
 		/// </summary>
 		[EditorProperty]
 		public float SpawnDelay = 3;
+
+		[EditorProperty]
+		public string Team = "red";
 	}
 }

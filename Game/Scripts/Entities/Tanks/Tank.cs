@@ -15,10 +15,17 @@ namespace CryGameCode.Tanks
 
 		public override void OnSpawn()
 		{
+			Reset();
+		}
+
+		void Reset()
+		{
 			LoadObject(Model);
 
 			Turret = GetAttachment("turret");
 			Turret.LoadObject(TurretModel);
+
+			Turret.Material = Material.Find("objects/tanks/tank_turrets_" + Team);
 
 			Physics.AutoUpdate = false;
 			Physics.Type = PhysicalizationType.Living;
@@ -26,21 +33,9 @@ namespace CryGameCode.Tanks
 			Physics.HeightCollider = 1.2f;
 			Physics.UseCapsule = true;
 			Physics.SizeCollider = new Vec3(0.4f, 0.4f, 0.2f);
-			Physics.Gravity = new Vec3(0, 0, 9.81f);
-			Physics.AirControl = 0;
-			Physics.MinSlideAngle = 45;
-			Physics.MaxClimbAngle = 50;
-			Physics.MinFallAngle = 50;
-			Physics.MaxVelGround = 16;
+			Physics.Gravity = new Vec3(0, 0, -9.81f);
 			Physics.Resting = false;
 			Physics.Save();
-
-			Input.ActionmapEvents.Add("moveright", OnMoveRight);
-			Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
-			Input.ActionmapEvents.Add("moveforward", OnMoveForward);
-			Input.ActionmapEvents.Add("moveback", OnMoveBack);
-
-			Input.MouseEvents += ProcessMouseEvents;
 		}
 
 		protected override bool OnRemove()
@@ -139,13 +134,47 @@ namespace CryGameCode.Tanks
 			VelocityRequest += LocalRotation.Column1 * -10;
 		}
 
-		public string Model { get { return "objects/tanks/tank_generic.cdf"; } }
+		string team;
+		[EditorProperty]
+		public string Team 
+		{
+			get { return team ?? "red"; }
+			set
+			{
+				if ((GameRules.Current as SinglePlayer).IsTeamValid(value))
+				{
+					team = value;
+					Reset();
+				}
+			}
+		}
+
+		public string Model { get { return "objects/tanks/tank_generic_" + Team + ".cdf"; } }
 		public abstract string TurretModel { get; }
+
 
 		public virtual void ChargeWeapon() { }
 		public abstract void FireWeapon(Vec3 mouseWorldPos);
 
+		EntityBase owner;
+		public EntityBase Owner
+		{
+			get { return owner; }
+			set
+			{
+				owner = value;
+
+				Input.ActionmapEvents.Add("moveright", OnMoveRight);
+				Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
+				Input.ActionmapEvents.Add("moveforward", OnMoveForward);
+				Input.ActionmapEvents.Add("moveback", OnMoveBack);
+
+				Input.MouseEvents += ProcessMouseEvents;
+			}
+		}
+
 		protected Attachment Turret { get; set; }
+
 		protected Vec3 VelocityRequest;
 		protected Vec3 RotationRequest;
 
