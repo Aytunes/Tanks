@@ -122,8 +122,8 @@ namespace CryGameCode.Tanks
 		public abstract void FireWeapon(Vec3 mouseWorldPos);
 
 		protected Attachment Turret { get; set; }
-		Vec3 VelocityRequest;
-		Vec3 RotationRequest;
+		protected Vec3 VelocityRequest;
+		protected Vec3 RotationRequest;
 
 		static float tankTurretMinAngle = -180;
 		static float tankTurretMaxAngle = 180;

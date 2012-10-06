@@ -11,6 +11,13 @@ namespace CryGameCode.Tanks
 {
 	public class HeavyTank : Tank
 	{
+		static HeavyTank()
+		{
+			CVar.RegisterFloat("g_tankFireRecoilStrength", ref impulseStrength);
+		}
+
+		static float impulseStrength = 5;
+
 		public override string TurretModel { get { return "objects/tanks/turret_heavy.chr"; } }
 
 		public override void FireWeapon(Vec3 mouseWorldPos)
@@ -22,6 +29,8 @@ namespace CryGameCode.Tanks
 
 			var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash");
 			muzzleFlash.Spawn(jointAbsolute.T);
+
+			VelocityRequest += -Turret.Rotation.Column1 * impulseStrength;
 		}
 	}
 }
