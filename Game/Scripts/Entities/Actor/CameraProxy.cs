@@ -17,7 +17,7 @@ namespace CryGameCode.Entities
 			Input.ActionmapEvents.Add("zoom_in", OnZoomIn);
 			Input.ActionmapEvents.Add("zoom_out", OnZoomOut);
 
-			ZoomLevel = maxZoomLevel;
+			ZoomLevel = 1;
 
 			Position = TargetEntity.Position;
 		}
