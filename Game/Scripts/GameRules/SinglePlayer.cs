@@ -43,7 +43,7 @@ namespace CryGameCode
 				return;
 			}
 
-			var tank = Entity.Spawn<LaserTank>(player.Name);
+			var tank = Entity.Spawn<HeavyTank>(player.Name);
 
 			player.TargetEntity = tank;
 
