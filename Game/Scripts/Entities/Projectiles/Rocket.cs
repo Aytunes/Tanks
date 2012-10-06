@@ -7,6 +7,7 @@ using CryEngine;
 
 namespace CryGameCode.Projectiles
 {
+	[Entity(Flags=EntityClassFlags.Invisible)]
 	public class Rocket : Entity
 	{
 		static Rocket()
