@@ -1,4 +1,4 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="100040020" StringGenMask="%BLENDLAYER%GLOSS_DIFFUSEALPHA%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.25084025,0.25084025,0.25084025" Specular="0.238828,0.238828,0.238828" Emissive="0,0,0" Shininess="10" Opacity="1">
+<Material MtlFlags="524288" Shader="Illum" GenMask="100040020" StringGenMask="%BLENDLAYER%GLOSS_DIFFUSEALPHA%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.25084025,0.25084025,0.25084025" Specular="0.238828,0.238828,0.238828" Emissive="0,0,0" Shininess="10" Opacity="1">
  <Textures>
   <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/textures/rock_diff_mossy.dds">
    <TexMod TileU="0.30000001" TileV="0.30000001"/>
