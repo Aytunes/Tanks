@@ -153,6 +153,7 @@
             <param name="rot"></param>
             <param name="scale"></param>
             <param name="autoInit"></param>
+            <param name="flags"></param>
             <returns></returns>
         </member>
         <member name="M:CryEngine.Entity.Get``1(CryEngine.EntityId)">
@@ -290,16 +291,16 @@
             <summary>
             Called when the user changes a property from within the Editor.
             </summary>
-            <param name="propertyName"></param>
+            <param name="memberInfo"></param>
             <param name="propertyType"></param>
-            <param name="valueString"></param>
+            <param name="newValue"></param>
         </member>
-        <member name="F:CryEngine.ProjectSettings.BugReportLink">
+        <member name="F:CryEngine.Utils.ProjectSettings.BugReportLink">
             <summary>
             Designates what link will be opened when the user presses 'Report Bug' in the exception form.
             </summary>
         </member>
-        <member name="F:CryEngine.ProjectSettings.ExceptionMessage">
+        <member name="F:CryEngine.Utils.ProjectSettings.ExceptionMessage">
             <summary>
             Message displayed in the exception form when an exception has been thrown.
             </summary>
@@ -644,57 +645,46 @@
         <member name="M:CryEngine.DelayedFunc`10.#ctor(System.Action{`0,`1,`2,`3,`4,`5,`6,`7,`8,`9},System.Single,`0,`1,`2,`3,`4,`5,`6,`7,`8,`9)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`9.#ctor(System.Action{`0,`1,`2,`3,`4,`5,`6,`7,`8},System.Single,`0,`1,`2,`3,`4,`5,`6,`7,`8)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`8.#ctor(System.Action{`0,`1,`2,`3,`4,`5,`6,`7},System.Single,`0,`1,`2,`3,`4,`5,`6,`7)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`7.#ctor(System.Action{`0,`1,`2,`3,`4,`5,`6},System.Single,`0,`1,`2,`3,`4,`5,`6)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`6.#ctor(System.Action{`0,`1,`2,`3,`4,`5},System.Single,`0,`1,`2,`3,`4,`5)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`5.#ctor(System.Action{`0,`1,`2,`3,`4},System.Single,`0,`1,`2,`3,`4)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`4.#ctor(System.Action{`0,`1,`2,`3},System.Single,`0,`1,`2,`3)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`3.#ctor(System.Action{`0,`1,`2},System.Single,`0,`1,`2)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`2.#ctor(System.Action{`0,`1},System.Single,`0,`1)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc`1.#ctor(System.Action{`0},System.Single,`0)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.DelayedFunc.#ctor(System.Action,System.Single)">
             <summary>
             </summary>
-            <param name="delay">The desired delay, in milliseconds.</param>
         </member>
         <member name="M:CryEngine.Extensions.WinFormsExtensions.Append(System.Windows.Forms.TextBoxBase,System.String,System.Object[])">
             <summary>
@@ -919,6 +909,7 @@
             </summary>
             <param name="x"></param>
             <param name="y"></param>
+            <param name="checkVoxels"></param>
             <returns></returns>
         </member>
         <member name="M:CryEngine.View.Get(CryEngine.EntityBase,System.Boolean)">
@@ -2692,26 +2683,6 @@
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="values"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown when <paramref name="values"/> contains more or less than two elements.</exception>
         </member>
-        <member name="M:CryEngine.Vec2.Length">
-            <summary>
-            Calculates the length of the vector.
-            </summary>
-            <returns>The length of the vector.</returns>
-            <remarks>
-            <see cref="M:CryEngine.Vec2.LengthSquared"/> may be preferred when only the relative length is needed
-            and speed is of the essence.
-            </remarks>
-        </member>
-        <member name="M:CryEngine.Vec2.LengthSquared">
-            <summary>
-            Calculates the squared length of the vector.
-            </summary>
-            <returns>The squared length of the vector.</returns>
-            <remarks>
-            This method may be preferred to <see cref="M:CryEngine.Vec2.Length"/> when only a relative length is needed
-            and speed is of the essence.
-            </remarks>
-        </member>
         <member name="M:CryEngine.Vec2.Normalize">
             <summary>
             Converts the vector into a unit vector.
@@ -3360,6 +3331,26 @@
             <returns>The value of the component at the specified index.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown when the <paramref name="index"/> is out of the range [0, 1].</exception>
         </member>
+        <member name="P:CryEngine.Vec2.Length">
+            <summary>
+            Calculates the length of the vector.
+            </summary>
+            <returns>The length of the vector.</returns>
+            <remarks>
+            <see cref="P:CryEngine.Vec2.LengthSquared"/> may be preferred when only the relative length is needed
+            and speed is of the essence.
+            </remarks>
+        </member>
+        <member name="P:CryEngine.Vec2.LengthSquared">
+            <summary>
+            Calculates the squared length of the vector.
+            </summary>
+            <returns>The squared length of the vector.</returns>
+            <remarks>
+            This method may be preferred to <see cref="P:CryEngine.Vec2.Length"/> when only a relative length is needed
+            and speed is of the essence.
+            </remarks>
+        </member>
         <member name="T:CryEngine.Vec4">
             <summary>
             Represents a four dimensional mathematical vector.
@@ -3422,26 +3413,6 @@
             <param name="values">The values to assign to the X, Y, Z, and W components of the vector. This must be an array with four elements.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="values"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown when <paramref name="values"/> contains more or less than four elements.</exception>
-        </member>
-        <member name="M:CryEngine.Vec4.Length">
-            <summary>
-            Calculates the length of the vector.
-            </summary>
-            <returns>The length of the vector.</returns>
-            <remarks>
-            <see cref="M:CryEngine.Vec4.LengthSquared"/> may be preferred when only the relative length is needed
-            and speed is of the essence.
-            </remarks>
-        </member>
-        <member name="M:CryEngine.Vec4.LengthSquared">
-            <summary>
-            Calculates the squared length of the vector.
-            </summary>
-            <returns>The squared length of the vector.</returns>
-            <remarks>
-            This method may be preferred to <see cref="M:CryEngine.Vec4.Length"/> when only a relative length is needed
-            and speed is of the essence.
-            </remarks>
         </member>
         <member name="M:CryEngine.Vec4.Normalize">
             <summary>
@@ -4027,6 +3998,26 @@
             <returns>The value of the component at the specified index.</returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown when the <paramref name="index"/> is out of the range [0, 3].</exception>
         </member>
+        <member name="P:CryEngine.Vec4.Length">
+            <summary>
+            Calculates the length of the vector.
+            </summary>
+            <returns>The length of the vector.</returns>
+            <remarks>
+            <see cref="P:CryEngine.Vec4.LengthSquared"/> may be preferred when only the relative length is needed
+            and speed is of the essence.
+            </remarks>
+        </member>
+        <member name="P:CryEngine.Vec4.LengthSquared">
+            <summary>
+            Calculates the squared length of the vector.
+            </summary>
+            <returns>The squared length of the vector.</returns>
+            <remarks>
+            This method may be preferred to <see cref="P:CryEngine.Vec4.Length"/> when only a relative length is needed
+            and speed is of the essence.
+            </remarks>
+        </member>
         <member name="T:CryEngine.Testing.Assert">
             <summary>
             Contains methods used to make assertions for testing purposes.
@@ -4407,16 +4398,6 @@
             Used when analog compare op succeeds
             </summary>
         </member>
-        <member name="T:CryEngine.Quat">
-            <summary>
-            Represents a four dimensional mathematical quaternion.
-            </summary>
-        </member>
-        <member name="F:CryEngine.Quat.Identity">
-            <summary>
-            The identity <see cref="T:CryEngine.Quat"/> (0, 0, 0, 1).
-            </summary>
-        </member>
         <member name="F:CryEngine.Quat.V">
             <summary>
             The X, Y and Z components of the quaternion.
@@ -4427,479 +4408,16 @@
             The W component of the quaternion.
             </summary>
         </member>
-        <member name="M:CryEngine.Quat.#ctor(System.Single)">
+        <member name="M:CryEngine.Quat.ClampAngle(System.Single)">
             <summary>
-            Initializes a new instance of the <see cref="T:CryEngine.Quat"/> struct.
+            
             </summary>
-            <param name="value">The value that will be assigned to all components.</param>
+            <param name="maxAngle">Max angle in radians</param>
         </member>
-        <member name="M:CryEngine.Quat.#ctor(CryEngine.Vec4)">
+        <member name="F:CryEngine.Quat.Identity">
             <summary>
-            Initializes a new instance of the <see cref="T:CryEngine.Quat"/> struct.
+            The identity <see cref="T:CryEngine.Quat"/> (0, 0, 0, 1).
             </summary>
-            <param name="value">A vector containing the values with which to initialize the components.</param>
-        </member>
-        <member name="M:CryEngine.Quat.#ctor(CryEngine.Vec3,System.Single)">
-            <summary>
-            Initializes a new instance of the <see cref="T:CryEngine.Quat"/> struct.
-            </summary>
-            <param name="value">A vector containing the values with which to initialize the X, Y, and Z components.</param>
-            <param name="w">Initial value for the W component of the quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.#ctor(CryEngine.Vec2,System.Single,System.Single)">
-            <summary>
-            Initializes a new instance of the <see cref="T:CryEngine.Quat"/> struct.
-            </summary>
-            <param name="value">A vector containing the values with which to initialize the X and Y components.</param>
-            <param name="z">Initial value for the Z component of the quaternion.</param>
-            <param name="w">Initial value for the W component of the quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.#ctor(System.Single,System.Single,System.Single,System.Single)">
-            <summary>
-            Initializes a new instance of the <see cref="T:CryEngine.Quat"/> struct.
-            </summary>
-            <param name="x">Initial value for the X component of the quaternion.</param>
-            <param name="y">Initial value for the Y component of the quaternion.</param>
-            <param name="z">Initial value for the Z component of the quaternion.</param>
-            <param name="w">Initial value for the W component of the quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.#ctor(System.Single[])">
-            <summary>
-            Initializes a new instance of the <see cref="T:CryEngine.Quat"/> struct.
-            </summary>
-            <param name="values">The values to assign to the X, Y, Z, and W components of the quaternion. This must be an array with four elements.</param>
-            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="values"/> is <c>null</c>.</exception>
-            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when <paramref name="values"/> contains more or less than four elements.</exception>
-        </member>
-        <member name="M:CryEngine.Quat.Conjugate">
-            <summary>
-            Conjugates the quaternion.
-            </summary>
-        </member>
-        <member name="M:CryEngine.Quat.Invert">
-            <summary>
-            Conjugates and renormalizes the quaternion.
-            </summary>
-        </member>
-        <member name="M:CryEngine.Quat.Length">
-            <summary>
-            Calculates the length of the quaternion.
-            </summary>
-            <returns>The length of the quaternion.</returns>
-            <remarks>
-            <see cref="M:CryEngine.Quat.LengthSquared"/> may be preferred when only the relative length is needed
-            and speed is of the essence.
-            </remarks>
-        </member>
-        <member name="M:CryEngine.Quat.LengthSquared">
-            <summary>
-            Calculates the squared length of the quaternion.
-            </summary>
-            <returns>The squared length of the quaternion.</returns>
-            <remarks>
-            This method may be preferred to <see cref="M:CryEngine.Quat.Length"/> when only a relative length is needed
-            and speed is of the essence.
-            </remarks>
-        </member>
-        <member name="M:CryEngine.Quat.Normalize">
-            <summary>
-            Converts the quaternion into a unit quaternion.
-            </summary>
-        </member>
-        <member name="M:CryEngine.Quat.ToArray">
-            <summary>
-            Creates an array containing the elements of the quaternion.
-            </summary>
-            <returns>A four-element array containing the components of the quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Barycentric(CryEngine.Quat@,CryEngine.Quat@,CryEngine.Quat@,System.Single,System.Single,CryEngine.Quat@)">
-            <summary>
-            Returns a <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of a point specified in Barycentric coordinates relative to a 2D triangle.
-            </summary>
-            <param name="value1">A <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of vertex 1 of the triangle.</param>
-            <param name="value2">A <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of vertex 2 of the triangle.</param>
-            <param name="value3">A <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of vertex 3 of the triangle.</param>
-            <param name="amount1">Barycentric coordinate b2, which expresses the weighting factor toward vertex 2 (specified in <paramref name="value2"/>).</param>
-            <param name="amount2">Barycentric coordinate b3, which expresses the weighting factor toward vertex 3 (specified in <paramref name="value3"/>).</param>
-            <param name="result">When the method completes, contains a new <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of the specified point.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Barycentric(CryEngine.Quat,CryEngine.Quat,CryEngine.Quat,System.Single,System.Single)">
-            <summary>
-            Returns a <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of a point specified in Barycentric coordinates relative to a 2D triangle.
-            </summary>
-            <param name="value1">A <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of vertex 1 of the triangle.</param>
-            <param name="value2">A <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of vertex 2 of the triangle.</param>
-            <param name="value3">A <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of vertex 3 of the triangle.</param>
-            <param name="amount1">Barycentric coordinate b2, which expresses the weighting factor toward vertex 2 (specified in <paramref name="value2"/>).</param>
-            <param name="amount2">Barycentric coordinate b3, which expresses the weighting factor toward vertex 3 (specified in <paramref name="value3"/>).</param>
-            <returns>A new <see cref="T:CryEngine.Quat"/> containing the 4D Cartesian coordinates of the specified point.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Conjugate(CryEngine.Quat@,CryEngine.Quat@)">
-            <summary>
-            Conjugates a quaternion.
-            </summary>
-            <param name="value">The quaternion to conjugate.</param>
-            <param name="result">When the method completes, contains the conjugated quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Conjugate(CryEngine.Quat)">
-            <summary>
-            Conjugates a quaternion.
-            </summary>
-            <param name="value">The quaternion to conjugate.</param>
-            <returns>The conjugated quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Dot(CryEngine.Quat@,CryEngine.Quat@,System.Single@)">
-            <summary>
-            Calculates the dot product of two quaternions.
-            </summary>
-            <param name="left">First source quaternion.</param>
-            <param name="right">Second source quaternion.</param>
-            <param name="result">When the method completes, contains the dot product of the two quaternions.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Dot(CryEngine.Quat,CryEngine.Quat)">
-            <summary>
-            Calculates the dot product of two quaternions.
-            </summary>
-            <param name="left">First source quaternion.</param>
-            <param name="right">Second source quaternion.</param>
-            <returns>The dot product of the two quaternions.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Exponential(CryEngine.Quat@,CryEngine.Quat@)">
-            <summary>
-            Exponentiates a quaternion.
-            </summary>
-            <param name="value">The quaternion to exponentiate.</param>
-            <param name="result">When the method completes, contains the exponentiated quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Exponential(CryEngine.Quat)">
-            <summary>
-            Exponentiates a quaternion.
-            </summary>
-            <param name="value">The quaternion to exponentiate.</param>
-            <returns>The exponentiated quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Invert(CryEngine.Quat@,CryEngine.Quat@)">
-            <summary>
-            Conjugates and renormalizes the quaternion.
-            </summary>
-            <param name="value">The quaternion to conjugate and renormalize.</param>
-            <param name="result">When the method completes, contains the conjugated and renormalized quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Invert(CryEngine.Quat)">
-            <summary>
-            Conjugates and renormalizes the quaternion.
-            </summary>
-            <param name="value">The quaternion to conjugate and renormalize.</param>
-            <returns>The conjugated and renormalized quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Lerp(CryEngine.Quat@,CryEngine.Quat@,System.Single,CryEngine.Quat@)">
-            <summary>
-            Performs a linear interpolation between two quaternions.
-            </summary>
-            <param name="start">Start quaternion.</param>
-            <param name="end">End quaternion.</param>
-            <param name="amount">Value between 0 and 1 indicating the weight of <paramref name="end"/>.</param>
-            <param name="result">When the method completes, contains the linear interpolation of the two quaternions.</param>
-            <remarks>
-            This method performs the linear interpolation based on the following formula.
-            <code>start + (end - start) * amount</code>
-            Passing <paramref name="amount"/> a value of 0 will cause <paramref name="start"/> to be returned; a value of 1 will cause <paramref name="end"/> to be returned. 
-            </remarks>
-        </member>
-        <member name="M:CryEngine.Quat.Lerp(CryEngine.Quat,CryEngine.Quat,System.Single)">
-            <summary>
-            Performs a linear interpolation between two quaternion.
-            </summary>
-            <param name="start">Start quaternion.</param>
-            <param name="end">End quaternion.</param>
-            <param name="amount">Value between 0 and 1 indicating the weight of <paramref name="end"/>.</param>
-            <returns>The linear interpolation of the two quaternions.</returns>
-            <remarks>
-            This method performs the linear interpolation based on the following formula.
-            <code>start + (end - start) * amount</code>
-            Passing <paramref name="amount"/> a value of 0 will cause <paramref name="start"/> to be returned; a value of 1 will cause <paramref name="end"/> to be returned. 
-            </remarks>
-        </member>
-        <member name="M:CryEngine.Quat.Logarithm(CryEngine.Quat@,CryEngine.Quat@)">
-            <summary>
-            Calculates the natural logarithm of the specified quaternion.
-            </summary>
-            <param name="value">The quaternion whose logarithm will be calculated.</param>
-            <param name="result">When the method completes, contains the natural logarithm of the quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Logarithm(CryEngine.Quat)">
-            <summary>
-            Calculates the natural logarithm of the specified quaternion.
-            </summary>
-            <param name="value">The quaternion whose logarithm will be calculated.</param>
-            <returns>The natural logarithm of the quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Normalize(CryEngine.Quat@,CryEngine.Quat@)">
-            <summary>
-            Converts the quaternion into a unit quaternion.
-            </summary>
-            <param name="value">The quaternion to normalize.</param>
-            <param name="result">When the method completes, contains the normalized quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Normalize(CryEngine.Quat)">
-            <summary>
-            Converts the quaternion into a unit quaternion.
-            </summary>
-            <param name="value">The quaternion to normalize.</param>
-            <returns>The normalized quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.RotationAxis(CryEngine.Vec3@,System.Single,CryEngine.Quat@)">
-            <summary>
-            Creates a quaternion given a rotation and an axis.
-            </summary>
-            <param name="axis">The axis of rotation.</param>
-            <param name="angle">The angle of rotation.</param>
-            <param name="result">When the method completes, contains the newly created quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.RotationAxis(CryEngine.Vec3,System.Single)">
-            <summary>
-            Creates a quaternion given a rotation and an axis.
-            </summary>
-            <param name="axis">The axis of rotation.</param>
-            <param name="angle">The angle of rotation.</param>
-            <returns>The newly created quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.RotationYawPitchRoll(System.Single,System.Single,System.Single,CryEngine.Quat@)">
-            <summary>
-            Creates a quaternion given a yaw, pitch, and roll value.
-            </summary>
-            <param name="yaw">The yaw of rotation.</param>
-            <param name="pitch">The pitch of rotation.</param>
-            <param name="roll">The roll of rotation.</param>
-            <param name="result">When the method completes, contains the newly created quaternion.</param>
-        </member>
-        <member name="M:CryEngine.Quat.RotationYawPitchRoll(System.Single,System.Single,System.Single)">
-            <summary>
-            Creates a quaternion given a yaw, pitch, and roll value.
-            </summary>
-            <param name="yaw">The yaw of rotation.</param>
-            <param name="pitch">The pitch of rotation.</param>
-            <param name="roll">The roll of rotation.</param>
-            <returns>The newly created quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Slerp(CryEngine.Quat@,CryEngine.Quat@,System.Single,CryEngine.Quat@)">
-            <summary>
-            Interpolates between two quaternions, using spherical linear interpolation.
-            </summary>
-            <param name="start">Start quaternion.</param>
-            <param name="end">End quaternion.</param>
-            <param name="amount">Value between 0 and 1 indicating the weight of <paramref name="end"/>.</param>
-            <param name="result">When the method completes, contains the spherical linear interpolation of the two quaternions.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Slerp(CryEngine.Quat,CryEngine.Quat,System.Single)">
-            <summary>
-            Interpolates between two quaternions, using spherical linear interpolation.
-            </summary>
-            <param name="start">Start quaternion.</param>
-            <param name="end">End quaternion.</param>
-            <param name="amount">Value between 0 and 1 indicating the weight of <paramref name="end"/>.</param>
-            <returns>The spherical linear interpolation of the two quaternions.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.Squad(CryEngine.Quat@,CryEngine.Quat@,CryEngine.Quat@,CryEngine.Quat@,System.Single,CryEngine.Quat@)">
-            <summary>
-            Interpolates between quaternions, using spherical quadrangle interpolation.
-            </summary>
-            <param name="value1">First source quaternion.</param>
-            <param name="value2">Second source quaternion.</param>
-            <param name="value3">Thrid source quaternion.</param>
-            <param name="value4">Fourth source quaternion.</param>
-            <param name="amount">Value between 0 and 1 indicating the weight of interpolation.</param>
-            <param name="result">When the method completes, contains the spherical quadrangle interpolation of the quaternions.</param>
-        </member>
-        <member name="M:CryEngine.Quat.Squad(CryEngine.Quat,CryEngine.Quat,CryEngine.Quat,CryEngine.Quat,System.Single)">
-            <summary>
-            Interpolates between quaternions, using spherical quadrangle interpolation.
-            </summary>
-            <param name="value1">First source quaternion.</param>
-            <param name="value2">Second source quaternion.</param>
-            <param name="value3">Thrid source quaternion.</param>
-            <param name="value4">Fourth source quaternion.</param>
-            <param name="amount">Value between 0 and 1 indicating the weight of interpolation.</param>
-            <returns>The spherical quadrangle interpolation of the quaternions.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.SquadSetup(CryEngine.Quat,CryEngine.Quat,CryEngine.Quat,CryEngine.Quat)">
-            <summary>
-            Sets up control points for spherical quadrangle interpolation.
-            </summary>
-            <param name="value1">First source quaternion.</param>
-            <param name="value2">Second source quaternion.</param>
-            <param name="value3">Third source quaternion.</param>
-            <param name="value4">Fourth source quaternion.</param>
-            <returns>An array of three quaternions that represent control points for spherical quadrangle interpolation.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.op_Addition(CryEngine.Quat,CryEngine.Quat)">
-            <summary>
-            Adds two quaternions.
-            </summary>
-            <param name="left">The first quaternion to add.</param>
-            <param name="right">The second quaternion to add.</param>
-            <returns>The sum of the two quaternions.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.op_Subtraction(CryEngine.Quat,CryEngine.Quat)">
-            <summary>
-            Subtracts two quaternions.
-            </summary>
-            <param name="left">The first quaternion to subtract.</param>
-            <param name="right">The second quaternion to subtract.</param>
-            <returns>The difference of the two quaternions.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.op_UnaryNegation(CryEngine.Quat)">
-            <summary>
-            Reverses the direction of a given quaternion.
-            </summary>
-            <param name="value">The quaternion to negate.</param>
-            <returns>A quaternion facing in the opposite direction.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.op_Multiply(System.Single,CryEngine.Quat)">
-            <summary>
-            Scales a quaternion by the given value.
-            </summary>
-            <param name="value">The quaternion to scale.</param>
-            <param name="scale">The amount by which to scale the quaternion.</param>
-            <returns>The scaled quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.op_Multiply(CryEngine.Quat,System.Single)">
-            <summary>
-            Scales a quaternion by the given value.
-            </summary>
-            <param name="value">The quaternion to scale.</param>
-            <param name="scale">The amount by which to scale the quaternion.</param>
-            <returns>The scaled quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.op_Multiply(CryEngine.Quat,CryEngine.Quat)">
-            <summary>
-            Multiplies a quaternion by another.
-            </summary>
-            <param name="left">The first quaternion to multiply.</param>
-            <param name="right">The second quaternion to multiply.</param>
-            <returns>The multiplied quaternion.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.op_Equality(CryEngine.Quat,CryEngine.Quat)">
-            <summary>
-            Tests for equality between two objects.
-            </summary>
-            <param name="left">The first value to compare.</param>
-            <param name="right">The second value to compare.</param>
-            <returns><c>true</c> if <paramref name="left"/> has the same value as <paramref name="right"/>; otherwise, <c>false</c>.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.op_Inequality(CryEngine.Quat,CryEngine.Quat)">
-            <summary>
-            Tests for inequality between two objects.
-            </summary>
-            <param name="left">The first value to compare.</param>
-            <param name="right">The second value to compare.</param>
-            <returns><c>true</c> if <paramref name="left"/> has a different value than <paramref name="right"/>; otherwise, <c>false</c>.</returns>
-        </member>
-        <member name="M:CryEngine.Quat.ToString">
-            <summary>
-            Returns a <see cref="T:System.String"/> that represents this instance.
-            </summary>
-            <returns>
-            A <see cref="T:System.String"/> that represents this instance.
-            </returns>
-        </member>
-        <member name="M:CryEngine.Quat.ToString(System.String)">
-            <summary>
-            Returns a <see cref="T:System.String"/> that represents this instance.
-            </summary>
-            <param name="format">The format.</param>
-            <returns>
-            A <see cref="T:System.String"/> that represents this instance.
-            </returns>
-        </member>
-        <member name="M:CryEngine.Quat.ToString(System.IFormatProvider)">
-            <summary>
-            Returns a <see cref="T:System.String"/> that represents this instance.
-            </summary>
-            <param name="formatProvider">The format provider.</param>
-            <returns>
-            A <see cref="T:System.String"/> that represents this instance.
-            </returns>
-        </member>
-        <member name="M:CryEngine.Quat.ToString(System.String,System.IFormatProvider)">
-            <summary>
-            Returns a <see cref="T:System.String"/> that represents this instance.
-            </summary>
-            <param name="format">The format.</param>
-            <param name="formatProvider">The format provider.</param>
-            <returns>
-            A <see cref="T:System.String"/> that represents this instance.
-            </returns>
-        </member>
-        <member name="M:CryEngine.Quat.GetHashCode">
-            <summary>
-            Returns a hash code for this instance.
-            </summary>
-            <returns>
-            A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
-            </returns>
-        </member>
-        <member name="M:CryEngine.Quat.Equals(CryEngine.Quat)">
-            <summary>
-            Determines whether the specified <see cref="T:CryEngine.Quat"/> is equal to this instance.
-            </summary>
-            <param name="other">The <see cref="T:CryEngine.Quat"/> to compare with this instance.</param>
-            <returns>
-            <c>true</c> if the specified <see cref="T:CryEngine.Quat"/> is equal to this instance; otherwise, <c>false</c>.
-            </returns>
-        </member>
-        <member name="M:CryEngine.Quat.Equals(CryEngine.Quat,System.Single)">
-            <summary>
-            Determines whether the specified <see cref="T:CryEngine.Quat"/> is equal to this instance.
-            </summary>
-            <param name="other">The <see cref="T:CryEngine.Quat"/> to compare with this instance.</param>
-            <param name="epsilon">The amount of error allowed.</param>
-            <returns>
-            <c>true</c> if the specified <see cref="T:CryEngine.Quat"/> is equal to this instance; otherwise, <c>false</c>.
-            </returns>
-        </member>
-        <member name="M:CryEngine.Quat.Equals(System.Object)">
-            <summary>
-            Determines whether the specified <see cref="T:System.Object"/> is equal to this instance.
-            </summary>
-            <param name="value">The <see cref="T:System.Object"/> to compare with this instance.</param>
-            <returns>
-            <c>true</c> if the specified <see cref="T:System.Object"/> is equal to this instance; otherwise, <c>false</c>.
-            </returns>
-        </member>
-        <member name="P:CryEngine.Quat.IsIdentity">
-            <summary>
-            Gets a value indicating whether this instance is equivalent to the identity quaternion.
-            </summary>
-            <value>
-            <c>true</c> if this instance is an identity quaternion; otherwise, <c>false</c>.
-            </value>
-        </member>
-        <member name="P:CryEngine.Quat.IsNormalized">
-            <summary>
-            Gets a value indicting whether this instance is normalized.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Quat.Angle">
-            <summary>
-            Gets the angle of the quaternion.
-            </summary>
-            <value>The quaternion's angle.</value>
-        </member>
-        <member name="P:CryEngine.Quat.Axis">
-            <summary>
-            Gets the axis components of the quaternion.
-            </summary>
-            <value>The axis components of the quaternion.</value>
-        </member>
-        <member name="P:CryEngine.Quat.Item(System.Int32)">
-            <summary>
-            Gets or sets the component at the specified index.
-            </summary>
-            <value>The value of the X, Y, Z, or W component, depending on the index.</value>
-            <param name="index">The index of the component to access. Use 0 for the X component, 1 for the Y component, 2 for the Z component, and 3 for the W component.</param>
-            <returns>The value of the component at the specified index.</returns>
-            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when the <paramref name="index"/> is out of the range [0, 3].</exception>
         </member>
         <member name="T:CryEngine.ExcludeFromCompilationAttribute">
             <summary>
@@ -5204,7 +4722,8 @@
             <summary>
             Displays an exception via the CryMono exception form.
             </summary>
-            <param name="ex"></param>
+            <param name="ex">The exception that occurred</param>
+            <param name="fatal">Indicates if this exception is fatal</param>
         </member>
         <member name="M:CryEngine.Debug.LogWarning(System.String,System.Object[])">
             <summary>
@@ -5564,16 +5083,6 @@
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="values"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown when <paramref name="values"/> contains more or less than three elements.</exception>
         </member>
-        <member name="M:CryEngine.Vec3.LengthSquared">
-            <summary>
-            Calculates the squared length of the vector.
-            </summary>
-            <returns>The squared length of the vector.</returns>
-            <remarks>
-            This method may be preferred to <see cref="P:CryEngine.Vec3.Length"/> when only a relative length is needed
-            and speed is of the essence.
-            </remarks>
-        </member>
         <member name="M:CryEngine.Vec3.Normalize">
             <summary>
             Converts the vector into a unit vector.
@@ -5836,13 +5345,6 @@
             </summary>
             <param name="value">The vector to normalize.</param>
             <param name="result">When the method completes, contains the normalized vector.</param>
-        </member>
-        <member name="M:CryEngine.Vec3.Normalize(CryEngine.Vec3)">
-            <summary>
-            Converts the vector into a unit vector.
-            </summary>
-            <param name="value">The vector to normalize.</param>
-            <returns>The normalized vector.</returns>
         </member>
         <member name="M:CryEngine.Vec3.Lerp(CryEngine.Vec3@,CryEngine.Vec3@,System.Single,CryEngine.Vec3@)">
             <summary>
@@ -6243,7 +5745,17 @@
             </summary>
             <returns>The length of the vector.</returns>
             <remarks>
-            <see cref="M:CryEngine.Vec3.LengthSquared"/> may be preferred when only the relative length is needed
+            <see cref="P:CryEngine.Vec3.LengthSquared"/> may be preferred when only the relative length is needed
+            and speed is of the essence.
+            </remarks>
+        </member>
+        <member name="P:CryEngine.Vec3.LengthSquared">
+            <summary>
+            Calculates the squared length of the vector.
+            </summary>
+            <returns>The squared length of the vector.</returns>
+            <remarks>
+            This method may be preferred to <see cref="P:CryEngine.Vec3.Length"/> when only a relative length is needed
             and speed is of the essence.
             </remarks>
         </member>
@@ -6319,6 +5831,7 @@
             Instantiates a script using its name and interface.
             </summary>
             <param name="scriptName"></param>
+            <param name="scriptType"></param>
             <param name="constructorParams"></param>
             <returns>New instance scriptId or -1 if instantiation failed.</returns>
         </member>
