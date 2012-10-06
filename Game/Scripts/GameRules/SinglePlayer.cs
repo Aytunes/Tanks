@@ -48,12 +48,12 @@ namespace CryGameCode
 			player.TargetEntity = tank;
 			tank.Owner = tank;
 
+			var random = new System.Random();
+
 			var spawnpoints = Entity.GetByClass<SpawnPoint>();
-			foreach (var spawnpoint in spawnpoints)
-			{
-				if (spawnpoint.TrySpawn(tank))
-					break;
-			}
+
+			var spawnPoint = spawnpoints.ElementAt(random.Next(0, spawnpoints.Count() - 1));
+			spawnPoint.TrySpawn(tank);
 
 			player.Init();
 		}
