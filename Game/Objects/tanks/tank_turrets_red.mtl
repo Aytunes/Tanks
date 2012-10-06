@@ -1,0 +1,66 @@
+<Material MtlFlags="524544">
+ <SubMaterials>
+  <Material Name="chassis" MtlFlags="524416" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="mat_metal" MatTemplate="" Diffuse="0.13320851,0.13320851,0.13320851" Specular="0.21204439,0.21204439,0.21204439" Emissive="0,0,0" Shininess="68" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tanks/tankchassis/chassis_diff.tif"/>
+    <Texture Map="Specular" File="objects/tanks/tankchassis/chassis_spec.tif"/>
+    <Texture Map="Bumpmap" File="objects/tanks/tankchassis/chassis_ddn.tif"/>
+    <Texture Map="Environment" File="textures/cubemaps/hedgeknight/environmentprobe1_cm.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="turret_autocannon" MtlFlags="524416" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="" MatTemplate="" Diffuse="0.13320851,0.13320851,0.13320851" Specular="0.21204439,0.21204439,0.21204439" Emissive="0,0,0" Shininess="68" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tanks/turret_autocannon/turret_autocannon_diff.tif"/>
+    <Texture Map="Specular" File="objects/tanks/turret_autocannon/turret_autocannon_spec.dds"/>
+    <Texture Map="Bumpmap" File="objects/tanks/turret_autocannon/turret_autocannon_ddn.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="turret_chaingun" MtlFlags="524416" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="" MatTemplate="" Diffuse="0.13320851,0.13320851,0.13320851" Specular="0.21204439,0.21204439,0.21204439" Emissive="0,0,0" Shininess="68" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tanks/turret_chaingun/turret_chaingun_diff.tif"/>
+    <Texture Map="Specular" File="objects/tanks/turret_chaingun/turret_chaingun_spec.tif"/>
+    <Texture Map="Bumpmap" File="objects/tanks/turret_chaingun/turret_chaingun_ddn.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="turret_heavy" MtlFlags="524416" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="" MatTemplate="" Diffuse="0.13320851,0.13320851,0.13320851" Specular="0.21204439,0.21204439,0.21204439" Emissive="0,0,0" Shininess="50" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tanks/turret_heavy/turret_heavy_diff.tif"/>
+    <Texture Map="Specular" File="objects/tanks/turret_heavy/turret_heavy_spec.dds"/>
+    <Texture Map="Bumpmap" File="objects/tanks/turret_heavy/turret_heavy_ddn.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="turret_laser" MtlFlags="524416" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="" MatTemplate="" Diffuse="0.13320851,0.13320851,0.13320851" Specular="0.21204439,0.21204439,0.21204439" Emissive="0,0,0" Shininess="50" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tanks/turret_laser/turret_laser_diff.tif"/>
+    <Texture Map="Specular" File="objects/tanks/turret_laser/turret_laser_spec.tif"/>
+    <Texture Map="Bumpmap" File="objects/tanks/turret_laser/turret_laser_ddn.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="turret_mg" MtlFlags="524416" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="" MatTemplate="" Diffuse="0.13320851,0.13320851,0.13320851" Specular="0.21204439,0.21204439,0.21204439" Emissive="0,0,0" Shininess="50" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tanks/turret_mg/turret_mg_diff.tif"/>
+    <Texture Map="Specular" File="objects/tanks/turret_mg/turret_mg_spec.dds"/>
+    <Texture Map="Bumpmap" File="objects/tanks/turret_mg/turret_mg_ddn.tif"/>
+    <Texture Map="Environment" File="textures/cubemaps/hedgeknight/environmentprobe2_cm.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="turret_rocket" MtlFlags="524416" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="" MatTemplate="" Diffuse="0.13320851,0.13320851,0.13320851" Specular="0.37361506,0.37361506,0.37361506" Emissive="0,0,0" Shininess="50" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tanks/turret_rocket/turret_rocket_diff.tif"/>
+    <Texture Map="Specular" File="objects/tanks/turret_rocket/turret_rocket_spec.tif"/>
+    <Texture Map="Bumpmap" File="objects/tanks/turret_rocket/turret_rocket_ddn.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="proxy" MtlFlags="525440" Shader="Nodraw" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="0.51999998">
+   <Textures />
+  </Material>
+ </SubMaterials>
+ <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
+</Material>
