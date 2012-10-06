@@ -58,10 +58,10 @@ namespace CryGameCode.Entities
 		public static float minCameraDistanceZ = 25;
 		public static float maxCameraDistanceZ = 35;
 
-		static float cameraDistanceY = -10;
+		static float cameraDistanceY = -5;
 
-		public static float minCameraAngleX = -55;
-		public static float maxCameraAngleX = -65;
+		public static float minCameraAngleX = -80;
+		public static float maxCameraAngleX = -90;
 
 		public static int maxZoomLevel = 8;
 	}
