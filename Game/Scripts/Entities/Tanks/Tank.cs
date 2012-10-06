@@ -53,7 +53,7 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
-			var leftTrack = GetAttachment("track_left");
+			//var leftTrack = GetAttachment("track_left");
 			//var rightTrack = GetAttachment("track_right");
 
 			/*if (VelocityRequest != Vec3.Zero)
