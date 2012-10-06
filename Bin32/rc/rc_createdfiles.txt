@@ -1,1 +1,1 @@
-C:\Users\Jake\Documents\GitHub\AngryBoids\game\objects\tank_env_assets\scifi\drill_diff_red.dds
+C:\Users\Jake\Documents\GitHub\AngryBoids\game\objects\projectiles\shell_spec.dds

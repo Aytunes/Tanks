@@ -1,9 +1,8 @@
-<Material MtlFlags="526336" Shader="Water" GenMask="D3C" StringGenMask="" SurfaceType="mat_water" MatTemplate="" Diffuse="0.028991185,0.026548682,0.024222942" Specular="1,1,1" Emissive="0,0,0" Shininess="255" Opacity="1">
+<Material MtlFlags="526336" Shader="Water" GenMask="D38" StringGenMask="" SurfaceType="mat_water" MatTemplate="" Diffuse="0.028991185,0.026548682,0.024222942" Specular="1,1,1" Emissive="0,0,0" Shininess="255" Opacity="1">
  <Textures>
   <Texture Map="Diffuse" File="textures/terrain/river_water_color.tif" Filter="4">
    <TexMod TexMod_UOscillatorType="2" TexMod_UOscillatorRate="0.0099999998" TexMod_UOscillatorPhase="1" TexMod_UOscillatorAmplitude="1"/>
   </Texture>
-  <Texture Map="Environment" File="textures/cubemaps/forest/cubemap_forest_b_cm.tif"/>
  </Textures>
  <PublicParams NormalsScale="1" SoftIntersectionFactor="4.1900001" WaterVolumeFlowSpeed="2.217" Tilling="3" FoamCrestAmount="10" SubSurfaceScatteringScale="0" RipplesNormalsScale="2.053" FresnelPower="5" FoamAmount="0.111" DetailNormalsScale="1" DetailTilling="10.7" FakeCameraSpeed="0" GradientScale="0.15000001" FresnelBias="0.050000001" ReflectionScale="1" RefractionBumpScale="0.067000002" FoamSoftIntersectionFactor="0.75" FoamTilling="0" HeightScale="0.25" ReflectionBumpScale="0.86799997" RainTilling="1"/>
 </Material>
