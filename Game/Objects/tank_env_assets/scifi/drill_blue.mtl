@@ -1,0 +1,8 @@
+<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_metal_thick" MatTemplate="" Diffuse="0.14497213,0.14497213,0.14497213" Specular="0.94402277,0.70269221,0.43387753" Emissive="0,0,0" Shininess="68" Opacity="1">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/tank_env_assets/scifi/drill_diff_blue.tif"/>
+  <Texture Map="Specular" File="objects/tank_env_assets/scifi/drill_spec.tif"/>
+  <Texture Map="Bumpmap" File="objects/tank_env_assets/scifi/drill_ddn.tif"/>
+ </Textures>
+ <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+</Material>
