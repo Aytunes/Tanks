@@ -9,6 +9,11 @@ namespace CryGameCode.Projectiles
 {
 	public class Rocket : Entity
 	{
+		static Rocket()
+		{
+			CVar.RegisterFloat("g_tankRocketSpeed", ref rocketSpeed);
+		}
+
 		public override void OnSpawn()
 		{
 			LoadObject(Model);
@@ -16,15 +21,8 @@ namespace CryGameCode.Projectiles
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Mass = Mass;
 
-			ReceiveUpdates = true;
-
 			TravelDir = Rotation.Column1;
-		}
-
-		public override void OnUpdate()
-		{
-			if(!IsDestroyed)
-				Position += TravelDir * 1;
+			Velocity = TravelDir * rocketSpeed;
 		}
 
 		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
@@ -34,6 +32,8 @@ namespace CryGameCode.Projectiles
 
 			Remove();
 		}
+
+		public static float rocketSpeed = 1290;
 
 		public Vec3 TravelDir { get; private set; }
 
