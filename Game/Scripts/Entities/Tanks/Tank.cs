@@ -13,9 +13,6 @@ namespace CryGameCode.Tanks
 			CVar.RegisterFloat("g_tankTurnSpeed", ref tankTurnSpeed);
 		}
 
-		public string Model { get { return "objects/tanks/tank_generic.cdf"; } }
-		public abstract string TurretModel { get; }
-
 		public override void OnSpawn()
 		{
 			LoadObject(Model);
@@ -41,11 +38,7 @@ namespace CryGameCode.Tanks
 			Input.ActionmapEvents.Add("moveforward", OnMoveForward);
 			Input.ActionmapEvents.Add("moveback", OnMoveBack);
 
-			Input.ActionmapEvents.Add("attack1", OnShoot);
-
 			Input.MouseEvents += ProcessMouseEvents;
-
-			ReceiveUpdates = true;
 		}
 
 		protected override bool OnRemove()
@@ -56,11 +49,6 @@ namespace CryGameCode.Tanks
 			return true;
 		}
 
-		public override void OnUpdate()
-		{
-			
-		}
-
 		protected override void OnPrePhysicsUpdate()
 		{
 			var entityRot = Rotation.Normalized;
@@ -69,15 +57,6 @@ namespace CryGameCode.Tanks
 			moveRequest.type = EntityMoveType.Normal;
 			moveRequest.velocity = VelocityRequest;
 
-			/*if (moveRequest.velocity != Vec3.Zero)
-			{
-				Quat qVelocity = Quat.Identity;
-				qVelocity.SetRotationVDir(moveRequest.velocity.NormalizedSafe);
-
-				moveRequest.rotation = LocalRotation.Inverted * Quat.CreateSlerp(LocalRotation, qVelocity, Time.DeltaTime);
-				moveRequest.rotation = moveRequest.rotation.Normalized;
-			}
-			else*/
 			moveRequest.rotation = LocalRotation;
 			moveRequest.rotation.SetRotationXYZ(RotationRequest * Time.DeltaTime);
 			moveRequest.rotation = moveRequest.rotation.Normalized;
@@ -105,10 +84,12 @@ namespace CryGameCode.Tanks
 					}
 					break;
 				case MouseEvent.LeftButtonDown:
+					ChargeWeapon();
+					break;
+				case MouseEvent.LeftButtonUp:
 					{
 						var mousePos = Renderer.ScreenToWorld(e.X, e.Y);
-
-						Debug.DrawLine(Turret.Position, mousePos, Color.Red, 2.0f);
+						FireWeapon(mousePos);
 					}
 					break;
 			}
@@ -134,12 +115,13 @@ namespace CryGameCode.Tanks
 			VelocityRequest += LocalRotation.Column1 * -10;
 		}
 
-		private void OnShoot(ActionMapEventArgs e)
-		{
-			Debug.LogAlways("shoot");
-		}
+		public string Model { get { return "objects/tanks/tank_generic.cdf"; } }
+		public abstract string TurretModel { get; }
 
-		Attachment Turret { get; set; }
+		public virtual void ChargeWeapon() { }
+		public abstract void FireWeapon(Vec3 mouseWorldPos);
+
+		protected Attachment Turret { get; set; }
 		Vec3 VelocityRequest;
 		Vec3 RotationRequest;
 
