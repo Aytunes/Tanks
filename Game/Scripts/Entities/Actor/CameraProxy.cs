@@ -8,6 +8,9 @@ namespace CryGameCode.Entities
 		{
 			CVar.RegisterFloat("cam_minDistZ", ref minCameraDistanceZ);
 			CVar.RegisterFloat("cam_maxDistZ", ref maxCameraDistanceZ);
+
+			CVar.RegisterFloat("cam_distY", ref cameraDistanceY);
+
 			CVar.RegisterFloat("cam_minAngleX", ref minCameraAngleX);
 			CVar.RegisterFloat("cam_maxAngleX", ref maxCameraAngleX);
 		}
@@ -30,7 +33,7 @@ namespace CryGameCode.Entities
 			{
 				var distZ = minCameraDistanceZ + (minCameraDistanceZ - maxCameraDistanceZ) * ZoomRatio;
 
-				viewParams.Position = TargetEntity.Position + new Vec3(0, 0, distZ);
+				viewParams.Position = TargetEntity.Position + new Vec3(0, cameraDistanceY, distZ);
 				viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(Math.DegreesToRadians(minCameraAngleX + (minCameraAngleX - maxCameraAngleX) * ZoomRatio), 0, 0));
 			}
 		}
@@ -54,6 +57,9 @@ namespace CryGameCode.Entities
 
 		public static float minCameraDistanceZ = 25;
 		public static float maxCameraDistanceZ = 35;
+
+		static float cameraDistanceY = -10;
+
 		public static float minCameraAngleX = -55;
 		public static float maxCameraAngleX = -65;
 
