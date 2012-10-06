@@ -99,13 +99,8 @@ namespace CryGameCode.Tanks
 
 						Vec3 dir = mousePos - Turret.Position;
 
-						float yaw = Math.RadiansToDegrees(Math.Atan2(dir.Y, dir.X));
-						yaw = Math.ClampAngle(yaw, tankTurretMinAngle, tankTurretMaxAngle);
-						yaw = Math.DegreesToRadians(yaw);
-
 						var rot = Turret.Rotation;
-
-						rot.SetRotationZ(yaw);
+						rot.SetRotationZ(Math.Atan2(-dir.X, dir.Y));
 						Turret.Rotation = rot;
 					}
 					break;
