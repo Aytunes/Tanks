@@ -295,6 +295,16 @@
             <param name="propertyType"></param>
             <param name="newValue"></param>
         </member>
+        <member name="F:CryEngine.QuatT.Q">
+            <summary>
+            The quaternion
+            </summary>
+        </member>
+        <member name="F:CryEngine.QuatT.T">
+            <summary>
+            The translation vector and a scalar (for uniform scaling?)
+            </summary>
+        </member>
         <member name="F:CryEngine.Utils.ProjectSettings.BugReportLink">
             <summary>
             Designates what link will be opened when the user presses 'Report Bug' in the exception form.
