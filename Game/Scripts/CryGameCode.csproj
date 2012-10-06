@@ -97,6 +97,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Actor\CameraProxy.cs" />
+    <Compile Include="Entities\Tanks\AutocannonTank.cs" />
+    <Compile Include="Entities\Tanks\ChaingunTank.cs" />
+    <Compile Include="Entities\Tanks\Copy of HeavyTank.cs" />
+    <Compile Include="Entities\Tanks\RocketTank.cs" />
+    <Compile Include="Entities\Tanks\MGTank.cs" />
     <Compile Include="Entities\Tanks\LaserTank.cs" />
     <Compile Include="Entities\Tanks\Tank.cs" />
     <Compile Include="Entities\Lights\Light.cs" />
