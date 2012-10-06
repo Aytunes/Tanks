@@ -5,11 +5,6 @@ namespace CryGameCode
 	[Entity(Category = "Others", EditorHelper = "Objects/Tanks/tank_chassis.cgf", Icon = "", Flags = EntityClassFlags.Default)]
 	public class SpawnPoint : Entity
 	{
-		static SpawnPoint()
-		{
-			CVar.RegisterFloat("g_spawnPointUsageDelay", ref SpawnDelay);
-		}
-
 		public SpawnPoint()
 		{
 			LastSpawned = -1;
@@ -40,6 +35,7 @@ namespace CryGameCode
 		/// <summary>
 		/// Min delay between ability to spawn entities per spawnpoint.
 		/// </summary>
-		static float SpawnDelay = 3;
+		[EditorProperty]
+		public float SpawnDelay = 3;
 	}
 }

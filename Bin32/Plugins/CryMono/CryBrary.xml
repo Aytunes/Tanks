@@ -5765,6 +5765,16 @@
             <returns>The filepath to the Binary folder as a string, ex:
             <example>"C:\CryENGINE3\Bin32"</example></returns>
         </member>
+        <member name="P:CryEngine.PathUtils.NativePluginsFolder">
+            <summary>
+            PluginSDK main directory
+            </summary>
+        </member>
+        <member name="P:CryEngine.PathUtils.PluginsFolder">
+            <summary>
+            Directory from which CryMono will load managed plugins.
+            </summary>
+        </member>
         <member name="P:CryEngine.PathUtils.EngineFolder">
             <summary>
             Gets the engine folder.
