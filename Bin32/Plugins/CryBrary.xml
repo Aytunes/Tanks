@@ -29,6 +29,11 @@
             Controls whether the entity receives an update per frame.
             </summary>
         </member>
+        <member name="P:CryEngine.CryScriptInstance.IsDestroyed">
+            <summary>
+            Set to true when the script instance is removed via ScriptManager.RemoveInstances.
+            </summary>
+        </member>
         <member name="M:CryEngine.EntityBase.OnSpawn">
             <summary>
             This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
@@ -114,11 +119,6 @@
         <member name="P:CryEngine.EntityBase.Flags">
             <summary>
             Gets / sets the entity flags.
-            </summary>
-        </member>
-        <member name="P:CryEngine.EntityBase.IsDestroyed">
-            <summary>
-            Set to true when the entity has been removed from the CryENGINE world.
             </summary>
         </member>
         <member name="P:CryEngine.EntityBase.EntityHandleRef">
@@ -4357,27 +4357,6 @@
             <param name="isEditor"></param>
             <param name="isDedicated"></param>
         </member>
-        <member name="M:CryEngine.Input.RegisterAction(System.String,CryEngine.ActionMapEventDelegate)">
-            <summary>
-            Registers an event declared in the players actionmap. Without invoking this, Your KeyEventDelegate will never be invoked with the new action.
-            </summary>
-            <param name="actionName"></param>
-            <param name="eventDelegate"></param>
-        </member>
-        <member name="M:CryEngine.Input.UnregisterAction(CryEngine.ActionMapEventDelegate)">
-            <summary>
-            Removes the delegate from
-            </summary>
-            <param name="eventDelegate"></param>
-            <returns>The number of removed actions</returns>
-        </member>
-        <member name="M:CryEngine.Input.UnregisterActions(System.Object)">
-            <summary>
-            Removes all actions linked to the specified object.
-            </summary>
-            <param name="owner"></param>
-            <returns>The number of removed actions</returns>
-        </member>
         <member name="F:CryEngine.KeyEvent.OnPress">
             <summary>
             Used when the action key is pressed
@@ -5837,7 +5816,7 @@
         </member>
         <member name="M:CryEngine.Initialization.ScriptManager.RemoveInstances``1(CryEngine.Initialization.ScriptType,System.Predicate{``0})">
             <summary>
-            Locates and destructs the script with the assigned scriptId.
+            Locates and removes the script with the assigned scriptId.
             </summary>
         </member>
         <member name="F:CryEngine.Initialization.ScriptManager.LastScriptId">

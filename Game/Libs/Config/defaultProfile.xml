@@ -153,8 +153,8 @@
 		<action name="grenade" onPress="1" onRelease="1" keyboard="g"/>
 		<action name="rotateyaw" keyboard="maxis_x" />
 		<action name="rotatepitch" keyboard="maxis_y" />
-		<action name="zoom_in" onPress="1" keyboard="mwheel_up" xboxpad="xi_shoulderr" ps3pad="pad_r1"/>
-		<action name="zoom_out" onPress="1" keyboard="mwheel_down" xboxpad="xi_shoulderl" ps3pad="pad_l1"/>
+		<action name="zoom_in" onPress="1" onHold="1" keyboard="mwheel_up" xboxpad="xi_shoulderr" ps3pad="pad_r1"/>
+		<action name="zoom_out" onPress="1"  onHold="1" keyboard="mwheel_down" xboxpad="xi_shoulderl" ps3pad="pad_l1"/>
 		<!-- CONSOLE SPECIFIC CONTROLS START -->
 		<action name="xi_movey" xboxpad="xi_thumbly" ps3pad="pad_stickly"/>
 		<action name="xi_movex" xboxpad="xi_thumblx" ps3pad="pad_sticklx"/>

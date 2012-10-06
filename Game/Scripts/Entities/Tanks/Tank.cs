@@ -36,12 +36,12 @@ namespace CryGameCode.Tanks
 			Physics.MaxVelGround = 16;
 			Physics.Resting = false;
 
-			Input.RegisterAction("moveright", OnMoveRight);
-			Input.RegisterAction("moveleft", OnMoveLeft);
-			Input.RegisterAction("moveforward", OnMoveForward);
-			Input.RegisterAction("moveback", OnMoveBack);
+			Input.ActionmapEvents.Add("moveright", OnMoveRight);
+			Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
+			Input.ActionmapEvents.Add("moveforward", OnMoveForward);
+			Input.ActionmapEvents.Add("moveback", OnMoveBack);
 
-			Input.RegisterAction("attack1", OnShoot);
+			Input.ActionmapEvents.Add("attack1", OnShoot);
 
 			Input.MouseEvents += ProcessMouseEvents;
 
@@ -50,8 +50,7 @@ namespace CryGameCode.Tanks
 
 		protected override bool OnRemove()
 		{
-			Input.UnregisterActions(this);
-
+			Input.ActionmapEvents.RemoveAll(this);
 			Input.MouseEvents -= ProcessMouseEvents;
 
 			return true;
