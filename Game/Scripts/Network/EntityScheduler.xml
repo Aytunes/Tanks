@@ -4,6 +4,7 @@
 		
 	<!-- actors -->
 	<Class name="Tank" policy="dude" own="own"/>
+	<Class name="MonoActor" policy="dude" own="own"/>
 	<Class name="Grunt" policy="dude" />
 	
 	<!-- basic physicalized objects -->

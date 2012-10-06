@@ -38,8 +38,6 @@ History:
 #include "StatsAgent.h"
 #endif
 
-#include <CryExtension/CryCreateClassInstance.h>
-
 #ifdef __LINK_GCOV__
 extern "C" void __gcov_flush(void);
 #define GCOV_FLUSH __gcov_flush()

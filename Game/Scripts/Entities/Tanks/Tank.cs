@@ -153,6 +153,6 @@ namespace CryGameCode.Tanks
 
 		static float tankTurretTurnSpeed = 250;
 
-		static float tankTurnSpeed = 5;
+		static float tankTurnSpeed = 2;
 	}
 }
