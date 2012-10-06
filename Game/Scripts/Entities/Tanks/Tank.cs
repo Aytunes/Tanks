@@ -20,6 +20,7 @@ namespace CryGameCode.Tanks
 			Turret = GetAttachment("turret");
 			Turret.LoadObject(TurretModel);
 
+			Physics.AutoUpdate = false;
 			Physics.Type = PhysicalizationType.Living;
 			Physics.Mass = 500;
 			Physics.HeightCollider = 1.2f;
@@ -32,6 +33,7 @@ namespace CryGameCode.Tanks
 			Physics.MinFallAngle = 50;
 			Physics.MaxVelGround = 16;
 			Physics.Resting = false;
+			Physics.Save();
 
 			Input.ActionmapEvents.Add("moveright", OnMoveRight);
 			Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
@@ -51,6 +53,28 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
+			var leftTrack = GetAttachment("track_left");
+			//var rightTrack = GetAttachment("track_right");
+
+			/*if (VelocityRequest != Vec3.Zero)
+			{
+				var moveMat = Material.Find("objects/tanks/tracksmoving");
+				if (moveMat != null)
+				{
+					leftTrack.Material = moveMat;
+					rightTrack.Material = moveMat;
+				}
+			}
+			else
+			{
+				var defaultMat = Material.Find("objects/tanks/tracks");
+				if (defaultMat != null)
+				{
+					leftTrack.Material = defaultMat;
+					rightTrack.Material = defaultMat;
+				}
+			}*/
+
 			var entityRot = Rotation.Normalized;
 
 			var moveRequest = new EntityMovementRequest();
