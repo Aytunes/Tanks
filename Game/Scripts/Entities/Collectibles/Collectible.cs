@@ -63,7 +63,7 @@ namespace CryGameCode.Entities.Collectibles
 					Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups_off");
 					Active = false;
 				}
-				else if (entity is Rocket) // TODO: Change to generic projectile class
+				else if (entity is Projectile)
 				{
 					Debug.DrawText("DENIED", 3.0f, Color.Red, 5.0f);
 

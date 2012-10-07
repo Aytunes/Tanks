@@ -8,20 +8,10 @@ using CryEngine;
 namespace CryGameCode.Projectiles
 {
 	[Entity(Flags=EntityClassFlags.Invisible)]
-	public class Rocket : Entity
+	public class Rocket : Projectile
 	{
-		static Rocket()
+		public override void Launch()
 		{
-			CVar.RegisterFloat("g_tankRocketSpeed", ref rocketSpeed);
-		}
-
-		public override void OnSpawn()
-		{
-			LoadObject(Model);
-
-			Physics.Type = PhysicalizationType.Rigid;
-			Physics.Mass = Mass;
-
 			TravelDir = Rotation.Column1;
 			Physics.AddImpulse(TravelDir * rocketSpeed);
 		}
@@ -38,7 +28,7 @@ namespace CryGameCode.Projectiles
 
 		public Vec3 TravelDir { get; private set; }
 
-		public string Model = "objects/projectiles/rocket.cgf";
-		public float Mass = 20;
+		public override string Model { get { return "objects/projectiles/rocket.cgf"; } }
+		public override float Mass { get { return 20; } }
 	}
 }
