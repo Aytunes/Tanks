@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 
 using CryEngine;
+using CryGameCode.Tanks;
+using CryGameCode.Projectiles;
 
 namespace CryGameCode.Entities.Collectibles
 {
@@ -48,12 +50,25 @@ namespace CryGameCode.Entities.Collectibles
 			
 			if(Active)
 			{
-				Debug.DrawText("nom nom nom", 3.0f, Color.Blue, 5.0f);
+				var entity = Entity.Get(entityId);
+				if (entity is Tank)
+				{
+					Debug.DrawText("nom nom nom", 3.0f, Color.Blue, 5.0f);
 
-				LastUsage = Time.FrameStartTime;
+					LastUsage = Time.FrameStartTime;
 
-				HologramMaterial.Opacity = 0;
-				Active = false;
+					HologramMaterial.Opacity = 0;
+					Active = false;
+				}
+				else if (entity is Rocket) // TODO: Change to generic projectile class
+				{
+					Debug.DrawText("DENIED", 3.0f, Color.Red, 5.0f);
+
+					LastUsage = Time.FrameStartTime;
+
+					HologramMaterial.Opacity = 0;
+					Active = false;
+				}
 			}
 		}
 
