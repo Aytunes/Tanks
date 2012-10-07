@@ -62,7 +62,7 @@ namespace CryGameCode.Tanks
 				if (moveMat != null)
 				{
 					leftTrack.Material = moveMat;
-					rightTrack.Material = moveMat;
+//					rightTrack.Material = moveMat;
 				}
 			}
 			else
@@ -71,7 +71,7 @@ namespace CryGameCode.Tanks
 				if (defaultMat != null)
 				{
 					leftTrack.Material = defaultMat;
-					rightTrack.Material = defaultMat;
+//					rightTrack.Material = defaultMat;
 				}
 			}
 
