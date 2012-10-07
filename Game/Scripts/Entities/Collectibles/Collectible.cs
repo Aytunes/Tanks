@@ -26,6 +26,9 @@ namespace CryGameCode.Entities.Collectibles
 
 			PlayAnimation("Default", AnimationFlags.Loop);
 
+			Physics.Type = PhysicalizationType.Rigid;
+			Physics.Mass = -1;
+
 			if(Minimum == null)
 				Minimum = Vec3.Zero;
 			if(Maximum == null)
