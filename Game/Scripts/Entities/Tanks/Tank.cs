@@ -32,8 +32,8 @@ namespace CryGameCode.Tanks
 			Physics.Type = PhysicalizationType.Living;
 			Physics.Mass = 500;
 			Physics.HeightCollider = 1.2f;
-			Physics.UseCapsule = true;
-			Physics.SizeCollider = new Vec3(0.4f, 0.4f, 0.2f);
+			Physics.UseCapsule = false;
+			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
 			Physics.Gravity = new Vec3(0, 0, -9.81f);
 			Physics.Resting = false;
 			Physics.Save();
