@@ -33,14 +33,20 @@ namespace CryGameCode.Tanks
 			Turret.LoadObject(TurretModel);
 			Turret.Material = Material.Find("objects/tanks/tank_turrets_" + Team);
 
-			Physics.AutoUpdate = false;
-			Physics.Type = PhysicalizationType.Living;
-			Physics.Mass = 500;
-			Physics.HeightCollider = 1.2f;
-			Physics.UseCapsule = false;
-			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
-			Physics.Gravity = new Vec3(0, 0, -9.81f);
-			Physics.Save();
+			Physicalize(Physics);
+			Physicalize(Turret.Physics);
+		}
+
+		void Physicalize(EntityPhysics physics)
+		{
+			physics.AutoUpdate = false;
+			physics.Type = PhysicalizationType.Living;
+			physics.Mass = 500;
+			physics.HeightCollider = 1.2f;
+			physics.UseCapsule = false;
+			physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
+			physics.Gravity = new Vec3(0, 0, 9.81f);
+			physics.Save();
 		}
 
 		protected override bool OnRemove()
