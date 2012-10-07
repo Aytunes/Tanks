@@ -15,6 +15,8 @@ namespace CryGameCode.Projectiles
 
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Mass = Mass;
+
+			Launch();
 		}
 
 		public abstract void Launch();
