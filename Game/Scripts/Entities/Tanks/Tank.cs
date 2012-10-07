@@ -50,9 +50,9 @@ namespace CryGameCode.Tanks
 		protected override void OnPrePhysicsUpdate()
 		{
 			var leftTrack = GetAttachment("track_left");
-			//var rightTrack = GetAttachment("track_right");
+			var rightTrack = GetAttachment("track_right");
 
-			/*if (VelocityRequest != Vec3.Zero)
+			if (VelocityRequest != Vec3.Zero)
 			{
 				var moveMat = Material.Find("objects/tanks/tracksmoving");
 				if (moveMat != null)
@@ -69,7 +69,7 @@ namespace CryGameCode.Tanks
 					leftTrack.Material = defaultMat;
 					rightTrack.Material = defaultMat;
 				}
-			}*/
+			}
 
 			var entityRot = Rotation.Normalized;
 
