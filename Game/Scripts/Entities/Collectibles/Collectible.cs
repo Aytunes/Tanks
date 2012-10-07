@@ -43,7 +43,7 @@ namespace CryGameCode.Entities.Collectibles
 			if (!Active && Time.FrameStartTime - LastUsage > (DelayBetweenUsages * 1000))
 			{
 				Active = true;
-				HologramMaterial.Opacity = 100;
+				Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups");
 			}
 		}
 
@@ -60,7 +60,7 @@ namespace CryGameCode.Entities.Collectibles
 
 					LastUsage = Time.FrameStartTime;
 
-					HologramMaterial.Opacity = 0;
+					Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups_off");
 					Active = false;
 				}
 				else if (entity is Rocket) // TODO: Change to generic projectile class
@@ -69,7 +69,7 @@ namespace CryGameCode.Entities.Collectibles
 
 					LastUsage = Time.FrameStartTime;
 
-					HologramMaterial.Opacity = 0;
+					Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups_off");
 					Active = false;
 				}
 			}
