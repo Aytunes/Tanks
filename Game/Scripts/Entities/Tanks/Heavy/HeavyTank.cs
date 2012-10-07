@@ -29,7 +29,7 @@ namespace CryGameCode.Tanks
 			var rocket = Entity.Spawn<Rocket>("1337rocket", jointAbsolute.T, Turret.Rotation);
 
 			var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash");
-			muzzleFlash.Spawn(jointAbsolute.T);
+			muzzleFlash.Spawn(jointAbsolute.T, Turret.Rotation.Column1, 0.5f);
 
 			VelocityRequest += -Turret.Rotation.Column1 * impulseStrength;
 		}
