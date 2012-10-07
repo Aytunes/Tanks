@@ -33,5 +33,13 @@ namespace CryGameCode.Tanks
 
 			VelocityRequest += -Turret.Rotation.Column1 * impulseStrength;
 		}
+		
+		public override float TankSpeed
+		{
+			get
+			{
+				return 10;
+			}
+		}		
 	}
 }

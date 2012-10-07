@@ -16,5 +16,13 @@ namespace CryGameCode.Tanks
 		{
 			throw new NotImplementedException();
 		}
+		
+		public override float TankSpeed
+		{
+			get
+			{
+				return 10;
+			}
+		}
 	}
 }
