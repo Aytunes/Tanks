@@ -296,6 +296,11 @@
             <param name="newValue"></param>
         </member>
         <!-- Badly formed XML comment ignored for member "P:CryEngine.Entity.TriggerBounds" -->
+        <member name="P:CryEngine.Attachment.EntityAttachmentHandleRef">
+            <summary>
+            CMonoEntityAttachment *
+            </summary>
+        </member>
         <member name="F:CryEngine.QuatT.Q">
             <summary>
             The quaternion
