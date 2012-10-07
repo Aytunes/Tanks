@@ -18,6 +18,11 @@ namespace CryGameCode.Tanks
 			Reset();
 		}
 
+		protected override void OnReset(bool enteringGame)
+		{
+			Reset();
+		}
+
 		void Reset()
 		{
 			LoadObject(Model);
