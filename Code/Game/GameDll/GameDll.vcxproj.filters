@@ -4,9 +4,6 @@
     <Filter Include="Startup Files">
       <UniqueIdentifier>{3cbf160f-3dbb-4162-af0d-e8159f9778ff}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Actor Files">
-      <UniqueIdentifier>{133ea1b6-4a0b-44f6-9667-8d1b27b18893}</UniqueIdentifier>
-    </Filter>
     <Filter Include="EditorGame Files">
       <UniqueIdentifier>{f10991c2-3a38-4825-bea0-f6bdaa2ca043}</UniqueIdentifier>
     </Filter>
