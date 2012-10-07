@@ -23,8 +23,9 @@ namespace CryGameCode.Tanks
 			LoadObject(Model);
 
 			Turret = GetAttachment("turret");
-			Turret.LoadObject(TurretModel);
+			Turret.UseEntityRotation = true; // We want to be able to independently rotate it
 
+			Turret.LoadObject(TurretModel);
 			Turret.Material = Material.Find("objects/tanks/tank_turrets_" + Team);
 
 			Physics.AutoUpdate = false;
@@ -48,7 +49,7 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
-			//var leftTrack = GetAttachment("track_left");
+			var leftTrack = GetAttachment("track_left");
 			//var rightTrack = GetAttachment("track_right");
 
 			/*if (VelocityRequest != Vec3.Zero)
