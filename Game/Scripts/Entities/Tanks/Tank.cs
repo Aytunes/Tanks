@@ -35,7 +35,6 @@ namespace CryGameCode.Tanks
 			Physics.UseCapsule = false;
 			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
 			Physics.Gravity = new Vec3(0, 0, -9.81f);
-			Physics.Resting = false;
 			Physics.Save();
 		}
 
@@ -70,8 +69,6 @@ namespace CryGameCode.Tanks
 					rightTrack.Material = defaultMat;
 				}
 			}
-
-			var entityRot = Rotation.Normalized;
 
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
