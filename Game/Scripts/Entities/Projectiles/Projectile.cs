@@ -25,7 +25,7 @@ namespace CryGameCode.Projectiles
 		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
 		{
 			var effect = ParticleEffect.Get(Effect);
-			effect.Spawn(hitPos);
+			effect.Spawn(hitPos, null, EffectScale);
 
 			// Id 0 is the terrain
 			if(targetEntityId != 0)
@@ -44,6 +44,7 @@ namespace CryGameCode.Projectiles
 		public abstract float Speed { get; }
 		public abstract float Damage { get; }
 		public abstract string Effect { get; }
+		public abstract float EffectScale { get; }
 		public abstract DamageType DamageType { get; }
 	}
 }
