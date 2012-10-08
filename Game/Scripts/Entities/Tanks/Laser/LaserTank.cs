@@ -11,10 +11,5 @@ namespace CryGameCode.Tanks
 	public class LaserTank : Tank
 	{
 		public override string TurretModel { get { return "objects/tanks/turret_laser.chr"; } }
-
-		public override Type ProjectileType
-		{
-			get { throw new NotImplementedException(); }
-		}	
 	}
 }

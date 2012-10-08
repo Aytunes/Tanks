@@ -12,10 +12,5 @@ namespace CryGameCode.Tanks
 	public class MGTank : Tank
 	{
 		public override string TurretModel { get { return "objects/tanks/turret_mg.chr"; } }
-
-		public override Type ProjectileType
-		{
-			get { throw new NotImplementedException(); }
-		}
 	}
 }

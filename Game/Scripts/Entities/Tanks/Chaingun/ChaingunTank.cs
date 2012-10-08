@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using CryEngine;
+﻿using CryEngine;
 
 namespace CryGameCode.Tanks
 {
@@ -11,10 +6,7 @@ namespace CryGameCode.Tanks
 	public class ChaingunTank : Tank
 	{
 		public override string TurretModel { get { return "objects/tanks/turret_chaingun.chr"; } }
-
-		public override Type ProjectileType
-		{
-			get { throw new NotImplementedException(); }
-		}	
+		public override bool AutomaticFire { get { return true; } }
+		public override float TimeBetweenShots { get { return 0.2f; } }
 	}
 }

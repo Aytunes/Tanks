@@ -52,6 +52,9 @@ namespace CryGameCode.Tanks
 			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
 			Physics.Save();
 
+			if(AutomaticFire)
+				ReceiveUpdates = true;
+
 			InitHealth(100);
 		}
 
@@ -101,6 +104,12 @@ namespace CryGameCode.Tanks
 			RotationRequest = Vec3.Zero;
 		}
 
+		public override void OnUpdate()
+		{
+			if(m_firing)
+				FireWeapon(m_mousePos);
+		}
+
 		protected override void OnDeath()
 		{
 			Debug.DrawText("Died!", 3, Color.Red, 5);
@@ -124,9 +133,9 @@ namespace CryGameCode.Tanks
 				// Handle turret rotation
 				case MouseEvent.Move:
 					{
-						var mousePos = Renderer.ScreenToWorld(e.X, e.Y);
+						m_mousePos = Renderer.ScreenToWorld(e.X, e.Y);
 
-						Vec3 dir = mousePos - Turret.Position;
+						var dir = m_mousePos - Turret.Position;
 
 						var rot = Turret.Rotation;
 						rot.SetRotationZ(Math.Atan2(-dir.X, dir.Y));
@@ -134,10 +143,18 @@ namespace CryGameCode.Tanks
 					}
 					break;
 				case MouseEvent.LeftButtonDown:
-					ChargeWeapon();
+					{
+						if(AutomaticFire)
+							m_firing = true;
+
+						ChargeWeapon();
+					}
 					break;
 				case MouseEvent.LeftButtonUp:
 					{
+						if(AutomaticFire)
+							m_firing = false;
+
 						var mousePos = Renderer.ScreenToWorld(e.X, e.Y);
 						FireWeapon(mousePos);
 					}
@@ -194,12 +211,18 @@ namespace CryGameCode.Tanks
 		protected virtual void ChargeWeapon() { }
 		protected void FireWeapon(Vec3 mouseWorldPos)
 		{
-			var jointAbsolute = Turret.GetJointAbsolute("turret_term");
-			jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
+			if(Time.FrameStartTime > m_lastShotTime + (TimeBetweenShots * 1000))
+			{
+				m_lastShotTime = Time.FrameStartTime;
+				Debug.LogAlways(m_lastShotTime.ToString());
 
-			Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Turret.Rotation);
-			
-			OnFire(jointAbsolute.T);
+				var jointAbsolute = Turret.GetJointAbsolute("turret_term");
+				jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
+
+				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Turret.Rotation);
+
+				OnFire(jointAbsolute.T);
+			}
 		}
 
 		protected virtual void OnFire(Vec3 firePos) { }
@@ -207,6 +230,13 @@ namespace CryGameCode.Tanks
 		public abstract string TurretModel { get; }
 		public virtual float TankSpeed { get { return 10; } }
 		public virtual System.Type ProjectileType { get { return typeof(Bullet); } }
+
+		public virtual bool AutomaticFire { get { return false; } }
+		public virtual float TimeBetweenShots { get { return 1; } }
+		
+		private float m_lastShotTime;
+		private bool m_firing;
+		private Vec3 m_mousePos;
 
 		Actor owner;
 		public Actor Owner
