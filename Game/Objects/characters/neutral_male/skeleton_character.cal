@@ -1,5 +1,0 @@
-#filepath = animations\human_male
-
-//$AnimEventDatabase = animations\human\male\Male_EventDataBase.animevents
-
-$Include = objects\characters\basicPlayer.cal
