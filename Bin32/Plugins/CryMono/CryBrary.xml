@@ -143,7 +143,20 @@
             The base class for all entities in the game world.
             </summary>
         </member>
-        <member name="M:CryEngine.Entity.Spawn``1(System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
+        <member name="M:CryEngine.Entity.Spawn(System.String,System.Type,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
+            <summary>
+            Spawns a new entity
+            </summary>
+            <param name="entityName"></param>
+            <param name="type"></param>
+            <param name="pos"></param>
+            <param name="rot"></param>
+            <param name="scale"></param>
+            <param name="autoInit"></param>
+            <param name="flags"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CryEngine.Entity.Spawn(System.String,System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
             <summary>
             Spawn a new instance of entity type T.
             </summary>
