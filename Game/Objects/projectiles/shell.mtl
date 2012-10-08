@@ -1,4 +1,4 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.81996369,0.42050794,0.08241421" Specular="1,1,1" Emissive="0,0,0" Shininess="10" Opacity="1" GlowAmount="1">
+<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_metal" MatTemplate="" Diffuse="0.81996369,0.42050794,0.08241421" Specular="1,1,1" Emissive="0,0,0" Shininess="10" Opacity="1" GlowAmount="1">
  <Textures>
   <Texture Map="Diffuse" File="objects/projectiles/shell_diff.tif"/>
   <Texture Map="Specular" File="objects/projectiles/shell_spec.tif"/>
