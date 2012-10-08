@@ -30,6 +30,12 @@ namespace CryGameCode.Entities.Collectibles
 				var heal = RemainingRestoration * Time.DeltaTime;
 				RemainingRestoration -= heal;
 
+				if (RemainingRestoration < 0.1)
+				{
+					heal += RemainingRestoration;
+					RemainingRestoration = 0;
+				}
+
 				Debug.LogAlways("Healing tank {0} with {1}HP, {2} remaining", LastUser.Name, heal, RemainingRestoration);
 				LastUser.Heal(heal);
 
