@@ -25,10 +25,10 @@ namespace CryGameCode.Projectiles
 
 			if(targetEntityId != 0)
 			{
-				var target = Entity.Get(targetEntityId) as IDamageable;
+				var target = Entity.Get(targetEntityId) as DamageableEntity;
 
 				if(target != null)
-					target.OnDamage(20, DamageType.Explosive);
+					target.Damage(20, DamageType.Explosive);
 			}
 
 			Remove();
