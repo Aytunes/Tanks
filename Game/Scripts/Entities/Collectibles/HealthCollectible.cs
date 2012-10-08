@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-using CryEngine;
-using CryGameCode.Tanks;
+﻿using CryEngine;
 
 namespace CryGameCode.Entities.Collectibles
 {

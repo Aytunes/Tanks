@@ -1,6 +1,7 @@
 ﻿using CryEngine;
 using CryGameCode.Entities;
 using System.Linq;
+using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
@@ -188,16 +189,24 @@ namespace CryGameCode.Tanks
 		}
 
 		public string Model { get { return "objects/tanks/tank_generic_" + Team + ".cdf"; } }
-		public abstract string TurretModel { get; }
-
-		public abstract float TankSpeed { get; }
 		public float SpeedMultiplier = 1.0f;
 
-		public virtual void ChargeWeapon() { }
-		public abstract void FireWeapon(Vec3 mouseWorldPos);
+		protected virtual void ChargeWeapon() { }
+		protected void FireWeapon(Vec3 mouseWorldPos)
+		{
+			var jointAbsolute = Turret.GetJointAbsolute("turret_term");
+			jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
 
-		public float Health { get; private set; }
-		public bool Dead { get { return Health <= 0; } }
+			Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Turret.Rotation);
+			
+			OnFire(jointAbsolute.T);
+		}
+
+		protected virtual void OnFire(Vec3 firePos) { }
+
+		public abstract string TurretModel { get; }
+		public virtual float TankSpeed { get { return 10; } }
+		public abstract System.Type ProjectileType { get; }
 
 		Actor owner;
 		public Actor Owner

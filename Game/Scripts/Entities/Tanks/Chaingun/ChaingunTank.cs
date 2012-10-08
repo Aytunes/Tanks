@@ -12,17 +12,9 @@ namespace CryGameCode.Tanks
 	{
 		public override string TurretModel { get { return "objects/tanks/turret_chaingun.chr"; } }
 
-		public override void FireWeapon(Vec3 mouseWorldPos)
+		public override Type ProjectileType
 		{
-			throw new NotImplementedException();
-		}
-		
-		public override float TankSpeed
-		{
-			get
-			{
-				return 10;
-			}
-		}		
+			get { throw new NotImplementedException(); }
+		}	
 	}
 }

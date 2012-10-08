@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
+using System.Reflection;
 using CryEngine;
-
-using CryGameCode.Tanks;
+using CryEngine.Extensions;
 using CryGameCode.Entities;
+using CryGameCode.Tanks;
 
 namespace CryGameCode
 {
@@ -16,6 +15,17 @@ namespace CryGameCode
 	[GameRules(Default = true)]
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
+		public static string[] Teams = { "red", "blue" };
+		private static List<Type> TankTypes;
+		private static Random Selector = new Random();
+
+		static SinglePlayer()
+		{
+			TankTypes = (from type in Assembly.GetExecutingAssembly().GetTypes()
+						 where type.Implements<Tank>()
+						 select type).ToList();
+		}
+
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
 			if (!Network.IsServer)
@@ -55,16 +65,15 @@ namespace CryGameCode
 				return;
 			}
 
-			var tank = Entity.Spawn<HeavyTank>(player.Name);
+			var tankType = TankTypes[Selector.Next(TankTypes.Count)];
+			var tank = Entity.Spawn(player.Name, tankType) as Tank;
 
 			player.TargetEntity = tank;
 			tank.Owner = player;
 
-			var random = new System.Random();
-
 			var spawnpoints = Entity.GetByClass<SpawnPoint>();
+			var spawnPoint = spawnpoints.ElementAt(Selector.Next(0, spawnpoints.Count() - 1));
 
-			var spawnPoint = spawnpoints.ElementAt(random.Next(0, spawnpoints.Count() - 1));
 			spawnPoint.TrySpawn(tank);
 
 			player.Init();
@@ -74,7 +83,5 @@ namespace CryGameCode
 		{
 			return Teams.Contains(team);
 		}
-
-		public string[] Teams = new string[] { "red", "blue" };
 	}
 }

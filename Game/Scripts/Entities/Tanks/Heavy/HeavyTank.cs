@@ -20,26 +20,14 @@ namespace CryGameCode.Tanks
 		static float impulseStrength = 5;
 
 		public override string TurretModel { get { return "objects/tanks/turret_heavy.chr"; } }
+		public override Type ProjectileType { get { return typeof(Rocket); } }
 
-		public override void FireWeapon(Vec3 mouseWorldPos)
+		protected override void OnFire(Vec3 firePos)
 		{
-			var jointAbsolute = Turret.GetJointAbsolute("turret_term");
-			jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
-
-			var rocket = Entity.Spawn<Rocket>("1337rocket", jointAbsolute.T, Turret.Rotation);
-
 			var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash");
-			muzzleFlash.Spawn(jointAbsolute.T, Turret.Rotation.Column1, 0.5f);
+			muzzleFlash.Spawn(firePos, Turret.Rotation.Column1, 0.5f);
 
 			VelocityRequest += -Turret.Rotation.Column1 * impulseStrength;
 		}
-		
-		public override float TankSpeed
-		{
-			get
-			{
-				return 10;
-			}
-		}		
 	}
 }
