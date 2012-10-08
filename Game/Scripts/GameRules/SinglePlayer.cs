@@ -58,7 +58,7 @@ namespace CryGameCode
 			var tank = Entity.Spawn<HeavyTank>(player.Name);
 
 			player.TargetEntity = tank;
-			tank.Owner = tank;
+			tank.Owner = player;
 
 			var random = new System.Random();
 
