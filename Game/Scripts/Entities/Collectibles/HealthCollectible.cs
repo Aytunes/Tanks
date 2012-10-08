@@ -25,13 +25,16 @@ namespace CryGameCode.Entities.Collectibles
 		{
 			base.OnUpdate();
 
-			if (LastUser != null)
+			if (LastUser != null && !LastUser.IsDestroyed)
 			{
 				var heal = RemainingRestoration * Time.DeltaTime;
 				RemainingRestoration -= heal;
 
 				Debug.LogAlways("Healing tank {0} with {1}HP, {2} remaining", LastUser.Name, heal, RemainingRestoration);
-				LastUser.Health += heal;
+				LastUser.Heal(heal);
+
+				if (RemainingRestoration <= 0)
+					LastUser = null;
 			}
 		}
 

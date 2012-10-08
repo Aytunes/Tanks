@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CryGameCode.Tanks
 {
-	public abstract class Tank : Entity, IDamageable
+	public abstract class Tank : DamageableEntity
 	{
 		static Tank()
 		{
@@ -26,7 +26,7 @@ namespace CryGameCode.Tanks
 			AddMovement(ref request);
 			Reset();
 		}
-
+		
 		protected override void OnReset(bool enteringGame)
 		{
 			Reset();
@@ -51,7 +51,7 @@ namespace CryGameCode.Tanks
 			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
 			Physics.Save();
 
-			Health = 100;
+			InitHealth(100);
 		}
 
 		protected override bool OnRemove()
@@ -100,23 +100,21 @@ namespace CryGameCode.Tanks
 			RotationRequest = Vec3.Zero;
 		}
 
-		public delegate void OnDamageDelegate(float damage, DamageType type);
-
-		public virtual void OnDamage(float damage, DamageType type)
+		protected override void OnDeath()
 		{
-			Health -= damage;
-			Debug.DrawText(string.Format("{0} health remaining, hit with {1}", Health, type), 3, Color.White, 2);
+			Debug.DrawText("Died!", 3, Color.Red, 5);
+			Remove();
+		}
 
-			if(Dead)
-			{
-				Debug.DrawText("Dead!", 3, Color.Red, 5);
-				Remove();
-			}
+		protected override void OnDamage(float damage, DamageType type)
+		{
+			Debug.DrawText(string.Format("Took {0} points of {1} damage", damage, type), 3, Color.White, 3);
 
 			OnDamaged(damage, type);
 		}
 
-		public event OnDamageDelegate OnDamaged;
+		public delegate void OnDamagedDelegate(float damage, DamageType type);
+		public event OnDamagedDelegate OnDamaged;
 
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
@@ -198,7 +196,7 @@ namespace CryGameCode.Tanks
 		public virtual void ChargeWeapon() { }
 		public abstract void FireWeapon(Vec3 mouseWorldPos);
 
-		public float Health { get; set; }
+		public float Health { get; private set; }
 		public bool Dead { get { return Health <= 0; } }
 
 		Actor owner;

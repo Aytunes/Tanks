@@ -43,7 +43,6 @@ namespace CryGameCode.Entities.Collectibles
 			if (!Active && Time.FrameStartTime - LastUsage > (DelayBetweenUsages * 1000))
 			{
 				Active = true;
-				LastUser = null;
 
 				Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups");
 			}
