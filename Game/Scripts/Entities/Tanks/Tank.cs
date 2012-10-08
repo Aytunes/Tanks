@@ -206,7 +206,7 @@ namespace CryGameCode.Tanks
 
 		public abstract string TurretModel { get; }
 		public virtual float TankSpeed { get { return 10; } }
-		public abstract System.Type ProjectileType { get; }
+		public virtual System.Type ProjectileType { get { return typeof(Bullet); } }
 
 		Actor owner;
 		public Actor Owner
