@@ -32,7 +32,6 @@ namespace CryGameCode.Entities.Buildings
 		protected override void OnDeath()
 		{
 			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
-			Remove();
 		}
 
 		string team = "red";
