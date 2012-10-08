@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 
 using CryEngine;
-using CryGameCode.Entities;
 
 namespace CryGameCode.Projectiles
 {
-	[Entity(Flags=EntityClassFlags.Invisible)]
-	public class Rocket : Projectile
+	[Entity(Flags = EntityClassFlags.Invisible)]
+	public class Bullet : Projectile
 	{
 		public override void Launch()
 		{
@@ -25,7 +24,7 @@ namespace CryGameCode.Projectiles
 			Remove();
 		}
 
-		public float Speed { get { return 1290; } }
+		public float Speed { get { return 500; } }
 
 		public Vec3 TravelDir { get; private set; }
 

@@ -99,6 +99,7 @@
     <Compile Include="Entities\Actor\CameraProxy.cs" />
     <Compile Include="Entities\Buildings\Drill.cs" />
     <Compile Include="Entities\Collectibles\Collectible.cs" />
+    <Compile Include="Entities\Projectiles\Bullet.cs" />
     <Compile Include="Entities\Projectiles\Projectile.cs" />
     <Compile Include="Entities\Tanks\Autocannon\AutocannonTank.cs" />
     <Compile Include="Entities\Tanks\Chaingun\ChaingunTank.cs" />
