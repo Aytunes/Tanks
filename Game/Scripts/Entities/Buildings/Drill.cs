@@ -10,7 +10,7 @@ namespace CryGameCode.Entities.Buildings
 	[Entity(Category = "Buildings")]
 	public class Drill : DamageableEntity
 	{
-		public override void OnSpawn()
+		protected override void OnReset(bool enteringGame)
 		{
 			Reset();
 		}
