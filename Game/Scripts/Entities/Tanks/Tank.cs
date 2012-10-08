@@ -36,21 +36,16 @@ namespace CryGameCode.Tanks
 			Turret.LoadObject(TurretModel);
 			Turret.Material = Material.Find("objects/tanks/tank_turrets_" + Team);
 
-			Physicalize(Physics);
-			//Physicalize(Turret.Physics);
+			Physics.AutoUpdate = false;
+			Physics.Type = PhysicalizationType.Living;
+			Physics.Mass = 500;
+			Physics.HeightCollider = 1.2f;
+			Physics.Slot = -;
+			Physics.UseCapsule = false;
+			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
+			Physics.Save();
 		}
 
-		void Physicalize(EntityPhysics physics)
-		{
-			physics.AutoUpdate = false;
-			physics.Type = PhysicalizationType.Living;
-			physics.Mass = 500;
-			physics.HeightCollider = 1.2f;
-			physics.Slot = 0;
-			physics.UseCapsule = false;
-			physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
-			physics.Save();
-		}
 
 		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
 		{
