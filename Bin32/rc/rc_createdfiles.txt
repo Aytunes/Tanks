@@ -1,1 +1,1 @@
-C:\Users\Jake\Documents\GitHub\AngryBoids\game\objects\projectiles\shell_spec.dds
+C:\Users\Jake\Documents\GitHub\AngryBoids\game\objects\tank_env_assets\natural\temple_trees\bark_ddn.dds

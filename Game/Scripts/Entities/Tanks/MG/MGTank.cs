@@ -20,5 +20,13 @@ namespace CryGameCode.Tanks
 
 			var bullet = Entity.Spawn<Bullet>("awesomeBullet", jointAbsolute.T, Turret.Rotation);
 		}
+		
+		public override float TankSpeed
+		{
+			get
+			{
+				return 10;
+			}
+		}		
 	}
 }

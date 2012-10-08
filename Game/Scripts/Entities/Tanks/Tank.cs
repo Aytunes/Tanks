@@ -20,7 +20,14 @@ namespace CryGameCode.Tanks
 
 			Reset();
 		}
-
+		
+		public abstract float TankSpeed
+		{
+			get;
+		}
+		
+		public float SpeedMultiplier = 1.0f;
+		
 		protected override void OnReset(bool enteringGame)
 		{
 			Reset();
@@ -137,14 +144,22 @@ namespace CryGameCode.Tanks
 
 		private void OnMoveForward(ActionMapEventArgs e)
 		{
-			VelocityRequest += LocalRotation.Column1 * 10;
+			VelocityRequest += LocalRotation.Column1 * TankSpeed * SpeedMultiplier;
 		}
 
 		private void OnMoveBack(ActionMapEventArgs e)
 		{
-			VelocityRequest += LocalRotation.Column1 * -10;
+			VelocityRequest += LocalRotation.Column1 * -TankSpeed * SpeedMultiplier;
 		}
-
+		
+		private void OnSprint(ActionMapEventArgs e)
+		{
+			if (e.KeyEvent == KeyEvent.OnPress)
+			SpeedMultiplier = 1.5f;
+			else if (e.KeyEvent == KeyEvent.OnRelease)
+			SpeedMultiplier = 1;
+		}
+		
 		string team;
 		[EditorProperty]
 		public string Team 
@@ -179,6 +194,7 @@ namespace CryGameCode.Tanks
 				Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
 				Input.ActionmapEvents.Add("moveforward", OnMoveForward);
 				Input.ActionmapEvents.Add("moveback", OnMoveBack);
+				Input.ActionmapEvents.Add("sprint", OnSprint);
 
 				Input.MouseEvents += ProcessMouseEvents;
 			}
