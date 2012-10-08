@@ -215,7 +215,6 @@ namespace CryGameCode.Tanks
 			if(Time.FrameStartTime > m_lastShotTime + (TimeBetweenShots * 1000))
 			{
 				m_lastShotTime = Time.FrameStartTime;
-				Debug.LogAlways(m_lastShotTime.ToString());
 
 				var jointAbsolute = Turret.GetJointAbsolute("turret_term");
 				jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
