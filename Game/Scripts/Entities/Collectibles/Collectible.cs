@@ -6,11 +6,11 @@ using System.Text;
 using CryEngine;
 using CryGameCode.Tanks;
 using CryGameCode.Projectiles;
+using CryEngine.Extensions;
 
 namespace CryGameCode.Entities.Collectibles
 {
-	//[Entity(Flags = EntityClassFlags.Invisible)]
-	public class Collectible : Entity
+	public abstract class Collectible : Entity
 	{
 		public override void OnSpawn()
 		{
@@ -43,6 +43,8 @@ namespace CryGameCode.Entities.Collectibles
 			if (!Active && Time.FrameStartTime - LastUsage > (DelayBetweenUsages * 1000))
 			{
 				Active = true;
+				LastUser = null;
+
 				Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups");
 			}
 		}
@@ -50,32 +52,35 @@ namespace CryGameCode.Entities.Collectibles
 		protected override void OnEnterArea(EntityId entityId, int areaEntityId, float fade)
 		{
 			// Pick up if active
-			
+
 			if(Active)
 			{
 				var entity = Entity.Get(entityId);
+				if (entity is Attachment)
+					return;
+
 				if (entity is Tank)
 				{
-					Debug.DrawText("nom nom nom", 3.0f, Color.Blue, 5.0f);
+					LastUser = entity as Tank;
+					Collect();
 
-					LastUsage = Time.FrameStartTime;
-
-					Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups_off");
-					Active = false;
+					//Debug.DrawText("nom nom nom", 3.0f, Color.Blue, 5.0f);
 				}
 				else if (entity is Projectile)
-				{
 					Debug.DrawText("DENIED", 3.0f, Color.Red, 5.0f);
 
-					LastUsage = Time.FrameStartTime;
+				LastUsage = Time.FrameStartTime;
 
-					Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups_off");
-					Active = false;
-				}
+				Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups_off");
+				Active = false;
 			}
 		}
 
+		public abstract void Collect();
+
 		public float LastUsage { get; set; }
+		public Tank LastUser { get; set; }
+
 		public bool Active { get; set; }
 
 		public float DelayBetweenUsages = 5;
@@ -90,6 +95,6 @@ namespace CryGameCode.Entities.Collectibles
 
 		public Material HologramMaterial { get; set; }
 
-		public string Model { get { return "objects/tank_gameplay_assets/pickup_hologram/powerup_pickup.cga"; } }
+		public abstract string Model { get; }
 	}
 }
