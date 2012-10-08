@@ -106,8 +106,11 @@ namespace CryGameCode.Tanks
 
 		public override void OnUpdate()
 		{
-			if(m_firing)
-				FireWeapon(m_mousePos);
+			if(m_leftFiring)
+				FireLeft(m_mousePos);
+
+			if(m_rightFiring)
+				FireRight(m_mousePos);
 		}
 
 		protected override void OnDeath()
@@ -143,21 +146,46 @@ namespace CryGameCode.Tanks
 						Turret.Rotation = rot;
 					}
 					break;
+
 				case MouseEvent.LeftButtonDown:
 					{
 						if(AutomaticFire)
-							m_firing = true;
+							m_leftFiring = true;
 
 						ChargeWeapon();
 					}
 					break;
+
 				case MouseEvent.LeftButtonUp:
 					{
 						if(AutomaticFire)
-							m_firing = false;
+							m_leftFiring = false;
 
 						var mousePos = Renderer.ScreenToWorld(e.X, e.Y);
-						FireWeapon(mousePos);
+						FireLeft(mousePos);
+					}
+					break;
+
+				case MouseEvent.RightButtonDown:
+					{
+						if(AutomaticFire)
+							m_rightFiring = true;
+
+						Debug.LogAlways("rdown");
+
+						ChargeWeapon();
+					}
+					break;
+
+				case MouseEvent.RightButtonUp:
+					{
+						if(AutomaticFire)
+							m_rightFiring = false;
+
+						Debug.LogAlways("rup");
+
+						var mousePos = Renderer.ScreenToWorld(e.X, e.Y);
+						FireRight(mousePos);
 					}
 					break;
 			}
@@ -210,13 +238,29 @@ namespace CryGameCode.Tanks
 		public float SpeedMultiplier = 1.0f;
 
 		protected virtual void ChargeWeapon() { }
-		protected void FireWeapon(Vec3 mouseWorldPos)
-		{
-			if(Time.FrameStartTime > m_lastShotTime + (TimeBetweenShots * 1000))
-			{
-				m_lastShotTime = Time.FrameStartTime;
 
-				var jointAbsolute = Turret.GetJointAbsolute("turret_term");
+		protected void FireLeft(Vec3 mouseWorldPos)
+		{
+			if(Time.FrameStartTime > m_lastleftShot + (TimeBetweenShots * 1000))
+			{
+				m_lastleftShot = Time.FrameStartTime;
+
+				var jointAbsolute = Turret.GetJointAbsolute(LeftHelper);
+				jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
+
+				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Turret.Rotation);
+
+				OnFire(jointAbsolute.T);
+			}
+		}
+
+		protected void FireRight(Vec3 mouseWorldPos)
+		{
+			if(Time.FrameStartTime > m_lastRightShot + (TimeBetweenShots * 1000))
+			{
+				m_lastRightShot = Time.FrameStartTime;
+
+				var jointAbsolute = Turret.GetJointAbsolute(RightHelper);
 				jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
 
 				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Turret.Rotation);
@@ -228,14 +272,19 @@ namespace CryGameCode.Tanks
 		protected virtual void OnFire(Vec3 firePos) { }
 
 		public abstract string TurretModel { get; }
+		public virtual string LeftHelper { get { return "turret_term"; } }
+		public virtual string RightHelper { get { return string.Empty; } }
+
 		public virtual float TankSpeed { get { return 10; } }
 		public virtual System.Type ProjectileType { get { return typeof(Bullet); } }
 
 		public virtual bool AutomaticFire { get { return false; } }
 		public virtual float TimeBetweenShots { get { return 1; } }
-		
-		private float m_lastShotTime;
-		private bool m_firing;
+
+		private float m_lastleftShot;
+		private float m_lastRightShot;
+		private bool m_rightFiring;
+		private bool m_leftFiring;
 		private Vec3 m_mousePos;
 
 		Actor owner;
@@ -253,7 +302,7 @@ namespace CryGameCode.Tanks
 					Input.ActionmapEvents.Add("moveforward", OnMoveForward);
 					Input.ActionmapEvents.Add("moveback", OnMoveBack);
 					Input.ActionmapEvents.Add("sprint", OnSprint);
-
+					Input.ActionmapEvents.Add("attack2", (e) => FireRight(m_mousePos));
 					Input.MouseEvents += ProcessMouseEvents;
 				}
 			}
