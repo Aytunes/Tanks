@@ -44,12 +44,14 @@ Editor/UI/WipFeatures.xml
 Editor/EditorLayout.xml
 error.bmp
 *BinTemp*
+
 *.tga
 *.tif
 *.max
 *.obj
 *.psd
 *.bmp
+*.bak
 
 # Temporarily removed Bin64 until we've got it working again, don't want people assuming that the build is broken.
 Bin64/
