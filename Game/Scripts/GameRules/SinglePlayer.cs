@@ -27,9 +27,6 @@ namespace CryGameCode
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
 				return;
 			}
-
-			if(!Network.IsEditor)
-				OnRevive(player.Id, Vec3.Zero, Vec3.Zero, 0);
 		}
 
 		public override void OnClientDisconnect(int channelId)
@@ -38,6 +35,18 @@ namespace CryGameCode
 		}
 
 		public override void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId)
+		{
+			if (Network.IsEditor)
+				RevivePlayer(actorId);
+		}
+
+		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
+		{
+			if (!Network.IsEditor)
+				RevivePlayer(playerId);
+		}
+
+		void RevivePlayer(EntityId actorId)
 		{
 			var player = Actor.Get<CameraProxy>(actorId);
 			if (player == null)
