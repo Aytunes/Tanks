@@ -5,6 +5,7 @@ using System.Text;
 
 using CryEngine;
 using CryGameCode.Entities;
+using CryGameCode.Tanks;
 
 namespace CryGameCode.Projectiles
 {
@@ -21,6 +22,14 @@ namespace CryGameCode.Projectiles
 		{
 			var effect = ParticleEffect.Get("explosions.explosive_bullet.default");
 			effect.Spawn(hitPos);
+
+			if(targetEntityId != 0)
+			{
+				var target = Entity.Get(targetEntityId) as IDamageable;
+
+				if(target != null)
+					target.OnDamage(20, DamageType.Explosive);
+			}
 
 			Remove();
 		}

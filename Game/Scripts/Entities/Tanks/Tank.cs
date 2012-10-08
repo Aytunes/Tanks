@@ -1,8 +1,9 @@
 ﻿using CryEngine;
+using CryGameCode.Entities;
 
 namespace CryGameCode.Tanks
 {
-	public abstract class Tank : Entity
+	public abstract class Tank : Entity, IDamageable
 	{
 		static Tank()
 		{
@@ -17,12 +18,14 @@ namespace CryGameCode.Tanks
 		{
 			var request = new EntityMovementRequest();
 			AddMovement(ref request);
-
 			Reset();
 		}
 		
 		protected override void OnReset(bool enteringGame)
 		{
+			if(IsDestroyed)
+				return;
+
 			Reset();
 		}
 
@@ -44,12 +47,8 @@ namespace CryGameCode.Tanks
 			Physics.UseCapsule = false;
 			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
 			Physics.Save();
-		}
 
-
-		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
-		{
-			Debug.LogAlways("Hit at {0}!", hitPos);
+			Health = 100;
 		}
 
 		protected override bool OnRemove()
@@ -96,6 +95,18 @@ namespace CryGameCode.Tanks
 
 			VelocityRequest = Vec3.Zero;
 			RotationRequest = Vec3.Zero;
+		}
+
+		public virtual void OnDamage(float damage, DamageType type)
+		{
+			Health -= damage;
+			Debug.DrawText(string.Format("{0} health remaining, hit with {1}", Health, type), 3, Color.White, 2);
+
+			if(Dead)
+			{
+				Debug.DrawText("Dead!", 3, Color.Red, 5);
+				Remove();
+			}
 		}
 
 		private void ProcessMouseEvents(MouseEventArgs e)
@@ -177,6 +188,9 @@ namespace CryGameCode.Tanks
 
 		public virtual void ChargeWeapon() { }
 		public abstract void FireWeapon(Vec3 mouseWorldPos);
+
+		public float Health { get; private set; }
+		public bool Dead { get { return Health <= 0; } }
 
 		EntityBase owner;
 		public EntityBase Owner
