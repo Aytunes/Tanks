@@ -22,6 +22,7 @@ namespace CryGameCode.Entities.Buildings
 
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Mass = -1;
+			Physics.Slot = 0;
 
 			Material = Material.Find("objects/tank_env_assets/scifi/drill_" + Team);
 		}
