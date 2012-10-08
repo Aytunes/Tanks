@@ -6,12 +6,12 @@ namespace CryGameCode.Entities.Collectibles
 	{
 		public override void Collect()
 		{
-			Debug.LogAlways("Tank {0} collected health", LastUser.Name);
-			RemainingRestoration = HealthRestoration;
+			//Debug.LogAlways("Tank {0} collected health", LastUser.Name);
+			remainingHeal = HealthRestoration;
 
 			LastUser.OnDamaged += (damage, type) => 
 			{
-				RemainingRestoration = 0;
+				LastUser = null;
 			};
 		}
 
@@ -21,19 +21,12 @@ namespace CryGameCode.Entities.Collectibles
 
 			if (LastUser != null && !LastUser.IsDestroyed)
 			{
-				var heal = RemainingRestoration * Time.DeltaTime;
-				RemainingRestoration -= heal;
+				var heal = HealthRestoration * Time.DeltaTime * (1 / RestorationTime);
+				remainingHeal -= heal;
 
-				if (RemainingRestoration < 0.1)
-				{
-					heal += RemainingRestoration;
-					RemainingRestoration = 0;
-				}
-
-				Debug.LogAlways("Healing tank {0} with {1}HP, {2} remaining", LastUser.Name, heal, RemainingRestoration);
 				LastUser.Heal(heal);
 
-				if (RemainingRestoration <= 0)
+				if (remainingHeal <= 0)
 					LastUser = null;
 			}
 		}
@@ -52,6 +45,6 @@ namespace CryGameCode.Entities.Collectibles
 		[EditorProperty]
 		public float RestorationTime = 2;
 
-		float RemainingRestoration;
+		float remainingHeal;
 	}
 }
