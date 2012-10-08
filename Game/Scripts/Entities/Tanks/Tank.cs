@@ -26,7 +26,7 @@ namespace CryGameCode.Tanks
 			AddMovement(ref request);
 			Reset();
 		}
-		
+
 		protected override void OnReset(bool enteringGame)
 		{
 			Reset();
@@ -100,6 +100,8 @@ namespace CryGameCode.Tanks
 			RotationRequest = Vec3.Zero;
 		}
 
+		public delegate void OnDamageDelegate(float damage, DamageType type);
+
 		public virtual void OnDamage(float damage, DamageType type)
 		{
 			Health -= damage;
@@ -110,7 +112,11 @@ namespace CryGameCode.Tanks
 				Debug.DrawText("Dead!", 3, Color.Red, 5);
 				Remove();
 			}
+
+			OnDamaged(damage, type);
 		}
+
+		public event OnDamageDelegate OnDamaged;
 
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
@@ -192,7 +198,7 @@ namespace CryGameCode.Tanks
 		public virtual void ChargeWeapon() { }
 		public abstract void FireWeapon(Vec3 mouseWorldPos);
 
-		public float Health { get; private set; }
+		public float Health { get; set; }
 		public bool Dead { get { return Health <= 0; } }
 
 		Actor owner;
