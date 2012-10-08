@@ -21,13 +21,6 @@ namespace CryGameCode.Tanks
 			Reset();
 		}
 		
-		public abstract float TankSpeed
-		{
-			get;
-		}
-		
-		public float SpeedMultiplier = 1.0f;
-		
 		protected override void OnReset(bool enteringGame)
 		{
 			Reset();
@@ -57,6 +50,11 @@ namespace CryGameCode.Tanks
 			physics.UseCapsule = false;
 			physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
 			physics.Save();
+		}
+
+		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
+		{
+			Debug.LogAlways("Hit at {0}!", hitPos);
 		}
 
 		protected override bool OnRemove()
@@ -156,9 +154,9 @@ namespace CryGameCode.Tanks
 		private void OnSprint(ActionMapEventArgs e)
 		{
 			if (e.KeyEvent == KeyEvent.OnPress)
-			SpeedMultiplier = 1.5f;
+				SpeedMultiplier = 1.5f;
 			else if (e.KeyEvent == KeyEvent.OnRelease)
-			SpeedMultiplier = 1;
+				SpeedMultiplier = 1;
 		}
 		
 		string team;
@@ -179,6 +177,8 @@ namespace CryGameCode.Tanks
 		public string Model { get { return "objects/tanks/tank_generic_" + Team + ".cdf"; } }
 		public abstract string TurretModel { get; }
 
+		public abstract float TankSpeed { get; }
+		public float SpeedMultiplier = 1.0f;
 
 		public virtual void ChargeWeapon() { }
 		public abstract void FireWeapon(Vec3 mouseWorldPos);
