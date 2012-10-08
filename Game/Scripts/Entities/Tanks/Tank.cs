@@ -68,6 +68,9 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
+			if (Physics.LivingStatus.IsFlying)
+				return;
+
 			var leftTrack = GetAttachment("track_left");
 			var rightTrack = GetAttachment("track_right");
 
