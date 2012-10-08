@@ -36,6 +36,18 @@ namespace CryGameCode
 
 		public override void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId)
 		{
+			if (Network.IsEditor)
+				RevivePlayer(actorId);
+		}
+
+		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
+		{
+			if (!Network.IsEditor)
+				RevivePlayer(playerId);
+		}
+
+		void RevivePlayer(EntityId actorId)
+		{
 			var player = Actor.Get<CameraProxy>(actorId);
 			if (player == null)
 			{
