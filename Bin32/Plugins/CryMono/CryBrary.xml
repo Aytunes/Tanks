@@ -1018,6 +1018,26 @@
             For characters: the scale of force in joint springs.
             </summary>
         </member>
+        <member name="F:CryEngine.pe_status_living.bFlying">
+            <summary>
+            whether entity has no contact with ground
+            </summary>
+        </member>
+        <member name="P:CryEngine.pe_status_living.FlyTime">
+            <summary>
+             for how long the entity was flying
+            </summary>
+        </member>
+        <member name="P:CryEngine.pe_status_living.GroundVelocity">
+            <summary>
+            velocity of the object entity is standing on
+            </summary>
+        </member>
+        <member name="P:CryEngine.pe_status_living.GroundHeight">
+            <summary>
+            position where the last contact with the ground occured
+            </summary>
+        </member>
         <member name="F:CryEngine.PhysicalizationParams.slot">
             <summary>
             Index of object slot, -1 if all slots should be used.
