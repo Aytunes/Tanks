@@ -24,7 +24,19 @@ namespace CryGameCode
 			TankTypes = (from type in Assembly.GetExecutingAssembly().GetTypes()
 						 where type.Implements<Tank>()
 						 select type).ToList();
+
+			ConsoleCommand.Register("SetTankType", (e) =>
+			{
+				ForceTankType = e.Args[0];
+			});
+
+			ConsoleCommand.Register("ResetTankType", (e) =>
+			{
+				ForceTankType = string.Empty;
+			});
 		}
+
+		private static string ForceTankType;
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
@@ -65,7 +77,13 @@ namespace CryGameCode
 				return;
 			}
 
-			var tankType = TankTypes[Selector.Next(TankTypes.Count)];
+			Type tankType;
+
+			if(string.IsNullOrEmpty(ForceTankType))
+				tankType = TankTypes[Selector.Next(TankTypes.Count)];
+			else
+				tankType = Type.GetType("CryGameCode.Tanks." + ForceTankType, true, true);
+
 			var tank = Entity.Spawn(player.Name, tankType) as Tank;
 
 			player.TargetEntity = tank;
