@@ -122,6 +122,7 @@
 		<action name="use" onPress="1" onRelease="1" keyboard="f" />
 		<action name="xi_use" onPress="1" onRelease="1" xboxpad="xi_y" ps3pad="pad_triangle"/>
 		<action name="attack1" onPress="1" onRelease="1" onHold="1" keyboard="mouse1" xboxpad="xi_triggerr_btn" ps3pad="pad_r2"/>
+		<action name="attack2" onPress="2" onRelease="1" onHold="1" keyboard="mouse2"/>
 		<action name="zoom" onPress="1" onRelease="1" keyboard="mouse2" />
 		<action name="xi_zoom" onPress="1" onRelease="1" onHold="1" xboxpad="xi_triggerl_btn" ps3pad="pad_l2"/>
 		<action name="firemode" onPress="1" keyboard="x" xboxpad="xi_dpad_down" ps3pad="pad_down"/>
