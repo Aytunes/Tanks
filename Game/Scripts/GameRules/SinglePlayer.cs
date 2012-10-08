@@ -27,6 +27,9 @@ namespace CryGameCode
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
 				return;
 			}
+
+			if(!Network.IsEditor)
+				OnRevive(player.Id, Vec3.Zero, Vec3.Zero, 0);
 		}
 
 		public override void OnClientDisconnect(int channelId)
