@@ -68,10 +68,25 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
+			var moveRequest = new EntityMovementRequest();
+			moveRequest.type = EntityMoveType.Normal;
+
+			if(!Physics.LivingStatus.IsFlying)
+				moveRequest.velocity = VelocityRequest;
+
+			moveRequest.rotation = LocalRotation;
+			moveRequest.rotation.SetRotationXYZ(RotationRequest * Time.DeltaTime);
+			moveRequest.rotation = moveRequest.rotation.Normalized;
+
+			AddMovement(ref moveRequest);
+
+			VelocityRequest = Vec3.Zero;
+			RotationRequest = Vec3.Zero;
+
 			var leftTrack = GetAttachment("track_left");
 			var rightTrack = GetAttachment("track_right");
 
-			if (VelocityRequest != Vec3.Zero)
+			if (moveRequest.velocity != Vec3.Zero)
 			{
 				var moveMat = Material.Find("objects/tanks/tracksmoving");
 				if (moveMat != null)
@@ -89,21 +104,6 @@ namespace CryGameCode.Tanks
 					rightTrack.Material = defaultMat;
 				}
 			}
-
-			var moveRequest = new EntityMovementRequest();
-			moveRequest.type = EntityMoveType.Normal;
-
-			if(!Physics.LivingStatus.IsFlying)
-				moveRequest.velocity = VelocityRequest;
-
-			moveRequest.rotation = LocalRotation;
-			moveRequest.rotation.SetRotationXYZ(RotationRequest * Time.DeltaTime);
-			moveRequest.rotation = moveRequest.rotation.Normalized;
-
-			AddMovement(ref moveRequest);
-
-			VelocityRequest = Vec3.Zero;
-			RotationRequest = Vec3.Zero;
 		}
 
 		public override void OnUpdate()
