@@ -68,9 +68,6 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
-			if (Physics.LivingStatus.IsFlying)
-				return;
-
 			var leftTrack = GetAttachment("track_left");
 			var rightTrack = GetAttachment("track_right");
 
@@ -95,7 +92,9 @@ namespace CryGameCode.Tanks
 
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
-			moveRequest.velocity = VelocityRequest;
+
+			if(!Physics.LivingStatus.IsFlying)
+				moveRequest.velocity = VelocityRequest;
 
 			moveRequest.rotation = LocalRotation;
 			moveRequest.rotation.SetRotationXYZ(RotationRequest * Time.DeltaTime);
