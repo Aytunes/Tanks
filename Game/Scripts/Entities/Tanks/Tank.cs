@@ -241,34 +241,28 @@ namespace CryGameCode.Tanks
 
 		protected virtual void ChargeWeapon() { }
 
-		protected void FireLeft(Vec3 mouseWorldPos)
+		private void Fire(ref float shotTime, string helper)
 		{
-			if(Time.FrameStartTime > m_lastleftShot + (TimeBetweenShots * 1000))
+			if(Time.FrameStartTime > shotTime + (TimeBetweenShots * 1000))
 			{
-				m_lastleftShot = Time.FrameStartTime;
+				shotTime = Time.FrameStartTime;
 
-				var jointAbsolute = Turret.GetJointAbsolute(LeftHelper);
+				var jointAbsolute = Turret.GetJointAbsolute(helper);
 				jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
-
 				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Turret.Rotation);
-
 				OnFire(jointAbsolute.T);
 			}
 		}
 
+		protected void FireLeft(Vec3 mouseWorldPos)
+		{
+			Fire(ref m_lastleftShot, LeftHelper);
+		}
+
 		protected void FireRight(Vec3 mouseWorldPos)
 		{
-			if(Time.FrameStartTime > m_lastRightShot + (TimeBetweenShots * 1000))
-			{
-				m_lastRightShot = Time.FrameStartTime;
-
-				var jointAbsolute = Turret.GetJointAbsolute(RightHelper);
-				jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
-
-				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Turret.Rotation);
-
-				OnFire(jointAbsolute.T);
-			}
+			if(!string.IsNullOrEmpty(RightHelper))
+				Fire(ref m_lastRightShot, RightHelper);
 		}
 
 		protected virtual void OnFire(Vec3 firePos) { }
@@ -304,7 +298,7 @@ namespace CryGameCode.Tanks
 					Input.ActionmapEvents.Add("moveforward", OnMoveForward);
 					Input.ActionmapEvents.Add("moveback", OnMoveBack);
 					Input.ActionmapEvents.Add("sprint", OnSprint);
-					Input.ActionmapEvents.Add("attack2", (e) => FireRight(m_mousePos));
+					Input.ActionmapEvents.Add("attack2", (e) => { if(e.KeyEvent == KeyEvent.OnRelease) FireRight(m_mousePos); });
 					Input.MouseEvents += ProcessMouseEvents;
 				}
 			}
