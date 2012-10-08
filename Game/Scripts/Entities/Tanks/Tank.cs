@@ -17,7 +17,7 @@ namespace CryGameCode.Tanks
 
 			ConsoleCommand.Register("spawn", (e) =>
 			{
-				Entity.Spawn<AutocannonTank>("spawnedTank", Entity.GetByClass<HeavyTank>().First().Position);
+				Entity.Spawn<AutocannonTank>("spawnedTank", (Actor.LocalClient as CameraProxy).TargetEntity.Position);
 			});
 		}
 
@@ -120,7 +120,8 @@ namespace CryGameCode.Tanks
 		{
 			Debug.DrawText(string.Format("Took {0} points of {1} damage", damage, type), 3, Color.White, 3);
 
-			OnDamaged(damage, type);
+			if(OnDamaged != null)
+				OnDamaged(damage, type);
 		}
 
 		public delegate void OnDamagedDelegate(float damage, DamageType type);
