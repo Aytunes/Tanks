@@ -1,5 +1,6 @@
 ﻿using CryEngine;
 using CryGameCode.Entities;
+using System.Linq;
 
 namespace CryGameCode.Tanks
 {
@@ -12,6 +13,11 @@ namespace CryGameCode.Tanks
 
 			CVar.RegisterFloat("g_tankTurretTurnSpeed", ref tankTurretTurnSpeed);
 			CVar.RegisterFloat("g_tankTurnSpeed", ref tankTurnSpeed);
+
+			ConsoleCommand.Register("spawn", (e) =>
+			{
+				Entity.Spawn<AutocannonTank>("spawnedTank", Entity.GetByClass<HeavyTank>().First().Position);
+			});
 		}
 
 		public override void OnSpawn()
@@ -23,9 +29,6 @@ namespace CryGameCode.Tanks
 		
 		protected override void OnReset(bool enteringGame)
 		{
-			if(IsDestroyed)
-				return;
-
 			Reset();
 		}
 
