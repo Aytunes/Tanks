@@ -23,9 +23,6 @@ namespace CryGameCode.Tanks
 		
 		protected override void OnReset(bool enteringGame)
 		{
-			if(IsDestroyed)
-				return;
-
 			Reset();
 		}
 
@@ -192,21 +189,24 @@ namespace CryGameCode.Tanks
 		public float Health { get; private set; }
 		public bool Dead { get { return Health <= 0; } }
 
-		EntityBase owner;
-		public EntityBase Owner
+		Actor owner;
+		public Actor Owner
 		{
 			get { return owner; }
 			set
 			{
 				owner = value;
 
-				Input.ActionmapEvents.Add("moveright", OnMoveRight);
-				Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
-				Input.ActionmapEvents.Add("moveforward", OnMoveForward);
-				Input.ActionmapEvents.Add("moveback", OnMoveBack);
-				Input.ActionmapEvents.Add("sprint", OnSprint);
+				if (owner.IsLocalClient)
+				{
+					Input.ActionmapEvents.Add("moveright", OnMoveRight);
+					Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
+					Input.ActionmapEvents.Add("moveforward", OnMoveForward);
+					Input.ActionmapEvents.Add("moveback", OnMoveBack);
+					Input.ActionmapEvents.Add("sprint", OnSprint);
 
-				Input.MouseEvents += ProcessMouseEvents;
+					Input.MouseEvents += ProcessMouseEvents;
+				}
 			}
 		}
 
