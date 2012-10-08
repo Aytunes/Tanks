@@ -15,6 +15,9 @@ namespace CryGameCode.Tanks
 
 		public override void OnSpawn()
 		{
+			var request = new EntityMovementRequest();
+			AddMovement(ref request);
+
 			Reset();
 		}
 
@@ -34,7 +37,7 @@ namespace CryGameCode.Tanks
 			Turret.Material = Material.Find("objects/tanks/tank_turrets_" + Team);
 
 			Physicalize(Physics);
-			Physicalize(Turret.Physics);
+			//Physicalize(Turret.Physics);
 		}
 
 		void Physicalize(EntityPhysics physics)
@@ -45,7 +48,6 @@ namespace CryGameCode.Tanks
 			physics.HeightCollider = 1.2f;
 			physics.UseCapsule = false;
 			physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
-			physics.Gravity = new Vec3(0, 0, 9.81f);
 			physics.Save();
 		}
 
@@ -68,7 +70,7 @@ namespace CryGameCode.Tanks
 				if (moveMat != null)
 				{
 					leftTrack.Material = moveMat;
-//					rightTrack.Material = moveMat;
+					rightTrack.Material = moveMat;
 				}
 			}
 			else
@@ -77,7 +79,7 @@ namespace CryGameCode.Tanks
 				if (defaultMat != null)
 				{
 					leftTrack.Material = defaultMat;
-//					rightTrack.Material = defaultMat;
+					rightTrack.Material = defaultMat;
 				}
 			}
 
