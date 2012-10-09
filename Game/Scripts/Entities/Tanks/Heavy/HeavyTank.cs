@@ -27,7 +27,7 @@ namespace CryGameCode.Tanks
 			var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash");
 			muzzleFlash.Spawn(firePos, Turret.Rotation.Column1, 0.5f);
 
-			VelocityRequest += -Turret.Rotation.Column1 * impulseStrength;
+			Physics.AddImpulse(-Turret.Rotation.Column1 * impulseStrength);
 		}
 	}
 }

@@ -308,7 +308,12 @@
             <param name="propertyType"></param>
             <param name="newValue"></param>
         </member>
-        <!-- Badly formed XML comment ignored for member "P:CryEngine.Entity.TriggerBounds" -->
+        <member name="P:CryEngine.Entity.TriggerBounds">
+            <summary>
+            Set to detect movement within an area. 
+            See OnEnterArea, OnMoveInsideArea, OnLeaveArea, OnEnterNearArea, OnLeaveNearArea and OnMoveNearArea
+            </summary>
+        </member>
         <member name="P:CryEngine.Attachment.EntityAttachmentHandleRef">
             <summary>
             CMonoEntityAttachment *

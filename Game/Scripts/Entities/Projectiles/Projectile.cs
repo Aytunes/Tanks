@@ -36,6 +36,19 @@ namespace CryGameCode.Projectiles
 					target.Damage(Damage, DamageType);
 			}
 
+			if (ShouldExplode)
+			{
+				var explosion = new Explosion();
+				explosion.Epicenter = Position;
+				explosion.EpicenterImpulse = Position;
+				explosion.Direction = dir;
+				explosion.MinRadius = 10;
+				explosion.Radius = 15;
+				explosion.MaxRadius = 30;
+				explosion.ImpulsePressure = 200;
+				explosion.Explode();
+			}
+
 			Remove();
 		}
 
@@ -46,5 +59,7 @@ namespace CryGameCode.Projectiles
 		public abstract string Effect { get; }
 		public abstract float EffectScale { get; }
 		public abstract DamageType DamageType { get; }
+
+		public virtual bool ShouldExplode { get { return false; } }
 	}
 }
