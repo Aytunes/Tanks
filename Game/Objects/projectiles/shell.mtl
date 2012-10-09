@@ -2,7 +2,7 @@
  <Textures>
   <Texture Map="Diffuse" File="objects/projectiles/shell_diff.tif"/>
   <Texture Map="Specular" File="objects/projectiles/shell_spec.tif"/>
-  <Texture Map="Environment" File="objects/projectiles/shell_normals.tga"/>
+  <Texture Map="Bumpmap" File="objects/projectiles/shell_ddn.tif"/>
  </Textures>
  <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
 </Material>
