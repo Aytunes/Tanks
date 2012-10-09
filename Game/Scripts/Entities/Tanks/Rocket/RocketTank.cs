@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using CryEngine;
+using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
@@ -14,5 +11,6 @@ namespace CryGameCode.Tanks
 		public override string LeftHelper { get { return "turret_term_2"; } }
 		public override string RightHelper { get { return "turret_term_1"; } }
 		public override float TimeBetweenShots { get { return 0.3f; } }
+		public override Type ProjectileType { get { return typeof(Rocket); } }
 	}
 }
