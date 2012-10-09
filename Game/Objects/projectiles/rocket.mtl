@@ -1,0 +1,7 @@
+<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_metal" MatTemplate="" Diffuse="0.18014428,0.18014428,0.18014428" Specular="0.47044027,0.65922403,0.7445302" Emissive="0,0,0" Shininess="10" Opacity="1">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/projectiles/rocket_diff.tif"/>
+  <Texture Map="Specular" File="objects/projectiles/rocket_spec.tif"/>
+ </Textures>
+ <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+</Material>
