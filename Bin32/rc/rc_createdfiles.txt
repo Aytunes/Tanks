@@ -1,1 +1,1 @@
-C:\Users\Jake\Documents\GitHub\AngryBoids\game\objects\projectiles\shell_ddn.dds
+C:\Users\Jake\Documents\GitHub\AngryBoids\game\objects\tank_env_assets\templetilesets\decals\muddy_decal_diff_4.dds

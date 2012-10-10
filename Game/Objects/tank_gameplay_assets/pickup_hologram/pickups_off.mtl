@@ -8,13 +8,13 @@
    </Textures>
    <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" AmbientMultiplier="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="hologram" MtlFlags="542884" Shader="Hologram" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.12752977,0.12752977,0.12752977" Specular="0.091111355,1.2,0.12436092" Emissive="0,0,0" Shininess="50" Opacity="1" GlowAmount="2.5">
+  <Material Name="hologram" MtlFlags="542884" Shader="Hologram" GenMask="0" StringGenMask="" SurfaceType="" MatTemplate="" Diffuse="0.12752977,0.12752977,0.12752977" Specular="0.091111355,1.2,0.12436092" Emissive="0,0,0" Shininess="50" Opacity="1" GlowAmount="5">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_gameplay_assets/pickup_hologram/pickup_unit_diff.tif"/>
     <Texture Map="Specular" File="objects/tank_gameplay_assets/pickup_hologram/pickup_unit_spec.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_gameplay_assets/pickup_hologram/pickup_unit_ddn.tif"/>
    </Textures>
-   <PublicParams InterferenceContrast="1.14" FresnelPower="0" InterferenceSpeedScale="1" EdgeColor="0.25902736,0.27583286,0.27583286" InterferenceSizeScale="0.99000001" FresnelBias="1"/>
+   <PublicParams InterferenceContrast="1.14" FresnelPower="0" InterferenceSpeedScale="1" EdgeColor="0.26735809,0.26735809,0.26735809" InterferenceSizeScale="0.99000001" FresnelBias="1"/>
   </Material>
  </SubMaterials>
  <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
