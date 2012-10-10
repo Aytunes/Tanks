@@ -48,8 +48,16 @@ namespace CryGameCode.Entities
 			{
 				var distZ = minCameraDistanceZ + (minCameraDistanceZ - maxCameraDistanceZ) * ZoomRatio;
 
-				viewParams.Position = TargetEntity.Position + new Vec3(0, cameraDistanceY, distZ);
-				viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(Math.DegreesToRadians(minCameraAngleX + (minCameraAngleX - maxCameraAngleX) * ZoomRatio), 0, 0));
+				if (IsSpectating)
+				{
+					viewParams.Position = TargetEntity.Position + TargetEntity.Rotation * new Vec3(0, -10, 5);
+					viewParams.Rotation = Quat.CreateRotationVDir(TargetEntity.Rotation.Column1);
+				}
+				else
+				{
+					viewParams.Position = TargetEntity.Position +  new Vec3(0, cameraDistanceY, distZ);
+					viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(Math.DegreesToRadians(minCameraAngleX + (minCameraAngleX - maxCameraAngleX) * ZoomRatio), 0, 0));
+				}
 			}
 		}
 
@@ -75,6 +83,7 @@ namespace CryGameCode.Entities
 		float ZoomLevel;
 		float ZoomRatio { get { return ZoomLevel / maxZoomLevel; } }
 
+		public bool IsSpectating { get; set; }
 		public Entity TargetEntity { get; set; }
 
 		public static float minCameraDistanceZ = 25;
