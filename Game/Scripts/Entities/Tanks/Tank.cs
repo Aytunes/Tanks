@@ -27,7 +27,7 @@ namespace CryGameCode.Tanks
 			AddMovement(ref request);
 			Reset();
 		}
-		
+
 		protected override void OnReset(bool enteringGame)
 		{
 			Reset();
@@ -86,10 +86,10 @@ namespace CryGameCode.Tanks
 			var leftTrack = GetAttachment("track_left");
 			var rightTrack = GetAttachment("track_right");
 
-			if (moveRequest.velocity != Vec3.Zero)
+			if(moveRequest.velocity != Vec3.Zero)
 			{
 				var moveMat = Material.Find("objects/tanks/tracksmoving");
-				if (moveMat != null)
+				if(moveMat != null)
 				{
 					leftTrack.Material = moveMat;
 					rightTrack.Material = moveMat;
@@ -98,7 +98,7 @@ namespace CryGameCode.Tanks
 			else
 			{
 				var defaultMat = Material.Find("objects/tanks/tracks");
-				if (defaultMat != null)
+				if(defaultMat != null)
 				{
 					leftTrack.Material = defaultMat;
 					rightTrack.Material = defaultMat;
@@ -109,10 +109,10 @@ namespace CryGameCode.Tanks
 		public override void OnUpdate()
 		{
 			if(m_leftFiring)
-				FireLeft(m_mousePos);
+				FireLeft();
 
 			if(m_rightFiring)
-				FireRight(m_mousePos);
+				FireRight();
 		}
 
 		protected override void OnDeath()
@@ -134,7 +134,7 @@ namespace CryGameCode.Tanks
 
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
-			switch (e.MouseEvent)
+			switch(e.MouseEvent)
 			{
 				// Handle turret rotation
 				case MouseEvent.Move:
@@ -162,18 +162,16 @@ namespace CryGameCode.Tanks
 					{
 						if(AutomaticFire)
 							m_leftFiring = false;
-
-						var mousePos = Renderer.ScreenToWorld(e.X, e.Y);
-						FireLeft(mousePos);
+						else
+							FireLeft();
 					}
 					break;
 
-				case MouseEvent.RightButtonDown:
+				// TODO: Fix right mouse events
+				/*case MouseEvent.RightButtonDown:
 					{
 						if(AutomaticFire)
 							m_rightFiring = true;
-
-						Debug.LogAlways("rdown");
 
 						ChargeWeapon();
 					}
@@ -183,13 +181,10 @@ namespace CryGameCode.Tanks
 					{
 						if(AutomaticFire)
 							m_rightFiring = false;
-
-						Debug.LogAlways("rup");
-
-						var mousePos = Renderer.ScreenToWorld(e.X, e.Y);
-						FireRight(mousePos);
+						else
+				 			FireRight();
 					}
-					break;
+					break;*/
 			}
 		}
 
@@ -212,23 +207,23 @@ namespace CryGameCode.Tanks
 		{
 			VelocityRequest += LocalRotation.Column1 * -TankSpeed * SpeedMultiplier;
 		}
-		
+
 		private void OnSprint(ActionMapEventArgs e)
 		{
-			if (e.KeyEvent == KeyEvent.OnPress)
+			if(e.KeyEvent == KeyEvent.OnPress)
 				SpeedMultiplier = 1.5f;
-			else if (e.KeyEvent == KeyEvent.OnRelease)
+			else if(e.KeyEvent == KeyEvent.OnRelease)
 				SpeedMultiplier = 1;
 		}
-		
+
 		string team;
 		[EditorProperty]
-		public string Team 
+		public string Team
 		{
 			get { return team ?? "red"; }
 			set
 			{
-				if ((GameRules.Current as SinglePlayer).IsTeamValid(value))
+				if((GameRules.Current as SinglePlayer).IsTeamValid(value))
 				{
 					team = value;
 					Reset();
@@ -254,12 +249,12 @@ namespace CryGameCode.Tanks
 			}
 		}
 
-		protected void FireLeft(Vec3 mouseWorldPos)
+		protected void FireLeft()
 		{
 			Fire(ref m_lastleftShot, LeftHelper);
 		}
 
-		protected void FireRight(Vec3 mouseWorldPos)
+		protected void FireRight()
 		{
 			if(!string.IsNullOrEmpty(RightHelper))
 				Fire(ref m_lastRightShot, RightHelper);
@@ -291,14 +286,33 @@ namespace CryGameCode.Tanks
 			{
 				owner = value;
 
-				if (owner.IsLocalClient)
+				if(owner.IsLocalClient)
 				{
 					Input.ActionmapEvents.Add("moveright", OnMoveRight);
 					Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
 					Input.ActionmapEvents.Add("moveforward", OnMoveForward);
 					Input.ActionmapEvents.Add("moveback", OnMoveBack);
 					Input.ActionmapEvents.Add("sprint", OnSprint);
-					Input.ActionmapEvents.Add("attack2", (e) => { if(e.KeyEvent == KeyEvent.OnRelease) FireRight(m_mousePos); });
+
+					// Temp hax for right mouse events not working
+					Input.ActionmapEvents.Add("attack2", (e) =>
+					{
+						switch(e.KeyEvent)
+						{
+							case KeyEvent.OnPress:
+								if(AutomaticFire)
+									m_rightFiring = true;
+								break;
+
+							case KeyEvent.OnRelease:
+								if(AutomaticFire)
+									m_rightFiring = false;
+								else
+									FireRight();
+								break;
+						}
+					});
+
 					Input.MouseEvents += ProcessMouseEvents;
 				}
 			}
