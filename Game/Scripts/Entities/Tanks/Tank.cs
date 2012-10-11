@@ -30,12 +30,13 @@ namespace CryGameCode.Tanks
 
 		protected override void OnReset(bool enteringGame)
 		{
-			if(!IsDestroyed)
-				Reset();
+			Reset();
 		}
 
 		void Reset()
 		{
+			Hidden = false;
+
 			LoadObject(Model);
 
 			Turret = GetAttachment("turret");
@@ -119,7 +120,12 @@ namespace CryGameCode.Tanks
 		protected override void OnDeath()
 		{
 			Debug.DrawText("Died!", 3, Color.Red, 5);
-			Remove();
+
+			// Don't remove tank if it was placed by hand via the Editor.
+			if (Flags.HasFlag(EntityFlags.NoSave))
+				Remove();
+			else
+				Hidden = true;
 		}
 
 		protected override void OnDamage(float damage, DamageType type)
