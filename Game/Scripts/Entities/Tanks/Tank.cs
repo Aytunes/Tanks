@@ -30,7 +30,8 @@ namespace CryGameCode.Tanks
 
 		protected override void OnReset(bool enteringGame)
 		{
-			Reset();
+			if(!IsDestroyed)
+				Reset();
 		}
 
 		void Reset()
