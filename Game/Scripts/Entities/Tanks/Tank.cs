@@ -1,6 +1,5 @@
 ﻿using CryEngine;
 using CryGameCode.Entities;
-using System.Linq;
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
