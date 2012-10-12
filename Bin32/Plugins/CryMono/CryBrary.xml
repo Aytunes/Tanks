@@ -4834,6 +4834,11 @@
             Entity will trigger areas when it enters them.
             </summary>
         </member>
+        <member name="F:CryEngine.EntityFlags.NoSave">
+            <summary>
+            This entity will not be saved.
+            </summary>
+        </member>
         <member name="F:CryEngine.EntityFlags.Spawned">
             <summary>
             Entity was spawned dynamically without a class.

@@ -11,7 +11,17 @@ namespace CryGameCode.Entities
 		[EditorProperty]
 		public float Mass { get { return Physics.Mass; } set { Physics.Mass = value; } }
 
+		public override void OnSpawn()
+		{
+			Reset();
+		}
+
 		protected override void OnReset(bool enteringGame)
+		{
+			Reset();	
+		}
+
+		void Reset()
 		{
 			Physics.Type = PhysicalizationType.Rigid;
 		}

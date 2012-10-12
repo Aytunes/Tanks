@@ -42,6 +42,12 @@ namespace CryGameCode.Tanks
 			Turret.LoadObject(TurretModel);
 			Turret.Material = Material.Find("objects/tanks/tank_turrets_" + Team);
 
+			LeftTrack = GetAttachment("track_left");
+			RightTrack = GetAttachment("track_right");
+
+			// Unhide just in case
+			Hide(false);
+
 			Physics.AutoUpdate = false;
 			Physics.Type = PhysicalizationType.Living;
 			Physics.Mass = 500;
@@ -82,16 +88,13 @@ namespace CryGameCode.Tanks
 			VelocityRequest = Vec3.Zero;
 			RotationRequest = Vec3.Zero;
 
-			var leftTrack = GetAttachment("track_left");
-			var rightTrack = GetAttachment("track_right");
-
 			if(moveRequest.velocity != Vec3.Zero)
 			{
 				var moveMat = Material.Find("objects/tanks/tracksmoving");
 				if(moveMat != null)
 				{
-					leftTrack.Material = moveMat;
-					rightTrack.Material = moveMat;
+					LeftTrack.Material = moveMat;
+					RightTrack.Material = moveMat;
 				}
 			}
 			else
@@ -99,8 +102,8 @@ namespace CryGameCode.Tanks
 				var defaultMat = Material.Find("objects/tanks/tracks");
 				if(defaultMat != null)
 				{
-					leftTrack.Material = defaultMat;
-					rightTrack.Material = defaultMat;
+					LeftTrack.Material = defaultMat;
+					RightTrack.Material = defaultMat;
 				}
 			}
 		}
@@ -117,7 +120,20 @@ namespace CryGameCode.Tanks
 		protected override void OnDeath()
 		{
 			Debug.DrawText("Died!", 3, Color.Red, 5);
-			Remove();
+
+			// Don't remove tank if it was placed by hand via the Editor.
+			if (Flags.HasFlag(EntityFlags.NoSave))
+				Remove();
+			else
+				Hide(true);
+		}
+
+		void Hide(bool hide)
+		{
+			Hidden = hide;
+			Turret.Hidden = hide;
+			LeftTrack.Hidden = hide;
+			RightTrack.Hidden = hide;
 		}
 
 		protected override void OnDamage(float damage, DamageType type)
@@ -318,6 +334,8 @@ namespace CryGameCode.Tanks
 		}
 
 		protected Attachment Turret { get; set; }
+		protected Attachment LeftTrack { get; set; }
+		protected Attachment RightTrack { get; set; }
 
 		protected Vec3 VelocityRequest;
 		protected Vec3 RotationRequest;
