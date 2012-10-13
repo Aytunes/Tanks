@@ -55,47 +55,6 @@ namespace CryGameCode.Entities.Physics
 		public string Model { get { return GetObjectFilePath(); } set { LoadObject(value); } }
 		#endregion
 
-		#region FlowEvents
-		[Port(Name = "Explode")]
-		public void Explode()
-		{
-			explodePort.Activate();
-		}
-
-		[Port(Name = "Reset")]
-		public void Reset()
-		{
-			resetPort.Activate();
-		}
-
-		[Port(Name = "Hit")]
-		public void Hit()
-		{
-			hitPort.Activate();
-		}
-
-		[Port(Name = "Hide")]
-		public void Hide(bool value)
-		{
-			hidePort.Activate(value);
-		}
-
-		[Port(Name = "Explode", Description = "")]
-		public OutputPort explodePort;
-
-		[Port(Name = "Reset", Description = "")]
-		public OutputPort resetPort;
-
-		[Port(Name = "Hit", Description = "")]
-		public OutputPort hitPort;
-
-		[Port(Name = "Hide", Description = "")]
-		public OutputPort<bool> hidePort;
-
-		[Port(Name = "Break", Description = "")]
-		public OutputPort breakPort;
-		#endregion
-
 		public bool Destroyed { get; private set; }
 	}
 }
