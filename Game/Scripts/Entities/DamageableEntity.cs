@@ -6,16 +6,18 @@ namespace CryGameCode.Entities
 	{
 		public float Health { get; protected set; }
 		public float MaxHealth { get; protected set; }
-
-		public bool Dead { get { return Health <= 0; } }
+		public bool Dead { get; private set; }
 
 		public void Damage(float damage, DamageType type)
 		{
 			Health = Math.Max(Health - damage, 0);
 			OnDamage(damage, type);
 
-			if(Dead)
+			if(Health <= 0 && !Dead)
+			{
 				OnDeath();
+				Dead = true;
+			}
 		}
 
 		public void Heal(float amount)
