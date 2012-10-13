@@ -127,6 +127,14 @@
             <param name="blend">Transition time between two animations.</param>
             <param name="speed">Animation playback speed</param>
         </member>
+        <member name="M:CryEngine.EntityBase.StopAnimation(System.Int32,System.Int32,System.Single)">
+            <summary>
+            Stops the currently playing animation.
+            </summary>
+            <param name="slot">The character slot.</param>
+            <param name="layer">The animation layer which we want to stop. If -1, stops all layers.</param>
+            <param name="blendOutTime"></param>
+        </member>
         <member name="M:CryEngine.EntityBase.FreeSlot(System.Int32)">
             <summary>
             Frees the specified slot of all objects.
