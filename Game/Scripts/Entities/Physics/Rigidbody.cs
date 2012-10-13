@@ -16,7 +16,7 @@ namespace CryGameCode.Entities
 			Reset();
 		}
 
-		protected override void OnReset(bool enteringGame)
+		protected override void OnEditorReset(bool enteringGame)
 		{
 			Reset();	
 		}
