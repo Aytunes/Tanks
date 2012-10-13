@@ -52,6 +52,7 @@ error.bmp
 *.psd
 *.bmp
 *.bak
+*.bak2
 
 # Temporarily removed Bin64 until we've got it working again, don't want people assuming that the build is broken.
 Bin64/

@@ -11,7 +11,7 @@
         </member>
         <member name="T:CryEngine.EntityBase">
             <summary>
-            Contains common entity functionality.
+            Represents an CryENGINE entity
             </summary>
         </member>
         <member name="T:CryEngine.CryScriptInstance">
@@ -34,42 +34,168 @@
             Set to true when the script instance is removed via ScriptManager.RemoveInstances.
             </summary>
         </member>
-        <member name="M:CryEngine.EntityBase.OnSpawn">
+        <member name="M:CryEngine.EntityBase.Remove(System.Boolean)">
             <summary>
-            This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
+            Removes the entity from the CryEngine world.
             </summary>
+            <param name="forceRemoveNow">If true, the entity will be removed immediately.</param>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetSlotFlags(System.Int32)">
+            <summary>
+            Retrieves the flags of the specified slot.
+            </summary>
+            <param name="slot">Index of the slot</param>
+            <returns>The slot flags, or 0 if specified slot is not valid.</returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.SetSlotFlags(CryEngine.EntitySlotFlags,System.Int32)">
+            <summary>
+            Sets the flags of the specified slot.
+            </summary>
+            <param name="flags">Flags to set.</param>
+            <param name="slot">Index of the slot, if -1 apply to all existing slots.</param>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetAttachment(System.Int32,System.Int32)">
+            <summary>
+            Gets the attachment at the specified slot and index.
+            </summary>
+            <param name="index">Attachment index</param>
+            <param name="characterSlot">Index of the character slot we wish to get an attachment from</param>
+            <returns>null if failed, otherwise the attachment.</returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetAttachment(System.String,System.Int32)">
+            <summary>
+            Gets the attachment by name at the specified slot.
+            </summary>
+            <param name="name">Attachment name</param>
+            <param name="characterSlot">Index of the character slot we wish to get an attachment from</param>
+            <returns>null if failed, otherwise the attachment.</returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetAttachmentCount(System.Int32)">
+            <summary>
+            Gets the number of attachments at the specified character slot.
+            </summary>
+            <param name="characterSlot">Index of the slot we wish to get the attachment count of</param>
+            <returns>Number of attachments at the specified slot</returns>
         </member>
         <member name="M:CryEngine.EntityBase.Link(System.String,CryEngine.EntityId,CryEngine.Quat,CryEngine.Vec3)">
             <summary>
             Links to another entity, becoming the parent. Any change to the parent object is propagated to all child (linked) objects.
             </summary>
-            <param name="linkName"></param>
-            <param name="otherEntityId"></param>
+            <param name="linkName">Name of the link</param>
+            <param name="otherEntityId">Id of the entity we wish to be linked to</param>
             <param name="relativeRot"></param>
             <param name="relativePos"></param>
             <returns></returns>
         </member>
         <member name="M:CryEngine.EntityBase.Unlink(CryEngine.EntityId)">
             <summary>
-            Removes an entity link, see Link.
+            Removes an entity link, see <see cref="M:CryEngine.EntityBase.Link(System.String,CryEngine.EntityId,CryEngine.Quat,CryEngine.Vec3)"/>.
             </summary>
-            <param name="otherEntityId"></param>
+            <param name="otherEntityId">Id of the entity we are currently linked to</param>
         </member>
         <member name="M:CryEngine.EntityBase.LoadLight(CryEngine.LightParams,System.Int32)">
             <summary>
             Loads a light source to the specified slot, or to the next available slot.
             </summary>
-            <param name="parameters"></param>
-            <param name="slot"></param>
+            <param name="parameters">New params of the light source we wish to load</param>
+            <param name="slot">Slot we want to load the light into, if -1 chooses the next available slot.</param>
             <returns>The slot where the light source was loaded, or -1 if loading failed.</returns>
         </member>
         <member name="M:CryEngine.EntityBase.LoadObject(System.String,System.Int32)">
             <summary>
             Loads a mesh for this entity. Can optionally load multiple meshes using entity slots.
             </summary>
-            <param name="name"></param>
-            <param name="slotNumber"></param>
+            <param name="name">Path to the object (Relative to the game directory)</param>
+            <param name="slot"></param>
             <returns></returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetObjectFilePath(System.Int32)">
+            <summary>
+            Gets the path to the currently loaded object.
+            </summary>
+            <param name="slot">Slot containing the object we want to know the path of.</param>
+            <returns>Path to the currently loaded object at the specified slot.</returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.PlayAnimation(System.String,CryEngine.AnimationFlags,System.Int32,System.Int32,System.Single,System.Single)">
+            <summary>
+            Plays a raw animation.
+            </summary>
+            <param name="animationName">Name of the animation we wish to play</param>
+            <param name="flags"></param>
+            <param name="slot">Slot on which to play the animation</param>
+            <param name="layer">Animation layer to play the animation in.</param>
+            <param name="blend">Transition time between two animations.</param>
+            <param name="speed">Animation playback speed</param>
+        </member>
+        <member name="M:CryEngine.EntityBase.StopAnimation(System.Int32,System.Int32,System.Single)">
+            <summary>
+            Stops the currently playing animation.
+            </summary>
+            <param name="slot">The character slot.</param>
+            <param name="layer">The animation layer which we want to stop. If -1, stops all layers.</param>
+            <param name="blendOutTime"></param>
+        </member>
+        <member name="M:CryEngine.EntityBase.FreeSlot(System.Int32)">
+            <summary>
+            Frees the specified slot of all objects.
+            </summary>
+            <param name="slot"></param>
+        </member>
+        <member name="M:CryEngine.EntityBase.AddMovement(CryEngine.EntityMovementRequest@)">
+            <summary>
+            Requests movement at the specified slot, providing an animated character is currently loaded.
+            </summary>
+            <param name="request"></param>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetJointAbsolute(System.String,System.Int32)">
+            <summary>
+            Gets the absolute of the specified joint
+            </summary>
+            <param name="jointName">Name of the joint</param>
+            <param name="characterSlot">Slot containing the character</param>
+            <returns>Absolute of the specified joint</returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetJointAbsoluteDefault(System.String,System.Int32)">
+            <summary>
+            Gets the default absolute of the specified joint
+            </summary>
+            <param name="jointName">Name of the joint</param>
+            <param name="characterSlot">Slot containing the character</param>
+            <returns>Default absolute of the specified joint</returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.SetJointAbsolute(System.String,CryEngine.QuatT,System.Int32)">
+            <summary>
+            Sets the absolute of the specified joint
+            </summary>
+            <param name="jointName">Name of the joint</param>
+            <param name="absolute">New absolute</param>
+            <param name="characterSlot">Slot containing the character</param>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetJointRelative(System.String,System.Int32)">
+            <summary>
+            Gets the relative of the specified joint
+            </summary>
+            <param name="jointName">Name of the joint</param>
+            <param name="characterSlot">Slot containing the character</param>
+            <returns>Relative of the specified joint</returns>
+        </member>
+        <member name="M:CryEngine.EntityBase.GetJointRelativeDefault(System.String,System.Int32)">
+            <summary>
+            Gets the default relative of the specified joint
+            </summary>
+            <param name="jointName">Name of the joint</param>
+            <param name="characterSlot">Slot containing the character</param>
+            <returns>Default relative of the specified joint</returns>
+        </member>
+        <member name="P:CryEngine.EntityBase.Velocity">
+            <summary>
+            Entity velocity as set by the physics system.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityBase.ScriptTable">
+            <summary>
+            Gets this entity's Lua script table, providing it exists.
+            </summary>
         </member>
         <member name="P:CryEngine.EntityBase.Position">
             <summary>
@@ -121,6 +247,18 @@
             Gets / sets the entity flags.
             </summary>
         </member>
+        <member name="P:CryEngine.EntityBase.Material">
+            <summary>
+            Gets / sets the material currently assigned to this entity.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityBase.Id">
+            <summary>
+            Retrieves the runtime unique identifier of this entity assigned to it by the Entity System.
+            EntityId may not be the same when saving/loading entity.
+            EntityId is mostly used in runtime for fast and unique identification of entities..
+            </summary>
+        </member>
         <member name="P:CryEngine.EntityBase.EntityHandleRef">
             <summary>
             IEntity handle
@@ -138,9 +276,19 @@
             <param name="actorInfo"></param>
             <param name="channelId"></param>
         </member>
+        <member name="P:CryEngine.Actor.IsLocalClient">
+            <summary>
+            Checks if this actor is controlled by the local client. See <see cref="P:CryEngine.Actor.LocalClient"/>.
+            </summary>
+        </member>
+        <member name="T:CryEngine.Explosion">
+            <summary>
+            Used to simulate explosions on physical entities.
+            </summary>
+        </member>
         <member name="T:CryEngine.Entity">
             <summary>
-            The base class for all entities in the game world.
+            Represents an entity created via CryMono.
             </summary>
         </member>
         <member name="M:CryEngine.Entity.Spawn(System.String,System.Type,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
@@ -158,10 +306,10 @@
         </member>
         <member name="M:CryEngine.Entity.Spawn(System.String,System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
             <summary>
-            Spawn a new instance of entity type T.
+            Spawns a new entity
             </summary>
-            <typeparam name="T">The entity type</typeparam>
-            <param name="name"></param>
+            <param name="entityName"></param>
+            <param name="className"></param>
             <param name="pos"></param>
             <param name="rot"></param>
             <param name="scale"></param>
@@ -217,6 +365,11 @@
             <param name="entInfo">Struct containing the IEntity pointer and EntityId.</param>
             <returns>IsEntityFlowNode</returns>
         </member>
+        <member name="M:CryEngine.Entity.OnSpawn">
+            <summary>
+            This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
+            </summary>
+        </member>
         <member name="M:CryEngine.Entity.OnRemove">
             <summary>
             Called when the entity is being removed.
@@ -265,7 +418,7 @@
             <summary>
             Sent on entity collision.
             </summary>
-            <param name="targetEntityId"></param>
+            <param name="colliderId"></param>
             <param name="hitPos"></param>
             <param name="dir"></param>
             <param name="materialId"></param>
@@ -319,6 +472,12 @@
             CMonoEntityAttachment *
             </summary>
         </member>
+        <member name="T:CryEngine.ScriptInstanceDestroyedException">
+            <summary>
+            Thrown when attempting to invoke native methods on a destroyed entity.
+            See <see cref="P:CryEngine.CryScriptInstance.IsDestroyed"/>
+            </summary>
+        </member>
         <member name="F:CryEngine.QuatT.Q">
             <summary>
             The quaternion
@@ -337,11 +496,6 @@
         <member name="F:CryEngine.Utils.ProjectSettings.ExceptionMessage">
             <summary>
             Message displayed in the exception form when an exception has been thrown.
-            </summary>
-        </member>
-        <member name="T:CryEngine.Texture">
-            <summary>
-            TODO
             </summary>
         </member>
         <member name="T:CryEngine.NativeActor">
@@ -594,6 +748,16 @@
             <summary>
             The minute value for the Time of Day system.
             The value is wrapped, so setting the value to 60 will increment the hour and reset the minutes to zero.
+            </summary>
+        </member>
+        <member name="P:CryEngine.TimeOfDay.StartTime">
+            <summary>
+            The start time for the currently loaded time of day.
+            </summary>
+        </member>
+        <member name="P:CryEngine.TimeOfDay.EndTime">
+            <summary>
+            The end time for the currently loaded time of day.
             </summary>
         </member>
         <member name="P:CryEngine.TimeOfDay.Speed">
@@ -899,17 +1063,12 @@
         </member>
         <member name="M:CryEngine.ParticleEffect.Spawn(CryEngine.Vec3,System.Nullable{CryEngine.Vec3},System.Single,System.Boolean)">
             <summary>
-            
+            Spawns this effect
             </summary>
             <param name="independent"></param>
-            <param name="pos"></param>
-            <param name="dir">Is set to Vec3.Up if null</param>
-            <param name="scale"></param>
-        </member>
-        <member name="P:CryEngine.Terrain.Elevation">
-            <summary>
-            A read-only map of the terrain's elevation.
-            </summary>
+            <param name="pos">World location to place emitter at.</param>
+            <param name="dir">World rotation of emitter, set to Vec3.Up if null.</param>
+            <param name="scale">Scale of the emitter.</param>
         </member>
         <member name="P:CryEngine.Terrain.Size">
             <summary>
@@ -928,23 +1087,6 @@
             <remarks>
             The terrain system calculates the overall size by multiplying this value by the units per metre setting. A map set to 1024 units at 2 metres per unit will have a size of 2048 metres.
             </remarks>
-        </member>
-        <member name="P:CryEngine.TerrainElevation.Item(System.Int32,System.Int32)">
-            <summary>
-            Accesses the elevation at a specified location.
-            </summary>
-            <param name="x"></param>
-            <param name="y"></param>
-            <returns></returns>
-        </member>
-        <member name="P:CryEngine.TerrainElevation.Item(System.Single,System.Single,System.Boolean)">
-            <summary>
-            Accesses the elevation at a specified location, with support for interpolated values.
-            </summary>
-            <param name="x"></param>
-            <param name="y"></param>
-            <param name="checkVoxels"></param>
-            <returns></returns>
         </member>
         <member name="M:CryEngine.View.Get(CryEngine.EntityBase,System.Boolean)">
             <summary>
@@ -1084,18 +1226,26 @@
             Represents a Lua ScriptTable.
             </summary>
         </member>
+        <member name="M:CryEngine.Lua.ScriptTable.CallMethod(System.String,System.Object[])">
+            <summary>
+            Invokes a method on the script table
+            </summary>
+            <param name="methodName">Name of the method</param>
+            <param name="args">Invocation arguments</param>
+            <returns>Result or null</returns>
+        </member>
         <member name="M:CryEngine.Lua.ScriptTable.GetValue(System.String)">
             <summary>
             Gets a value within the table.
             </summary>
-            <param name="name"></param>
-            <returns></returns>
+            <param name="name">Name of the value</param>
+            <returns>The value or null</returns>
         </member>
         <member name="M:CryEngine.Lua.ScriptTable.GetTable(System.String)">
             <summary>
             Gets a table within this table.
             </summary>
-            <param name="name"></param>
+            <param name="name">Name of the table</param>
             <returns></returns>
         </member>
         <member name="P:CryEngine.Lua.ScriptTable.HandleRef">
@@ -1964,12 +2114,12 @@
         </member>
         <member name="T:CryEngine.Color">
             <summary>
-            Defines a colour in terms of its red, green, blue and alpha values.
+            Defines a color in terms of its red, green, blue and alpha values.
             </summary>
         </member>
         <member name="M:CryEngine.Color.#ctor(System.Single,System.Single,System.Single,System.Single)">
             <summary>
-            Constructs a new colour object specifying the red, green, blue and alpha values.
+            Constructs a new color object specifying the red, green, blue and alpha values.
             </summary>
             <param name="red"></param>
             <param name="green"></param>
@@ -1978,7 +2128,7 @@
         </member>
         <member name="M:CryEngine.Color.#ctor(System.Single,System.Single,System.Single)">
             <summary>
-            Constructs a new colour object specifying the red, green, and blue values.
+            Constructs a new color object specifying the red, green, and blue values.
             </summary>
             <param name="red"></param>
             <param name="green"></param>
@@ -1986,28 +2136,28 @@
         </member>
         <member name="M:CryEngine.Color.#ctor(System.Single)">
             <summary>
-            Constructs a new greyscale colour object.
+            Constructs a new greyscale color object.
             </summary>
             <param name="brightness">The brightness of the object, where 0 is black, and 1 is white.</param>
         </member>
         <member name="P:CryEngine.Color.R">
             <summary>
-            The red value of the colour.
+            The red value of the color.
             </summary>
         </member>
         <member name="P:CryEngine.Color.G">
             <summary>
-            The green value of the colour.
+            The green value of the color.
             </summary>
         </member>
         <member name="P:CryEngine.Color.B">
             <summary>
-            The blue value of the colour.
+            The blue value of the color.
             </summary>
         </member>
         <member name="P:CryEngine.Color.A">
             <summary>
-            The alpha value of the colour.
+            The alpha value of the color.
             </summary>
         </member>
         <member name="M:CryEngine.Matrix34.ScaleColumn(CryEngine.Vec3)">
@@ -4457,6 +4607,22 @@
             If this attribute is attached to a class, it will be excluded from compilation.
             </summary>
         </member>
+        <member name="M:CryEngine.ConsoleCommand.Execute(System.String,System.Boolean)">
+            <summary>
+            Executes a string in the console
+            </summary>
+            <param name="command">console command e.g. "map testy" - no leading slash</param>
+            <param name="silent">suppresses log in error case and logging the command to the console</param>
+        </member>
+        <member name="M:CryEngine.ConsoleCommand.Register(System.String,CryEngine.ConsoleCommandDelegate,System.String,CryEngine.CVarFlags)">
+            <summary>
+            Register a new console command.
+            </summary>
+            <param name="name">Command name.</param>
+            <param name="func">Delegate to the console command function to be called when command is invoked.</param>
+            <param name="comment">Help string, will be displayed when typing in console "command ?".</param>
+            <param name="flags">Bitfield consist of VF_ flags (e.g. VF_CHEAT)</param>
+        </member>
         <member name="T:CryEngine.EntityAttribute">
             <summary>
             Defines additional information used by the entity registration system.
@@ -4521,40 +4687,60 @@
         </member>
         <member name="M:CryEngine.CVar.Register(System.String,System.Int32,System.String,CryEngine.CVarFlags)">
             <summary>
-            Registers a CVar.
+            Registers a new console variable with the specified default value.
             </summary>
-            <param name="name"></param>
-            <param name="value"></param>
-            <param name="help"></param>
+            <param name="name">console variable name</param>
+            <param name="value">default value of the console variable</param>
+            <param name="help">help text that is shown when you use <paramref name="name"/> ? in the console</param>
             <param name="flags"></param>
-            <returns></returns>
+            <returns>Newly null if failed, new CVar instance if successful</returns>
         </member>
         <member name="M:CryEngine.CVar.Register(System.String,System.Single,System.String,CryEngine.CVarFlags)">
             <summary>
-            Registers a CVar.
+            Registers a new console variable with the specified default value.
             </summary>
-            <param name="name"></param>
-            <param name="value"></param>
-            <param name="help"></param>
+            <param name="name">console variable name</param>
+            <param name="value">default value of the console variable</param>
+            <param name="help">help text that is shown when you use <paramref name="name"/> ? in the console</param>
             <param name="flags"></param>
-            <returns></returns>
+            <returns>Newly null if failed, new CVar instance if successful</returns>
         </member>
         <member name="M:CryEngine.CVar.Register(System.String,System.String,System.String,CryEngine.CVarFlags)">
             <summary>
-            Registers a CVar.
+            Registers a new console variable with the specified default value.
             </summary>
-            <param name="name"></param>
-            <param name="value"></param>
-            <param name="help"></param>
+            <param name="name">console variable name</param>
+            <param name="value">default value of the console variable</param>
+            <param name="help">help text that is shown when you use <paramref name="name"/> ? in the console</param>
             <param name="flags"></param>
-            <returns></returns>
+            <returns>Newly null if failed, new CVar instance if successful</returns>
+        </member>
+        <member name="M:CryEngine.CVar.RegisterInt(System.String,System.Int32@,System.String,CryEngine.CVarFlags)">
+            <summary>
+            Registers a new console variable that will update the user defined integer.
+            </summary>
+            <param name="name">console variable name</param>
+            <param name="value">reference to the memory that will be updated</param>
+            <param name="help">help text that is shown when you use <paramref name="name"/> ? in the console</param>
+            <param name="flags"></param>
+            <returns>Newly null if failed, new CVar instance if successful</returns>
+        </member>
+        <member name="M:CryEngine.CVar.RegisterFloat(System.String,System.Single@,System.String,CryEngine.CVarFlags)">
+            <summary>
+            Registers a new console variable that will update the user defined float.
+            </summary>
+            <param name="name">console variable name</param>
+            <param name="value">reference to the memory that will be updated</param>
+            <param name="help">help text that is shown when you use <paramref name="name"/> ? in the console</param>
+            <param name="flags"></param>
+            <returns>Newly null if failed, new CVar instance if successful</returns>
         </member>
         <member name="M:CryEngine.CVar.Get(System.String)">
             <summary>
-            Gets a CVar by name
+            Retrieve a console variable by name - not case sensitive
             </summary>
             <param name="name">The name of the CVar to retrieve</param>
-            <returns></returns>
+            <returns>null if not found, CVar instance if successful</returns>
         </member>
         <member name="M:CryEngine.CVar.TryGet(System.String,CryEngine.CVar@)">
             <summary>
@@ -4920,7 +5106,6 @@
             <summary>
             This is the base GameRules interface. All game rules must implement this.
             </summary>
-            <remarks>For most use cases, deriving from CryGameCode's BaseGameRules is a more efficient solution.</remarks>
         </member>
         <member name="P:CryEngine.GameRulesAttribute.Name">
             <summary>
