@@ -119,6 +119,7 @@
     <Compile Include="GameRules\DeathMatch.cs" />
     <Compile Include="GameRules\GameRulesNativeCallbacks.cs" />
     <Compile Include="GameRules\SinglePlayer.cs" />
+    <Compile Include="UI\Button.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Libs\Config\defaultProfile.xml">

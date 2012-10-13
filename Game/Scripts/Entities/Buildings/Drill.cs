@@ -1,13 +1,19 @@
 ﻿using CryEngine;
+using CryGameCode.UI;
 
 namespace CryGameCode.Entities.Buildings
 {
 	[Entity(Category = "Buildings")]
 	public class Drill : DamageableEntity
 	{
+		private Button m_healthBar;
+
 		protected override void OnReset(bool enteringGame)
 		{
 			Reset();
+
+			if(enteringGame && Team == "blue")
+				m_healthBar = new Button(string.Format("{0}/{1}", Health, MaxHealth), 100, 100, (int)Health, 20);
 		}
 
 		void Reset()
@@ -27,6 +33,15 @@ namespace CryGameCode.Entities.Buildings
 		protected override void OnDeath()
 		{
 			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
+		}
+
+		protected override void OnDamage(float damage, DamageType type)
+		{
+			if(m_healthBar != null)
+			{
+				m_healthBar.Width = (int)Health;
+				m_healthBar.Text = string.Format("{0}/{1}", Health, MaxHealth);
+			}
 		}
 
 		string team = "red";
