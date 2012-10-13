@@ -12,8 +12,13 @@ namespace CryGameCode.Entities.Buildings
 		{
 			Reset();
 
-			if(enteringGame && Team == "blue")
-				m_healthBar = new Button(string.Format("{0}/{1}", Health, MaxHealth), 100, 100, (int)Health, 20);
+			var left = team == "red";
+
+			if(enteringGame)
+			{
+				m_healthBar = new Button("", 100, left ? 100 : 300, (int)Health, 20);
+				OnDamage(0, DamageType.None);
+			}
 		}
 
 		void Reset()
@@ -41,7 +46,7 @@ namespace CryGameCode.Entities.Buildings
 			if(m_healthBar != null)
 			{
 				m_healthBar.Width = (int)Health;
-				m_healthBar.Text = string.Format("{0}/{1}", Health, MaxHealth);
+				m_healthBar.Text = string.Format("{0}: {1}/{2}", Team, Health, MaxHealth);
 			}
 		}
 
