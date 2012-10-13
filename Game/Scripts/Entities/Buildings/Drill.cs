@@ -33,6 +33,7 @@ namespace CryGameCode.Entities.Buildings
 		protected override void OnDeath()
 		{
 			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
+			StopAnimation(blendOutTime: 1);
 		}
 
 		protected override void OnDamage(float damage, DamageType type)
