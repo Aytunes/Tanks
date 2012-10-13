@@ -29,6 +29,7 @@ namespace CryGameCode.Entities
 		{
 			Health = amount;
 			MaxHealth = amount;
+			Dead = false;
 		}
 
 		protected virtual void OnDeath() { }
