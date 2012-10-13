@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using CryEngine;
-
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
