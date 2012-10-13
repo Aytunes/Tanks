@@ -11,8 +11,7 @@ namespace CryGameCode.Entities
 
 		public void Damage(float damage, DamageType type)
 		{
-			Health -= damage;
-
+			Health = Math.Max(Health - damage, 0);
 			OnDamage(damage, type);
 
 			if(Dead)
