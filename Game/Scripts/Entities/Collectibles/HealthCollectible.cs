@@ -9,10 +9,10 @@ namespace CryGameCode.Entities.Collectibles
 			//Debug.LogAlways("Tank {0} collected health", LastUser.Name);
 			remainingHeal = HealthRestoration;
 
-			LastUser.OnDamaged += (damage, type) => 
+			/*LastUser.OnDamaged += (damage, type) => 
 			{
 				LastUser = null;
-			};
+			};*/
 		}
 
 		public override void OnUpdate()
@@ -24,7 +24,7 @@ namespace CryGameCode.Entities.Collectibles
 				var heal = HealthRestoration * Time.DeltaTime * (1 / RestorationTime);
 				remainingHeal -= heal;
 
-				LastUser.Heal(heal);
+				//LastUser.Heal(heal);
 
 				if (remainingHeal <= 0)
 					LastUser = null;

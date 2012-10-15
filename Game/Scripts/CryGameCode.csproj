@@ -96,7 +96,6 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Actor\CameraProxy.cs" />
     <Compile Include="Entities\Buildings\Drill.cs" />
     <Compile Include="Entities\Collectibles\Collectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />

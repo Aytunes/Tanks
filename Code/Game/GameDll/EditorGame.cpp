@@ -263,7 +263,7 @@ void CEditorGame::SetPlayerPosAng(Vec3 pos,Vec3 viewDir)
 			}
 		}
 
-		pClActor->GetEntity()->SetPosRotScale( pos,Quat::CreateRotationVDir(viewDir),Vec3(1,1,1),ENTITY_XFORM_EDITOR );
+		//pClActor->GetEntity()->SetPosRotScale( pos,Quat::CreateRotationVDir(viewDir),Vec3(1,1,1),ENTITY_XFORM_EDITOR );
 	}
 }
 

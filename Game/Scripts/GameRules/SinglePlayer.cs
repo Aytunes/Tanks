@@ -43,7 +43,14 @@ namespace CryGameCode
 			if (!Network.IsServer)
 				return;
 
-			var player = Actor.Create<CameraProxy>(channelId, playerName);
+			Type tankType;
+
+			if (string.IsNullOrEmpty(ForceTankType))
+				tankType = TankTypes[Selector.Next(TankTypes.Count)];
+			else
+				tankType = Type.GetType("CryGameCode.Tanks." + ForceTankType, true, true);
+
+			var player = Actor.Create(tankType, channelId, playerName);
 			if (player == null)
 			{
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
@@ -70,24 +77,12 @@ namespace CryGameCode
 
 		void RevivePlayer(EntityId actorId)
 		{
-			var player = Actor.Get<CameraProxy>(actorId);
-			if (player == null)
+			var tank = Actor.Get<Tank>(actorId);
+			if (tank == null)
 			{
 				Debug.Log("[SinglePlayer.OnRevive] Failed to get the player. Check the log for errors.");
 				return;
 			}
-
-			Type tankType;
-
-			if(string.IsNullOrEmpty(ForceTankType))
-				tankType = TankTypes[Selector.Next(TankTypes.Count)];
-			else
-				tankType = Type.GetType("CryGameCode.Tanks." + ForceTankType, true, true);
-
-			var tank = Entity.Spawn(player.Name, tankType) as Tank;
-
-			player.TargetEntity = tank;
-			tank.Owner = player;
 
 			var spawnpoints = Entity.GetByClass<SpawnPoint>();
 			if (spawnpoints.Count() > 0)
@@ -97,7 +92,7 @@ namespace CryGameCode
 				spawnPoint.TrySpawn(tank);
 			}
 
-			player.Init();
+			var tank2 = Actor.Create<HeavyTank>(2);
 		}
 
 		public bool IsTeamValid(string team)
