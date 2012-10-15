@@ -4,7 +4,7 @@ using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
-	public abstract class Tank : Actor
+	public abstract class Tank : DamageableActor
 	{
 		static Tank()
 		{
@@ -104,18 +104,10 @@ namespace CryGameCode.Tanks
 			if(AutomaticFire)
 				ReceiveUpdates = true;
 
-			//InitHealth(100);
+			InitHealth(100);
 		}
 
-		/*protected override bool OnRemove()
-		{
-			Input.ActionmapEvents.RemoveAll(this);
-			Input.MouseEvents -= ProcessMouseEvents;
-
-			return true;
-		}*/
-
-		/*protected override void OnDeath()
+		public override void OnDeath()
 		{
 			Debug.DrawText("Died!", 3, Color.Red, 5);
 
@@ -124,7 +116,15 @@ namespace CryGameCode.Tanks
 				Remove();
 			else
 				Hide(true);
-		}*/
+		}
+
+		public override void OnDamage(float damage, DamageType type)
+		{
+			Debug.DrawText(string.Format("Took {0} points of {1} damage", damage, type), 3, Color.White, 3);
+
+			if (OnDamaged != null)
+				OnDamaged(damage, type);
+		}
 
 		void Hide(bool hide)
 		{
@@ -140,16 +140,8 @@ namespace CryGameCode.Tanks
 				RightTrack.Hidden = hide;
 		}
 
-		/*protected override void OnDamage(float damage, DamageType type)
-		{
-			Debug.DrawText(string.Format("Took {0} points of {1} damage", damage, type), 3, Color.White, 3);
-
-			if(OnDamaged != null)
-				OnDamaged(damage, type);
-		}
-
 		public delegate void OnDamagedDelegate(float damage, DamageType type);
-		public event OnDamagedDelegate OnDamaged;*/
+		public event OnDamagedDelegate OnDamaged;
 
 		#region Movement
 		protected override void OnPrePhysicsUpdate()

@@ -41,7 +41,7 @@ namespace CryGameCode.Entities.Buildings
 			}
 		}
 
-		protected override void OnDeath()
+		public override void OnDeath()
 		{
 			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
 			StopAnimation(blendOutTime: 1);
@@ -50,7 +50,7 @@ namespace CryGameCode.Entities.Buildings
 			DestroyedEffect.Spawn(Position);
 		}
 
-		protected override void OnDamage(float damage, DamageType type)
+		public override void OnDamage(float damage, DamageType type)
 		{
 			if(m_healthBar != null)
 			{

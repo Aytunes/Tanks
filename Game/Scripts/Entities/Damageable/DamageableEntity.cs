@@ -2,7 +2,7 @@
 
 namespace CryGameCode.Entities
 {
-	public abstract class DamageableEntity : Entity
+	public abstract class DamageableEntity : Entity, IDamageable
 	{
 		public float Health { get; protected set; }
 		public float MaxHealth { get; protected set; }
@@ -22,21 +22,13 @@ namespace CryGameCode.Entities
 			Health = Math.Min(Health + amount, MaxHealth);
 		}
 
-		protected void InitHealth(float amount)
+		public void InitHealth(float amount)
 		{
 			Health = amount;
 			MaxHealth = amount;
 		}
 
-		protected virtual void OnDeath() { }
-		protected virtual void OnDamage(float damage, DamageType type) { }
-	}
-
-	public enum DamageType
-	{
-		None,
-		Bullet,
-		Explosive,
-		Laser
+		public virtual void OnDeath() { }
+		public virtual void OnDamage(float damage, DamageType type) { }
 	}
 }

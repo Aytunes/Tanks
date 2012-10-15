@@ -99,8 +99,11 @@
     <Compile Include="Entities\Buildings\Drill.cs" />
     <Compile Include="Entities\Collectibles\Collectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />
+    <Compile Include="Entities\Damageable\DamageableActor.cs" />
+    <Compile Include="Entities\Damageable\DamageType.cs" />
+    <Compile Include="Entities\Damageable\IDamageable.cs" />
     <Compile Include="Entities\Projectiles\Bullet.cs" />
-    <Compile Include="Entities\DamageableEntity.cs" />
+    <Compile Include="Entities\Damageable\DamageableEntity.cs" />
     <Compile Include="Entities\Projectiles\Projectile.cs" />
     <Compile Include="Entities\Tanks\AutocannonTank.cs" />
     <Compile Include="Entities\Tanks\ChaingunTank.cs" />
