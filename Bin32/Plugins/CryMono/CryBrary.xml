@@ -269,17 +269,28 @@
             IAnimatedCharacter handle
             </summary>
         </member>
-        <member name="M:CryEngine.Actor.InternalSpawn(CryEngine.ActorInfo,System.Int32)">
+        <member name="M:CryEngine.ActorBase.InternalSpawn(CryEngine.ActorInfo,System.Int32)">
             <summary>
             Initializes the player.
             </summary>
             <param name="actorInfo"></param>
             <param name="channelId"></param>
         </member>
-        <member name="P:CryEngine.Actor.IsLocalClient">
+        <member name="M:CryEngine.ActorBase.OnSpawn">
+            <summary>
+            Called after successful actor creation via Actor.Create.
+            </summary>
+        </member>
+        <member name="P:CryEngine.ActorBase.IsLocalClient">
             <summary>
             Checks if this actor is controlled by the local client. See <see cref="P:CryEngine.Actor.LocalClient"/>.
             </summary>
+        </member>
+        <member name="M:CryEngine.Actor.OnEditorReset(System.Boolean)">
+            <summary>
+            Called when resetting the state of the entity in Editor.
+            </summary>
+            <param name="enteringGame">true if currently entering gamemode, false if exiting.</param>
         </member>
         <member name="T:CryEngine.Explosion">
             <summary>
@@ -376,7 +387,7 @@
             </summary>
             <returns>True to allow removal, false to deny.</returns>
         </member>
-        <member name="M:CryEngine.Entity.OnReset(System.Boolean)">
+        <member name="M:CryEngine.Entity.OnEditorReset(System.Boolean)">
             <summary>
             Called when resetting the state of the entity in Editor.
             </summary>
@@ -5096,11 +5107,6 @@
             </summary>
             <param name="port"></param>
             <returns></returns>
-        </member>
-        <member name="T:CryEngine.ItemSystem">
-            <summary>
-            ItemSystem contains scriptbinds used in relation to the item system.
-            </summary>
         </member>
         <member name="T:CryEngine.GameRules">
             <summary>

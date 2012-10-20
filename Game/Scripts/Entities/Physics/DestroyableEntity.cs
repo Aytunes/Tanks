@@ -10,7 +10,7 @@ namespace CryGameCode.Entities.Physics
 			LoadObject(Model);
 		}
 
-		protected override void OnReset(bool enteringGame)
+		protected override void OnEditorReset(bool enteringGame)
 		{
 			SetSlotFlags(EntitySlotFlags.Render);
 

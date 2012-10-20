@@ -8,9 +8,9 @@ namespace CryGameCode.Entities.Buildings
 	{
 		private Button m_healthBar;
 
-		protected override void OnReset(bool enteringGame)
+		protected override void OnEditorReset(bool enteringGame)
 		{
-			Reset();
+			Reset(enteringGame);
 
 			var left = team == "red";
 
@@ -21,7 +21,7 @@ namespace CryGameCode.Entities.Buildings
 			}
 		}
 
-		void Reset()
+		void Reset(bool enteringGame = true)
 		{
 			LoadObject(Model);
 			PlayAnimation("Default", AnimationFlags.Loop);
@@ -33,15 +33,24 @@ namespace CryGameCode.Entities.Buildings
 			Material = Material.Find("objects/tank_env_assets/scifi/drill_" + Team);
 
 			InitHealth(100);
+
+			if (!enteringGame && DestroyedEffect != null)
+			{
+				DestroyedEffect.Remove();
+				DestroyedEffect = null;
+			}
 		}
 
-		protected override void OnDeath()
+		public override void OnDeath()
 		{
 			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
 			StopAnimation(blendOutTime: 1);
+
+			DestroyedEffect = ParticleEffect.Get("smoke_and_fire.Vehicle_fires.large2");
+			DestroyedEffect.Spawn(Position);
 		}
 
-		protected override void OnDamage(float damage, DamageType type)
+		public override void OnDamage(float damage, DamageType type)
 		{
 			if(m_healthBar != null)
 			{
@@ -49,6 +58,8 @@ namespace CryGameCode.Entities.Buildings
 				m_healthBar.Text = string.Format("{0}: {1}/{2}", Team, Health, MaxHealth);
 			}
 		}
+
+		ParticleEffect DestroyedEffect { get; set; }
 
 		string team = "red";
 		[EditorProperty]

@@ -10,10 +10,10 @@ namespace CryGameCode.Entities.Lights
 		protected override void OnInit()
 		{
 			Flags |= EntityFlags.ClientOnly;
-			OnReset(true);
+			OnEditorReset(true);
 		}
 
-		protected override void OnReset(bool enteringGame)
+		protected override void OnEditorReset(bool enteringGame)
 		{
 			Activate(Activated);
 		}

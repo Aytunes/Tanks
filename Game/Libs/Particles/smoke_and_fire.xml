@@ -1,8 +1,8 @@
-<ParticleLibrary Name="smoke_and_fire" SandboxVersion="3.3.9.3404" ParticleVersion="22">
- <Particles Name="pipe_steam_a.steam" Id="{CBA24357-94AE-440F-8356-7B1515731E2F}" Library="smoke_and_fire">
+<ParticleLibrary Name="smoke_and_fire" SandboxVersion="3.4.0.3696" ParticleVersion="22">
+ <Particles Name="pipe_steam_a.steam">
   <Params Continuous="true" Count="20" ParticleLifeTime="2" EmitAngle="14.25,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.07,1;0.53,0.15833335;1)" SoftParticle="true" DiffuseLighting="3" Size="2.27,,,(,0.045833334;0.255,0.29583335;0.506,0.8166667;1,1)" Stretch="0.06" Speed="3" AirResistance="0.7996" GravityScale="0.1" RandomAngles=",180" RotationRate=",30" FillRateCost="0.18"/>
  </Particles>
- <Particles Name="black_smoke.a" Id="{799B3875-F16B-4B2D-A280-A9EBEBCEC96A}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.a">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45" VisibleUnderwater="If_False"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -10,7 +10,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_Rocket.Trail" Id="{55C457AD-6BE8-47C7-8D38-C9AF15E99799}" Library="smoke_and_fire">
+ <Particles Name="weapon_Rocket.Trail">
   <Params Enabled="false" Continuous="true" Count="60" EmitterLifeTime="5" ParticleLifeTime="1.6,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(0.5,1;1)" Color=",,,(0.008,(1,0.914,0.616);0.15,(1,1,1))" SoftParticle="true" DiffuseLighting="0.574" DiffuseBacklighting="0.482" Size="1.64,0.317,,(0.12,0.5666667;1,1)" Stretch="0.04,,,(0.157,1;0.4)" AirResistance="7.77" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile1">
@@ -38,13 +38,13 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler_1" Id="{438B52F9-CD8C-4CBA-A33E-8666A7B9D1F0}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler_1">
   <Params Continuous="true" Count="10" ParticleLifeTime="10" EmitAngle="28.07,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(0.5,1;1)" Size="4.9,,,(,0.020833334;0.25,0.5;1,1)" Speed="1.2" AirResistance="0.25623" RandomAngles=",180" PhysicsType="SimpleCollision" CollideTerrain="true" CollideStaticObjects="true" CollideDynamicObjects="true" Bounciness="1"/>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler_2" Id="{27A27C86-C88E-4425-B990-8177BB0EC058}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler_2">
   <Params Continuous="true" Count="3900" EmitterLifeTime="8" ParticleLifeTime="2.6" EmitAngle="11.42,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(0.5,1;1)" SoftParticle="true" Size="2.547,,,(,0.19583334;0.25,0.5291667;1,1)" Speed="15" GravityScale="0.1" RandomAngles=",180"/>
  </Particles>
- <Particles Name="dust.jungle_dust" Id="{5DA776B5-9794-433C-A526-59B9462DB0A3}" Library="smoke_and_fire">
+ <Particles Name="dust.jungle_dust">
   <Params Continuous="true" Count="90" ParticleLifeTime="5,0.425" RandomOffset="30,,30" EmitAngle="63.2,1" Texture="textures/sprites/dirt_a.tif" Alpha=",0.375,,(;0.38,1;0.56,1;1)" Color="(0.733,0.64,0.55),0.565" SoftParticle="true" DiffuseLighting="0.931" ReceiveShadows="true" Size="3.98,,,(,0.112500004;1,1)" Speed="5.3" AirResistance="30,0.583" RandomAngles=",180" RotationRate=",20" RandomRotationRate=",20" CameraMaxDistance="80.7" FillRateCost="0"/>
   <Childs>
    <Particles Name="jungle_dust1">
@@ -55,7 +55,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_stinger.missile" Id="{2532A193-4EFF-4243-87ED-011DA4251EAA}" Library="smoke_and_fire">
+ <Particles Name="weapon_stinger.missile">
   <Params Continuous="true" Count="60" ParticleLifeTime="2,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(0.5,1;1)" Color="(0.467,0.443,0),,,(0.008,(1,0.216,0.24);0.992,(0.98,1,0.216))" SoftParticle="true" Size="4,0.317,,(,0.29583335;0.26,0.5666667;1,1)" Speed="-11" AirResistance="11.39" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile1">
@@ -63,13 +63,13 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler_3" Id="{4AA1D273-2577-4DC7-A315-C2DAB7F9605C}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler_3">
   <Params Continuous="true" Count="21" ParticleLifeTime="0.5" EmitAngle="14.25,1" Texture="textures/sprites/dirt_a.tif" Alpha=",,,(0.5,1;1)" SoftParticle="true" DiffuseLighting="0.248" EmissiveLighting="0.604" EmissiveHDRDynamic="2" Size="1.2,,,(,0.020833334;0.25,0.6166667;1,1)" Speed="10" GravityScale="0.1"/>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler_4" Id="{B50E1A61-E3CC-4AA2-AA28-65423E075492}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler_4">
   <Params Continuous="true" Count="20" ParticleLifeTime="2" EmitAngle="14.25,1" BlendType="Additive" Texture="textures/sprites/glow_b.tif" Alpha=",,,(;0.07,1;0.53,0.15833335;1)" Color="(0.46,0.506,0.533),,,(,(0.96,1,0.957);1,(1,0.945,1))" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="2.27,,,(0.004,0.18333334;0.255,0.29583335;0.506,0.8166667;1,1)" Speed="3" AirResistance="0.7996" GravityScale="0.1"/>
  </Particles>
- <Particles Name="geysir.small" Id="{72CE6F39-0776-457B-84E4-9DA30EBB1AD9}" Library="smoke_and_fire">
+ <Particles Name="geysir.small">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="33.33,1" Texture="textures/sprites/smoke_b.tif" Alpha="0,,,(;0.16,1;1)" Color="(0.47,0.706,0.96)" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="6" Size="3.22,0.175,,(,0.70000005;1,1)" Speed="3.332,0.16" AirResistance="0.35" GravityScale="-0.13" RandomAngles=",359" RotationRate="104,,120" RandomRotationRate=",45" DrawLast="1"/>
   <Childs>
    <Particles Name="smoke_negative_rotation12">
@@ -80,7 +80,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="geyser_small_12_sec.1" Id="{46D0F4A9-DFB5-496B-893C-8F2DB778DA33}" Library="smoke_and_fire">
+ <Particles Name="geyser_small_12_sec.1">
   <Params Enabled="false" Continuous="true" Count="21" EmitterLifeTime="8" ParticleLifeTime="1.2" EmitAngle="33.33,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" GravityScale="-0.13" RotationRate="104,120,45"/>
   <Childs>
    <Particles Name="smoke34">
@@ -91,7 +91,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.bigfire_noBase" Id="{DAA05CEF-3B75-400F-9747-3AD0E4612CA6}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.bigfire_noBase">
   <Params Enabled="false" Continuous="true" Count="20" ParticleLifeTime="6" EmitAngle="22.62,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(;0.043,1;0.52,1;1)" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="leaping_flames1">
@@ -116,7 +116,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.smallfire_noBase" Id="{99DB3B98-048A-45A4-BDB8-122CF67288D2}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.smallfire_noBase">
   <Params Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="unused_smoke1">
@@ -139,10 +139,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler_5" Id="{8548D3C7-5552-4A0D-ACD2-8A5EC6B779E8}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler_5">
   <Params Continuous="true" Count="16" ParticleLifeTime="0.5" EmitAngle="14.25,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(0.5,1;1)" Color="(0.37,0.6,0.7)" SoftParticle="true" Size="1.2,,,(,0.4166667;0.25,0.6166667;1,1)" Speed="10" GravityScale="0.1" RandomAngles=",180"/>
  </Particles>
- <Particles Name="VS2_Fire.Deck_fire" Id="{E85FD078-435F-430A-B6B2-285CF8E00BD6}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.Deck_fire">
   <Params Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="large_radial_base">
@@ -194,10 +194,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.fire_base" Id="{EBFB9838-F861-4F3F-BED6-1E39DB542AAC}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.fire_base">
   <Params Continuous="true" Count="8" ParticleLifeTime="1.07" EmitAngle=",1" Facing="Velocity" BlendType="Additive" Texture="textures/sprites/explosion_b.tif" Alpha=",,,(,0.020833334;0.15,0.5666667;0.48,0.8625001;0.843,0.5;0.99,0.045833334)" Color="(0.86,0.86,0.86)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" NotAffectedByFog="true" Size="6,,,(,1;0.114,0.6833334;0.282,0.4791667;0.57,0.3416667;0.992,0.3416667)" Speed="0.1" RandomAngles=",180,180" RandomRotationRate="20,20,100" DrawLast="5" VisibleUnderwater="If_False"/>
  </Particles>
- <Particles Name="VS2_Fire.Fire_line" Id="{C99BF842-88F3-4834-AD4F-C6C0E6406E97}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.Fire_line">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -236,7 +236,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.smallfire_base" Id="{6DD18109-D78F-490A-8AEF-C07263B3C8AE}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.smallfire_base">
   <Params Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="unused_smoke1">
@@ -262,7 +262,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.bigfire_base" Id="{1A360A07-D365-41FB-8C96-0EA56F4A709E}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.bigfire_base">
   <Params Enabled="false" Continuous="true" Count="20" ParticleLifeTime="6" EmitAngle="22.62,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(;0.043,1;0.52,1;1)" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="leaping_flames1">
@@ -285,10 +285,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.light_smoke" Id="{B07BA9C4-AB6C-4623-B4F5-B3B4C343FFAB}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.light_smoke">
   <Params Continuous="true" Count="8" ParticleLifeTime="3,0.225" PositionOffset=",0.1" EmitAngle="16.18,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.77,,,(;0.15,1;1)" SoftParticle="true" EmissiveLighting="0.574" Size="2,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="1.4,0.2" RandomAngles=",180" RandomRotationRate=",20" DrawLast="2"/>
  </Particles>
- <Particles Name="VS2_Fire.heavy_smoke" Id="{699738E5-55E3-4291-9B91-A6063CABF3C5}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.heavy_smoke">
   <Params Enabled="false" Continuous="true" Count="20" ParticleLifeTime="6" EmitAngle="22.62,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(;0.043,1;0.52,1;1)" SoftParticle="true" DiffuseLighting="0.277" EmissiveLighting="0.327" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3.3" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="second_smoke2">
@@ -296,10 +296,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.steam" Id="{AAC232F4-91FE-4EBC-B93F-814D83985209}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.steam">
   <Params Continuous="true" Count="16" ParticleLifeTime="0.5" EmitAngle="14.25,1" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Alpha=",,,(0.5,1;1)" Color="(0.176,0.345,0.6),,,(,(0.96,1,0.957);1,(1,0.945,1))" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" Size="1.2041,,,(,0.4166667;0.25,0.6166667;1,1)" Speed="10" GravityScale="0.1"/>
  </Particles>
- <Particles Name="VS2_Fire.smallfire_nobase_noglow" Id="{826E361D-5DF7-4B15-9C55-92C6BEB68F17}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.smallfire_nobase_noglow">
   <Params Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="flames_big2">
@@ -319,7 +319,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.smallfire_noBase_walls" Id="{E6F4FE1D-A9C0-4E47-A995-C82E54943775}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.smallfire_noBase_walls">
   <Params Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="big_leaping_flames1">
@@ -342,7 +342,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.smallfire_nobase_distant" Id="{1111D8B2-6CC2-4651-8E32-D83A051CBEFF}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.smallfire_nobase_distant">
   <Params Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="flames_big2">
@@ -362,11 +362,11 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.Deck_fire_distant" Id="{A1A966ED-ABF6-4359-B186-0F67BDA43553}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.Deck_fire_distant">
   <Params Enabled="false" Continuous="true" Count="12" ParticleLifeTime="8" EmitAngle="16,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.08,1;0.52,1;1)" SoftParticle="true" DiffuseLighting="0.703" EmissiveLighting="0.257" NotAffectedByFog="true" Size="6,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="big_smoke2">
-    <Params Enabled="false" Continuous="true" Count="1" ParticleLifeTime="6,0.183" EmitAngle="10,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.035,1;0.58,1;1)" SoftParticle="true" Size="9,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",25" DrawLast="2"/>
+    <Params Enabled="false" Continuous="true" Count="1" ParticleLifeTime="6,0.183" EmitAngle="10,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.03,1;0.58,1;1)" SoftParticle="true" Size="9,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",25" DrawLast="2"/>
     <Childs>
      <Particles Name="big_smoke4">
       <Params Continuous="true" Count="16" ParticleLifeTime="5,0.16" PositionOffset=",1.6" EmitAngle="8.4,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(;0.106,1;0.427,1;1)" Color=",,,(0.004,(0.91,0.545);0.38,(0.125,0.125,0.125))" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" Size="5.33,0.296,,(,0.5208334;0.325,0.8625001;1,1)" Speed="6.8,0.18" AirResistance="0.35" RandomAngles=",133" RandomRotationRate=",35" DrawLast="2"/>
@@ -384,7 +384,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_Rocket.backup" Id="{9120C7A0-39C7-4F26-92F0-5EB88A530629}" Library="smoke_and_fire">
+ <Particles Name="weapon_Rocket.backup">
   <Params Enabled="false" Continuous="true" Count="60" EmitterLifeTime="5" ParticleLifeTime="1.6,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(0.5,1;1)" Color=",,,(0.008,(1,0.914,0.616);0.15,(1,1,1))" SoftParticle="true" DiffuseLighting="0.574" DiffuseBacklighting="0.482" Size="1.64,0.317,,(0.12,0.5666667;1,1)" Stretch="0.04,,,(0.157,1;0.4)" AirResistance="7.77" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile1">
@@ -412,7 +412,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler_white" Id="{116A6386-6973-4890-AD0D-8B84A42B4EDA}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler_white">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.3,0.31" EmitAngle="11.6,1" BlendType="Additive" Texture="textures/sprites/smoke_b.tif" Alpha="0.504,,,(;0.21,1;1)" Color="(0.957,0.97,0.97)" SoftParticle="true" DiffuseLighting="0.535" EmissiveLighting="0.327" EmissiveHDRDynamic="2" Size="2.22,,,(,0.18333334;1,1)" Speed="2" AirResistance="0.58,,,(0.094,0.4791667;0.51,1)" RandomAngles=",180" RandomRotationRate=",12"/>
   <Childs>
    <Particles Name="steam_cooler_white1">
@@ -420,7 +420,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.truck" Id="{9C4521A8-B2DC-4791-9273-FA4A0CB2D9DF}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.truck">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" DiffuseBacklighting="0.576" Size="2.248,0.175,,(,0.70000005;0.24,1;1,1)" Speed="3.332,0.16" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45"/>
   <Childs>
    <Particles Name="big_smoke3">
@@ -437,7 +437,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.fire_line_slim" Id="{C738EEA8-3C82-45FE-99E7-A985AD9D18AE}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.fire_line_slim">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -482,7 +482,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_stinger.sidewinder" Id="{77C79565-D862-45B3-9751-54518D2DF7F4}" Library="smoke_and_fire">
+ <Particles Name="weapon_stinger.sidewinder">
   <Params Enabled="false" Continuous="true" Count="60" EmitterLifeTime="5" ParticleLifeTime="1.6,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(0.5,1;1)" Color=",,,(0.008,(1,0.914,0.616);0.15,(1,1,1))" SoftParticle="true" DiffuseLighting="0.574" DiffuseBacklighting="0.482" Size="1.64,0.317,,(0.12,0.5666667;1,1)" Stretch="0.04,,,(0.157,1;0.4)" AirResistance="7.77" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile1">
@@ -510,7 +510,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.deck_fire_no_cinders" Id="{6CE893BE-06EB-404E-B360-A656D7632414}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.deck_fire_no_cinders">
   <Params Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="large_radial_base">
@@ -562,10 +562,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler_maintenance" Id="{D23F9F38-DACF-4BDB-BB10-D19B4A202AF3}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler_maintenance">
   <Params Continuous="true" Count="21" ParticleLifeTime="0.5,0.087" EmitAngle="13.7,1" Texture="textures/sprites/dirt_a.tif" Alpha=",,,(0.34,1;1)" Color="(0.655,0.81,0.745)" SoftParticle="true" DiffuseLighting="0.248" EmissiveLighting="0.604" EmissiveHDRDynamic="2" Size="1.2,,,(,0.020833334;0.25,0.6166667;1,1)" Speed="10" GravityScale="0.1" RandomAngles=",180" RandomRotationRate=",21"/>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler_maintenance2" Id="{429F8748-1DC4-43FC-94B4-12F09F3F138A}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler_maintenance2">
   <Params Continuous="true" Count="35" ParticleLifeTime="1.8,0.16" EmitAngle="14.25,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.2,,,(,1;0.53,0.15833335;1)" Color="(0.416,0.46,0.46),,,(,(0.96,1,0.957);1,(1,0.945,1))" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="2.27,,,(0.004,0.18333334;0.255,0.29583335;0.506,0.8166667;1,1)" Speed="3" AirResistance="0.7996" GravityScale="0.1"/>
   <Childs>
    <Particles Name="steam_cooler_7">
@@ -573,7 +573,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.dropping_cinders" Id="{F495A56D-FB75-48E1-A1CB-3D46CC53195A}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.dropping_cinders">
   <Params Enabled="false" Count="4" PulsePeriod="4,1" ParticleLifeTime="7,0.654" EmitAngle="29.05,1" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Material="Materials/particle/fire_embers" Alpha=",,,(0.753,1;1)" Color=",,,(,(0.98,1,1);1,(1,0.992,0.843))" DiffuseLighting="0" EmissiveLighting="1" Size="0.15,1,,(,1;0.22,1;1)" TailLength="0.1,0.913,,(,0.97916675;0.18,0.5;1),8" Speed=",0.613" GravityScale="1" TurbulenceSpeed="-360" RotationRate="104,17,120" PhysicsType="SimpleCollision" CollideTerrain="true" Bounciness="0.001" DrawLast="3"/>
   <Childs>
    <Particles Name="dropping_cinders2">
@@ -586,17 +586,17 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="zigaretten.on_cig" Id="{1C38F778-B54F-4FA2-A4B8-062E8F8FC740}" Library="smoke_and_fire">
+ <Particles Name="zigaretten.on_cig">
   <Params Continuous="true" Count="400" EmitterLifeTime="10" ParticleLifeTime="4,0.05" FocusAngle="11.6,,(;0.482,1;1)" FocusAzimuth="18.9,1,(;0.37,0.97916675;1)" FocusGravityDir="true" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.325,,,(;0.08,1;0.376,1;1)" SoftParticle="true" DiffuseBacklighting="0.647" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="0.03,0.138,,(,0.27083334;1,0.9541667)" Stretch=",,,(,0.18333334;1,1)" TailLength="0.41,,,,5" Speed="0.03" GravityScale="-0.08,0.08,,(0.137;1,1)" TurbulenceSize="0.03" TurbulenceSpeed="0.11" RandomRotationRate=",90"/>
  </Particles>
- <Particles Name="zigaretten.breath" Id="{97AD702A-B87C-4985-B8FD-C1E103162877}" Library="smoke_and_fire">
+ <Particles Name="zigaretten.breath">
   <Params Continuous="true" Count="66" EmitterLifeTime="1" ParticleLifeTime="5,0.11" PositionOffset="0.05,0.05,-0.05" FocusAngle="32.6,,(,1;1)" EmitAngle=",1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.13,0.325,(,1;1,0.3166667),(,1;1)" Color=",,,(0.008,(0.69,0.69,0.69);1,(1,1,1))" DiffuseBacklighting="0.604" Size="0.58,0.08,(,1;1,0.4791667),(;0.19,0.22916667;0.99,1)" Stretch="0.01" Speed="0.51,,(,1;1)" AirResistance="0.02" RandomAngles="2.87,89.99,2" RandomRotationRate="12,23,12"/>
  </Particles>
- <Particles Name="weapon_Rocket.tow_effects" Id="{361CBF1A-54A9-48D8-A6E1-14F5D93CAEFB}" Library="smoke_and_fire">
+ <Particles Name="weapon_Rocket.tow_effects">
   <Params Count="1" SpawnDelay="1" ParticleLifeTime="4,0.554" EmitAngle="11.42,1" Texture="textures/sprites/smoke_b.tif" Alpha="0,,,(;0.153,1;0.545,1;1)" Size="0.01,0.46,,(,0.15833335;0.25,0.5166667,32;1,1)" Speed=",0.333" GravityScale="-0.3" RandomAngles="12,12,12" RandomRotationRate=",75" MoveRelEmitter="true"/>
   <Childs>
    <Particles Name="Trail12">
-    <Params Continuous="true" Count="3" SecondGeneration="true" ParticleLifeTime="0.25" EmitAngle="11.42,1" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Alpha=",,,(;0.4,1;0.7,1;1)" Color="(0.98,,0.09),,,(,(1,1,1);1,0.584)" DiffuseLighting="0" EmissiveLighting="1" Size="2,,,(,0.40833336;0.25,0.6125;1,1)" Speed=",0.333" InheritVelocity="1" AirResistance="4" InitAngles=",90" RotationRate=",115" MoveRelEmitter="true" DrawLast="1"/>
+    <Params Continuous="true" Count="3" SecondGeneration="true" ParticleLifeTime="0.25" EmitAngle="11.42,1" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Alpha=",,,(;0.4,1;0.702,1;1)" Color="(0.98,,0.09),,,(,(1,1,1);1,0.584)" DiffuseLighting="0" EmissiveLighting="1" Size="2,,,(,0.40833336;0.25,0.6125;1,1)" Speed=",0.333" InheritVelocity="1" AirResistance="4" InitAngles=",90" RotationRate=",115" MoveRelEmitter="true" DrawLast="1"/>
    </Particles>
    <Particles Name="Trail13">
     <Params Continuous="true" Count="77,,(0.067;0.08,1;0.686,1)" SecondGeneration="true" EmitterLifeTime="4" ParticleLifeTime="2.2,0.554" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.317,,,(0.545,1;1)" Color="(0.914,0.914,0.914)" DiffuseLighting="0.139" EmissiveLighting="1" Size="5,0.46,,(,0.5208334;0.153,0.5208334;1,1)" Speed=",0.333" InheritVelocity="1" AirResistance="0.7742" GravityScale="-0.1" RandomAngles="12,12,12" RandomRotationRate=",75"/>
@@ -617,7 +617,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.small_deck_fire" Id="{FF843D3B-851A-4AAF-8ED1-7100CBEF6E08}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.small_deck_fire">
   <Params Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="large_radial_base">
@@ -653,7 +653,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_stinger.FFAR" Id="{822F8C5F-6506-4F52-A14D-E6C2FF3BA27B}" Library="smoke_and_fire">
+ <Particles Name="weapon_stinger.FFAR">
   <Params Enabled="false" Continuous="true" Count="60" EmitterLifeTime="5" ParticleLifeTime="1.6,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(0.5,1;1)" Color=",,,(0.008,(1,0.914,0.616);0.15,(1,1,1))" SoftParticle="true" DiffuseLighting="0.574" DiffuseBacklighting="0.482" Size="1.64,0.317,,(0.12,0.5666667;1,1)" Stretch="0.04,,,(0.157,1;0.4)" AirResistance="7.77" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile1">
@@ -681,7 +681,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.flaming_man" Id="{F4598DFD-D877-42E9-80ED-861FAF4427AD}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.flaming_man">
   <Params Continuous="true" ParticleLifeTime="2.5" AttachType="Physics" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3.5" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="small_thick_flame">
@@ -689,10 +689,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="console_smoke.electrical" Id="{F475BBDB-5419-4FC0-A25B-8818FE2C7696}" Library="smoke_and_fire">
+ <Particles Name="console_smoke.electrical">
   <Params Continuous="true" Count="20" ParticleLifeTime="2" EmitAngle="14.25,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.646,,,(;0.07,1;1)" SoftParticle="true" DiffuseBacklighting="0.25" Size="1.29,,,(0.004,0.18333334;0.255,0.29583335;0.506,0.8166667;1,1)" Speed="2" GravityScale="0.3" RandomAngles=",180" RandomRotationRate=",21" VisibleUnderwater="If_False"/>
  </Particles>
- <Particles Name="weapon_Rocket.latest_trail_backup" Id="{E5058F55-FD45-4F90-A31D-EF98E158F3A4}" Library="smoke_and_fire">
+ <Particles Name="weapon_Rocket.latest_trail_backup">
   <Params Enabled="false" Continuous="true" Count="60" EmitterLifeTime="5" ParticleLifeTime="1.6,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(0.5,1;1)" Color=",,,(0.008,(1,0.914,0.616);0.15,(1,1,1))" SoftParticle="true" DiffuseLighting="0.574" DiffuseBacklighting="0.482" Size="1.64,0.317,,(0.12,0.5666667;1,1)" Stretch="0.04,,,(0.157,1;0.4)" AirResistance="7.77" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile1">
@@ -714,7 +714,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_stinger.exocet" Id="{1EB094EE-2FB8-4CBE-9DCB-0B28FAE536EE}" Library="smoke_and_fire">
+ <Particles Name="weapon_stinger.exocet">
   <Params Enabled="false" Continuous="true" Count="60" EmitterLifeTime="5" ParticleLifeTime="1.6,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(0.5,1;1)" Color=",,,(0.008,(1,0.914,0.616);0.15,(1,1,1))" SoftParticle="true" DiffuseLighting="0.574" DiffuseBacklighting="0.482" Size="1.64,0.317,,(0.12,0.5666667;1,1)" Stretch="0.04,,,(0.157,1;0.4)" AirResistance="7.77" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile1">
@@ -739,7 +739,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="train_wreck.smoke" Id="{35CDB2F3-1E8E-4C8C-B583-E8306FE335D6}" Library="smoke_and_fire">
+ <Particles Name="train_wreck.smoke">
   <Params Enabled="false" Continuous="true" Count="20" ParticleLifeTime="6" EmitAngle="22.62,1" Texture="textures/sprites/smoke_b.tif" Alpha=",,,(;0.043,1;0.52,1;1)" SoftParticle="true" DiffuseLighting="0.277" EmissiveLighting="0.327" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3.3" GravityScale="-0.11" RandomAngles=",180" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="second_smoke2">
@@ -747,7 +747,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Vehicle_fires.large" Id="{2C9CD19A-114E-420B-8A3F-291669AF43C3}" Library="smoke_and_fire">
+ <Particles Name="Vehicle_fires.large">
   <Params Enabled="false" Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="new_fire_burning1">
@@ -763,12 +763,12 @@
     <Params Continuous="true" Count="40" SpawnDelay="0.13" ParticleLifeTime="5,0.16" PositionOffset=",2.14" RandomOffset="0.8,,0.8" EmitAngle="12.6,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.387,,,(;0.157,1;0.24,1;0.576,0.15833335;1)" Color=",,,(0.027,(0.89,0.53,0.31);0.176,(0.247,0.247,0.247))" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="0.008" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="18,0.188,,(0.416,0.18333334;0.94,1)" Speed="7.6,0.317" AirResistance="0.52,0.296" GravityScale="-0.36,0.346" RandomAngles=",99" RotationRate=",21" DrawLast="1" VisibleUnderwater="If_False"/>
    </Particles>
    <Particles Name="big_smoke3">
-    <Params Continuous="true" Count="82" SpawnDelay="0.13" ParticleLifeTime="8,0.16" PositionOffset=",0.2" RandomOffset="0.8,,0.8" EmitAngle="12.6,1" Texture="textures/sprites/smoke_tiled_d.dds" TextureTiling="2,2,,4" Alpha=",,,(;0.12,1;0.475,1;1)" Color=",,,(0.035,(0.18,0.086,0.027);0.176,(0.043,0.043,0.043))" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="5" EmissiveHDRDynamic="2" Size="10,0.325,,(0.18,0.27083334;1,1)" Speed="7.6,0.16" AirResistance="0.52,0.23" GravityScale="-0.36,0.2" RandomAngles=",180" RandomRotationRate=",25" DrawLast="1" VisibleUnderwater="If_False"/>
+    <Params Continuous="true" Count="82" SpawnDelay="0.13" ParticleLifeTime="8,0.16" PositionOffset=",0.2" RandomOffset="0.8,,0.8" EmitAngle="12.6,1" Texture="textures/sprites/smoke_tiled_d.dds" TextureTiling="2,2,,4" Alpha=",,,(;0.12,1;0.475,1;1)" Color=",,,(0.03,(0.18,0.086,0.027);0.176,(0.043,0.043,0.043))" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="5" EmissiveHDRDynamic="2" Size="10,0.325,,(0.18,0.27083334;1,1)" Speed="7.6,0.16" AirResistance="0.52,0.23" GravityScale="-0.36,0.2" RandomAngles=",180" RandomRotationRate=",25" DrawLast="1" VisibleUnderwater="If_False"/>
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Vehicle_fires.large2" Id="{C5C68ADA-3D6B-4DD6-9C37-5E172131C39E}" Library="smoke_and_fire">
-  <Params Enabled="false" Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
+ <Particles Name="Vehicle_fires.large2">
+  <Params Enabled="false" Continuous="true" Count="1" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="animated">
     <Params Continuous="true" Count="13" ParticleLifeTime="4.35,0.275" PositionOffset=",2.01" RandomOffset="1.3,,1.3" FocusGravityDir="true" EmitAngle="8.4,0.02" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/flame_anim_c.tif" TextureTiling="8,16,,,105" Alpha=",,(0.773,1;1),(;0.28,1;0.74,1;1)" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="0.733" EmissiveHDRDynamic="2" Size="2" Speed="0.01" MoveRelEmitter="true" DrawLast="2" VisibleUnderwater="If_False"/>
@@ -799,7 +799,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="vehicle_damage.asian_tank" Id="{D7D9C56A-6B64-4350-90A3-1560C4FFFD5E}" Library="smoke_and_fire">
+ <Particles Name="vehicle_damage.asian_tank">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -807,7 +807,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Vehicle_fires.medium" Id="{989686F8-605B-4DD2-9DCD-8D4DEC783820}" Library="smoke_and_fire">
+ <Particles Name="Vehicle_fires.medium">
   <Params Enabled="false" Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Facing="Free" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",,20" DrawLast="4"/>
   <Childs>
    <Particles Name="large_radial_base">
@@ -827,7 +827,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Vehicle_fires.burning_jet" Id="{8B8153F9-1582-4119-9EFC-1A9E3AA9228F}" Library="smoke_and_fire">
+ <Particles Name="Vehicle_fires.burning_jet">
   <Params Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="new_fire_burning1">
@@ -860,7 +860,7 @@
     <Params Continuous="true" Count="193" ParticleLifeTime="0.5,0.296" PositionOffset=",-1.11" PosRandomOffset="1.7" EmitAngle="12.6,1" BlendType="Additive" Texture="textures/sprites/fire_tiled_a.tif" Alpha=",,,(0.004,0.1375;0.118,0.65833336;0.5,1;0.85,0.65833336;1)" SoftParticle="true" DiffuseBacklighting="1" EmissiveLighting="1" EmissiveHDRDynamic="2" NotAffectedByFog="true" Size="1.23,0.446,,(,1;1,0.5916667)" Stretch="0.11" Speed="7,0.06" AirResistance="0.76,0.387" GravityScale="-0.995" DrawLast="2" VisibleUnderwater="If_False"/>
     <Childs>
      <Particles Name="big_flame_body1">
-      <Params Continuous="true" Count="58" ParticleLifeTime="1.5,0.21" PositionOffset=",0.2" RandomOffset="0.4,,0.4" EmitAngle=",1" Texture="textures/sprites/fire_tiled_a.tif" TextureTiling="2,2,,4" Alpha="0.813,0.338,,(;0.17,1;1)" Color=",,,(0.263,(1,1,1);0.99,(0.255,0.255,0.255))" SoftParticle="true" DiffuseBacklighting="1" EmissiveLighting="1" Size="3.8,0.496,,(0.004,0.9541667;0.118,0.5916667;1,0.27083334)" Stretch="0.02,,,(;1,1)" Speed="4,0.6" AirResistance="1.1445,0.21" GravityScale="-1" RandomAngles=",90" RandomRotationRate=",31" DrawLast="1" VisibleUnderwater="If_False"/>
+      <Params Continuous="true" Count="58" ParticleLifeTime="1.5,0.21" PositionOffset=",0.2" RandomOffset="0.4,,0.4" EmitAngle=",1" Texture="textures/sprites/fire_tiled_a.tif" TextureTiling="2,2,,4" Alpha="0.813,0.338,,(;0.165,1;1)" Color=",,,(0.263,(1,1,1);0.99,(0.255,0.255,0.255))" SoftParticle="true" DiffuseBacklighting="1" EmissiveLighting="1" Size="3.8,0.496,,(0.004,0.9541667;0.118,0.5916667;1,0.27083334)" Stretch="0.02,,,(;1,1)" Speed="4,0.6" AirResistance="1.1445,0.21" GravityScale="-1" RandomAngles=",90" RandomRotationRate=",31" DrawLast="1" VisibleUnderwater="If_False"/>
      </Particles>
      <Particles Name="big_flame_body2">
       <Params Continuous="true" Count="111" ParticleLifeTime="0.6" PositionOffset=",0.2" RandomOffset="0.7,,0.7" EmitAngle="62.1,1" Texture="textures/sprites/fire_tiled_a.tif" TextureTiling="2,2,,4" Alpha="0.88,0.25,,(;0.37,1;0.5,1;1)" DiffuseBacklighting="1" EmissiveLighting="1" Size="2.46,0.712,,(,0.63750005;0.56,0.7708334;1,1)" Stretch="0.02,,,(;1,1)" Speed="4.7,0.6" AirResistance="1.841,0.26" GravityScale="-1" RandomAngles=",90" RandomRotationRate=",41" DrawLast="2" VisibleUnderwater="If_False"/>
@@ -869,17 +869,17 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="AA_round.trail" Id="{985C7802-D2D8-4541-9B81-A9EC0DBE9632}" Library="smoke_and_fire">
+ <Particles Name="AA_round.trail">
   <Params Continuous="true" Count="1" ParticleLifeTime="0.1" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Alpha="0" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="7" Size="0.29" Stretch="3.98" MinPixels="1" Speed="1"/>
  </Particles>
- <Particles Name="Tank_round.tow" Id="{58D2E86E-8082-4878-A064-7693BCF76308}" Library="smoke_and_fire">
+ <Particles Name="Tank_round.tow">
   <Params Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
   <Childs>
    <Particles Name="tow1">
     <Params Continuous="true" Count="25,0.475" ParticleLifeTime="0.22,0.325" FocusAngle="27.4" FocusAzimuth="90" BlendType="Additive" Texture="textures/sprites/muzzleflash/muzzle_tiled_b.tif" Alpha=",,,(0.506,1;1)" Color="(0.843,0.4,0)" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="2" EmissiveHDRDynamic="2" Size="0.25,,,(,0.25;1,1)" Stretch="0.06,,,(,0.112500004;0.71,1)" Speed="-12.3" RandomAngles=",359" RandomRotationRate=",44" MoveRelEmitter="true" DrawLast="1"/>
     <Childs>
      <Particles Name="tow3">
-      <Params Continuous="true" Count="12" ParticleLifeTime="0.5,0.138" FocusAngle="27.4" FocusAzimuth="90" OrientToVelocity="true" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.417,,,(0.17;0.376,1;1)" DiffuseBacklighting="0.18" Size="0.8,,,(,0.5;0.99,1)" Stretch="0.02" Speed="-23" RandomAngles=",359" RandomRotationRate=",21" VisibleUnderwater="If_False"/>
+      <Params Continuous="true" Count="12" ParticleLifeTime="0.5,0.138" FocusAngle="27.4" FocusAzimuth="90" OrientToVelocity="true" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.417,,,(0.165;0.376,1;1)" DiffuseBacklighting="0.18" Size="0.8,,,(,0.5;0.99,1)" Stretch="0.02" Speed="-23" RandomAngles=",359" RandomRotationRate=",21" VisibleUnderwater="If_False"/>
      </Particles>
      <Particles Name="tow8">
       <Params Continuous="true" Count="15,0.496" ParticleLifeTime="0.22,0.338" FocusAngle="27.4" FocusAzimuth="90" Texture="textures/sprites/muzzleflash/muzzle_tiled_b.dds" Alpha=",,,(;0.48,0.4791667;1)" Color=",,,(0.05,(1,0.737,0.475);0.81,(0.09,0.36,1))" DiffuseLighting="0" EmissiveLighting="3" EmissiveHDRDynamic="2" Size="0.64,,,(,0.25;1,1)" Stretch="0.06,,,(,0.112500004;0.71,1)" Speed="-12.3" RandomAngles=",359" RandomRotationRate=",44" MoveRelEmitter="true" VisibleUnderwater="If_False"/>
@@ -893,7 +893,7 @@
     <Params Continuous="true" Count="25,0.425" ParticleLifeTime="0.22,0.438" FocusAngle="27.4" FocusAzimuth="270" BlendType="Additive" Texture="textures/sprites/muzzleflash/muzzle_tiled_b.tif" Alpha=",,,(0.506,1;1)" Color="(0.843,0.4,0)" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="2" EmissiveHDRDynamic="2" Size="0.25,,,(,0.22916667;1,1)" Stretch="0.06,,,(,0.09166667;0.71,1)" Speed="-12.3" RandomAngles=",359" MoveRelEmitter="true" VisibleUnderwater="If_False"/>
     <Childs>
      <Particles Name="tow4">
-      <Params Continuous="true" Count="12" ParticleLifeTime="0.5,0.138" FocusAngle="27.4" FocusAzimuth="270" OrientToVelocity="true" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.417,,,(0.17;0.376,1;1)" DiffuseBacklighting="0.18" Size="0.8,,,(,0.54583335;0.99,1)" Stretch="0.02" Speed="-23" RandomAngles=",359" RandomRotationRate=",21"/>
+      <Params Continuous="true" Count="12" ParticleLifeTime="0.5,0.138" FocusAngle="27.4" FocusAzimuth="270" OrientToVelocity="true" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.417,,,(0.165;0.376,1;1)" DiffuseBacklighting="0.18" Size="0.8,,,(,0.54583335;0.99,1)" Stretch="0.02" Speed="-23" RandomAngles=",359" RandomRotationRate=",21"/>
      </Particles>
      <Particles Name="tow9">
       <Params Continuous="true" Count="15,0.446" ParticleLifeTime="0.22,0.338" FocusAngle="27.4" FocusAzimuth="270" Texture="textures/sprites/muzzleflash/muzzle_tiled_b.dds" Alpha=",,,(;0.48,0.4791667;1)" Color=",,,(0.05,(1,0.737,0.475);0.81,(0.09,0.36,1))" DiffuseLighting="0" EmissiveLighting="2" EmissiveHDRDynamic="2" Size="0.64,,,(,0.25;1,1)" Stretch="0.06,,,(,0.112500004;0.71,1)" Speed="-12.3" RandomAngles=",359" RandomRotationRate=",44" MoveRelEmitter="true" VisibleUnderwater="If_False"/>
@@ -914,13 +914,13 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Tank_round.Trail" Id="{A2D88A3E-A9A2-4BEA-938B-D84E703C9BB8}" Library="smoke_and_fire">
+ <Particles Name="Tank_round.Trail">
   <Params Continuous="true" Count="1" ParticleLifeTime="0.3" BlendType="Additive" Texture="textures/sprites/glow_a.tif" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="1.46" Speed="1" VisibleUnderwater="If_False"/>
  </Particles>
- <Particles Name="Tank_round.apc30" Id="{A9238CC5-29F1-4B2B-ADFF-E9BD0BE023F0}" Library="smoke_and_fire">
+ <Particles Name="Tank_round.apc30">
   <Params Continuous="true" Count="1" ParticleLifeTime="0.3" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Material="Materials/particle/flare_glow" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="5" EmissiveHDRDynamic="2" Size="0.14" Speed="1" VisibleUnderwater="If_False"/>
  </Particles>
- <Particles Name="Tank_round.tac" Id="{314C4806-356D-474A-910B-C08F83FBC698}" Library="smoke_and_fire">
+ <Particles Name="Tank_round.tac">
   <Params Continuous="true" Count="1" ParticleLifeTime="0.1" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Material="Materials/particle/flare_glow" DiffuseLighting="0" EmissiveLighting="13" EmissiveHDRDynamic="2" Size="0.7" Speed="1" RandomAngles=",359" RotationRate=",31" VisibleUnderwater="If_False"/>
   <Childs>
    <Particles Name="tac1">
@@ -931,7 +931,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="vehicle_damage.asian_tank_fire" Id="{450295E1-CEB1-465E-BEA4-89161DC7AC95}" Library="smoke_and_fire">
+ <Particles Name="vehicle_damage.asian_tank_fire">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -951,10 +951,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="vehicle_damage.asian_tank_hull" Id="{BAB44E68-A434-472E-8FFA-151A646CCE14}" Library="smoke_and_fire">
+ <Particles Name="vehicle_damage.asian_tank_hull">
   <Params Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
  </Particles>
- <Particles Name="weapon_stinger.AA" Id="{AD9D4FD4-A851-49AE-AAA8-5A0541C95DA9}" Library="smoke_and_fire">
+ <Particles Name="weapon_stinger.AA">
   <Params Enabled="false" Continuous="true" Count="1" ParticleLifeTime="4" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0,,,(;0.02,0.97916675;0.52,1;1)" DiffuseLighting="0" EmissiveLighting="1" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" MoveRelEmitter="true"/>
   <Childs>
    <Particles Name="new_fire_burning1">
@@ -975,11 +975,11 @@
     </Childs>
    </Particles>
    <Particles Name="big_smoke11">
-    <Params Continuous="true" Count="277" EmitterLifeTime="15" ParticleLifeTime="6,0.188,(,0.4791667;0.17,1)" EmitAngle=",1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.04,1,36;1)" DiffuseLighting="0.861" DiffuseBacklighting="0.286" Size="5.55,0.06,,(,0.5208334;0.14,0.6833334;1,1)" Stretch="0.15" Speed="-81,0.08" AirResistance="3.57" RandomAngles=",359" RandomRotationRate=",21"/>
+    <Params Continuous="true" Count="277" EmitterLifeTime="15" ParticleLifeTime="6,0.188,(,0.4791667;0.165,1)" EmitAngle=",1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.04,1,36;1)" DiffuseLighting="0.861" DiffuseBacklighting="0.286" Size="5.55,0.06,,(,0.5208334;0.14,0.6833334;1,1)" Stretch="0.15" Speed="-81,0.08" AirResistance="3.57" RandomAngles=",359" RandomRotationRate=",21"/>
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Jeep.engine_white" Id="{CBF3428E-0F80-488C-970C-AA3147B2391C}" Library="smoke_and_fire">
+ <Particles Name="Jeep.engine_white">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -987,7 +987,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Jeep.engine_black" Id="{014350EF-6443-4BE7-BCDC-61910F7323EA}" Library="smoke_and_fire">
+ <Particles Name="Jeep.engine_black">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="3.16,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -995,7 +995,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Jeep.engine_fire" Id="{A9E233CF-4BE5-4045-AD34-41F12852742A}" Library="smoke_and_fire">
+ <Particles Name="Jeep.engine_fire">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45"/>
   <Childs>
    <Particles Name="new_fire_burning1">
@@ -1009,7 +1009,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Jeep.hull_smoke" Id="{FC31F5CD-ADBD-40A9-B343-D95D79F0FA00}" Library="smoke_and_fire">
+ <Particles Name="Jeep.hull_smoke">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45"/>
   <Childs>
    <Particles Name="new_smoke3">
@@ -1017,7 +1017,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Jeep.dash_smoke" Id="{39E7926C-119F-4D7E-836F-FD8FE9B77AC8}" Library="smoke_and_fire">
+ <Particles Name="Jeep.dash_smoke">
   <Params Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
   <Childs>
    <Particles Name="cockpit_sparks1">
@@ -1057,7 +1057,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="geysir.freeze_steam" Id="{21FE2A0A-DF20-49A8-9E24-3217E16B510E}" Library="smoke_and_fire">
+ <Particles Name="geysir.freeze_steam">
   <Params Continuous="true" Count="21" EmitterLifeTime="12" ParticleLifeTime="2.08,,(0.675,1;1,0.5)" EmitAngle="33.33,1" Texture="textures/sprites/smoke_b.tif" Alpha="0.417,,(0.635,1;1),(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" AirResistance="0.35" GravityScale="-0.13" RandomAngles=",359" RotationRate="104,45,120"/>
   <Childs>
    <Particles Name="smoke_negative_rotation12">
@@ -1068,7 +1068,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="geysir.pulsed" Id="{F5972B94-4C48-4B35-85CB-A6790C370C04}" Library="smoke_and_fire">
+ <Particles Name="geysir.pulsed">
   <Params Enabled="false" Continuous="true" Count="21" EmitterLifeTime="7" PulsePeriod="12" ParticleLifeTime="2.08,,(0.675,1;1,0.5)" EmitAngle="33.33,1" Texture="textures/sprites/smoke_b.tif" Alpha="0.417,,(0.635,1;1),(;0.067,1;0.533,1;1)" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" AirResistance="0.35" GravityScale="-0.13" RandomAngles=",359" RotationRate="104,45,120"/>
   <Childs>
    <Particles Name="smoke_negative_rotation12">
@@ -1079,7 +1079,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="geysir.intense_steam" Id="{504D7916-0509-4AD9-90C1-34681A312839}" Library="smoke_and_fire">
+ <Particles Name="geysir.intense_steam">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="33.33,1" Texture="textures/sprites/smoke_b.tif" Alpha="0.417,,,(;0.067,1;0.533,1;1)" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" AirResistance="0.35" GravityScale="-0.13" RandomAngles=",359" RotationRate="104,,120" RandomRotationRate=",45"/>
   <Childs>
    <Particles Name="smoke_negative_rotation12">
@@ -1090,7 +1090,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Jeep.flipped_jeep" Id="{47AE9C6A-C941-4498-B6AE-10AF52BD84B6}" Library="smoke_and_fire">
+ <Particles Name="Jeep.flipped_jeep">
   <Params Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
   <Childs>
    <Particles Name="initial_sparks">
@@ -1123,7 +1123,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Jeep.flipped_heavy" Id="{DE9F61C5-91D1-48C2-875A-DA3908B405FA}" Library="smoke_and_fire">
+ <Particles Name="Jeep.flipped_heavy">
   <Params Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
   <Childs>
    <Particles Name="initial_sparks">
@@ -1159,7 +1159,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="factory_smoke.large" Id="{1541C983-3ED0-49AF-9233-F3EC1CCEB2B7}" Library="smoke_and_fire">
+ <Particles Name="factory_smoke.large">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="33.33,1" Texture="textures/sprites/smoke_b.tif" Alpha="0.417,,,(;0.067,1;0.533,1;1)" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" AirResistance="0.35" GravityScale="-0.13" RandomAngles=",359" RotationRate="104,,120" RandomRotationRate=",45"/>
   <Childs>
    <Particles Name="smoke_negative_rotation12">
@@ -1170,18 +1170,18 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="geysir.machine_steam_sides" Id="{3FDA93DD-67ED-42B9-BD3B-0B899CBB31F9}" Library="smoke_and_fire">
+ <Particles Name="geysir.machine_steam_sides">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="33.33,1" Texture="textures/sprites/smoke_b.tif" Alpha="0.417,,,(;0.067,1;0.533,1;1)" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" AirResistance="0.35" GravityScale="-0.13" RandomAngles=",359" RotationRate="104,,120" RandomRotationRate=",45"/>
   <Childs>
    <Particles Name="smoke_negative_rotation12">
-    <Params Continuous="true" Count="31" ParticleLifeTime="0.29,0.325" RandomOffset=",,1" EmitAngle="7.4,1" Texture="textures/sprites/smoke_tiled_c.tif" Material="Materials/particle/refraction" Alpha="0.417,,,(;0.17,0.09166667;0.59,1;1)" SoftParticle="true" DiffuseLighting="0" NotAffectedByFog="true" Size="1.17,,,(,0.5;1,1)" Stretch="0.07" Speed="37.4,0.067" AirResistance="1.066" RandomAngles=",359" RotationRate="402,,57" RandomRotationRate=",32" DrawLast="1"/>
+    <Params Continuous="true" Count="31" ParticleLifeTime="0.29,0.325" RandomOffset=",,1" EmitAngle="7.4,1" Texture="textures/sprites/smoke_tiled_c.tif" Material="Materials/particle/refraction" Alpha="0.417,,,(;0.165,0.09166667;0.59,1;1)" SoftParticle="true" DiffuseLighting="0" NotAffectedByFog="true" Size="1.17,,,(,0.5;1,1)" Stretch="0.07" Speed="37.4,0.067" AirResistance="1.066" RandomAngles=",359" RotationRate="402,,57" RandomRotationRate=",32" DrawLast="1"/>
    </Particles>
    <Particles Name="smoke_cloud22">
-    <Params Continuous="true" Count="99" ParticleLifeTime="0.2,0.325" EmitAngle="7.4,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.69,,,(;0.17,0.09166667;0.59,1;1)" Color="(0.48,0.68,0.67)" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="2" Size="0.7,,,(,0.5;1,1)" Stretch="0.02" Speed="37.4,0.067" AirResistance="1.066" RandomAngles=",359" RotationRate="402,,57" RandomRotationRate=",32"/>
+    <Params Continuous="true" Count="99" ParticleLifeTime="0.2,0.325" EmitAngle="7.4,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.69,,,(;0.165,0.09166667;0.59,1;1)" Color="(0.48,0.68,0.67)" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="2" Size="0.7,,,(,0.5;1,1)" Stretch="0.02" Speed="37.4,0.067" AirResistance="1.066" RandomAngles=",359" RotationRate="402,,57" RandomRotationRate=",32"/>
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="geysir.machine_steam_thick_slow" Id="{B3904BA5-B268-4B89-B619-5D2267CE3C1A}" Library="smoke_and_fire">
+ <Particles Name="geysir.machine_steam_thick_slow">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="33.33,1" Texture="textures/sprites/smoke_b.tif" Alpha="0.417,,,(;0.067,1;0.533,1;1)" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" AirResistance="0.35" GravityScale="-0.13" RandomAngles=",359" RotationRate="104,,120" RandomRotationRate=",45"/>
   <Childs>
    <Particles Name="smoke_cloud22">
@@ -1192,7 +1192,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="ground_fire.small" Id="{C374C98B-00F2-4C76-9172-B6CACE013347}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.small">
   <Params Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
   <Childs>
    <Particles Name="small2">
@@ -1205,13 +1205,13 @@
       <Params Continuous="true" Count="135,,(,0.20416668;0.635,1)" SecondGeneration="true" EmitterLifeTime="19" ParticleLifeTime="3,0.275" AttachType="Render" AttachForm="Surface" PositionOffset=",,0.23" FocusGravityDir="true" EmitAngle="18.9,0.02" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/flame_anim_c.tif" TextureTiling="8,16,,,105" Alpha=",,(;0.055,1;0.77,1;1),(;0.28,1;0.863,1;1)" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="0.8" EmissiveHDRDynamic="2" Size="0.53,0.13" MoveRelEmitter="true" DrawLast="1" VisibleUnderwater="If_False" FillRateCost="0"/>
      </Particles>
      <Particles Name="small8">
-      <Params Continuous="true" Count="4" EmitterLifeTime="20" ParticleLifeTime="1" PositionOffset=",0.5" EmitAngle=",1" Texture="textures/sprites/glow_b.tif" Material="Materials/particle/refraction" Alpha=",,(0.7,1;1),(;0.247,1;0.69,1;1)" Color="(0,0,0)" SoftParticle="true" DiffuseLighting="0" NotAffectedByFog="true" Size="3.98,,,(,0.54583335;0.545,1;1,0.8166667)" Speed="0.5,0.275" AirResistance="1.7" GravityScale="-1" RandomRotationRate=",12" DrawLast="1" VisibleUnderwater="If_False" FillRateCost="0"/>
+      <Params Continuous="true" Count="4" EmitterLifeTime="20" ParticleLifeTime="1" PositionOffset=",0.5" EmitAngle=",1" Texture="textures/sprites/glow_b.tif" Material="Materials/particle/refraction" Alpha=",,(0.702,1;1),(;0.247,1;0.69,1;1)" Color="(0,0,0)" SoftParticle="true" DiffuseLighting="0" NotAffectedByFog="true" Size="3.98,,,(,0.54583335;0.545,1;1,0.8166667)" Speed="0.5,0.275" AirResistance="1.7" GravityScale="-1" RandomRotationRate=",12" DrawLast="1" VisibleUnderwater="If_False" FillRateCost="0"/>
      </Particles>
     </Childs>
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="ground_fire.mine_village" Id="{CCC4A4CC-8B51-407C-87A6-CE053B426DA1}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.mine_village">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1242,7 +1242,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Tank_round.gauss" Id="{6339CCBA-E5C5-48B1-AD7C-2F1F6B612825}" Library="smoke_and_fire">
+ <Particles Name="Tank_round.gauss">
   <Params Enabled="false" Continuous="true" Count="1" ParticleLifeTime="1" Texture="textures/sprites/muzzleflash/muzzle_tiled_b.tif" Speed="1"/>
   <Childs>
    <Particles Name="projectile1">
@@ -1261,7 +1261,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="ground_fire.ad" Id="{E6064774-2816-4312-88CA-74ECC7D1D63F}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.ad">
   <Params Enabled="false" Continuous="true" Count="35" ParticleLifeTime="1.8,0.1" PositionOffset=",,1" RandomOffset="6,,0.2" Facing="Velocity" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/flame_anim_b.tif" TextureTiling="8,8,,,62" Alpha=",,(0.635,1;1),(;0.604,1;1)" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="15" Size="5.02" Speed="0.01,0.188" DrawLast="1" VisibleUnderwater="If_False"/>
   <Childs>
    <Particles Name="big_flame_body4">
@@ -1269,10 +1269,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="pipe_steam_a.steam_cooler6" Id="{B1796246-22A7-436F-8F6B-9A7C0D55AFBA}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.steam_cooler6">
   <Params Continuous="true" Count="21" ParticleLifeTime="0.5" EmitAngle="14.25,1" Texture="textures/sprites/dirt_a.tif" Alpha=",,,(0.5,1;1)" SoftParticle="true" DiffuseLighting="0.248" EmissiveLighting="0.604" EmissiveHDRDynamic="2" Size="1.2,,,(,0.020833334;0.25,0.6166667;1,1)" Speed="10" GravityScale="0.1"/>
  </Particles>
- <Particles Name="Jeep.flipped_heavy_nowind" Id="{BFE04909-BE71-4936-8503-EC3EBFC78466}" Library="smoke_and_fire">
+ <Particles Name="Jeep.flipped_heavy_nowind">
   <Params Enabled="false" Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
   <Childs>
    <Particles Name="initial_sparks">
@@ -1305,7 +1305,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.fire_line_timed" Id="{A0CD2883-1F4A-49C3-BC16-FAE8B7DFB06F}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.fire_line_timed">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1347,7 +1347,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.smallfire_base_timed" Id="{4899A71C-C0B8-42CD-A075-CDE7385DEE1F}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.smallfire_base_timed">
   <Params Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="flames_big2">
@@ -1370,7 +1370,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="fuel_tank.large" Id="{293C0ACB-2D87-49C7-AEDB-59CA6F4C7504}" Library="smoke_and_fire">
+ <Particles Name="fuel_tank.large">
   <Params Enabled="false" Count="1" ParticleLifeTime="1" Facing="Free" DiffuseLighting="0.999" Speed="1"/>
   <Childs>
    <Particles Name="flipped_jeep2">
@@ -1387,7 +1387,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="ground_fire.big_deck" Id="{C7F4D58B-8701-4137-A975-F72B2A3C958F}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.big_deck">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="4.15,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1431,21 +1431,21 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="lantern.small_fire" Id="{943ACF18-7CDA-4CA5-86C7-C0E5CFFE6743}" Library="smoke_and_fire">
+ <Particles Name="lantern.small_fire">
   <Params Enabled="false" Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="new_fire_burning1">
     <Params Continuous="true" Count="2" ParticleLifeTime="0.2,0.517" EmitAngle="8.4,1" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Alpha="0.07,,,(;0.21,1;0.427,1;1,0.5)" Color="(,0.835,0.608)" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="2.05,,,(,1;0.514,1;1,0.90833336)" Speed=",0.317" AirResistance=",0.396" GravityScale=",0.25" VisibleUnderwater="If_False" MotionBlurScale="0.826"/>
    </Particles>
    <Particles Name="medium1">
-    <Params Continuous="true" Count="3" ParticleLifeTime="3,0.354" PositionOffset=",0.1" EmitAngle="8.4,0.02" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/flame_anim_c.tif" TextureTiling="8,16,,,105" Alpha=",,,(;0.17,1;0.79,1;1)" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="0.18,0.11" Stretch="1.05" Speed="0.01" DrawLast="1" VisibleUnderwater="If_False"/>
+    <Params Continuous="true" Count="3" ParticleLifeTime="3,0.354" PositionOffset=",0.1" EmitAngle="8.4,0.02" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/flame_anim_c.tif" TextureTiling="8,16,,,105" Alpha=",,,(;0.165,1;0.79,1;1)" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="0.18,0.11" Stretch="1.05" Speed="0.01" DrawLast="1" VisibleUnderwater="If_False"/>
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_Rocket.incendiary" Id="{13FF688C-460D-4492-BC73-E9FF8EB6C0B6}" Library="smoke_and_fire">
+ <Particles Name="weapon_Rocket.incendiary">
   <Params Continuous="true" Count="200" ParticleLifeTime="1,0.21" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.454,,,(;0.118,1;1)" DiffuseLighting="0.564" DiffuseBacklighting="0.518" Size="0.2,0.296,,(,0.65833336;1,1)" Stretch="0.38,,,(,1;1)" Speed="-3" GravityScale="-0.103" RandomAngles=",180"/>
  </Particles>
- <Particles Name="Tank_round.rifle_gauss" Id="{6B6FE636-B39C-4DB1-BAF1-10915F77311B}" Library="smoke_and_fire">
+ <Particles Name="Tank_round.rifle_gauss">
   <Params Enabled="false" Continuous="true" Count="60" EmitterLifeTime="5" ParticleLifeTime="1.6,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(0.5,1;1)" Color=",,,(0.008,(1,0.914,0.616);0.15,(1,1,1))" SoftParticle="true" DiffuseLighting="0.574" DiffuseBacklighting="0.482" Size="1.64,0.317,,(0.12,0.5666667;1,1)" Stretch="0.04,,,(0.157,1;0.4)" AirResistance="7.77" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile2">
@@ -1453,7 +1453,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="ground_fire.vtol_crash_site" Id="{50BB2EF2-CA83-4085-A914-13364EE3B3AF}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.vtol_crash_site">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1483,10 +1483,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.truck_parts" Id="{3403CA17-471F-4FA7-A24D-1A624A13E7DD}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.truck_parts">
   <Params Continuous="true" Count="12" EmitterLifeTime="10" ParticleLifeTime="2.6,0.275" PositionOffset=",0.6" EmitAngle="8.4,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.88,,(,1;1),(;0.38,1;0.57,1;1)" SoftParticle="true" DiffuseLighting="0.267" Size="2.75,0.325,,(,0.25;1,1)" AirResistance="0.53,0.13" GravityScale="-0.3,0.11" RandomAngles=",180" RandomRotationRate=",35" DrawLast="1" VisibleUnderwater="If_False"/>
  </Particles>
- <Particles Name="zigaretten.cough" Id="{A3DF5280-56D9-48E2-B776-EDF1CC064DB3}" Library="smoke_and_fire">
+ <Particles Name="zigaretten.cough">
   <Params Continuous="true" Count="15" EmitterLifeTime="0.1" ParticleLifeTime="0.7,0.11" FocusAngle="32.6,,(,1;1)" EmitAngle=",1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.1,0.325,(,1;1,0.3166667),(,1;1)" Color=",,,(0.008,(0.69,0.69,0.69);1,(1,1,1))" DiffuseBacklighting="0.604" Size="0.45,0.08,(,1;1,0.4791667),(;0.19,0.22916667;0.99,1)" Stretch="0.01" Speed="2,,(,1;1)" AirResistance="2.69" RandomAngles="2.87,89.99,2" RandomRotationRate="12,23,12"/>
   <Childs>
    <Particles Name="cough1">
@@ -1494,10 +1494,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="zigaretten.lighter" Id="{BC87CB7E-7203-4A10-81D7-8B69BB042B52}" Library="smoke_and_fire">
+ <Particles Name="zigaretten.lighter">
   <Params Continuous="true" Count="30" EmitterLifeTime="0.5" ParticleLifeTime="0.7,,(0.447,1;1)" FocusGravityDir="true" EmitAngle="9.5,1" BlendType="Additive" Texture="textures/sprites/fireball_tiled_b.dds" TextureTiling="2,2,,4" Alpha=",,,(;0.52,1;1)" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="0.04,,,(,1;1,0.4791667)" Speed="0.3,0.404,(,1;1)" RandomAngles=",180" RandomRotationRate=",60"/>
  </Particles>
- <Particles Name="zigaretten.drop_cig" Id="{C651FB53-988E-4D93-8E3F-1F6895281910}" Library="smoke_and_fire">
+ <Particles Name="zigaretten.drop_cig">
   <Params Enabled="false" Count="300" ParticleLifeTime="4,0.05" FocusAngle="11.6,,(;0.482,1;1)" FocusAzimuth="18.9,1,(;0.37,0.97916675;1)" FocusGravityDir="true" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.325,,,(;0.08,1;0.376,1;1)" SoftParticle="true" DiffuseLighting="0.614" DiffuseBacklighting="0.647" Size="0.07,0.138,,(,0.27083334;1,0.9541667)" Stretch=",,,(,0.18333334;1,1)" TailLength="0.41,,,,3" Speed="0.03" GravityScale="-0.034,0.08,,(0.137;1,1)" TurbulenceSize="0.03" TurbulenceSpeed="0.11" RandomRotationRate=",90"/>
   <Childs>
    <Particles Name="on_cig1">
@@ -1510,7 +1510,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="ground_fire.ground_harbor" Id="{63F3C137-C116-4080-A800-C194C76282B5}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.ground_harbor">
   <Params Enabled="false" Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
   <Childs>
    <Particles Name="small2">
@@ -1538,7 +1538,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.harbor_postattack" Id="{E960F0C3-B600-4FB5-8294-FFDCE8E7ECCC}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.harbor_postattack">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45" VisibleUnderwater="If_False"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -1546,7 +1546,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.huge_fire_and_smoke" Id="{B6841FFA-3436-4D22-8F6B-F0AE39235996}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.huge_fire_and_smoke">
   <Params Continuous="true" Count="22" ParticleLifeTime="20" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.438,0.675,,(;0.067,1;0.667,1;1)" Color="(0.616,0.616,0.616),0.376" SoftParticle="true" DiffuseLighting="0.109" Size="20,0.11,,(,0.06666667;0.043,0.15833335;1,1)" Stretch="0.18,1" AirResistance="2.34,,,(,0.54583335;0.224,0.06666667)" GravityScale="-0.025,0.138" RandomAngles=",50" RandomRotationRate=",2" FillRateCost="0"/>
   <Childs>
    <Particles Name="diffuse1">
@@ -1557,22 +1557,22 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.harbor_smokestack1" Id="{08E9E772-1E12-45C0-B353-85885EE300DD}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.harbor_smokestack1">
   <Params Continuous="true" Count="8" ParticleLifeTime="7,0.18" PositionOffset="0.3,0.3" EmitAngle="49.5" Texture="textures/sprites/smoke_tiled_d.dds" TextureTiling="2,2,,4" Alpha=",,,(;0.063,1;0.5,1;1)" Color="(0.263,0.247,0.19)" SoftParticle="true" DiffuseLighting="0.644" Size="3.22,0.175,,(,0.5916667;1,1)" Speed="0.53,0.396" AirResistance="0.28,0.417" GravityScale="-0.04,0.425" RandomAngles=",180" RandomRotationRate="21,16,21"/>
  </Particles>
- <Particles Name="black_smoke.harbor_smokestack2" Id="{27D002CD-403C-43AC-B867-6BDB0232EC6A}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.harbor_smokestack2">
   <Params Continuous="true" Count="8" ParticleLifeTime="7,0.18" PositionOffset="0.3,0.3" EmitAngle="49.5" Texture="textures/sprites/smoke_tiled_d.dds" TextureTiling="2,2,,4" Alpha=",,,(;0.408,1;1)" Color="(0.318,0.294,0.224)" SoftParticle="true" DiffuseLighting="0.574" Size="4.5,0.175,,(,0.3416667;1,1)" AirResistance="0.35,0.533" GravityScale="-0.04,0.425" RandomAngles=",180" RandomRotationRate="21,16,21"/>
  </Particles>
- <Particles Name="black_smoke.harbor_smokestack3" Id="{B3025A4E-52EB-4234-B599-254D4B2D030A}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.harbor_smokestack3">
   <Params Continuous="true" Count="8" ParticleLifeTime="8,0.18" PositionOffset="0.3,0.3" EmitAngle="49.5" Texture="textures/sprites/smoke_tiled_d.dds" TextureTiling="2,2,,4" Alpha=",,,(;0.408,1;1)" Color="(0.25,0.235,0.176)" SoftParticle="true" DiffuseLighting="0.624" Size="6.5,0.175,,(,0.3416667;1,1)" AirResistance="0.35,0.604" GravityScale="-0.04,0.425" RandomAngles=",180" RandomRotationRate="21,16,21"/>
  </Particles>
- <Particles Name="black_smoke.harbor_smokestack4" Id="{76BF73EA-2F49-4962-B789-68A19722383B}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.harbor_smokestack4">
   <Params Continuous="true" Count="8" ParticleLifeTime="8,0.18" PositionOffset="0.3,0.3" EmitAngle="49.5" Texture="textures/sprites/smoke_tiled_d.dds" TextureTiling="2,2,,4" Alpha="0.783,,,(;0.408,1;1)" Color="(0.25,0.235,0.176)" SoftParticle="true" DiffuseLighting="0.614" Size="7.01,0.175,,(,0.3416667;1,1)" AirResistance="0.35,0.575" GravityScale="-0.04,0.504" RandomAngles=",180" RandomRotationRate="21,16,21"/>
  </Particles>
- <Particles Name="black_smoke.harbor_smokestack5" Id="{DCA6350D-228A-4A5B-A8F0-DA6D5AD2D326}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.harbor_smokestack5">
   <Params Continuous="true" Count="8" ParticleLifeTime="6,0.18" PositionOffset="0.3,0.3" EmitAngle="49.5" Texture="textures/sprites/smoke_tiled_d.dds" TextureTiling="2,2,,4" Alpha="0.575,,,(;0.408,1;1)" Color="(0.25,0.235,0.176)" SoftParticle="true" DiffuseLighting="0.614" Size="10,0.175,,(,0.3416667;1,1)" AirResistance="0.5,0.338" GravityScale="-0.04,0.504" RandomAngles=",180" RandomRotationRate="21,16,21"/>
  </Particles>
- <Particles Name="ground_fire.harbor_large_fires" Id="{803C14BE-588C-4CCC-80D2-79CB0C19E26C}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.harbor_large_fires">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1599,7 +1599,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.huge_fire_and_smoke_nowind" Id="{81C7E27F-2F74-4FD4-9F2E-D14017700A12}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.huge_fire_and_smoke_nowind">
   <Params Enabled="false" Continuous="true" Count="22" ParticleLifeTime="10" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.84,0.675,,(;0.067,1;0.667,1;1)" Color="(0.376,0.376,0.376),0.376" SoftParticle="true" DiffuseLighting="0.109" ReceiveShadows="true" Size="20,0.11,,(,0.06666667;0.043,0.15833335;1,1)" Stretch="0.18,1" AirResistance="0.58,,,(,0.54583335;0.224,0.06666667)" GravityScale="-0.025,0.138" RandomAngles=",50" RandomRotationRate=",2" FillRateCost="0"/>
   <Childs>
    <Particles Name="diffuse1">
@@ -1616,7 +1616,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.sphere_large_ground_smoke" Id="{DC216C89-5F5A-4E4F-8308-933E9470F69C}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.sphere_large_ground_smoke">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45" VisibleUnderwater="If_False"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -1624,7 +1624,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="ground_fire.burning_debris" Id="{EBD96985-8AF0-437F-82BC-DBB097F4E841}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.burning_debris">
   <Params Enabled="false" Count="1" ParticleLifeTime="1" Facing="Free" Speed="1"/>
   <Childs>
    <Particles Name="small2">
@@ -1655,7 +1655,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.smallfire_base_nosoft" Id="{11F83BD0-504C-495A-B28B-B2EDE1638045}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.smallfire_base_nosoft">
   <Params Enabled="false" Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="unused_smoke1">
@@ -1681,10 +1681,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="pipe_steam_a.fleet_pipes" Id="{E9AD4D7D-260A-44BB-AAC4-9CBD0E08E314}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.fleet_pipes">
   <Params Continuous="true" Count="20" ParticleLifeTime="2" EmitAngle="14.25,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.07,1;0.53,0.15833335;1)" Color="(0.47,0.47,0.47)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="2.27,,,(,0.045833334;0.255,0.29583335;0.506,0.8166667;1,1)" Stretch="0.06" Speed="3" AirResistance="0.7996" GravityScale="0.1" RandomAngles=",180" RotationRate=",30"/>
  </Particles>
- <Particles Name="ground_fire.big_deck_no_smoke" Id="{1B070323-7608-4618-A572-0CC083568730}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.big_deck_no_smoke">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1720,7 +1720,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="ground_fire.big_deck_light" Id="{4A902FC0-BCA4-4AAB-B805-9F18C1E60241}" Library="smoke_and_fire">
+ <Particles Name="ground_fire.big_deck_light">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1748,7 +1748,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.small_fire_alt1" Id="{F0A7C3C3-4C91-489D-9062-7FAFFB97BF58}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.small_fire_alt1">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="large_glow">
@@ -1756,7 +1756,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.black_cont" Id="{614E5924-6BD5-4A3F-B66C-241C0DF22B95}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.black_cont">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45" VisibleUnderwater="If_False"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -1764,13 +1764,13 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="pipe_steam_a.fleet_white" Id="{1190D55D-BC0D-458E-8367-AB3AC22F7502}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.fleet_white">
   <Params Continuous="true" Count="20" ParticleLifeTime="2" EmitAngle="14.25,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.07,1;0.53,0.15833335;1)" SoftParticle="true" DiffuseLighting="3" Size="2.27,,,(,0.045833334;0.255,0.29583335;0.506,0.8166667;1,1)" Stretch="0.06" Speed="3" AirResistance="0.7996" GravityScale="0.1" RandomAngles=",180" RotationRate=",30" FillRateCost="0.18"/>
  </Particles>
- <Particles Name="pipe_steam_a.fleet_white_pulsed" Id="{4AAA5F96-A9F0-4F89-9040-CDE1CBB578DC}" Library="smoke_and_fire">
+ <Particles Name="pipe_steam_a.fleet_white_pulsed">
   <Params Continuous="true" Count="20" EmitterLifeTime="0.7,0.338" PulsePeriod="4,0.733" ParticleLifeTime="1" EmitAngle="14.25,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.07,1;0.53,0.15833335;1)" SoftParticle="true" DiffuseLighting="3" Sound="sounds/physics:particles/steam:blast_generic" Size="1.52,0.325,,(,0.045833334;1,1)" Stretch="0.06" Speed="3" GravityScale="0.158" RandomAngles=",180" RotationRate=",30" PhysicsType="SimpleCollision" CollideStaticObjects="true"/>
  </Particles>
- <Particles Name="black_smoke.huge_fire_ascension" Id="{51C39E6C-99AA-4B8A-9FBB-641FCE438A26}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.huge_fire_ascension">
   <Params Continuous="true" Count="22" ParticleLifeTime="20" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",0.23,,(;0.067,1;0.667,1;1)" Color="(0.616,0.616,0.616),0.63" SoftParticle="true" DiffuseLighting="0.109" Size="30,0.11,,(,0.06666667;0.043,0.15833335;1,1)" Stretch="0.18,1" AirResistance="1.4,,,(,0.54583335;0.224,0.06666667)" GravityScale="-0.025,0.138" RandomAngles=",50" RandomRotationRate=",2" FillRateCost="0"/>
   <Childs>
    <Particles Name="diffuse1">
@@ -1781,7 +1781,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.huge_white" Id="{D0D47696-72D2-45D3-94A7-96CB18D0EDDC}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.huge_white">
   <Params Enabled="false" Continuous="true" Count="20" ParticleLifeTime="6" EmitAngle="22.62,1" Texture="textures/sprites/smoke_b.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.043,1;0.52,1;1)" SoftParticle="true" DiffuseLighting="0.277" EmissiveLighting="0.327" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3.3" AirResistance="0.53" GravityScale="-0.11" RandomAngles=",180" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="huge_white1">
@@ -1789,7 +1789,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.huge_smoke_ascension" Id="{B72A2DD9-4707-4FD2-89D8-30B788535B97}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.huge_smoke_ascension">
   <Params Continuous="true" Count="22" ParticleLifeTime="20" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",0.23,,(;0.067,1;0.667,1;1)" Color="(0.616,0.616,0.616),0.63" SoftParticle="true" DiffuseLighting="0.109" Size="30,0.11,,(,0.06666667;0.043,0.15833335;1,1)" Stretch="0.18,1" AirResistance="1.4,,,(,0.54583335;0.224,0.06666667)" GravityScale="-0.025,0.138" RandomAngles=",50" RandomRotationRate=",2" FillRateCost="0"/>
   <Childs>
    <Particles Name="diffuse1">
@@ -1797,7 +1797,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.fire_line_ascension" Id="{F492E7B7-1295-468E-AE64-2635D70EC076}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.fire_line_ascension">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1836,7 +1836,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="Vehicle_fires.internal_vtol" Id="{AE2235DA-95AB-4BA0-B7C4-1727736920D3}" Library="smoke_and_fire">
+ <Particles Name="Vehicle_fires.internal_vtol">
   <Params Enabled="false" Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" DiffuseLighting="0.999" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" DrawLast="4"/>
   <Childs>
    <Particles Name="new_fire_burning1">
@@ -1850,7 +1850,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.white_cont" Id="{EE0931A4-4D68-46BD-9DAB-F29F200D1E1F}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.white_cont">
   <Params Enabled="false" Continuous="true" Count="21" ParticleLifeTime="2.08" EmitAngle="19.9,1" Facing="Free" Alpha=",,,(;0.067,1;0.533,1;1)" SoftParticle="true" DiffuseBacklighting="0.624" EmissiveLighting="0.178" EmissiveHDRDynamic="2" Size="2.248,0.175,,(,0.70000005;0.24,1;0.25,0.7875;1,1)" Speed="3.332,0.16" TurbulenceSize="0.110504" TurbulenceSpeed="212.5" RotationRate="104,120,45" VisibleUnderwater="If_False"/>
   <Childs>
    <Particles Name="smoke_negative_rotation14">
@@ -1858,7 +1858,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.fire_line_hunter" Id="{5D7AB021-2CA5-4352-ABFB-6BC6816C506E}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.fire_line_hunter">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1885,10 +1885,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="wind_dummy.hunter_scream" Id="{C4F22BFD-F498-406B-AE78-28F21C589CB6}" Library="smoke_and_fire">
+ <Particles Name="wind_dummy.hunter_scream">
   <Params Count="1" ParticleLifeTime="1" EmitAngle="132.6,1" Facing="Free" Size="6.13" Speed="35.1" ForceGeneration="Wind"/>
  </Particles>
- <Particles Name="Vehicle_fires.large_nosmoke" Id="{097D4B14-E20F-497B-B39C-9696AE344120}" Library="smoke_and_fire">
+ <Particles Name="Vehicle_fires.large_nosmoke">
   <Params Enabled="false" Continuous="true" ParticleLifeTime="8" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha=",,,(;0.02,0.97916675;0.52,1;1)" NotAffectedByFog="true" Size="5.3203,0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="4" RandomRotationRate=",20" MoveRelEmitter="true" DrawLast="4"/>
   <Childs>
    <Particles Name="animated">
@@ -1917,7 +1917,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.small_flame_wall" Id="{9C4E9639-0E2F-4BA6-A48D-D5A433877283}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.small_flame_wall">
   <Params Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="unused_smoke1">
@@ -1943,10 +1943,10 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="black_smoke.fleet_ambientdust" Id="{47B00CCF-A0C7-4398-BD2A-FDA24061FD8F}" Library="smoke_and_fire">
+ <Particles Name="black_smoke.fleet_ambientdust">
   <Params Continuous="true" Count="10" ParticleLifeTime="10,0.354" RandomOffset="2,1,2" EmitAngle="180,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.533,,,(;0.35,1;0.647,1;1)" SoftParticle="true" DiffuseLighting="1.5" DiffuseBacklighting="0.25" Size="2.05,0.167" Speed="0.1" RandomAngles=",180" RandomRotationRate=",12" FillRateCost="0.6" ConfigMin="High"/>
  </Particles>
- <Particles Name="VS2_Fire.fire_line_warrior" Id="{893E8CC1-356C-45A1-AC46-FCA8CA752E1B}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.fire_line_warrior">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -1979,7 +1979,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.tower_fire" Id="{7FA28BF9-5C70-4C69-9C17-1EA57836EEDB}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.tower_fire">
   <Params Enabled="false" Continuous="true" Count="14" ParticleLifeTime="6,0.21,(,1;0.467,0.9541667;1,0.1375)" PositionOffset=",1" RandomOffset="10" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.704,,(,1;0.37,1;1,0.3416667),(;0.094,1;0.6,1;1)" DiffuseLighting="0.129" DiffuseBacklighting="0.216" EmissiveLighting="0.218" Size="3.98,0.454,,(,0.38750002;1,1)" Speed="4,0.317" AirResistance="1.17,0.31" GravityScale="-0.477,0.346" RandomAngles=",90" RandomRotationRate=",24"/>
   <Childs>
    <Particles Name="AAA_new_firewall">
@@ -2001,7 +2001,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_stinger.sidewinder_asc" Id="{5352A808-FF56-4EAD-862F-22AD92B35045}" Library="smoke_and_fire">
+ <Particles Name="weapon_stinger.sidewinder_asc">
   <Params Enabled="false" Continuous="true" Count="60" EmitterLifeTime="5" ParticleLifeTime="1.6,0.283" FocusGravityDir="true" EmitAngle="11.42,1" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(0.5,1;1)" Color=",,,(0.008,(1,0.914,0.616);0.15,(1,1,1))" SoftParticle="true" DiffuseLighting="0.574" DiffuseBacklighting="0.482" Size="1.64,0.317,,(0.12,0.5666667;1,1)" Stretch="0.04,,,(0.157,1;0.4)" AirResistance="7.77" GravityScale="0.1" RandomAngles="12,12,12" RandomRotationRate="21,21,21"/>
   <Childs>
    <Particles Name="missile1">
@@ -2029,17 +2029,17 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="gadgets.generator_asian_destroyed" Id="{BAA6F5A6-C940-44DB-A44F-EA83D0E67213}" Library="smoke_and_fire">
+ <Particles Name="gadgets.generator_asian_destroyed">
   <Params Count="12" SpawnDelay="0.07" ParticleLifeTime="0.16,0.346" PosRandomOffset="0.2" EmitAngle="20,1" BlendType="Additive" Texture="textures/sprites/sparks_tiled_a.tif" TextureTiling="2,2,,4" Alpha=",,,(0.84,1;0.996,,4)" SoftParticle="true" DiffuseLighting="0.5" DiffuseBacklighting="0.5" Size="0.6,0.446,,(,0.4791667,32;0.482,1)" Stretch=",,,(0.5,1;1,0.045833334,4)" Speed="20,0.69" RandomAngles="12,12,12" RandomRotationRate="12,12,12"/>
   <Childs>
    <Particles Name="center_sparks">
     <Params Count="5" SpawnDelay="0.04" ParticleLifeTime="0.25,0.346" PosRandomOffset="0.2" EmitAngle="20,1" BlendType="Additive" Texture="textures/sprites/spark_sheet_b.dds" Alpha=",,,(0.318,1,32;0.996,,4)" Color=",,,(,(1,1,1);0.992,(0.945,0.694,0.447))" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="2" EmissiveHDRDynamic="2" Size="1.11,,,(,0.43333337;1,1)" Stretch="0.1,,,(0.5,1;1,0.045833334,4)" Speed="15.8,0.396" RandomAngles=",359"/>
    </Particles>
    <Particles Name="delayed_black_smoke">
-    <Params Continuous="true" Count="3" EmitterLifeTime="2" ParticleLifeTime="4,0.19" RandomOffset="1,,1" EmitAngle="28.844,0.45" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.74,,(0.46,1;1,,4),(;0.17,1;0.475,1;1)" SoftParticle="true" DiffuseLighting="0.396" DiffuseBacklighting="0.396" Size="3.6,0.438,,(,0.5666667,32;1,1)" Speed="3,0.5" AirResistance="0.4" RandomAngles=",359" RandomRotationRate="21,21,21" VisibleUnderwater="If_False"/>
+    <Params Continuous="true" Count="3" EmitterLifeTime="2" ParticleLifeTime="4,0.19" RandomOffset="1,,1" EmitAngle="28.844,0.45" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha="0.74,,(0.46,1;1,,4),(;0.165,1;0.475,1;1)" SoftParticle="true" DiffuseLighting="0.396" DiffuseBacklighting="0.396" Size="3.6,0.438,,(,0.5666667,32;1,1)" Speed="3,0.5" AirResistance="0.4" RandomAngles=",359" RandomRotationRate="21,21,21" VisibleUnderwater="If_False"/>
     <Childs>
      <Particles Name="delayed_black_smoke1">
-      <Params Continuous="true" Count="30" SpawnDelay="0.22" EmitterLifeTime="12" ParticleLifeTime="4,0.19,(,1;1,0.63750005)" EmitAngle="28.844,0.45" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.863,,(0.282,1,32;1,,4),(;0.17,1;0.475,1;1)" SoftParticle="true" DiffuseLighting="0.129" Size="1.99,0.296,(,1;1,0.75000006),(,0.5666667,32;1,1)" Stretch="0.11" Speed=",0.5" AirResistance="0.4,0.188" GravityScale="-0.13,0.2" RandomRotationRate=",50" VisibleUnderwater="If_False"/>
+      <Params Continuous="true" Count="30" SpawnDelay="0.22" EmitterLifeTime="12" ParticleLifeTime="4,0.19,(,1;1,0.63750005)" EmitAngle="28.844,0.45" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.863,,(0.282,1,32;1,,4),(;0.165,1;0.475,1;1)" SoftParticle="true" DiffuseLighting="0.129" Size="1.99,0.296,(,1;1,0.75000006),(,0.5666667,32;1,1)" Stretch="0.11" Speed=",0.5" AirResistance="0.4,0.188" GravityScale="-0.13,0.2" RandomRotationRate=",50" VisibleUnderwater="If_False"/>
      </Particles>
     </Childs>
    </Particles>
@@ -2093,7 +2093,7 @@
         <Params Count="1" ParticleLifeTime="0.28" FocusGravityDir="true" EmitAngle="0.2299,1" BlendType="Additive" Texture="textures/sprites/glow_a.dds" Alpha="0.604,,,(,1;0.25,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="35,,,(;0.333,1;0.525,1;1)" Speed="10.66" DrawLast="15"/>
         <Childs>
          <Particles Name="initial_glow39">
-          <Params Enabled="false" Count="10" ParticleLifeTime="0.6,0.287" PosRandomOffset="1.2" EmitAngle="90.5" BlendType="Additive" Texture="textures/sprites/fireball_anim_a.tif" TextureTiling="4,8,,,24" Alpha=",,,(0.7,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="1.99,0.26" Speed="9.4,0.317" AirResistance="1.35" GravityScale="-0.165" RandomAngles=",180" RandomRotationRate=",22" DrawLast="2"/>
+          <Params Enabled="false" Count="10" ParticleLifeTime="0.6,0.287" PosRandomOffset="1.2" EmitAngle="90.5" BlendType="Additive" Texture="textures/sprites/fireball_anim_a.tif" TextureTiling="4,8,,,24" Alpha=",,,(0.702,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="1.99,0.26" Speed="9.4,0.317" AirResistance="1.35" GravityScale="-0.165" RandomAngles=",180" RandomRotationRate=",22" DrawLast="2"/>
           <Childs>
            <Particles Name="initial_glow45">
                         <Params Enabled="false" Count="1" SecondGeneration="true" SpawnDelay="0.34,0.446" ParticleLifeTime="2.5,0.575" PosRandomOffset="1" EmitAngle="83.2" Texture="textures/sprites/smoke_a.tif" Alpha=",0.467,,(;0.08,1;1)" SoftParticle="true" DiffuseLighting="0.594" Size="1.75,0.15,,(0.086,0.5666667;1,1)" Speed="1" InheritVelocity="1" AirResistance="0.94" GravityScale=",0.596" RandomAngles="99,99,99" RandomRotationRate="33,12,33"/>
@@ -2104,7 +2104,7 @@
           <Params Enabled="false" Count="4" ParticleLifeTime="0.25" FocusGravityDir="true" EmitAngle="40,0.99" BlendType="Additive" Texture="textures/sprites/explosion_a.tif" Alpha="0.387,,,(,1;1)" Color="(0.996,0.97,0.59)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="2" Size="7.01,0.31,,(;0.608,1)" Speed="9.9" DrawLast="15"/>
          </Particles>
          <Particles Name="initial_glow46">
-          <Params Count="32" ParticleLifeTime="0.4,0.525" PositionOffset=",0.4" PosRandomOffset="1.2" BlendType="Additive" Texture="textures/sprites/fireball_anim_a.tif" TextureTiling="4,8,,,24" Material="Materials/particle/exposion_normal" Alpha=",,,(0.7,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="4" Size="2.8,0.663,,(,1;0.125,0.63750005)" Speed="9.4,0.317" AirResistance="2.98" RandomAngles=",180" RandomRotationRate=",22" DrawLast="2"/>
+          <Params Count="32" ParticleLifeTime="0.4,0.525" PositionOffset=",0.4" PosRandomOffset="1.2" BlendType="Additive" Texture="textures/sprites/fireball_anim_a.tif" TextureTiling="4,8,,,24" Material="Materials/particle/exposion_normal" Alpha=",,,(0.702,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="1" EmissiveHDRDynamic="4" Size="2.8,0.663,,(,1;0.125,0.63750005)" Speed="9.4,0.317" AirResistance="2.98" RandomAngles=",180" RandomRotationRate=",22" DrawLast="2"/>
           <Childs>
            <Particles Name="initial_glow45">
                         <Params Enabled="false" Count="1" SecondGeneration="true" SpawnDelay="0.2,0.446" ParticleLifeTime="4,0.275" PositionOffset=",0.6" RandomOffset=",1" PosRandomOffset="1" EmitAngle="83.2" Texture="textures/sprites/smoke_tiled_c.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.04,1;0.52,1;1)" Color="(0.514,0.514,0.41)" SoftParticle="true" DiffuseLighting="0.465" Size="2.05,0.15,,(0.004,0.40833336;1,1)" Stretch="0.12" Speed="0.6" InheritVelocity="0.386" AirResistance="0.5" GravityScale=",0.596" RandomAngles="99,30,99" RandomRotationRate="33,,33"/>
@@ -2139,7 +2139,7 @@
       <Params Count="6" ParticleLifeTime="3,0.317" PositionOffset=",0.5" EmitAngle="7.4,0.267" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.625,,,(;0.1,1;1)" SoftParticle="true" DiffuseLighting="0.653" Size="2.92,0.25,,(,0.4791667;1,1)" Speed="9.4,0.533" AirResistance="0.94,0.11" GravityScale="-0.079,0.21" RandomAngles=",359" RandomRotationRate=",21"/>
      </Particles>
      <Particles Name="smoke_high_lingering47">
-      <Params Count="10" SpawnDelay=",0.196" ParticleLifeTime="8,0.287" PositionOffset=",3" RandomOffset="3,3,3" FocusGravityDir="true" EmitAngle="81" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.575,,,(;0.035,1;0.5,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="0.396" EmissiveHDRDynamic="2" Size="5.25,0.446,,(,0.4791667;0.063,0.7041667;1,1)" Speed="3,0.375" AirResistance="0.3" GravityScale="-0.03" RandomAngles="1,180,1" RandomRotationRate="22,10,22" CameraMinDistance="50" DrawLast="1" FillRateCost="8"/>
+      <Params Count="10" SpawnDelay=",0.196" ParticleLifeTime="8,0.287" PositionOffset=",3" RandomOffset="3,3,3" FocusGravityDir="true" EmitAngle="81" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.575,,,(;0.03,1;0.5,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="0.396" EmissiveHDRDynamic="2" Size="5.25,0.446,,(,0.4791667;0.063,0.7041667;1,1)" Speed="3,0.375" AirResistance="0.3" GravityScale="-0.03" RandomAngles="1,180,1" RandomRotationRate="22,10,22" CameraMinDistance="50" DrawLast="1" FillRateCost="8"/>
      </Particles>
     </Childs>
    </Particles>
@@ -2171,7 +2171,7 @@
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="weapon_Rocket.trail_backup" Id="{41203A1A-740E-4477-B872-909BC02E7061}" Library="smoke_and_fire">
+ <Particles Name="weapon_Rocket.trail_backup">
   <Params Count="1" ParticleLifeTime="4,0.554" EmitAngle="11.42,1" Texture="textures/sprites/smoke_b.tif" Alpha="0,,,(;0.153,1;0.545,1;1)" Size="0.01,0.46,,(,0.15833335;0.25,0.5166667,32;1,1)" Speed=",0.333" GravityScale="-0.3" RandomAngles="12,12,12" RandomRotationRate=",75" MoveRelEmitter="true"/>
   <Childs>
    <Particles Name="Trail12">
@@ -2198,14 +2198,14 @@
     </Childs>
    </Particles>
    <Particles Name="Trail1">
-    <Params Continuous="true" Count="3" SecondGeneration="true" ParticleLifeTime="0.18,0.138" EmitAngle="11.42,1" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Alpha=",,,(;0.4,1;0.7,1;1)" Color="(0.98,,0.09),,,(,(1,1,1);1,0.584)" DiffuseLighting="0" EmissiveLighting="1" Size="2,,,(,0.40833336;0.25,0.6125;1,1)" Speed=",0.333" InheritVelocity="1" AirResistance="4" RandomAngles=",90" RandomRotationRate=",115" MoveRelEmitter="true" DrawLast="1"/>
+    <Params Continuous="true" Count="3" SecondGeneration="true" ParticleLifeTime="0.18,0.138" EmitAngle="11.42,1" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Alpha=",,,(;0.4,1;0.702,1;1)" Color="(0.98,,0.09),,,(,(1,1,1);1,0.584)" DiffuseLighting="0" EmissiveLighting="1" Size="2,,,(,0.40833336;0.25,0.6125;1,1)" Speed=",0.333" InheritVelocity="1" AirResistance="4" RandomAngles=",90" RandomRotationRate=",115" MoveRelEmitter="true" DrawLast="1"/>
    </Particles>
    <Particles Name="Trail2">
     <Params Enabled="false" Continuous="true" Count="5" SecondGeneration="true" EmitterLifeTime="0.2" ParticleLifeTime="0.46,0.317" EmitAngle="11.42,1" BlendType="Additive" Texture="textures/sprites/explosion_b.tif" Alpha=",,,(;0.64,1;1)" Color=",,,(,(1,1,1);1,0.584)" DiffuseLighting="0" EmissiveLighting="1" Size="1.17,0.18,,(;0.25,0.6125;1,1)" Speed="8.2,0.333" InheritVelocity="1" RandomAngles=",90" RandomRotationRate=",115" MoveRelEmitter="true" DrawLast="1"/>
    </Particles>
   </Childs>
  </Particles>
- <Particles Name="VS2_Fire.fire_noglow" Id="{E9540091-228C-432F-877C-3097D27AD6DD}" Library="smoke_and_fire">
+ <Particles Name="VS2_Fire.fire_noglow">
   <Params Continuous="true" ParticleLifeTime="2.5" PositionOffset=",1" EmitAngle="22.62,1" Texture="textures/sprites/smoke_a.tif" Alpha="0.9,,,(;0.043,1;0.52,1;1)" SoftParticle="true" Size=",0.325,,(,0.5541667;0.25,0.6958334;1,1)" Speed="3" AirResistance="0.82715" RandomRotationRate=",20" DrawLast="5"/>
   <Childs>
    <Particles Name="flames_big2">
