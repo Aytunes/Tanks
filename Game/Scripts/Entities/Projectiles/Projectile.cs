@@ -30,7 +30,7 @@ namespace CryGameCode.Projectiles
 			// Id 0 is the terrain
 			if(targetEntityId != 0)
 			{
-				var target = Entity.Get(targetEntityId) as DamageableEntity;
+				var target = Entity.Get(targetEntityId) as IDamageable;
 
 				if(target != null)
 					target.Damage(Damage, DamageType);
