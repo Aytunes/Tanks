@@ -63,7 +63,6 @@ namespace CryGameCode.Tanks
 			OnDestroyed += (e) => 
 			{
 				Input.MouseEvents -= ProcessMouseEvents;
-
 				Input.ActionmapEvents.RemoveAll(this);
 			};
 
