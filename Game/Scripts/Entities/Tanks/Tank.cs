@@ -1,11 +1,17 @@
-﻿using CryEngine;
+﻿using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
+
+using CryEngine;
+using CryEngine.Extensions;
 using CryGameCode.Entities;
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
-	public abstract class Tank : DamageableActor
+	public class Tank : DamageableActor
 	{
+		#region Statics
 		static Tank()
 		{
 			CVar.RegisterFloat("g_tankTurnSpeed", ref tankTurnSpeed);
@@ -24,7 +30,40 @@ namespace CryGameCode.Tanks
 			{
 				//Entity.Spawn<AutocannonTank>("spawnedTank", (Actor.LocalClient as CameraProxy).TargetEntity.Position);
 			});
+
+			TurretTypes = (from type in Assembly.GetExecutingAssembly().GetTypes()
+						   where type.Implements<TankTurret>()
+						   select type).ToList();
+
+			ConsoleCommand.Register("SetTankType", (e) =>
+			{
+				ForceTankType = e.Args[0];
+			});
+
+			ConsoleCommand.Register("ResetTankType", (e) =>
+			{
+				ForceTankType = string.Empty;
+			});
 		}
+
+		#region CVars
+		public static float minCameraDistanceZ = 25;
+		public static float maxCameraDistanceZ = 35;
+
+		public static float cameraDistanceY = -5;
+
+		public static float minCameraAngleX = -80;
+		public static float maxCameraAngleX = -90;
+
+		public static float zoomSpeed = 2;
+
+		public static int maxZoomLevel = 8;
+		#endregion
+
+		private static string ForceTankType;
+
+		private static List<System.Type> TurretTypes;
+		#endregion
 
 		public override void OnSpawn()
 		{
@@ -39,51 +78,45 @@ namespace CryGameCode.Tanks
 			Input.ActionmapEvents.Add("moveback", OnMoveBack);
 			Input.ActionmapEvents.Add("sprint", OnSprint);
 
-			// Temp hax for right mouse events not working
-			Input.ActionmapEvents.Add("attack2", (e) =>
-			{
-				switch (e.KeyEvent)
-				{
-					case KeyEvent.OnPress:
-						if (AutomaticFire)
-							m_rightFiring = true;
-						break;
-
-					case KeyEvent.OnRelease:
-						if (AutomaticFire)
-							m_rightFiring = false;
-						else
-							FireRight();
-						break;
-				}
-			});
-
-			Input.MouseEvents += ProcessMouseEvents;
-
 			OnDestroyed += (e) => 
 			{
-				Input.MouseEvents -= ProcessMouseEvents;
-
 				Input.ActionmapEvents.RemoveAll(this);
+
+				if (Turret != null)
+				{
+					Turret.Destroy();
+					Turret = null;
+				}
 			};
 
-			Reset();
+			Reset(true);
 		}
 
 		protected override void OnEditorReset(bool enteringGame)
 		{
-			Reset();
+			Reset(enteringGame);
 		}
 
-		void Reset()
+		void Reset(bool enteringGame)
 		{
 			LoadObject(Model);
 
-			Turret = GetAttachment("turret");
-			Turret.UseEntityRotation = true; // We want to be able to independently rotate it
+			if (enteringGame)
+			{
+				System.Type turretType;
 
-			Turret.LoadObject(TurretModel);
-			Turret.Material = Material.Find("objects/tanks/tank_turrets_" + Team);
+				if (string.IsNullOrEmpty(ForceTankType))
+					turretType = TurretTypes[SinglePlayer.Selector.Next(TurretTypes.Count)];
+				else
+					turretType = System.Type.GetType("CryGameCode.Tanks." + ForceTankType, true, true);
+
+				Turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
+			}
+			else
+			{
+				Turret.Destroy();
+				Turret = null;
+			}
 
 			LeftTrack = GetAttachment("track_left");
 			RightTrack = GetAttachment("track_right");
@@ -101,10 +134,15 @@ namespace CryGameCode.Tanks
 			Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
 			Physics.Save();
 
-			if(AutomaticFire)
-				ReceiveUpdates = true;
-
 			InitHealth(100);
+
+			ReceiveUpdates = true;
+		}
+
+		public override void OnUpdate()
+		{
+			if(Turret != null)
+				Turret.Update();
 		}
 
 		public override void OnDeath()
@@ -130,8 +168,8 @@ namespace CryGameCode.Tanks
 		{
 			Hidden = hide;
 
-			if(!Turret.IsDestroyed)
-				Turret.Hidden = hide;
+			if(Turret != null)
+				Turret.Hide(hide);
 
 			if(!LeftTrack.IsDestroyed)
 				LeftTrack.Hidden = hide;
@@ -146,6 +184,9 @@ namespace CryGameCode.Tanks
 		#region Movement
 		protected override void OnPrePhysicsUpdate()
 		{
+			if (IsDestroyed)
+				return;
+
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
 
@@ -273,28 +314,17 @@ namespace CryGameCode.Tanks
 		float ZoomRatio { get { return ZoomLevel / maxZoomLevel; } }
 
 		public bool IsSpectating { get; set; }
-
-		public static float minCameraDistanceZ = 25;
-		public static float maxCameraDistanceZ = 35;
-
-		public static float cameraDistanceY = -5;
-
-		public static float minCameraAngleX = -80;
-		public static float maxCameraAngleX = -90;
-
-		public static float zoomSpeed = 2;
-
-		public static int maxZoomLevel = 8;
 		#endregion
 
 		string team;
 		[EditorProperty]
 		public string Team
-		{
+		{ 
 			get { return team ?? "red"; }
 			set
 			{
-				if((GameRules.Current as SinglePlayer).IsTeamValid(value))
+				var gameRules = GameRules.Current as SinglePlayer;
+				if (gameRules != null && gameRules.IsTeamValid(value))
 				{
 					team = value;
 				}
@@ -303,99 +333,7 @@ namespace CryGameCode.Tanks
 
 		public string Model { get { return "objects/tanks/tank_generic_" + Team + ".cdf"; } }
 
-		#region Weaponry
-		public override void OnUpdate()
-		{
-			if (m_leftFiring)
-				FireLeft();
-
-			if (m_rightFiring)
-				FireRight();
-		}
-
-		private void ProcessMouseEvents(MouseEventArgs e)
-		{
-			switch (e.MouseEvent)
-			{
-				// Handle turret rotation
-				case MouseEvent.Move:
-					{
-						m_mousePos = Renderer.ScreenToWorld(e.X, e.Y);
-
-						var dir = m_mousePos - Turret.Position;
-
-						var rot = Turret.Rotation;
-						rot.SetRotationZ(Math.Atan2(-dir.X, dir.Y));
-						Turret.Rotation = rot;
-					}
-					break;
-
-				case MouseEvent.LeftButtonDown:
-					{
-						if (AutomaticFire)
-							m_leftFiring = true;
-
-						ChargeWeapon();
-					}
-					break;
-
-				case MouseEvent.LeftButtonUp:
-					{
-						if (AutomaticFire)
-							m_leftFiring = false;
-						else
-							FireLeft();
-					}
-					break;
-			}
-		}
-
-		protected virtual void ChargeWeapon() { }
-
-		private void Fire(ref float shotTime, string helper)
-		{
-			if(Time.FrameStartTime > shotTime + (TimeBetweenShots * 1000))
-			{
-				shotTime = Time.FrameStartTime;
-
-				var jointAbsolute = Turret.GetJointAbsolute(helper);
-				jointAbsolute.T = Turret.Transform.TransformPoint(jointAbsolute.T);
-				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Turret.Rotation);
-				OnFire(jointAbsolute.T);
-			}
-		}
-
-		protected void FireLeft()
-		{
-			Fire(ref m_lastleftShot, LeftHelper);
-		}
-
-		protected void FireRight()
-		{
-			if(!string.IsNullOrEmpty(RightHelper))
-				Fire(ref m_lastRightShot, RightHelper);
-		}
-
-		protected virtual void OnFire(Vec3 firePos) { }
-
-		public virtual bool AutomaticFire { get { return false; } }
-		public virtual float TimeBetweenShots { get { return 1; } }
-
-		public virtual System.Type ProjectileType { get { return typeof(Bullet); } }
-
-		private float m_lastleftShot;
-		private float m_lastRightShot;
-		private bool m_rightFiring;
-		private bool m_leftFiring;
-		#endregion
-
-		public abstract string TurretModel { get; }
-		public virtual string LeftHelper { get { return "turret_term"; } }
-		public virtual string RightHelper { get { return string.Empty; } }
-
-		private Vec3 m_mousePos;
-
-		protected Attachment Turret { get; set; }
+		protected TankTurret Turret { get; set; }
 		protected Attachment LeftTrack { get; set; }
 		protected Attachment RightTrack { get; set; }
 	}

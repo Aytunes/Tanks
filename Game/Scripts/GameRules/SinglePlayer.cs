@@ -16,42 +16,15 @@ namespace CryGameCode
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
 		public static string[] Teams = { "red", "blue" };
-		private static List<Type> TankTypes;
-		private static Random Selector = new Random();
-
-		static SinglePlayer()
-		{
-			TankTypes = (from type in Assembly.GetExecutingAssembly().GetTypes()
-						 where type.Implements<Tank>()
-						 select type).ToList();
-
-			ConsoleCommand.Register("SetTankType", (e) =>
-			{
-				ForceTankType = e.Args[0];
-			});
-
-			ConsoleCommand.Register("ResetTankType", (e) =>
-			{
-				ForceTankType = string.Empty;
-			});
-		}
-
-		private static string ForceTankType;
+		public static Random Selector = new Random();
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
 			if (!Network.IsServer)
 				return;
 
-			Type tankType;
-
-			if (string.IsNullOrEmpty(ForceTankType))
-				tankType = TankTypes[Selector.Next(TankTypes.Count)];
-			else
-				tankType = Type.GetType("CryGameCode.Tanks." + ForceTankType, true, true);
-
-			var player = Actor.Create(tankType, channelId, playerName);
-			if (player == null)
+			var tank = Actor.Create<Tank>(channelId, playerName);
+			if (tank == null)
 			{
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
 				return;
@@ -91,8 +64,6 @@ namespace CryGameCode
 
 				spawnPoint.TrySpawn(tank);
 			}
-
-			var tank2 = Actor.Create<HeavyTank>(2);
 		}
 
 		public bool IsTeamValid(string team)
