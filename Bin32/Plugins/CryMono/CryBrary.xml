@@ -3138,7 +3138,7 @@
             <param name="position">The position in three dimensional space of the origin of the ray.</param>
             <param name="direction">The normalized direction of the ray.</param>
         </member>
-        <member name="M:CryEngine.Ray.Cast(CryEngine.RaycastHit@,CryEngine.EntityQueryFlags,CryEngine.RayWorldIntersectionFlags,System.Int32,CryEngine.EntityId[])">
+        <member name="M:CryEngine.Ray.Cast(CryEngine.RaycastHit@,CryEngine.EntityQueryFlags,CryEngine.RayWorldIntersectionFlags,System.Int32,CryEngine.PhysicalEntity[])">
             <summary>
             Steps through the entity grid and raytraces entities
             traces a finite ray from org along dir
