@@ -132,6 +132,8 @@ namespace CryGameCode.Tanks
 			Physics.UseCapsule = false;
 			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
 			Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
+			Physics.MaxClimbAngle = 0.52f; // ~30°
+			Physics.AirControl = 0.0f;
 			Physics.Save();
 
 			InitHealth(100);
