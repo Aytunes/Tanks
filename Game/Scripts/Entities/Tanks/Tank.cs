@@ -277,7 +277,7 @@ namespace CryGameCode.Tanks
 					ZoomLevel = maxZoomLevel;
 			}
 
-			viewParams.FieldOfView = Math.DegreesToRadians(60);
+			viewParams.FieldOfView = MathHelpers.DegreesToRadians(60);
 
 			var distZ = minCameraDistanceZ + (minCameraDistanceZ - maxCameraDistanceZ) * ZoomRatio;
 
@@ -289,7 +289,7 @@ namespace CryGameCode.Tanks
 			else
 			{
 				viewParams.Position = Position + new Vec3(0, cameraDistanceY, distZ);
-				viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(Math.DegreesToRadians(minCameraAngleX + (minCameraAngleX - maxCameraAngleX) * ZoomRatio), 0, 0));
+                viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(minCameraAngleX + (minCameraAngleX - maxCameraAngleX) * ZoomRatio), 0, 0));
 			}
 		}
 

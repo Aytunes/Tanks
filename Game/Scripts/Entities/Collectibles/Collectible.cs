@@ -23,11 +23,6 @@ namespace CryGameCode.Entities.Collectibles
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Mass = -1;
 
-			if(Minimum == null)
-				Minimum = Vec3.Zero;
-			if(Maximum == null)
-				Maximum = Vec3.Zero;
-
 			TriggerBounds = new BoundingBox(Minimum, Maximum);
 			Active = true;
 		}

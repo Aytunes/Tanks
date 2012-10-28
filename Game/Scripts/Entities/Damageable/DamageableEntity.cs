@@ -12,7 +12,7 @@ namespace CryGameCode.Entities
 
 		public void Damage(float damage, DamageType type)
 		{
-			Health = Math.Max(Health - damage, 0);
+            Health = MathHelpers.Max(Health - damage, 0);
 			OnDamage(damage, type);
 
 			if(IsDead && !m_diedOnce)
@@ -24,7 +24,7 @@ namespace CryGameCode.Entities
 
 		public void Heal(float amount)
 		{
-			Health = Math.Min(Health + amount, MaxHealth);
+            Health = MathHelpers.Min(Health + amount, MaxHealth);
 		}
 
 		public void InitHealth(float amount)
