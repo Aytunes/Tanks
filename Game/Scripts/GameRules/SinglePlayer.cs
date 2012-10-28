@@ -24,6 +24,7 @@ namespace CryGameCode
 				return;
 
 			var tank = Actor.Create<Tank>(channelId, playerName);
+
 			if(tank == null)
 			{
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");

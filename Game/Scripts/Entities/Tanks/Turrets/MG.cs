@@ -1,8 +1,6 @@
-﻿using CryEngine;
-
+﻿
 namespace CryGameCode.Tanks
 {
-	[Entity(Category = "Tanks")]
 	public class MGTank : TankTurret
 	{
 		public MGTank(Tank tank) : base(tank) { }

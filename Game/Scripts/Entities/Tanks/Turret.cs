@@ -1,13 +1,10 @@
 ﻿using CryEngine;
-
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
 	public abstract class TankTurret
 	{
-		public TankTurret() { }
-
 		public TankTurret(Tank owner)
 		{
 			Owner = owner;
@@ -48,7 +45,6 @@ namespace CryGameCode.Tanks
 			if(Owner.IsLocalClient)
 			{
 				Input.MouseEvents -= ProcessMouseEvents;
-
 				Input.ActionmapEvents.RemoveAll(this);
 			}
 		}
@@ -150,8 +146,8 @@ namespace CryGameCode.Tanks
 				Attachment.Hidden = hide;
 		}
 
-		public Tank Owner { get; set; }
-		public Attachment Attachment { get; set; }
+		public Tank Owner { get; private set; }
+		public Attachment Attachment { get; private set; }
 
 		public abstract string Model { get; }
 	}

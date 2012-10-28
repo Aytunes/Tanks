@@ -1,5 +1,4 @@
-﻿using CryEngine;
-
+﻿
 namespace CryGameCode.Tanks
 {
 	public class Autocannon : TankTurret
