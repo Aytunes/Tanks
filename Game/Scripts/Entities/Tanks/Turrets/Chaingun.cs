@@ -2,7 +2,6 @@
 
 namespace CryGameCode.Tanks
 {
-	[Entity(Category = "Tanks")]
 	public class ChaingunTank : TankTurret
 	{
 		public ChaingunTank(Tank tank) : base(tank) { }

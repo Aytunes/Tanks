@@ -1,13 +1,10 @@
 ﻿using CryEngine;
-
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
 	public abstract class TankTurret
 	{
-		public TankTurret() { }
-
 		public TankTurret(Tank owner)
 		{
 			Owner = owner;
@@ -18,24 +15,24 @@ namespace CryGameCode.Tanks
 			Attachment.LoadObject(Model);
 			Attachment.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
 
-			if (Owner.IsLocalClient)
+			if(Owner.IsLocalClient)
 			{
 				// Temp hax for right mouse events not working
 				Input.ActionmapEvents.Add("attack2", (e) =>
 				{
-					switch (e.KeyEvent)
+					switch(e.KeyEvent)
 					{
-						case KeyEvent.OnPress:
-							if (AutomaticFire)
-								m_rightFiring = true;
-							break;
+					case KeyEvent.OnPress:
+						if(AutomaticFire)
+							m_rightFiring = true;
+						break;
 
-						case KeyEvent.OnRelease:
-							if (AutomaticFire)
-								m_rightFiring = false;
-							else
-								FireRight();
-							break;
+					case KeyEvent.OnRelease:
+						if(AutomaticFire)
+							m_rightFiring = false;
+						else
+							FireRight();
+						break;
 					}
 				});
 
@@ -45,58 +42,57 @@ namespace CryGameCode.Tanks
 
 		public void Destroy()
 		{
-			if (Owner.IsLocalClient)
+			if(Owner.IsLocalClient)
 			{
 				Input.MouseEvents -= ProcessMouseEvents;
-
 				Input.ActionmapEvents.RemoveAll(this);
 			}
 		}
 
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
-			switch (e.MouseEvent)
+			switch(e.MouseEvent)
 			{
 				// Handle turret rotation
-				case MouseEvent.Move:
-					{
-						m_mousePos = Renderer.ScreenToWorld(e.X, e.Y);
+			case MouseEvent.Move:
+			{
+				m_mousePos = Renderer.ScreenToWorld(e.X, e.Y);
 
-						var dir = m_mousePos - Attachment.Position;
+				var dir = m_mousePos - Attachment.Position;
 
-						var rot = Attachment.Rotation;
-                        rot.SetRotationZ(MathHelpers.Atan2(-dir.X, dir.Y));
-						Attachment.Rotation = rot;
-					}
-					break;
+				var rot = Attachment.Rotation;
+                rot.SetRotationZ(MathHelpers.Atan2(-dir.X, dir.Y));
+				Attachment.Rotation = rot;
+			}
+			break;
 
-				case MouseEvent.LeftButtonDown:
-					{
-						if (AutomaticFire)
-							m_leftFiring = true;
+			case MouseEvent.LeftButtonDown:
+			{
+				if(AutomaticFire)
+					m_leftFiring = true;
 
-						ChargeWeapon();
-					}
-					break;
+				ChargeWeapon();
+			}
+			break;
 
-				case MouseEvent.LeftButtonUp:
-					{
-						if (AutomaticFire)
-							m_leftFiring = false;
-						else
-							FireLeft();
-					}
-					break;
+			case MouseEvent.LeftButtonUp:
+			{
+				if(AutomaticFire)
+					m_leftFiring = false;
+				else
+					FireLeft();
+			}
+			break;
 			}
 		}
 
 		#region Weapons
 		public void Update()
 		{
-			if (m_leftFiring)
+			if(m_leftFiring)
 				FireLeft();
 
-			if (m_rightFiring)
+			if(m_rightFiring)
 				FireRight();
 		}
 
@@ -104,7 +100,7 @@ namespace CryGameCode.Tanks
 
 		private void Fire(ref float shotTime, string helper)
 		{
-			if (Time.FrameStartTime > shotTime + (TimeBetweenShots * 1000))
+			if(Time.FrameStartTime > shotTime + (TimeBetweenShots * 1000))
 			{
 				shotTime = Time.FrameStartTime;
 
@@ -122,7 +118,7 @@ namespace CryGameCode.Tanks
 
 		protected void FireRight()
 		{
-			if (!string.IsNullOrEmpty(RightHelper))
+			if(!string.IsNullOrEmpty(RightHelper))
 				Fire(ref m_lastRightShot, RightHelper);
 		}
 
@@ -150,8 +146,8 @@ namespace CryGameCode.Tanks
 				Attachment.Hidden = hide;
 		}
 
-		public Tank Owner { get; set; }
-		public Attachment Attachment { get; set; }
+		public Tank Owner { get; private set; }
+		public Attachment Attachment { get; private set; }
 
 		public abstract string Model { get; }
 	}

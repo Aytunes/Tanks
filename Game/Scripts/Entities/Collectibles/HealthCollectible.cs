@@ -9,7 +9,7 @@ namespace CryGameCode.Entities.Collectibles
 			//Debug.LogAlways("Tank {0} collected health", LastUser.Name);
 			remainingHeal = HealthRestoration;
 
-			LastUser.OnDamaged += (damage, type) => 
+			LastUser.OnDamaged += (damage, type) =>
 			{
 				LastUser = null;
 			};
@@ -19,21 +19,21 @@ namespace CryGameCode.Entities.Collectibles
 		{
 			base.OnUpdate();
 
-			if (LastUser != null && !LastUser.IsDestroyed)
+			if(LastUser != null && !LastUser.IsDestroyed)
 			{
 				var heal = HealthRestoration * Time.DeltaTime * (1 / RestorationTime);
 				remainingHeal -= heal;
 
 				LastUser.Heal(heal);
 
-				if (remainingHeal <= 0)
+				if(remainingHeal <= 0)
 					LastUser = null;
 			}
 		}
 
 		public override string Model
 		{
-			 get { return "objects/tank_gameplay_assets/pickup_hologram/health_pickup.cga"; }
+			get { return "objects/tank_gameplay_assets/pickup_hologram/health_pickup.cga"; }
 		}
 
 		[EditorProperty]

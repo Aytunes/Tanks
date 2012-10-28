@@ -25,7 +25,7 @@ namespace CryGameCode.Entities.Physics
 
 		protected override void  OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
 		{
-			if (!Destroyed && targetEntityId!=0)
+			if(!Destroyed && targetEntityId!=0)
 			{
 				var breakageParams = new BreakageParameters();
 				breakageParams.type = BreakageType.Destroy;

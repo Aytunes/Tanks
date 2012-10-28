@@ -25,7 +25,7 @@ namespace CryGameCode.Entities.Lights
 
 		public void Activate(bool activate, bool force = false)
 		{
-			if ((activate && !Activated) || force)
+			if((activate && !Activated) || force)
 			{
 				Activated = true;
 

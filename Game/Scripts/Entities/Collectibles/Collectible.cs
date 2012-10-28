@@ -29,7 +29,7 @@ namespace CryGameCode.Entities.Collectibles
 
 		public override void OnUpdate()
 		{
-			if (!Active && Time.FrameStartTime - LastUsage > (DelayBetweenUsages * 1000))
+			if(!Active && Time.FrameStartTime - LastUsage > (DelayBetweenUsages * 1000))
 			{
 				Active = true;
 
@@ -44,17 +44,17 @@ namespace CryGameCode.Entities.Collectibles
 			if(Active)
 			{
 				var entity = Entity.Get(entityId);
-				if (entity is Attachment)
+				if(entity is Attachment)
 					return;
 
-				if (entity is Tank)
+				if(entity is Tank)
 				{
 					LastUser = entity as Tank;
 					Collect();
 
 					//Debug.DrawText("nom nom nom", 3.0f, Color.Blue, 5.0f);
 				}
-				else if (entity is Projectile)
+				else if(entity is Projectile)
 					Debug.DrawText("DENIED", 3.0f, Color.Red, 5.0f);
 
 				LastUsage = Time.FrameStartTime;

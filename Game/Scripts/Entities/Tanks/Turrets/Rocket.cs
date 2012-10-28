@@ -1,10 +1,8 @@
 ﻿using System;
-using CryEngine;
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
-	[Entity(Category = "Tanks")]
 	public class RocketTank : TankTurret
 	{
 		public RocketTank(Tank tank) : base(tank) { }

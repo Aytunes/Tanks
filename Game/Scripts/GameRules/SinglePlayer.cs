@@ -20,11 +20,12 @@ namespace CryGameCode
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
-			if (!Network.IsServer)
+			if(!Network.IsServer)
 				return;
 
 			var tank = Actor.Create<Tank>(channelId, playerName);
-			if (tank == null)
+
+			if(tank == null)
 			{
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
 				return;
@@ -38,27 +39,27 @@ namespace CryGameCode
 
 		public override void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId)
 		{
-			if (Network.IsEditor)
+			if(Network.IsEditor)
 				RevivePlayer(actorId);
 		}
 
 		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
 		{
-			if (!Network.IsEditor)
+			if(!Network.IsEditor)
 				RevivePlayer(playerId);
 		}
 
 		void RevivePlayer(EntityId actorId)
 		{
 			var tank = Actor.Get<Tank>(actorId);
-			if (tank == null)
+			if(tank == null)
 			{
 				Debug.Log("[SinglePlayer.OnRevive] Failed to get the player. Check the log for errors.");
 				return;
 			}
 
 			var spawnpoints = Entity.GetByClass<SpawnPoint>();
-			if (spawnpoints.Count() > 0)
+			if(spawnpoints.Count() > 0)
 			{
 				var spawnPoint = spawnpoints.ElementAt(Selector.Next(0, spawnpoints.Count() - 1));
 

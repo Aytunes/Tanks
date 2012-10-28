@@ -1,27 +1,26 @@
 ﻿using CryEngine;
-using CryGameCode.UI;
 
 namespace CryGameCode.Entities.Buildings
 {
 	[Entity(Category = "Buildings")]
 	public class Drill : DamageableEntity
 	{
-		private Button m_healthBar;
+		private ParticleEffect m_destroyedEffect;
+		private string m_team = "red";
 
-		protected override void OnEditorReset(bool enteringGame)
+		private const string Model = "objects/tank_env_assets/scifi/drill.cga";
+
+		protected override void OnStartGame()
 		{
-			Reset(enteringGame);
-
-			var left = team == "red";
-
-			if(enteringGame)
-			{
-				m_healthBar = new Button("", 100, left ? 100 : 300, (int)Health, 20);
-				OnDamage(0, DamageType.None);
-			}
+			Load();
 		}
 
-		void Reset(bool enteringGame = true)
+		protected override void OnStartLevel()
+		{
+			Load();
+		}
+
+		private void Load()
 		{
 			LoadObject(Model);
 			PlayAnimation("Default", AnimationFlags.Loop);
@@ -30,15 +29,14 @@ namespace CryGameCode.Entities.Buildings
 			Physics.Mass = -1;
 			Physics.Slot = 0;
 
-			Material = Material.Find("objects/tank_env_assets/scifi/drill_" + Team);
-
 			InitHealth(100);
 
-			if (!enteringGame && DestroyedEffect != null)
-			{
-				DestroyedEffect.Remove();
-				DestroyedEffect = null;
-			}
+			//if(m_destroyedEffect != null)
+			//	m_destroyedEffect.Remove();
+
+			OnDamage(0, DamageType.None);
+
+			Material = Material.Find("objects/tank_env_assets/scifi/drill_" + m_team);
 		}
 
 		public override void OnDeath()
@@ -46,36 +44,22 @@ namespace CryGameCode.Entities.Buildings
 			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
 			StopAnimation(blendOutTime: 1);
 
-			DestroyedEffect = ParticleEffect.Get("smoke_and_fire.Vehicle_fires.large2");
-			DestroyedEffect.Spawn(Position);
+			m_destroyedEffect = ParticleEffect.Get("smoke_and_fire.Vehicle_fires.large2");
+			m_destroyedEffect.Spawn(Position);
 		}
 
-		public override void OnDamage(float damage, DamageType type)
-		{
-			if(m_healthBar != null)
-			{
-				m_healthBar.Width = (int)Health;
-				m_healthBar.Text = string.Format("{0}: {1}/{2}", Team, Health, MaxHealth);
-			}
-		}
-
-		ParticleEffect DestroyedEffect { get; set; }
-
-		string team = "red";
 		[EditorProperty]
-		public string Team 
+		public string Team
 		{
-			get { return team; } 
-			set 
+			get { return m_team; }
+			set
 			{
-				if (string.IsNullOrEmpty(value))
+				if(string.IsNullOrEmpty(value))
 					return;
 
-				team = value; 
-				Reset(); 
+				m_team = value;
+				Load();
 			}
 		}
-
-		public string Model { get { return "objects/tank_env_assets/scifi/drill.cga"; } }
 	}
 }

@@ -105,6 +105,10 @@
     <Compile Include="Entities\Projectiles\Bullet.cs" />
     <Compile Include="Entities\Damageable\DamageableEntity.cs" />
     <Compile Include="Entities\Projectiles\Projectile.cs" />
+    <Compile Include="Entities\Tanks\TankDamage.cs" />
+    <Compile Include="Entities\Tanks\TankCamera.cs" />
+    <Compile Include="Entities\Tanks\TankConsole.cs" />
+    <Compile Include="Entities\Tanks\TankMovement.cs" />
     <Compile Include="Entities\Tanks\Turrets\Autocannon.cs" />
     <Compile Include="Entities\Tanks\Turrets\Chaingun.cs" />
     <Compile Include="Entities\Tanks\Turrets\Heavy.cs" />
@@ -122,7 +126,6 @@
     <Compile Include="GameRules\DeathMatch.cs" />
     <Compile Include="GameRules\GameRulesNativeCallbacks.cs" />
     <Compile Include="GameRules\SinglePlayer.cs" />
-    <Compile Include="UI\Button.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Libs\Config\defaultProfile.xml">

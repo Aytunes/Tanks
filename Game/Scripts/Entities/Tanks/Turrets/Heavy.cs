@@ -4,7 +4,6 @@ using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
-	[Entity(Category="Tanks")]
 	public class HeavyTank : TankTurret
 	{
 		#region Statics

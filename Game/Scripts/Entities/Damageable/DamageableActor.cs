@@ -9,7 +9,7 @@ namespace CryGameCode.Entities
             Health = MathHelpers.Max(Health - damage, 0);
 			OnDamage(damage, type);
 
-			if (Health <= 0 && !IsDead)
+			if(Health <= 0 && !IsDead)
 				OnDeath();
 		}
 
