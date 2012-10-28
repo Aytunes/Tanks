@@ -31,8 +31,8 @@ namespace CryGameCode.Entities.Buildings
 
 			InitHealth(100);
 
-			if(m_destroyedEffect != null)
-				m_destroyedEffect.Remove();
+			//if(m_destroyedEffect != null)
+			//	m_destroyedEffect.Remove();
 
 			OnDamage(0, DamageType.None);
 
