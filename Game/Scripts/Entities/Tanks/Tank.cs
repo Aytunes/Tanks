@@ -78,11 +78,11 @@ namespace CryGameCode.Tanks
 			Input.ActionmapEvents.Add("moveback", OnMoveBack);
 			Input.ActionmapEvents.Add("sprint", OnSprint);
 
-			OnDestroyed += (e) => 
+			OnDestroyed += (e) =>
 			{
 				Input.ActionmapEvents.RemoveAll(this);
 
-				if (Turret != null)
+				if(Turret != null)
 				{
 					Turret.Destroy();
 					Turret = null;
@@ -101,11 +101,11 @@ namespace CryGameCode.Tanks
 		{
 			LoadObject(Model);
 
-			if (enteringGame)
+			if(enteringGame)
 			{
 				System.Type turretType;
 
-				if (string.IsNullOrEmpty(ForceTankType))
+				if(string.IsNullOrEmpty(ForceTankType))
 					turretType = TurretTypes[SinglePlayer.Selector.Next(TurretTypes.Count)];
 				else
 					turretType = System.Type.GetType("CryGameCode.Tanks." + ForceTankType, true, true);
@@ -132,7 +132,7 @@ namespace CryGameCode.Tanks
 			Physics.UseCapsule = false;
 			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
 			Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
-			Physics.MaxClimbAngle = 0.52f; // ~30°
+			Physics.MaxClimbAngle = Math.DegreesToRadians(30);
 			Physics.AirControl = 0.0f;
 			Physics.Save();
 
@@ -152,7 +152,7 @@ namespace CryGameCode.Tanks
 			Debug.DrawText("Died!", 3, Color.Red, 5);
 
 			// Don't remove tank if it was placed by hand via the Editor.
-			if (Flags.HasFlag(EntityFlags.NoSave))
+			if(Flags.HasFlag(EntityFlags.NoSave))
 				Remove();
 			else
 				Hide(true);
@@ -162,7 +162,7 @@ namespace CryGameCode.Tanks
 		{
 			Debug.DrawText(string.Format("Took {0} points of {1} damage", damage, type), 3, Color.White, 3);
 
-			if (OnDamaged != null)
+			if(OnDamaged != null)
 				OnDamaged(damage, type);
 		}
 
@@ -186,13 +186,13 @@ namespace CryGameCode.Tanks
 		#region Movement
 		protected override void OnPrePhysicsUpdate()
 		{
-			if (IsDestroyed)
+			if(IsDestroyed)
 				return;
 
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
 
-			if (!Physics.LivingStatus.IsFlying)
+			if(!Physics.LivingStatus.IsFlying)
 				moveRequest.velocity = VelocityRequest;
 
 			moveRequest.rotation = LocalRotation;
@@ -204,10 +204,10 @@ namespace CryGameCode.Tanks
 			VelocityRequest = Vec3.Zero;
 			RotationRequest = Vec3.Zero;
 
-			if (moveRequest.velocity != Vec3.Zero)
+			if(moveRequest.velocity != Vec3.Zero)
 			{
 				var moveMat = Material.Find("objects/tanks/tracksmoving");
-				if (moveMat != null && !LeftTrack.IsDestroyed && !RightTrack.IsDestroyed)
+				if(moveMat != null && !LeftTrack.IsDestroyed && !RightTrack.IsDestroyed)
 				{
 					LeftTrack.Material = moveMat;
 					RightTrack.Material = moveMat;
@@ -216,7 +216,7 @@ namespace CryGameCode.Tanks
 			else
 			{
 				var defaultMat = Material.Find("objects/tanks/tracks");
-				if (defaultMat != null && !LeftTrack.IsDestroyed && !RightTrack.IsDestroyed)
+				if(defaultMat != null && !LeftTrack.IsDestroyed && !RightTrack.IsDestroyed)
 				{
 					LeftTrack.Material = defaultMat;
 					RightTrack.Material = defaultMat;
@@ -264,16 +264,16 @@ namespace CryGameCode.Tanks
 		#region Camera
 		protected override void UpdateView(ref ViewParams viewParams)
 		{
-			if (zoomingOut && ZoomLevel > 1)
+			if(zoomingOut && ZoomLevel > 1)
 			{
 				ZoomLevel -= zoomSpeed;
-				if (ZoomLevel < 1)
+				if(ZoomLevel < 1)
 					ZoomLevel = 1;
 			}
-			else if (zoomingIn && ZoomLevel < maxZoomLevel)
+			else if(zoomingIn && ZoomLevel < maxZoomLevel)
 			{
 				ZoomLevel += zoomSpeed;
-				if (ZoomLevel > maxZoomLevel)
+				if(ZoomLevel > maxZoomLevel)
 					ZoomLevel = maxZoomLevel;
 			}
 
@@ -281,7 +281,7 @@ namespace CryGameCode.Tanks
 
 			var distZ = minCameraDistanceZ + (minCameraDistanceZ - maxCameraDistanceZ) * ZoomRatio;
 
-			if (IsSpectating)
+			if(IsSpectating)
 			{
 				viewParams.Position = Position + Rotation * new Vec3(0, -10, 5);
 				viewParams.Rotation = Quat.CreateRotationVDir(Rotation.Column1);
@@ -295,17 +295,17 @@ namespace CryGameCode.Tanks
 
 		private void OnZoomIn(ActionMapEventArgs e)
 		{
-			if (e.KeyEvent == KeyEvent.OnPress)
+			if(e.KeyEvent == KeyEvent.OnPress)
 				zoomingIn = true;
-			else if (e.KeyEvent == KeyEvent.OnRelease)
+			else if(e.KeyEvent == KeyEvent.OnRelease)
 				zoomingIn = false;
 		}
 
 		private void OnZoomOut(ActionMapEventArgs e)
 		{
-			if (e.KeyEvent == KeyEvent.OnPress)
+			if(e.KeyEvent == KeyEvent.OnPress)
 				zoomingOut = true;
-			else if (e.KeyEvent == KeyEvent.OnRelease)
+			else if(e.KeyEvent == KeyEvent.OnRelease)
 				zoomingOut = false;
 		}
 
@@ -321,12 +321,12 @@ namespace CryGameCode.Tanks
 		string team;
 		[EditorProperty]
 		public string Team
-		{ 
+		{
 			get { return team ?? "red"; }
 			set
 			{
 				var gameRules = GameRules.Current as SinglePlayer;
-				if (gameRules != null && gameRules.IsTeamValid(value))
+				if(gameRules != null && gameRules.IsTeamValid(value))
 				{
 					team = value;
 				}

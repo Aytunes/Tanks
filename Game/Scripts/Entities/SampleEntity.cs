@@ -3,7 +3,7 @@ using CryEngine;
 namespace CryGameCode.Entities
 {
 	[Entity(Category="Samples", EditorHelper="Editor/Objects/anchor.cgf", Icon="")]
-    public class SampleEntity : Entity
+	public class SampleEntity : Entity
 	{
 		public override void OnSpawn()
 		{
@@ -13,7 +13,7 @@ namespace CryGameCode.Entities
 		[EditorProperty(Min=0, Max=100)]
 		public float Mass { get; set; }
 
-        [EditorProperty(Type = EntityPropertyType.File)]
+		[EditorProperty(Type = EntityPropertyType.File)]
 		public string FileSelector { get; set; }
 
 		[EditorProperty(Type=EntityPropertyType.Object)]

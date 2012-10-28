@@ -18,7 +18,7 @@ namespace CryGameCode.Entities
 
 		protected override void OnEditorReset(bool enteringGame)
 		{
-			Reset();	
+			Reset();
 		}
 
 		void Reset()

@@ -47,7 +47,7 @@ namespace CryGameCode.Entities.Buildings
 			m_destroyedEffect = ParticleEffect.Get("smoke_and_fire.Vehicle_fires.large2");
 			m_destroyedEffect.Spawn(Position);
 		}
-		
+
 		[EditorProperty]
 		public string Team
 		{
