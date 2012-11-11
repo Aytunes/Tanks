@@ -17,29 +17,31 @@ namespace CryGameCode.Tanks
 			Attachment.LoadObject(Model);
 			Attachment.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
 
-			if(Owner.IsLocalClient)
-			{
-				// Temp hax for right mouse events not working
-				Input.ActionmapEvents.Add("attack2", (e) =>
-				{
-					switch(e.KeyEvent)
-					{
-					case KeyEvent.OnPress:
-						if(AutomaticFire)
-							m_rightFiring = true;
-						break;
+            if (Owner.IsLocalClient)
+            {
+                // Temp hax for right mouse events not working
+                Input.ActionmapEvents.Add("attack2", (e) =>
+                {
+                    switch (e.KeyEvent)
+                    {
+                        case KeyEvent.OnPress:
+                            if (AutomaticFire)
+                                m_rightFiring = true;
+                            break;
 
-					case KeyEvent.OnRelease:
-						if(AutomaticFire)
-							m_rightFiring = false;
-						else
-							FireRight();
-						break;
-					}
-				});
+                        case KeyEvent.OnRelease:
+                            if (AutomaticFire)
+                                m_rightFiring = false;
+                            else
+                                FireRight();
+                            break;
+                    }
+                });
 
-				Input.MouseEvents += ProcessMouseEvents;
-			}
+                Input.MouseEvents += ProcessMouseEvents;
+            }
+            else
+                Debug.LogAlways("not local");
 		}
 
 		public void Destroy()

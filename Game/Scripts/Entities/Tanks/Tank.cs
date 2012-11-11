@@ -5,7 +5,12 @@ namespace CryGameCode.Tanks
 {
 	public partial class Tank : DamageableActor
 	{
-		public override void OnSpawn()
+        public override void OnSpawn()
+        {
+            Reset(true);
+        }
+
+		public void OnRevive()
 		{
 			ZoomLevel = 1;
 
@@ -37,7 +42,7 @@ namespace CryGameCode.Tanks
 			Reset(enteringGame);
 		}
 
-		void Reset(bool enteringGame)
+		public void Reset(bool enteringGame)
 		{
 			LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
 
