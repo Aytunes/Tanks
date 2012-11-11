@@ -34,11 +34,6 @@
             This script instance's id, used to keep track of instances in <see cref="T:CryEngine.Initialization.ScriptManager"/>.
             </summary>
         </member>
-        <member name="P:CryEngine.CryScriptInstance.IMonoObjectHandle">
-            <summary>
-            Handle to the native IMonoObject instance representing this script instance.
-            </summary>
-        </member>
         <member name="P:CryEngine.CryScriptInstance.ReceiveUpdates">
             <summary>
             Controls whether the entity receives an update per frame.
@@ -914,6 +909,31 @@
             Thrown when an entity is attempted to be removed improperly.
             </summary>
         </member>
+        <member name="F:CryEngine.KeyEvent.OnPress">
+            <summary>
+            Used when the action key is pressed
+            </summary>
+        </member>
+        <member name="F:CryEngine.KeyEvent.OnRelease">
+            <summary>
+            Used when the action key is released
+            </summary>
+        </member>
+        <member name="F:CryEngine.KeyEvent.OnHold">
+            <summary>
+            Used when the action key is held
+            </summary>
+        </member>
+        <member name="F:CryEngine.KeyEvent.AnalogCmd">
+            <summary>
+            Used when analog compare op succeeds
+            </summary>
+        </member>
+        <member name="T:CryEngine.SerializableInput">
+            <summary>
+            Used to cross over input data for realtime scripting.
+            </summary>
+        </member>
         <member name="T:CryEngine.PlaneIntersectionType">
             <summary>
             Describes the result of an intersection with a plane in three dimensions.
@@ -960,12 +980,12 @@
             Thrown when an error related to a remote invocation (see <see cref="T:CryEngine.RemoteInvocationAttribute"/>) is caught.
             </summary>
         </member>
-        <member name="F:CryEngine.Utils.ProjectSettings.BugReportLink">
+        <member name="F:CryEngine.Utilities.ProjectSettings.BugReportLink">
             <summary>
             Designates what link will be opened when the user presses 'Report Bug' in the exception form.
             </summary>
         </member>
-        <member name="F:CryEngine.Utils.ProjectSettings.ExceptionMessage">
+        <member name="F:CryEngine.Utilities.ProjectSettings.ExceptionMessage">
             <summary>
             Message displayed in the exception form when an exception has been thrown.
             </summary>
@@ -5257,26 +5277,6 @@
             <param name="isEditor"></param>
             <param name="isDedicated"></param>
         </member>
-        <member name="F:CryEngine.KeyEvent.OnPress">
-            <summary>
-            Used when the action key is pressed
-            </summary>
-        </member>
-        <member name="F:CryEngine.KeyEvent.OnRelease">
-            <summary>
-            Used when the action key is released
-            </summary>
-        </member>
-        <member name="F:CryEngine.KeyEvent.OnHold">
-            <summary>
-            Used when the action key is held
-            </summary>
-        </member>
-        <member name="F:CryEngine.KeyEvent.AnalogCmd">
-            <summary>
-            Used when analog compare op succeeds
-            </summary>
-        </member>
         <member name="F:CryEngine.Quat.V">
             <summary>
             The X, Y and Z components of the quaternion.
@@ -6512,12 +6512,12 @@
             and speed is of the essence.
             </remarks>
         </member>
-        <member name="T:CryEngine.PathUtils">
+        <member name="T:CryEngine.Utilities.PathUtils">
             <summary>
             Provides a clean method of retrieving commonly used engine filepaths.
             </summary>
         </member>
-        <member name="M:CryEngine.PathUtils.GetScriptFolder(CryEngine.Initialization.ScriptType)">
+        <member name="M:CryEngine.Utilities.PathUtils.GetScriptFolder(CryEngine.Initialization.ScriptType)">
             <summary>
             Gets the folder in which a certain type of scripts are located.
             </summary>
@@ -6525,36 +6525,36 @@
             <returns>The folder in which scripts of this type are located; i.e. Game\Scripts\Entities</returns>
             <example>GetScriptFolder(MonoScriptType.Entity)</example>
         </member>
-        <member name="P:CryEngine.PathUtils.RootFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.RootFolder">
             <summary>
             Gets the root engine folder.
             </summary>
             <returns>The filepath to the root folder as a string, ex:</returns>
             <example>"C:\CryENGINE3"</example>
         </member>
-        <member name="P:CryEngine.PathUtils.BinaryFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.BinaryFolder">
             <summary>
             Gets the current folder containing binaries relevant to current build type (Bin32 / Bin64).
             </summary>
             <returns>The filepath to the Binary folder as a string, ex:
             <example>"C:\CryENGINE3\Bin32"</example></returns>
         </member>
-        <member name="P:CryEngine.PathUtils.NativePluginsFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.NativePluginsFolder">
             <summary>
             PluginSDK main directory
             </summary>
         </member>
-        <member name="P:CryEngine.PathUtils.PluginsFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.PluginsFolder">
             <summary>
             Directory from which CryMono will load managed plugins.
             </summary>
         </member>
-        <member name="P:CryEngine.PathUtils.MonoFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.MonoFolder">
             <summary>
             Gets the Mono folder containing essential Mono libraries and configuration files.
             </summary>
         </member>
-        <member name="P:CryEngine.PathUtils.EngineFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.EngineFolder">
             <summary>
             Gets the engine folder.
             CryENGINE uses this store engine content which is not specific to the game being developed, i.e. shaders and configuration files.
@@ -6562,7 +6562,7 @@
             <returns>The filepath to the Engine folder as a string, ex:
             <example>"C:\CryENGINE3\Engine"</example></returns>
         </member>
-        <member name="P:CryEngine.PathUtils.GameFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.GameFolder">
             <summary>
             Gets the current game folder.
             CryENGINE uses this as the root for all game-related content.
@@ -6570,7 +6570,7 @@
             <returns>The filepath to the Game folder as a string, ex:
             <example>"C:\CryENGINE3\Game"</example></returns>
         </member>
-        <member name="P:CryEngine.PathUtils.ScriptsFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.ScriptsFolder">
             <summary>
             Gets the folder in which the engine stores scripts.
             We use this as the root for our .cs files and .dll plugins.
@@ -6578,7 +6578,7 @@
             <returns>The filepath to the Scripts folder as a string, ex:
             <example>"C:\CryENGINE3\Game\Scripts"</example></returns>
         </member>
-        <member name="P:CryEngine.PathUtils.TempFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.TempFolder">
             <summary>
             Gets the directory CryMono uses to store temporary files.
             </summary>
