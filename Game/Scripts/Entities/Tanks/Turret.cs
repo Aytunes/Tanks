@@ -17,6 +17,8 @@ namespace CryGameCode.Tanks
 			Attachment.LoadObject(Model);
 			Attachment.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
 
+            Attachment.OnDestroyed += (x) => { Destroy(); };
+
             if (Owner.IsLocalClient)
             {
                 // Temp hax for right mouse events not working
@@ -40,8 +42,6 @@ namespace CryGameCode.Tanks
 
                 Input.MouseEvents += ProcessMouseEvents;
             }
-            else
-                Debug.LogAlways("not local");
 		}
 
 		public void Destroy()
