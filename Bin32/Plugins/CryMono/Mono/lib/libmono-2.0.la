@@ -17,7 +17,7 @@ old_library='libmono-2.0.a'
 inherited_linker_flags=''
 
 # Libraries that this one depends upon.
-dependency_libs=' -lmswsock -L../../eglib/src -lws2_32 -lpsapi -lole32 -lwinmm -loleaut32 -lversion'
+dependency_libs=' -lmswsock -lkernel32 -L../../eglib/src -lws2_32 -lpsapi -lole32 -lwinmm -loleaut32 -ladvapi32 -lversion'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''

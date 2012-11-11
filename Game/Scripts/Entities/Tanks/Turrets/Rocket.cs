@@ -6,6 +6,7 @@ namespace CryGameCode.Tanks
 	public class RocketTank : TankTurret
 	{
 		public RocketTank(Tank tank) : base(tank) { }
+        private RocketTank() { }
 
 		public override string Model { get { return "objects/tanks/turret_rocket.chr"; } }
 		public override string LeftHelper { get { return "turret_term_2"; } }

@@ -5,6 +5,7 @@ namespace CryGameCode.Tanks
 	public class ChaingunTank : TankTurret
 	{
 		public ChaingunTank(Tank tank) : base(tank) { }
+        private ChaingunTank() { }
 
 		public override string Model { get { return "objects/tanks/turret_chaingun.chr"; } }
 		public override bool AutomaticFire { get { return true; } }

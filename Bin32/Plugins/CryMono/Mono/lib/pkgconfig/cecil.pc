@@ -3,5 +3,5 @@ Libraries=${assemblies_dir}/gac/Mono.Cecil/0.9.5.0__0738eb9f132ed756/Mono.Cecil.
 
 Name: Mono Internal -- Do not use.
 Description: Mono Internal Libraries -- Do not use 
-Version: 2.11.4
+Version: 3.0.1
 Libs: -r:Mono.Cecil.dll

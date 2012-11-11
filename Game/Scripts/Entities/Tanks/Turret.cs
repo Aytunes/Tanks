@@ -5,6 +5,8 @@ namespace CryGameCode.Tanks
 {
 	public abstract class TankTurret
 	{
+        public TankTurret() { }
+
 		public TankTurret(Tank owner)
 		{
 			Owner = owner;

@@ -4,6 +4,14 @@
 		
 	<!-- actors -->
 	<Class name="Tank" policy="dude" own="own"/>
+	
+	<Class name="Bullet" policy="phys"/>
+	<Class name="Rocket" policy="phys"/>
+	
+	<Class name="Rigidbody" policy="phys"/>
+	<Class name="Drill" policy="phys"/>
+	<Class name="HealthCollectible" policy="phys"/>
+	
 	<Class name="MonoActor" policy="dude" own="own"/>
 	<Class name="Grunt" policy="dude" />
 	
@@ -17,7 +25,8 @@
 	<Class name="InteractiveEntity" policy="phys"/>
 	<Class name="Tornado" policy="phys"/>
 	<Class name="Constraint" policy="phys"/>
-
+	<Class name="NativeEntity" policy="phys"/>
+	
 	<!-- misc -->
 	<Class name="CustomAmmoPickup" policy="obj"/>
 	<Class name="CustomAmmoPickupLarge" policy="obj"/>
