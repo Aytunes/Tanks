@@ -109,7 +109,7 @@ namespace CryGameCode.Tanks
 				shotTime = Time.FrameStartTime;
 
 				var jointAbsolute = Attachment.GetJointAbsolute(helper);
-				jointAbsolute.T = Attachment.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 1);
+				jointAbsolute.T = Attachment.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
 				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Attachment.Rotation);
 				OnFire(jointAbsolute.T);
 			}
