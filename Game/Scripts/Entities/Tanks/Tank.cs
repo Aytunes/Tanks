@@ -14,18 +14,22 @@ namespace CryGameCode.Tanks
 		{
 			ZoomLevel = 1;
 
-			Input.ActionmapEvents.Add("zoom_in", OnZoomIn);
-			Input.ActionmapEvents.Add("zoom_out", OnZoomOut);
+            if (IsLocalClient)
+            {
+                Input.ActionmapEvents.Add("zoom_in", OnZoomIn);
+                Input.ActionmapEvents.Add("zoom_out", OnZoomOut);
 
-			Input.ActionmapEvents.Add("moveright", OnMoveRight);
-			Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
-			Input.ActionmapEvents.Add("moveforward", OnMoveForward);
-			Input.ActionmapEvents.Add("moveback", OnMoveBack);
-			Input.ActionmapEvents.Add("sprint", OnSprint);
+                Input.ActionmapEvents.Add("moveright", OnMoveRight);
+                Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
+                Input.ActionmapEvents.Add("moveforward", OnMoveForward);
+                Input.ActionmapEvents.Add("moveback", OnMoveBack);
+                Input.ActionmapEvents.Add("sprint", OnSprint);
+            }
 
 			OnDestroyed += (e) =>
 			{
-				Input.ActionmapEvents.RemoveAll(this);
+                if(IsLocalClient)
+				    Input.ActionmapEvents.RemoveAll(this);
 
 				if(m_turret != null)
 				{
