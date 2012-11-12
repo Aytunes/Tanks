@@ -954,6 +954,16 @@
             The object is intersecting the plane.
             </summary>
         </member>
+        <member name="M:CryEngine.Native.NativeScriptSystemMethods.RevertAppDomain">
+            <summary>
+            Revert the last script reload attempt.
+            </summary>
+        </member>
+        <member name="M:CryEngine.Native.NativeScriptSystemMethods.ReloadAppDomain">
+            <summary>
+            Attempt to reload scripts again
+            </summary>
+        </member>
         <member name="T:CryEngine.ScriptInstanceDestroyedException">
             <summary>
             Thrown when attempting to invoke native methods on a destroyed entity.
