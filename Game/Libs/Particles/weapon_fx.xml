@@ -1,4 +1,4 @@
-<ParticleLibrary Name="weapon_fx" SandboxVersion="3.4.0.3585" ParticleVersion="22">
+<ParticleLibrary Name="weapon_fx" SandboxVersion="3.4.0.3696" ParticleVersion="22">
  <Particles Name="grenade.explosion_default">
   <Params Enabled="false" Count="12" SpawnDelay="0.07" ParticleLifeTime="0.16,0.345972" PosRandomOffset="0.2" EmitAngle="20,1" BlendType="Additive" Texture="textures/sprites/sparks_tiled_a.tif" TextureTiling="2,2,,4" Alpha=",,,(0.84,1;0.996,,4)" SoftParticle="true" DiffuseLighting="0.5" DiffuseBacklighting="0.5" Size="0.6,0.446,,(,0.4791667,32;0.482,1)" Stretch=",,,(0.5,1;1,0.045833334,4)" Speed="20,0.693" RandomAngles="12,12,12" RandomRotationRate="12,12,12"/>
   <Childs>
@@ -12,7 +12,7 @@
     <Params Count="15" ParticleLifeTime="0.2,0.228" EmitAngle="60,0.228" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/explosionblast_a.tif" Color=",,,(0.004,(1,1,1);0.475,(0.984,0.816,0.667);0.992;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="2" EmissiveHDRDynamic="1" Size="0.65,0.366" Stretch="0.1" Speed="20" DrawLast="4"/>
    </Particles>
    <Particles Name="initial_flames_ball">
-    <Params Count="30" ParticleLifeTime="0.5,0.525" PositionOffset=",0.4" PosRandomOffset="1.2" BlendType="Additive" TextureTiling="8,8,,,36" Material="Materials/particle/exposion_normal" Alpha=",,,(0.7,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="2" EmissiveHDRDynamic="1" Size="4,0.663,,(,1;0.125,0.6333334)" Speed="9.4,0.317" AirResistance="2.98" RandomAngles=",180" RandomRotationRate=",22" DrawLast="2"/>
+    <Params Count="30" ParticleLifeTime="0.5,0.525" PositionOffset=",0.4" PosRandomOffset="1.2" BlendType="Additive" TextureTiling="8,8,,,36" Material="Materials/particle/exposion_normal" Alpha=",,,(0.702,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveLighting="2" EmissiveHDRDynamic="1" Size="4,0.663,,(,1;0.125,0.6333334)" Speed="9.4,0.317" AirResistance="2.98" RandomAngles=",180" RandomRotationRate=",22" DrawLast="2"/>
     <Childs>
      <Particles Name="initial_flames_ball_smoke">
       <Params Count="1" SecondGeneration="true" SpawnDelay="0.2,0.4475138" ParticleLifeTime="3,0.277" PositionOffset=",0.6" RandomOffset=",1" PosRandomOffset="1" EmitAngle="83.2" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha=",,,(;0.04,1;0.52,1;1)" Color="(0.514,0.514,0.41)" SoftParticle="true" DiffuseLighting="0.465" Size="2.05,0.149,,(0.004,0.40833336;1,1)" Stretch="0.12" Speed="0.6" InheritVelocity="0.386" AirResistance="0.5" GravityScale=",0.594" RandomAngles="99,180,99" RandomRotationRate="33,,33"/>
@@ -38,10 +38,10 @@
     <Params Count="2" SpawnDelay="0.08,0.195021" ParticleLifeTime="0.4" PositionOffset=",0.2" FocusGravityDir="true" Facing="Velocity" BlendType="Additive" Texture="textures/sprites/shockwave_a.tif" Alpha="0.396,,,(,1;1)" Color="(0.882,0.882,0.882)" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="1" EmissiveHDRDynamic="1" Size="15,0.2,,(,0.29583335,32;1,1)" Speed=",0.6"/>
    </Particles>
    <Particles Name="smoke_delayed_area">
-    <Params Continuous="true" Count="3" SpawnDelay="0.2" EmitterLifeTime="2" ParticleLifeTime="4,0.19" RandomOffset="1,,1" EmitAngle="28.85,0.448718" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.743,,(0.46,1;1,,4),(;0.17,1;0.475,1;1)" SoftParticle="true" DiffuseLighting="0.396" DiffuseBacklighting="0.396" Size="3.6,0.4382022,,(,0.5708334,32;1,1)" Speed="3,0.5" AirResistance="0.4" RandomAngles=",359" RandomRotationRate="21,21,21" VisibleUnderwater="If_False"/>
+    <Params Continuous="true" Count="3" SpawnDelay="0.2" EmitterLifeTime="2" ParticleLifeTime="4,0.19" RandomOffset="1,,1" EmitAngle="28.85,0.448718" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.743,,(0.46,1;1,,4),(;0.165,1;0.475,1;1)" SoftParticle="true" DiffuseLighting="0.396" DiffuseBacklighting="0.396" Size="3.6,0.4382022,,(,0.5708334,32;1,1)" Speed="3,0.5" AirResistance="0.4" RandomAngles=",359" RandomRotationRate="21,21,21" VisibleUnderwater="If_False"/>
    </Particles>
    <Particles Name="smoke_delayed_up">
-    <Params Continuous="true" Count="10" SpawnDelay="0.2" EmitterLifeTime="6" ParticleLifeTime="4,0.19,(,1;1,0.6333334)" EmitAngle="28.85,0.448718" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.386,,(0.282,1,32;1,,4),(;0.17,1;0.475,1;1)" SoftParticle="true" DiffuseLighting="0.574" Size="2,0.297,(,1;1,0.75000006),(,0.5708334,32;1,1)" Stretch="0.11" Speed=",0.5" AirResistance="0.4,0.188" GravityScale="-0.13,0.198" RandomRotationRate=",50" VisibleUnderwater="If_False"/>
+    <Params Continuous="true" Count="10" SpawnDelay="0.2" EmitterLifeTime="6" ParticleLifeTime="4,0.19,(,1;1,0.6333334)" EmitAngle="28.85,0.448718" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.386,,(0.282,1,32;1,,4),(;0.165,1;0.475,1;1)" SoftParticle="true" DiffuseLighting="0.574" Size="2,0.297,(,1;1,0.75000006),(,0.5708334,32;1,1)" Stretch="0.11" Speed=",0.5" AirResistance="0.4,0.188" GravityScale="-0.13,0.198" RandomRotationRate=",50" VisibleUnderwater="If_False"/>
    </Particles>
    <Particles Name="smoke_ground">
     <Params Count="20" ParticleLifeTime="2,0.376" RandomOffset="4,,4" Texture="textures/sprites/smoke_tiled_a.tif" TextureTiling="2,2,,4" Alpha="0.634,,,(;0.15,1;1)" SoftParticle="true" DiffuseLighting="0.564" Size="3.45,0.416,,(,0.45416668;0.12,0.5708334;1,1)" AirResistance="0.5,0.158" GravityScale="-0.025" RandomAngles=",359" RandomRotationRate=",21"/>
@@ -50,7 +50,7 @@
     <Params Count="6" ParticleLifeTime="3,0.317" PositionOffset=",0.5" EmitAngle="7.4,0.267327" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.624,,,(;0.1,1;1)" SoftParticle="true" DiffuseLighting="0.653" Size="2.92,0.248,,(,0.4791667;1,1)" Speed="9.4,0.535" AirResistance="0.94,0.109" GravityScale="-0.079,0.208" RandomAngles=",359" RandomRotationRate=",21"/>
    </Particles>
    <Particles Name="smoke_lingering_area">
-    <Params Count="10" SpawnDelay=",0.195021" ParticleLifeTime="4,0.287" PositionOffset=",3" RandomOffset="3,3,3" FocusGravityDir="true" EmitAngle="81" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.574257,,,(;0.035,1;0.5,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveHDRDynamic="2" Size="5.25,0.446,,(,0.4791667;0.063,0.7041667;1,1)" Speed="3,0.376" AirResistance="0.3" GravityScale="-0.03" RandomAngles="1,180,1" RandomRotationRate="22,10,22" CameraMinDistance="50" DrawLast="1" FillRateCost="8"/>
+    <Params Count="10" SpawnDelay=",0.195021" ParticleLifeTime="4,0.287" PositionOffset=",3" RandomOffset="3,3,3" FocusGravityDir="true" EmitAngle="81" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.574257,,,(;0.03,1;0.5,1;1)" SoftParticle="true" DiffuseLighting="0" EmissiveHDRDynamic="2" Size="5.25,0.446,,(,0.4791667;0.063,0.7041667;1,1)" Speed="3,0.376" AirResistance="0.3" GravityScale="-0.03" RandomAngles="1,180,1" RandomRotationRate="22,10,22" CameraMinDistance="50" DrawLast="1" FillRateCost="8"/>
    </Particles>
    <Particles Name="sparks_physics">
     <Params Count="50,0.158" ParticleLifeTime="3,0.525" FocusAngle=",1" FocusAzimuth="360,1" EmitAngle="90,1" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/spark_a.tif" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="3" EmissiveHDRDynamic="2" Size="0.1,0.337,,(,1;1)" Stretch="0.01,1,,(,1;0.608)" Speed="30,0.564" AirResistance="1" GravityScale="2,0.277" PhysicsType="SimpleCollision" CollideTerrain="true" CollideStaticObjects="true" CollideDynamicObjects="true" Bounciness="1" DynamicFriction="10" MaxCollisionEvents="3" DrawLast="6"/>
@@ -329,7 +329,7 @@
   <Params MoveRelEmitter="true"/>
   <Childs>
    <Particles Name="refraction">
-    <Params Continuous="true" Count="2" EmitterLifeTime="3" ParticleLifeTime="1,0.109" EmitAngle=",1" Material="Materials/particle/refraction" GeometryInPieces="true" Alpha=",,,(;0.247,1;0.753,1;1)" SoftParticle="true" DiffuseLighting="0" NotAffectedByFog="true" Sound="sounds/physics:particles/steam:blast_generic" SoundFXParam=",,(;0.17,0.5208334;1)" Size="0.5,,,(,0.1375;1,1)" Speed=",0.2" RandomAngles=",,359" MoveRelEmitter="true" DrawLast="1"/>
+    <Params Continuous="true" Count="2" EmitterLifeTime="3" ParticleLifeTime="1,0.109" EmitAngle=",1" Material="Materials/particle/refraction" GeometryInPieces="true" Alpha=",,,(;0.247,1;0.753,1;1)" SoftParticle="true" DiffuseLighting="0" NotAffectedByFog="true" Sound="sounds/physics:particles/steam:blast_generic" SoundFXParam=",,(;0.165,0.5208334;1)" Size="0.5,,,(,0.1375;1,1)" Speed=",0.2" RandomAngles=",,359" MoveRelEmitter="true" DrawLast="1"/>
    </Particles>
    <Particles Name="smoke">
     <Params Continuous="true" Count="15" EmitterLifeTime="4" RandomOffset="0.1,,0.1" Texture="textures/sprites/smoke_white_tiled2.tif" TextureTiling="2,2,,4" Alpha="0.386,,(0.455,1;1),(;0.318,1;0.56,1;1)" SoftParticle="true" DiffuseLighting="0.248" DiffuseBacklighting="0.5" Size="0.45,0.228,,(;0.753,1;1,1)" AirResistance="0.21,0.297" GravityScale="-0.03,0.238" RandomAngles=",,180" RandomRotationRate="60,60,60" MoveRelEmitter="true"/>
@@ -360,6 +360,38 @@
    </Particles>
    <Particles Name="flash_ball">
     <Params Count="1" ParticleLifeTime="0.05" EmitAngle="0.6,1" BlendType="Additive" Texture="textures/sprites/muzzleflash/muzzle_tiled_b.tif" TextureTiling="2,2,,4" SoftParticle="true" EmissiveLighting="1" NotAffectedByFog="true" Size=",0.3" InitAngles=",30" RandomAngles=",5" MoveRelEmitter="true" DrawLast="1" DrawNear="true"/>
+   </Particles>
+   <Particles Name="flash_star">
+    <Params Count="3" ParticleLifeTime="0.05" EmitAngle="0.6,1" BlendType="Additive" Texture="textures/sprites/muzzleflash/muzzle_tiled_a.dds" TextureTiling="2,2,,4" Color="(,0.306,0)" EmissiveLighting="1" NotAffectedByFog="true" Size="2,0.3" RandomAngles=",180" MoveRelEmitter="true" DrawLast="-1" DrawNear="true"/>
+   </Particles>
+   <Particles Name="geo">
+    <Params Count="1" ParticleLifeTime="0.05" PositionOffset=",-0.17" Material="objects/effects/muzzle_flash_standard" Geometry="objects/effects/muzzle_flash_standard.cgf" Color="(,0.58,0.25)" Size="3,0.2"/>
+   </Particles>
+   <Particles Name="light_dummy">
+    <Params Count="1" ParticleLifeTime="0.2" BlendType="Additive" Texture="textures/sprites/glow_a.tif" Alpha=",,,(0.5,1;1)" Color="(,0.604,0.145)" DiffuseLighting="0" EmissiveLighting="1" LightSource="(30,,,(;0.3,1;1,0.5916667)),(10,,,(0.616,1;1)),2" Size="0.1" Speed="100"/>
+   </Particles>
+   <Particles Name="refraction">
+    <Params Count="1" ParticleLifeTime="0.5" EmitAngle="9.5,1" Texture="textures/sprites/glow_b.tif" Material="Materials/particle/refraction" Alpha=",,,(0.5,1;1)" DiffuseLighting="0" NotAffectedByFog="true" Size="5,0.178" Stretch="0.3" Speed="20" RandomAngles=",180" MoveRelEmitter="true" ConfigMin="High"/>
+   </Particles>
+   <Particles Name="smoke">
+    <Params Count="10" ParticleLifeTime="0.5,0.2" PositionOffset=",1" RandomOffset=",2" EmitAngle="5,1" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha=",,,(,1,32;1)" DiffuseLighting="0.1" DiffuseBacklighting="0.643" EmissiveLighting="0.05" Size="3,0.5,,(,0.5208334,32;0.99,1)" Stretch="0.05" Speed="8,1" RandomAngles=",180" RandomRotationRate=",31" DrawLast="-3" ConfigMin="Medium"/>
+   </Particles>
+   <Particles Name="smoke_circle">
+    <Params Count="10" ParticleLifeTime="4,0.2" EmitAngle="90" Texture="textures/sprites/smoke_tiled_d.tif" TextureTiling="2,2,,4" Alpha="0.5,,(,1,32;1),(,1,32;1)" SoftParticle="true" DiffuseLighting="0.1" DiffuseBacklighting="0.643" EmissiveLighting="0.05" Size="5,,,(,0.4791667,32;1,1)" Speed="10,0.1" AirResistance="3" DrawLast="-3" ConfigMin="Medium"/>
+   </Particles>
+   <Particles Name="sparks">
+    <Params Count="10,1" ParticleLifeTime="1,0.33" PositionOffset=",1" RandomOffset=",1" EmitAngle="15,1" OrientToVelocity="true" BlendType="Additive" Texture="textures/sprites/explosion_a.dds" Alpha=",0.327" EmissiveLighting="3" EmissiveHDRDynamic="1" NotAffectedByFog="true" Size="0.015,,,(,1;1,,4)" Stretch="0.05,0.455,,(0.447,0.40833336)" Speed="50,0.5" AirResistance="1" Turbulence3DSpeed=",,,(,1;1)" ViewDistanceAdjust="2" ConfigMin="Medium"/>
+   </Particles>
+   <Particles Name="wind">
+    <Params Count="1" SecondGeneration="true" ParticleLifeTime="0.2" EmitAngle="100,1" BlendType="Additive" Texture="textures/sprites/glow_a.dds" DiffuseLighting="0" Size="0.1" Speed="300" ForceGeneration="Wind"/>
+   </Particles>
+  </Childs>
+ </Particles>
+ <Particles Name="tank.tank125.muzzle_flash.muzzle_flash_small">
+  <Params Count="1" ParticleLifeTime="1" Speed="1"/>
+  <Childs>
+   <Particles Name="flames">
+    <Params Count="30" ParticleLifeTime="0.2" EmitAngle="10,1" BlendType="Additive" Texture="textures/sprites/explosion_b.tif" SoftParticle="true" DiffuseLighting="0" DiffuseBacklighting="1" EmissiveLighting="1" NotAffectedByFog="true" Size=",0.3" Stretch="0.02" Speed="30" InitAngles=",10" RandomAngles=",180" MoveRelEmitter="true" DrawLast="1"/>
    </Particles>
    <Particles Name="flash_star">
     <Params Count="3" ParticleLifeTime="0.05" EmitAngle="0.6,1" BlendType="Additive" Texture="textures/sprites/muzzleflash/muzzle_tiled_a.dds" TextureTiling="2,2,,4" Color="(,0.306,0)" EmissiveLighting="1" NotAffectedByFog="true" Size="2,0.3" RandomAngles=",180" MoveRelEmitter="true" DrawLast="-1" DrawNear="true"/>
