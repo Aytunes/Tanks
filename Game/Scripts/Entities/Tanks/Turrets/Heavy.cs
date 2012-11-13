@@ -27,6 +27,6 @@ namespace CryGameCode.Tanks
 		}
 
 		public override string Model { get { return "objects/tanks/turret_heavy.chr"; } }
-		public override Type ProjectileType { get { return typeof(Heavy); } }
+		public override Type ProjectileType { get { return typeof(HeavyShell); } }
 	}
 }

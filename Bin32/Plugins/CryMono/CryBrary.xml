@@ -655,6 +655,41 @@
             CVar created using CVarAttribute, targeting a property.
             </summary>
         </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.Never">
+            <summary>
+            Never update entity every frame.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.InRange">
+            <summary>
+            Only update entity if it is in specified range from active camera.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.PotentiallyVisible">
+            <summary>
+            Only update entity if it is potentially visible.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.Visible">
+            <summary>
+            Only update entity if it is visible.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.Physics">
+            <summary>
+            Only update entity if it is need to be updated due to physics.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.PhysicsVisible">
+            <summary>
+            Only update entity if it is need to be updated due to physics or if it is visible.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.Always">
+            <summary>
+            Always update entity every frame.
+            </summary>
+        </member>
         <member name="T:CryEngine.Attachment">
             <summary>
             Represents a character attachment, obtained via <see cref="M:CryEngine.EntityBase.GetAttachment(System.Int32,System.Int32)"/> and <see cref="M:CryEngine.EntityBase.GetAttachment(System.String,System.Int32)"/>.
@@ -872,6 +907,11 @@
             <param name="memberInfo"></param>
             <param name="propertyType"></param>
             <param name="newValue"></param>
+        </member>
+        <member name="M:CryEngine.Entity.InvalidateTrigger">
+            <summary>
+            Invalidate the TriggerBounds, so it gets recalculated and catches things which are already inside when it gets enabled.
+            </summary>
         </member>
         <member name="P:CryEngine.Entity.TriggerBounds">
             <summary>
@@ -1824,34 +1864,6 @@
             <remarks>
             The terrain system calculates the overall size by multiplying this value by the units per metre setting. A map set to 1024 units at 2 metres per unit will have a size of 2048 metres.
             </remarks>
-        </member>
-        <member name="M:CryEngine.View.Get(CryEngine.EntityBase,System.Boolean)">
-            <summary>
-            Gets a view linked to a specific entity id.
-            </summary>
-            <returns>The found view, or null if failed.</returns>
-        </member>
-        <member name="M:CryEngine.View.Get(CryEngine.EntityId,System.Boolean)">
-            <summary>
-            Gets a view linked to a specific entity id.
-            </summary>
-            <returns>The found view, or null if failed.</returns>
-        </member>
-        <member name="M:CryEngine.View.Remove(CryEngine.View)">
-            <summary>
-            Removes an existing view.
-            </summary>
-            <param name="view"></param>
-        </member>
-        <member name="P:CryEngine.View.Active">
-            <summary>
-            Gets or sets the currently active view.
-            </summary>
-        </member>
-        <member name="P:CryEngine.View.FieldOfView">
-            <summary>
-            Gets or sets the current field of view.
-            </summary>
         </member>
         <member name="T:CryEngine.EntityId">
             <summary>
@@ -5352,7 +5364,6 @@
         <member name="P:CryEngine.EntityAttribute.Category">
             <summary>
             Gets or sets the category in which the entity will be placed.
-            Does not currently function. All entities are placed inside the Default folder.
             </summary>
         </member>
         <member name="P:CryEngine.EntityAttribute.Icon">

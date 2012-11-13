@@ -4,7 +4,7 @@ using CryGameCode.Entities;
 namespace CryGameCode.Projectiles
 {
 	[Entity(Flags = EntityClassFlags.Invisible)]
-	public class Heavy : Projectile
+	public class HeavyShell : Projectile
 	{
 		public override string Model { get { return "objects/projectiles/shell.cgf"; } }
 		public override float Mass { get { return 20; } }

@@ -104,6 +104,8 @@
     <Compile Include="Entities\Damageable\IDamageable.cs" />
     <Compile Include="Entities\Projectiles\Bullet.cs" />
     <Compile Include="Entities\Damageable\DamageableEntity.cs" />
+    <Compile Include="Entities\Projectiles\Heavy.cs" />
+    <Compile Include="Entities\Projectiles\MGBullet.cs" />
     <Compile Include="Entities\Projectiles\Projectile.cs" />
     <Compile Include="Entities\Tanks\TankDamage.cs" />
     <Compile Include="Entities\Tanks\TankCamera.cs" />
