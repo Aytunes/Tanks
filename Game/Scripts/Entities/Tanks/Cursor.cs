@@ -7,14 +7,23 @@ namespace CryGameCode.Tanks
 	{
 		public override void OnSpawn()
 		{
-			LoadObject("objects/default/teapot.cgf");
+			var light = new LightParams
+			{
+				radius = 5,
+				color = Color.Red,
+				hdrDynamic = 2
+			};
+
+			LoadLight(light);
+			LoadObject("objects/effects/particle_effects/bubble/3dbubble.cgf");
+
 			ReceiveUpdates = true;
 		}
 
 		public override void OnUpdate()
 		{
 			var pos = Renderer.ScreenToWorld(Input.MouseX, Input.MouseY);
-			Position = new Vec3(pos.X, pos.Y, Actor.LocalClient.Position.Z);
+			Position = new Vec3(pos.X, pos.Y, Actor.LocalClient.Position.Z + 1.5f);
 		}
 	}
 }
