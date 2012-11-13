@@ -39,6 +39,8 @@ namespace CryGameCode.Tanks
 			};
 
 			Reset(true);
+
+			Entity.Spawn<Cursor>("Cursor");
 		}
 
 		protected override void OnEditorReset(bool enteringGame)
@@ -46,7 +48,7 @@ namespace CryGameCode.Tanks
 			Reset(enteringGame);
 		}
 
-		public void Reset(bool enteringGame)
+		private void Reset(bool enteringGame)
 		{
 			LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
 
@@ -111,8 +113,8 @@ namespace CryGameCode.Tanks
 			}
 		}
 
-		private TankTurret m_turret { get; set; }
-		private Attachment m_leftTrack { get; set; }
-		private Attachment m_rightTrack { get; set; }
+		private TankTurret m_turret;
+		private Attachment m_leftTrack;
+		private Attachment m_rightTrack;
 	}
 }
