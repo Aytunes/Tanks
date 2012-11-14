@@ -70,6 +70,8 @@ namespace CryGameCode.Entities.Collectibles
                 if (entity is Tank)
                 {
                     LastUser = entity as Tank;
+
+                    Debug.DrawText(string.Format("{0} GOT A {1} COLLECTIBLE!", entity.Name.ToUpper(), Collectible.TypeName.ToUpper()), 3.0f, Color.Red, 2.0f);
                     Collectible.OnCollected(LastUser);
 
                     //Debug.DrawText("nom nom nom", 3.0f, Color.Blue, 5.0f);

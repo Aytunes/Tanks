@@ -41,6 +41,11 @@ namespace CryGameCode.Entities.Collectibles
 			get { return "objects/tank_gameplay_assets/pickup_hologram/health_pickup.cga"; }
 		}
 
+        public override string TypeName
+        {
+            get { return "Regeneration"; }
+        }
+
 		public float HealthRestoration = 35;
 
 		/// <summary>

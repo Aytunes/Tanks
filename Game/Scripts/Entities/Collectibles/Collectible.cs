@@ -9,5 +9,6 @@ namespace CryGameCode.Entities.Collectibles
         public abstract void OnCollected(Tank tank);
 
         public abstract string Model { get; }
+        public abstract string TypeName { get; }
     }
 }

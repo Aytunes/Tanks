@@ -20,7 +20,7 @@ namespace CryGameCode.Entities.Collectibles
 
         public override void OnUpdate()
         {
-            if (TimeRemaining <= 0 || User == null || User.IsDestroyed)
+            if (TimeRemaining <= 0 || User.IsDestroyed)
                 return;
 
             TimeRemaining -= Time.DeltaTime;
@@ -34,6 +34,11 @@ namespace CryGameCode.Entities.Collectibles
         public override string Model
         {
             get { return "objects/tank_gameplay_assets/pickup_hologram/powerup_pickup.cga"; }
+        }
+
+        public override string TypeName
+        {
+            get { return "Haste"; }
         }
 
         public float SpeedMultiplier { get { return 2; } }
