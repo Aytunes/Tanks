@@ -43,10 +43,10 @@ namespace CryGameCode.Projectiles
 					Epicenter = Position,
 					EpicenterImpulse = Position,
 					Direction = dir,
-					MinRadius = 10,
-					Radius = 15,
-					MaxRadius = 30,
-					ImpulsePressure = 200
+                    MinRadius = MinimumExplosionRadius,
+                    Radius = ExplosionRadius,
+                    MaxRadius = MaximumExplosionRadius,
+                    ImpulsePressure = ExplosionPressure
 				};
 
 				explosion.Explode();
@@ -64,5 +64,9 @@ namespace CryGameCode.Projectiles
 		public abstract DamageType DamageType { get; }
 
 		public virtual bool ShouldExplode { get { return false; } }
+        public virtual float MinimumExplosionRadius { get { return 10; } }
+        public virtual float ExplosionRadius { get { return 15; } }
+        public virtual float MaximumExplosionRadius { get { return 30; } }
+        public virtual float ExplosionPressure { get { return 200; } }
 	}
 }
