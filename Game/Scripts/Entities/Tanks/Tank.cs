@@ -92,6 +92,9 @@ namespace CryGameCode.Tanks
 
 			InitHealth(100);
 
+            BoostTime = maxBoostTime;
+            SpeedMultiplier = 1;
+
 			ReceiveUpdates = true;
 		}
 
@@ -100,10 +103,10 @@ namespace CryGameCode.Tanks
 			if(m_turret != null)
 				m_turret.Update();
 
-            if (m_boostTime > 0 && m_boosting)
-                m_boostTime -= Time.DeltaTime;
-            else if (m_boostTime < maxBoostTime && !m_boosting)
-                m_boostTime += Time.DeltaTime;
+            if (BoostTime > 0 && IsBoosting)
+                BoostTime -= Time.DeltaTime;
+            else if (BoostTime < maxBoostTime && !IsBoosting)
+                BoostTime += Time.DeltaTime;
 		}
 
 		string team;
