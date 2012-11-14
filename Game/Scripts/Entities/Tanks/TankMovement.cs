@@ -1,4 +1,5 @@
-﻿using CryEngine;
+﻿using System;
+using CryEngine;
 
 namespace CryGameCode.Tanks
 {
@@ -22,8 +23,7 @@ namespace CryGameCode.Tanks
             MathHelpers.Interpolate(ref m_rotation, 0, rotationDamping * Time.DeltaTime);
             MathHelpers.Interpolate(ref m_acceleration, 0, movementDamping * Time.DeltaTime);
 
-
-            RotationRequest = new Vec3(0, 0, m_rotation);
+            RotationRequest = new Vec3(0, 0, m_rotation * Math.Sign(m_acceleration));
 
             VelocityRequest = LocalRotation.Column1 * m_acceleration * SpeedMultiplier;
 
