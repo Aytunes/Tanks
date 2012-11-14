@@ -104,4 +104,14 @@
 		minWaterDepth="0"
 		id="7"/>
 
+	<Type
+		name="AIPATH_RACING_CAR"
+		navCapMask="Surface"
+		triangularResistanceFactor="18"
+		waypointResistanceFactor="18"
+		maxWaterDepth="1.5"
+		zScale="7"
+		avoidObstacles="false"
+		id="8"/>
+
 </Types>

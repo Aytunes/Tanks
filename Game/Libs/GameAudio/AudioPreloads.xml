@@ -59,6 +59,7 @@
 	</abrams>
     <hmmwv>
       <File name="sounds/vehicles/vehicles_hmmwv.fsb" />
+	  <File name="sounds/vehicles/vehicles_hmmwv_race.fsb" />
       <File name="sounds/vehicles/vehicles_accesories.fsb" />
     </hmmwv>
 	<mh60_blackhawk>

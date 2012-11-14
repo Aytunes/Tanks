@@ -295,6 +295,8 @@ function BasicAI:OnReset(bFromInit, bIsReload)
 	  self:DrawWeaponNow();
 	end
 	
+	self.AI.invulnerable = self.Properties.bInvulnerable ~= 0;
+	
 	self:CheckWeaponAttachments();
 	if AI then
 		AI.EnableWeaponAccessory(self.id, AIWEPA_LASER, true);
@@ -1134,6 +1136,10 @@ function BasicAI:NanoSuitMode( mode )
 	end	
 	
 	self.AI.curSuitMode = mode;	
+end
+
+function BasicAI:IsInvulnerable()
+	return self.AI.invulnerable
 end
 	
 ----------------------------------------------------------------------------------

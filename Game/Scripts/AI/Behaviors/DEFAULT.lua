@@ -718,8 +718,10 @@ local Behavior = CreateAIBehavior("DEFAULT", {
 	ACT_EXITVEHICLE = function( self, entity, sender, data )
 		if ( entity.AI.theVehicle == nil ) then
 			-- fail if not inside a vehicle
-			entity:InsertSubpipe( AIGOALPIPE_SAMEPRIORITY, "action_dummy", nil, data.iValue );
-			entity:CancelSubpipe( data.iValue );
+			if (data and data.iValue) then
+				entity:InsertSubpipe( AIGOALPIPE_SAMEPRIORITY, "action_dummy", nil, data.iValue );
+				entity:CancelSubpipe( data.iValue );
+			end
 			return;
 		end
 
@@ -738,7 +740,9 @@ local Behavior = CreateAIBehavior("DEFAULT", {
 		entity.AI.theVehicle:LeaveVehicle( entity.id );
 		entity.AI.theVehicle = nil;
 
-		entity:InsertSubpipe( AIGOALPIPE_HIGHPRIORITY, "action_exit", nil, data.iValue );
+		if (data and data.iValue) then
+			entity:InsertSubpipe( AIGOALPIPE_HIGHPRIORITY, "action_exit", nil, data.iValue );
+		end
 	end,
 
 	---------------------------------------------

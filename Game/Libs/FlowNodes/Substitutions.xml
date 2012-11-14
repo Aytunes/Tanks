@@ -40,6 +40,20 @@
   <Node OldClass="UI:Functions:System:ResumeGame" NewClass="UI:Functions:Game:ResumeGame" />
   <Node OldClass="UI:Functions:System:ExitGame" NewClass="UI:Functions:Game:ExitGame" />
   <Node OldClass="UI:Functions:System:StartGame" NewClass="UI:Functions:Game:StartGame" />
+  
+  <Node OldClass="UI:Events:LobbyMP:Server Found" NewClass="UI:Events:LobbyMP:ServerFound" />
+  <Node OldClass="UI:Events:LobbyMP:Player List" NewClass="UI:Events:LobbyMP:PlayerList" />
+  <Node OldClass="UI:Events:LobbyMP:Player ID List" NewClass="UI:Events:LobbyMP:PlayerIDList" />
+  <Node OldClass="UI:Events:LobbyMP:Invite Accepted" NewClass="UI:Events:LobbyMP:InviteAccepted" />
+  <Node OldClass="UI:Functions:LobbyMP:Host Game" NewClass="UI:Functions:LobbyMP:HostGame" />
+  <Node OldClass="UI:Functions:LobbyMP:Join Game" NewClass="UI:Functions:LobbyMP:JoinGame" />
+  <Node OldClass="UI:Functions:LobbyMP:Leave Game" NewClass="UI:Functions:LobbyMP:LeaveGame" />
+  <Node OldClass="UI:Functions:LobbyMP:Search Games" NewClass="UI:Functions:LobbyMP:SearchGames" />
+  <Node OldClass="UI:Functions:LobbyMP:Award trophy" NewClass="UI:Functions:LobbyMP:AwardTrophy" />
+  <Node OldClass="UI:Functions:LobbyMP:Get Playerlist" NewClass="UI:Functions:LobbyMP:GetPlayerlist" />
+  <Node OldClass="UI:Functions:LobbyMP:Read leaderboard" NewClass="UI:Functions:LobbyMP:ReadLeaderboard" />
+  <Node OldClass="UI:Functions:LobbyMP:Register leaderboard" NewClass="UI:Functions:LobbyMP:RegisterLeaderboard" />
+  <Node OldClass="UI:Functions:LobbyMP:Write leaderboard" NewClass="UI:Functions:LobbyMP:WriteLeaderboard" />
 <!--  <Node OldClass="" NewClass="" /> -->
 
 

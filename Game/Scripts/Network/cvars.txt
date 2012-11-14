@@ -311,6 +311,7 @@ g_enableAlternateIronSight
 g_fake
 net_enable_voice_chat
 g_show_fullscreen_info
+g_vehicle_general_action_map
 
 #Logging
 log_FileVerbosity

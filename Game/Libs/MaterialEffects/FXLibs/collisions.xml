@@ -472,45 +472,33 @@
 <!-- START   SCAR   START-->	
 	<Effect name="weapon_medium_drop">
 		<Sound name="mastersnd" >
-			<Name>sounds/physics:collisions/specialweapon_medium_drop</Name>
+			<Name>sounds/physics:collisions/specials/weapon_medium_drop</Name>
 		</Sound>
 	</Effect>
 	<Effect name="medium_weapon_metal" parent="weapon_medium_drop" >
-		<Sound name="childsnd" >
-			<Name>sounds/physics:collisions/specialweapon_medium_drop</Name>
-		</Sound>
 		<Particle>
 			<Name>collisions.small.default</Name>
 		</Particle>
 	</Effect>
 	<Effect name="medium_weapon_wood" parent="weapon_medium_drop" >
-		<Sound name="childsnd" >
-			<Name>sounds/physics:collisions/specialweapon_medium_drop</Name>
-		</Sound>
 		<Particle>
 			<Name>collisions.small.wood</Name>
 		</Particle>
 	</Effect>
 	<Effect name="medium_weapon_water" parent="weapon_medium_drop" >
-		<Sound name="childsnd" >
-			<Name>sounds/physics:collisions/specialweapon_medium_drop</Name>
-		</Sound>
 		<Particle>
 			<Name>collisions.small.water</Name>
 		</Particle>
 	</Effect>	
 	<Effect name="medium_weapon_vegetation" parent="weapon_medium_drop" >
-		<Sound name="childsnd" >
-			<Name>sounds/physics:collisions/specialweapon_medium_drop</Name>
-		</Sound>
 		<Particle>
 			<Name>collisions.small.leaves</Name>
 		</Particle>
 	</Effect>
 	<Effect name="medium_weapon_default" parent="weapon_medium_drop" >
-		<Sound name="childsnd" >
-			<Name>sounds/physics:collisions/specialweapon_medium_drop</Name>
-		</Sound>
+		<Particle>
+			<Name>collisions.small.default</Name>
+		</Particle>
 	</Effect>
 <!-- END   SCAR   END-->
 </FXLib>

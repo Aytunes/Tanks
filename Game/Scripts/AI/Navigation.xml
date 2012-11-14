@@ -5,13 +5,12 @@
       <SmartObjectUserClasses>
         <class name="Human" />
         <class name="Grunt" />
-        <class name="Stalker" />
       </SmartObjectUserClasses>
     </AgentType>
     
 		<AgentType name="LargeSizedCharacters" voxelSize="0.16, 0.16, 0.16" radius="6" height="20" climbableHeight="6" maxWaterDepth="10" >
       <SmartObjectUserClasses>
-        <class name="Heavy" />
+        <class name="LargeCharacterClass" />
       </SmartObjectUserClasses>
     </AgentType>
     

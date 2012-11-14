@@ -67,5 +67,11 @@
 		<entry enum="Brake"/>
 		<entry enum="Search"/>
 	</vehicleLightTypes>
+	
+	<!--Fog volume types used by the FogVolume entity-->
+	<VolumeType>
+		<entry enum="Ellipsoid=0"/>
+		<entry enum="Cube=1"/>
+	</VolumeType>
 
 </GlobalEnums>

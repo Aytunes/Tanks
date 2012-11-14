@@ -21,6 +21,7 @@
 			<Param name="limitsDistanceFrom" caption="Distance from" visible="1" editable="1" value="0" help="Range at which objects could be used"/>
 			<Param name="limitsDistanceTo" caption="Distance to" visible="1" editable="1" value="10" help="Range at which objects could be used"/>
 			<Param name="limitsOrientation" caption="Orientation" visible="1" editable="1" value="360" help="Orientation limit at which objects could be used"/>
+			<Param name="horizLimitOnly" caption="Horizontal Limit Only" visible="1" editable="1" value="0" help="When checked, the limit only applies to horizontal orientation (vertical orientation is excluded)"/>
       <Param name="limitsOrientationToTarget" caption="User's Target" visible="1" editable="1" value="360" help="Object's orientation limit towards the user's attention target"/>
     </ParamGroup>
 		<ParamGroup name="Delay" expand="1" help="">
@@ -133,6 +134,7 @@
       <Param name="limitsDistanceFrom" caption="Distance From" visible="1" editable="1" value="0" help="Range at which objects might be used"/>
       <Param name="limitsDistanceTo" caption="Distance To" visible="1" editable="1" value="10" help="Range at which objects might be used"/>
       <Param name="limitsOrientation" caption="Orientation" visible="1" editable="1" value="360" help="Orientation limit at which objects might be used"/>
+      <Param name="horizLimitOnly" caption="Horizontal Limit Only" visible="1" editable="1" value="0" help="When checked, the limit only applies to horizontal orientation (vertical orientation is excluded)"/>
       <Param name="limitsOrientationToTarget" caption="User's Target" visible="1" editable="1" value="360" help="Object's orientation limit towards the user's attention target"/>
     </ParamGroup>
     <ParamGroup name="Delay" expand="1" help="">
@@ -171,6 +173,7 @@
       <Param name="limitsDistanceFrom" caption="Distance From" visible="1" editable="1" value="2" help="Range at which objects might be used"/>
       <Param name="limitsDistanceTo" caption="Distance To" visible="1" editable="1" value="20" help="Range at which objects might be used"/>
       <Param name="limitsOrientation" caption="Orientation" visible="0" editable="0" value="360"/>
+      <Param name="horizLimitOnly" caption="Horizontal Limit Only" visible="1" editable="1" value="0" help="When checked, the limit only applies to horizontal orientation (vertical orientation is excluded)"/>
     </ParamGroup>
     <ParamGroup name="Delay" expand="1" help="">
       <Param name="delayMinimum" caption="Minimum" visible="1" editable="1" value="0" help="Shortest time needed for interaction to happen"/>
@@ -206,6 +209,7 @@
       <Param name="limitsDistanceFrom" caption="Distance From" visible="1" editable="1" value="2" help="Range at which objects might be used"/>
       <Param name="limitsDistanceTo" caption="Distance To" visible="1" editable="1" value="20" help="Range at which objects might be used"/>
       <Param name="limitsOrientation" caption="Orientation" visible="0" editable="0" value="360"/>
+      <Param name="horizLimitOnly" caption="Horizontal Limit Only" visible="1" editable="1" value="0" help="When checked, the limit only applies to horizontal orientation (vertical orientation is excluded)"/>
     </ParamGroup>
     <ParamGroup name="Delay" expand="1" help="">
       <Param name="delayMinimum" caption="Minimum" visible="1" editable="1" value="0" help="Shortest time needed for interaction to happen"/>
@@ -245,6 +249,7 @@
       <Param name="limitsDistanceFrom" caption="Distance From" visible="1" editable="1" value="2" help="Range at which objects might be used"/>
       <Param name="limitsDistanceTo" caption="Distance To" visible="1" editable="1" value="20" help="Range at which objects might be used"/>
       <Param name="limitsOrientation" caption="Orientation" visible="1" editable="1" value="180" help="Orientation limit at which objects might be used"/>
+      <Param name="horizLimitOnly" caption="Horizontal Limit Only" visible="1" editable="1" value="0" help="When checked, the limit only applies to horizontal orientation (vertical orientation is excluded)"/>
     </ParamGroup>
     <ParamGroup name="Delay" expand="1" help="">
       <Param name="delayMinimum" caption="Minimum" visible="1" editable="1" value="0" help="Shortest time needed for interaction to happen"/>

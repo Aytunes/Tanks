@@ -1,7 +1,8 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="100000C80" StringGenMask="%DECAL%DETAIL_MAPPING%DETAIL_TEXTURE_IS_SET%TESSELLATION" SurfaceType="mat_concrete" MatTemplate="" Diffuse="0.65882355,0.65882355,0.65882355" Specular="0.054901965,0.054901965,0.054901965" Emissive="0,0,0" Shininess="25" Opacity="0.99000001">
+<Material MtlFlags="524320" Shader="Illum" GenMask="2100080800" StringGenMask="%DECAL%GLOSS_MAP%TESSELLATION%VERTCOLORS" SurfaceType="mat_concrete" MatTemplate="" Diffuse="0.65882355,0.65882355,0.65882355" Specular="0.098689198,0.098689198,0.098689198" Emissive="0,0,0" Shininess="25" Opacity="0.99000001">
  <Textures>
   <Texture Map="Diffuse" File="textures/terrain/roads/road_concrete_white_stripes_dif.tif" Filter="5"/>
-  <Texture Map="Detail" File="textures/terrain/bump_detail/detail_bump_concr_003_ddn.dds"/>
+  <Texture Map="Specular" File="textures/terrain/roads/road_concrete_white_stripes_spec.tif"/>
+  <Texture Map="Bumpmap" File="textures/terrain/roads/road_concrete_white_stripes_ddn.tif"/>
  </Textures>
- <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" DetailDiffuseScale="0" FresnelBias="1" GlossFromDiffuseAmount="0" DetailBumpScale="1" GlossFromDiffuseBrightness="0.333" DetailGlossScale="0" IndirectColor="0.25,0.25,0.25"/>
+ <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
 </Material>

@@ -1,8 +1,9 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="90801" StringGenMask="%ALLOW_TESSELATION%DECAL%ENVIRONMENT_MAP%GLOSS_MAP" SurfaceType="" MatTemplate="" Diffuse="0.42352945,0.42352945,0.42352945" Specular="0.13333334,0.13333334,0.13333334" Emissive="0,0,0" Shininess="102.9" Opacity="0.94099998">
+<Material MtlFlags="2621440" Shader="Illum" GenMask="100090800" StringGenMask="%DECAL%ENVIRONMENT_MAP%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.42352945,0.42352945,0.42352945" Specular="1,1,1" Emissive="0,0,0" Shininess="255" Opacity="0.99000001">
  <Textures>
   <Texture Map="Diffuse" File="textures/decals/mud_puddle_2.tif" IsTileU="0" IsTileV="0"/>
   <Texture Map="Specular" File="textures/decals/mud_puddle_2_spec.tif"/>
-  <Texture Map="Environment" File="textures/cubemaps/cxpcube.dds"/>
+  <Texture Map="Bumpmap" File="textures/decals/mud_puddle_2_ddn.dds"/>
+  <Texture Map="Environment" File="textures/cubemaps/racetrack/cubemap_racetrack_a_cm.tif"/>
  </Textures>
- <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="0.37" FresnelBias="0" IndirectColor="0.25,0.25,0.25"/>
+ <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="0.113" IndirectColor="0.25,0.25,0.25"/>
 </Material>

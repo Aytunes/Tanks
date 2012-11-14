@@ -57,9 +57,8 @@ AIAnchorTable = {
 	-- the anchor radius used for distance check
 	NOGRENADE_SPOT = 405,	-- used in C++ code too!
 	
-	-- do not use as anchor!
-	REINFORCEMENT_SPOT = 400,	-- used in C++ code too!
-
 	FOLLOW_AREA = 801,
 	FOLLOW_PATH = 802,
+
+	RACE_ROAD = 900,
 }

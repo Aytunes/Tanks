@@ -203,7 +203,18 @@ end
 --	AI.Signal(SIGNALFILTER_LEADER, 0, "OnAlertStatus_"..sender.Properties.ReferenceName, self.id);
 --end
 
+function BasicAIEvent:Event_ResetHealth()
+	entity.actor:SetHealth(entity.actor:GetMaxHealth());
+	self.lastHealth = self.actor:GetHealth();
+end
 
+function BasicAIEvent:Event_MakeVulnerable()
+	self.AI.invulnerable = false;
+end
+
+function BasicAIEvent:Event_MakeInvulnerable()
+	self.AI.invulnerable = true;
+end
 
 BasicAIEvent.FlowEvents =
 {
@@ -218,6 +229,9 @@ BasicAIEvent.FlowEvents =
 		Kill = { BasicAIEvent.Event_Kill, "bool" },
 		
 		WakeUp = { BasicAIEvent.Event_WakeUp, "bool" },		-- fall-and-play stand up
+		ResetHealth = { BasicAIEvent.Event_ResetHealth, "any" };
+		MakeVulnerable = { BasicAIEvent.Event_MakeVulnerable, "any" };
+		MakeInvulnerable = { BasicAIEvent.Event_MakeInvulnerable, "any" };
 		
 		SetForcedLookDir = { BasicAIEvent.Event_SetForcedLookDir, "Vec3" },
 		ClearForcedLookDir = { BasicAIEvent.Event_ClearForcedLookDir, "bool" },

@@ -99,4 +99,22 @@
 	</Sound>
 </Effect>
 
+<!--water_shallow & water_deep required by game code-->
+
+<Effect name="water_shallow">
+	<Sound><Name>sounds/physics:footsteps/player:water_shallow</Name></Sound>
+	<Particle>
+		<Name minscale="0.2" maxscale="0.2" maxscaledist="1">collisions.footsteps.water</Name>
+	</Particle>
+</Effect>
+
+<Effect name="water_deep">
+	<Sound><Name>sounds/physics:footsteps/player:water_deep</Name></Sound>
+	<Particle>
+		<Name minscale="0.5" maxscale="0.5" maxscaledist="1">collisions.footsteps.water</Name>
+	</Particle>
+</Effect>
+
+<!--End-->
+
 </FXLib>
