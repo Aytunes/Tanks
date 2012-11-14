@@ -40,7 +40,10 @@ namespace CryGameCode.Tanks
 
 			Reset(true);
 
-			Entity.Spawn<Cursor>("Cursor");
+            if (Network.IsMultiplayer)
+                Entity.Spawn<Cursor>("Cursor", null, null, null, true, EntityFlags.CastShadow | EntityFlags.ClientOnly);
+            else
+                Entity.Spawn<Cursor>("Cursor");
 		}
 
 		protected override void OnEditorReset(bool enteringGame)
