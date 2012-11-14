@@ -83,8 +83,6 @@ namespace CryGameCode.Entities.Collectibles
 
                     //Debug.DrawText("nom nom nom", 3.0f, Color.Blue, 5.0f);
                 }
-                else if (entity is Projectile)
-                    Debug.DrawText("DENIED", 3.0f, Color.Red, 5.0f);
                 else
                     return;
 

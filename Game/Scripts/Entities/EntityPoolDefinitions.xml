@@ -31,12 +31,6 @@
 
 	-->
 
-	<Definition name="AI" emptyClass="NullAI" maxSize="16" hasAI="1" defaultBookmarked="0" forcedBookmarked="0">
-		<Contains>
-			<Class>Grunt</Class>
-		</Contains>
-	</Definition>
-
 	<Definition name="VehiclePartDetached" emptyClass="VehiclePartDetached" maxSize="16" defaultBookmarked="0">
 		<Contains>
 			<Class>VehiclePartDetached</Class>
