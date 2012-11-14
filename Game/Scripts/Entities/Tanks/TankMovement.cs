@@ -16,6 +16,9 @@ namespace CryGameCode.Tanks
             if (IsDestroyed)
                 return;
 
+            if (m_boosting && m_boostTime > 0)
+                m_acceleration *= boostSpeedMult;
+
             var moveRequest = new EntityMovementRequest();
             moveRequest.type = EntityMoveType.Normal;
 
@@ -74,7 +77,6 @@ namespace CryGameCode.Tanks
         private void OnMoveForward(ActionMapEventArgs e)
         {
             m_acceleration = MathHelpers.Clamp(m_acceleration + TankSpeed * Time.DeltaTime, -m_maxSpeed, m_maxSpeed);
-
         }
 
         private void OnMoveBack(ActionMapEventArgs e)
@@ -85,21 +87,22 @@ namespace CryGameCode.Tanks
         private void OnSprint(ActionMapEventArgs e)
         {
             if (e.KeyEvent == KeyEvent.OnPress)
-                SpeedMultiplier = 1.5f;
+                m_boosting = true;
             else if (e.KeyEvent == KeyEvent.OnRelease)
-                SpeedMultiplier = 1;
+                m_boosting = false;
         }
 
 
         private float m_acceleration;
         private float m_rotation;
         private const float m_maxSpeed = 8f;
-        private const float m_maxRotationSpeed = 1f;
+        private const float m_maxRotationSpeed = 1.5f;
+
+        private bool m_boosting;
+        private float m_boostTime = maxBoostTime;
 
         protected Vec3 VelocityRequest;
         protected Vec3 RotationRequest;
-
-        static float tankTurnSpeed = 2;
 
         public float SpeedMultiplier = 1.0f;
         public virtual float TankSpeed { get { return 24f; } }

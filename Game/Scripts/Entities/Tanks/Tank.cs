@@ -99,6 +99,11 @@ namespace CryGameCode.Tanks
 		{
 			if(m_turret != null)
 				m_turret.Update();
+
+            if (m_boostTime > 0 && m_boosting)
+                m_boostTime -= Time.DeltaTime;
+            else if (m_boostTime < maxBoostTime && !m_boosting)
+                m_boostTime += Time.DeltaTime;
 		}
 
 		string team;
