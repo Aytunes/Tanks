@@ -1,10 +1,10 @@
 ﻿
 namespace CryGameCode.Tanks
 {
-	public class LaserTank : TankTurret
+	public class Laser : TankTurret
 	{
-		public LaserTank(Tank tank) : base(tank) { }
-        private LaserTank() { }
+		public Laser(Tank tank) : base(tank) { }
+        private Laser() { }
 
 		public override string Model { get { return "objects/tanks/turret_laser.chr"; } }
 	}

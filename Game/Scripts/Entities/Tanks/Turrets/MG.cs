@@ -4,13 +4,13 @@ using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
-	public class MGTank : TankTurret
+	public class MG : TankTurret
 	{
 	
 		static float impulseStrength = 5;		
 	
-		public MGTank(Tank tank) : base(tank) { }
-        private MGTank() { }
+		public MG(Tank tank) : base(tank) { }
+        private MG() { }
 		
 		protected override void OnFire(Vec3 firePos)
 		{

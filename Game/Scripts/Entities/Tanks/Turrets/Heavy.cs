@@ -4,10 +4,10 @@ using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
-	public class HeavyTank : TankTurret
+	public class Heavy : TankTurret
 	{
 		#region Statics
-		static HeavyTank()
+		static Heavy()
 		{
 			CVar.RegisterFloat("g_tankFireRecoilStrength", ref impulseStrength);
 		}
@@ -15,8 +15,8 @@ namespace CryGameCode.Tanks
 		static float impulseStrength = 5;
 		#endregion
 
-		public HeavyTank(Tank tank) : base(tank) { }
-        private HeavyTank() { }
+		public Heavy(Tank tank) : base(tank) { }
+        private Heavy() { }
 
 		protected override void OnFire(Vec3 firePos)
 		{
