@@ -9,24 +9,24 @@ namespace CryGameCode
 {
 	public class DeathMatch : SinglePlayer
 	{
-		public override void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId)
-		{
-			var player = Actor.Get<Tank>(actorId);
-			if(player == null)
-			{
-				Debug.Log("[SinglePlayer.OnRevive] Failed to get the player. Check the log for errors.");
-				return;
-			}
+        public override void RevivePlayer(EntityId actorId)
+        {
+            var tank = Actor.Get<Tank>(actorId);
+            if (tank == null)
+            {
+                Debug.Log("[SinglePlayer.OnRevive] Failed to get the player. Check the log for errors.");
+                return;
+            }
 
-			var spawnpoints = Entity.GetByClass<SpawnPoint>();
-			Debug.LogAlways("Found {0} spawns_", spawnpoints.Count());
-			if(spawnpoints.Count() > 0)
-			{
-				var spawnpoint = spawnpoints.First();
+            var spawnpoints = Entity.GetByClass<SpawnPoint>();
+            if (spawnpoints.Count() > 0)
+            {
+                var spawnPoint = spawnpoints.ElementAt(Selector.Next(0, spawnpoints.Count() - 1));
 
-				player.Position = spawnpoint.Position;
-				player.Rotation = spawnpoint.Rotation;
-			}
-		}
-	}
+                spawnPoint.TrySpawn(tank);
+            }
+
+            tank.OnRevive();
+        }
+    }
 }

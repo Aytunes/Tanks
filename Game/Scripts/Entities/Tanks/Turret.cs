@@ -1,4 +1,6 @@
-﻿using CryEngine;
+﻿using System;
+
+using CryEngine;
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
@@ -87,7 +89,7 @@ namespace CryGameCode.Tanks
 
 			var dir = Renderer.ScreenToWorld(Input.MouseX, Input.MouseY) - Attachment.Position;
 			var rot = Attachment.Rotation;
-			rot.SetRotationZ(MathHelpers.Atan2(-dir.X, dir.Y));
+			rot.SetRotationZ((float)Math.Atan2(-dir.X, dir.Y));
 
 			Attachment.Rotation = Quat.CreateNlerp(Attachment.Rotation, rot, Time.DeltaTime * 10);
 		}

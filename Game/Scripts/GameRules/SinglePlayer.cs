@@ -49,7 +49,7 @@ namespace CryGameCode
 				RevivePlayer(playerId);
 		}
 
-		void RevivePlayer(EntityId actorId)
+		public virtual void RevivePlayer(EntityId actorId)
 		{
 			var tank = Actor.Get<Tank>(actorId);
 			if(tank == null)

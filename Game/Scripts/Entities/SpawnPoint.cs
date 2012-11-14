@@ -25,10 +25,12 @@ namespace CryGameCode
 				entity.Position = Position;
 				entity.Rotation = Rotation;
 
-				if(entity is Tank && Team != null)
-					(entity as Tank).Team = Team;
+                if (entity is Tank && Team != null)
+                {
+                    Debug.LogAlways("Setting {0}'s team as {1}", entity.Name, Team);
+                    (entity as Tank).Team = Team;
+                }
 
-				Debug.LogAlways("Spawned entity {0} with id {1} at {2},{3},{4}", entity.Name, entity.Id, Position.X, Position.Y, Position.Z);
 				return true;
 			}
 

@@ -3,10 +3,10 @@ using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
 {
-	public class RocketTank : TankTurret
+	public class Rocket : TankTurret
 	{
-		public RocketTank(Tank tank) : base(tank) { }
-        private RocketTank() { }
+		public Rocket(Tank tank) : base(tank) { }
+        private Rocket() { }
 
 		public override string Model { get { return "objects/tanks/turret_rocket.chr"; } }
 		public override string LeftHelper { get { return "turret_term_2"; } }

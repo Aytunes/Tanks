@@ -4,11 +4,6 @@
         <name>CryBrary</name>
     </assembly>
     <members>
-        <member name="T:CryEngine.Actor">
-            <summary>
-            WIP Player class. TODO: Redo, currently very limited in terms of callbacks + interoperability with C++ backend
-            </summary>
-        </member>
         <member name="T:CryEngine.ActorBase">
             <summary>
             Base class which all actors must derive from. Includes basic callbacks.
@@ -5149,20 +5144,6 @@
             Converts radians to degrees
             </summary>
             <param name="angle"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.MathHelpers.Sqrt(System.Double)">
-            <summary>
-            Returns the square root of a specified number.
-            </summary>
-            <param name="d"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.MathHelpers.Sqrt(System.Single)">
-            <summary>
-            Returns the square root of a specified number.
-            </summary>
-            <param name="d"></param>
             <returns></returns>
         </member>
         <member name="M:CryEngine.MathHelpers.IsInRange``1(``0,``0,``0)">

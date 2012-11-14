@@ -10,6 +10,11 @@ namespace CryGameCode.Tanks
             Reset(true);
         }
 
+        protected override void PostSerialize()
+        {
+            Reset(true);
+        }
+
 		public void OnRevive()
 		{
 			ZoomLevel = 1;
@@ -40,7 +45,10 @@ namespace CryGameCode.Tanks
 
 			Reset(true);
 
-			Entity.Spawn<Cursor>("Cursor");
+            if (Network.IsMultiplayer)
+                Entity.Spawn<Cursor>("Cursor", null, null, null, true, EntityFlags.CastShadow | EntityFlags.ClientOnly);
+            else
+                Entity.Spawn<Cursor>("Cursor");
 		}
 
 		protected override void OnEditorReset(bool enteringGame)
@@ -50,7 +58,8 @@ namespace CryGameCode.Tanks
 
 		private void Reset(bool enteringGame)
 		{
-			LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
+            LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
+            Debug.LogAlways("objects/tanks/tank_generic_" + Team + ".cdf");
 
 			if(enteringGame)
 			{
@@ -89,6 +98,9 @@ namespace CryGameCode.Tanks
 
 			InitHealth(100);
 
+            BoostTime = maxBoostTime;
+            SpeedMultiplier = 1;
+
 			ReceiveUpdates = true;
 		}
 
@@ -96,6 +108,11 @@ namespace CryGameCode.Tanks
 		{
 			if(m_turret != null)
 				m_turret.Update();
+
+            if (BoostTime > 0 && IsBoosting)
+                BoostTime -= Time.DeltaTime;
+            else if (BoostTime < maxBoostTime && !IsBoosting)
+                BoostTime += Time.DeltaTime;
 		}
 
 		string team;
@@ -106,10 +123,10 @@ namespace CryGameCode.Tanks
 			set
 			{
 				var gameRules = GameRules.Current as SinglePlayer;
-				if(gameRules != null && gameRules.IsTeamValid(value))
-				{
-					team = value;
-				}
+                if (gameRules != null && gameRules.IsTeamValid(value))
+                {
+                    team = value;
+                }
 			}
 		}
 

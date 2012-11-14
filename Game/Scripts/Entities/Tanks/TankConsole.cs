@@ -10,8 +10,6 @@ namespace CryGameCode.Tanks
 	{
 		static Tank()
 		{
-			CVar.RegisterFloat("g_tankTurnSpeed", ref tankTurnSpeed);
-
 			CVar.RegisterFloat("cam_minDistZ", ref minCameraDistanceZ);
 			CVar.RegisterFloat("cam_maxDistZ", ref maxCameraDistanceZ);
 
@@ -21,6 +19,9 @@ namespace CryGameCode.Tanks
 			CVar.RegisterFloat("cam_maxAngleX", ref maxCameraAngleX);
 
 			CVar.RegisterFloat("cam_zoomSpeed", ref zoomSpeed);
+
+            CVar.RegisterFloat("tank_boostTime", ref maxBoostTime);
+            CVar.RegisterFloat("tank_boostAccelerationMultiplier", ref boostSpeedMult);
 
 			ConsoleCommand.Register("spawn", (e) =>
 			{
@@ -42,8 +43,9 @@ namespace CryGameCode.Tanks
 			});
 		}
 
-		public static float minCameraDistanceZ = 25;
-		public static float maxCameraDistanceZ = 35;
+        #region Camera
+        public static float minCameraDistanceZ = 25;
+		public static float maxCameraDistanceZ = 40;
 
 		public static float cameraDistanceY = -5;
 
@@ -53,8 +55,12 @@ namespace CryGameCode.Tanks
 		public static float zoomSpeed = 2;
 
 		public static int maxZoomLevel = 8;
+        #endregion
 
-		private static string ForceTankType;
+        private static float maxBoostTime = 3;
+        private static float boostSpeedMult = 1.5f;
+
+        private static string ForceTankType;
 
 		private static List<System.Type> TurretTypes;
 	}
