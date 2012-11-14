@@ -43,7 +43,7 @@ namespace CryGameCode.Tanks
 		}
 
 		public static float minCameraDistanceZ = 25;
-		public static float maxCameraDistanceZ = 35;
+		public static float maxCameraDistanceZ = 40;
 
 		public static float cameraDistanceY = -5;
 

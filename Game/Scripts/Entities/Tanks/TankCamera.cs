@@ -19,7 +19,7 @@ namespace CryGameCode.Tanks
 					ZoomLevel = maxZoomLevel;
 			}
 
-            viewParams.FieldOfView = MathHelpers.DegreesToRadians(70);
+            viewParams.FieldOfView = MathHelpers.DegreesToRadians(60);
 
 			var distZ = minCameraDistanceZ + (minCameraDistanceZ - maxCameraDistanceZ) * ZoomRatio;
 
