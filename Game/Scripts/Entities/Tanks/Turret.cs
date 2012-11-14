@@ -1,4 +1,6 @@
-﻿using CryEngine;
+﻿using System;
+
+using CryEngine;
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
@@ -65,7 +67,7 @@ namespace CryGameCode.Tanks
 				var dir = m_mousePos - Attachment.Position;
 
 				var rot = Attachment.Rotation;
-                rot.SetRotationZ(MathHelpers.Atan2(-dir.X, dir.Y));
+                rot.SetRotationZ((float)Math.Atan2(-dir.X, dir.Y));
 				Attachment.Rotation = rot;
 			}
 			break;
