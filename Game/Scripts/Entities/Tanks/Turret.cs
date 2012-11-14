@@ -59,19 +59,6 @@ namespace CryGameCode.Tanks
 		{
 			switch(e.MouseEvent)
 			{
-				// Handle turret rotation
-			case MouseEvent.Move:
-			{
-				m_mousePos = Renderer.ScreenToWorld(e.X, e.Y);
-
-				var dir = m_mousePos - Attachment.Position;
-
-				var rot = Attachment.Rotation;
-                rot.SetRotationZ((float)Math.Atan2(-dir.X, dir.Y));
-				Attachment.Rotation = rot;
-			}
-			break;
-
 			case MouseEvent.LeftButtonDown:
 			{
 				if(AutomaticFire)
@@ -92,7 +79,6 @@ namespace CryGameCode.Tanks
 			}
 		}
 
-		#region Weapons
 		public void Update()
 		{
 			if(m_leftFiring)
@@ -100,8 +86,15 @@ namespace CryGameCode.Tanks
 
 			if(m_rightFiring)
 				FireRight();
+
+			var dir = Renderer.ScreenToWorld(Input.MouseX, Input.MouseY) - Attachment.Position;
+			var rot = Attachment.Rotation;
+			rot.SetRotationZ((float)Math.Atan2(-dir.X, dir.Y));
+
+			Attachment.Rotation = Quat.CreateNlerp(Attachment.Rotation, rot, Time.DeltaTime * 10);
 		}
 
+		#region Weapons
 		protected virtual void ChargeWeapon() { }
 
 		private void Fire(ref float shotTime, string helper)
@@ -142,8 +135,6 @@ namespace CryGameCode.Tanks
 		private float m_lastRightShot;
 		private bool m_rightFiring;
 		private bool m_leftFiring;
-
-		private Vec3 m_mousePos;
 		#endregion
 
 		public void Hide(bool hide)
