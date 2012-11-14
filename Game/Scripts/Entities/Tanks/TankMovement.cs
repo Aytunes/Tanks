@@ -40,7 +40,7 @@ namespace CryGameCode.Tanks
             VelocityRequest = Vec3.Zero;
             RotationRequest = Vec3.Zero;
 
-            if (moveRequest.velocity != Vec3.Zero)
+            if (moveRequest.velocity.Length > 0.3f) // it'd be nice if we could change the oscillation speed / dir 
             {
                 var moveMat = Material.Find("objects/tanks/tracksmoving");
                 if (moveMat != null && !m_leftTrack.IsDestroyed && !m_rightTrack.IsDestroyed)
