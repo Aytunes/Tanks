@@ -1,4 +1,7 @@
-﻿using CryEngine;
+﻿using System;
+using CryEngine;
+using CryGameCode.Projectiles;
+
 
 namespace CryGameCode.Tanks
 {
@@ -9,14 +12,12 @@ namespace CryGameCode.Tanks
 
         protected override void OnFire(Vec3 firePos)
         {
-            /*var attachment = Attachment.GetAttachment("turret_rotation");
-            if (attachment != null)
-                attachment.Rotation *= Quat.CreateRotationZ(45);*/
-
-            base.OnFire(firePos);
-        }
+            var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash_small");
+            muzzleFlash.Spawn(firePos, Attachment.Rotation.Column1, 0.35f);
+        }	
 
 		public override string Model { get { return "objects/tanks/turret_chaingun.chr"; } }
+        public override Type ProjectileType { get { return typeof(ChaingunBullet); } }		
 		public override bool AutomaticFire { get { return true; } }
 		public override float TimeBetweenShots { get { return 0.05f; } }
 	}
