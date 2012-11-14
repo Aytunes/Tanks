@@ -27,6 +27,11 @@ namespace CryGameCode.Entities.Collectibles
 			ReceiveUpdates = true;
 		}
 
+        protected override void PostSerialize()
+        {
+            Activate();
+        }
+
 		void Reset()
 		{
 			TriggerBounds = new BoundingBox(Minimum, Maximum);
@@ -39,18 +44,20 @@ namespace CryGameCode.Entities.Collectibles
             var collectibleType = CollectibleTypes[SinglePlayer.Selector.Next(CollectibleTypes.Count)];
 
             Collectible = Entity.Spawn("Collectible", collectibleType) as Collectible;
+            if (Collectible != null)
+            {
+                // TODO: Make base model seperate, in order to change pickup model based on collectible type.
+                LoadObject(Collectible.Model);
 
-            // TODO: Make base model seperate, in order to change pickup model based on collectible type.
-            LoadObject(Collectible.Model);
+                Physics.Type = PhysicalizationType.Rigid;
+                Physics.Mass = -1;
 
-            Physics.Type = PhysicalizationType.Rigid;
-            Physics.Mass = -1;
+                Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups");
 
-            Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups");
+                PlayAnimation("Default", AnimationFlags.Loop);
 
-            PlayAnimation("Default", AnimationFlags.Loop);
-
-            Active = true;
+                Active = true;
+            }
         }
 
 		public override void OnUpdate()

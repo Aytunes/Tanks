@@ -4,11 +4,6 @@
         <name>CryBrary</name>
     </assembly>
     <members>
-        <member name="T:CryEngine.Actor">
-            <summary>
-            WIP Player class. TODO: Redo, currently very limited in terms of callbacks + interoperability with C++ backend
-            </summary>
-        </member>
         <member name="T:CryEngine.ActorBase">
             <summary>
             Base class which all actors must derive from. Includes basic callbacks.

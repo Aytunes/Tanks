@@ -10,6 +10,11 @@ namespace CryGameCode.Tanks
             Reset(true);
         }
 
+        protected override void PostSerialize()
+        {
+            Reset(true);
+        }
+
 		public void OnRevive()
 		{
 			ZoomLevel = 1;
@@ -53,7 +58,8 @@ namespace CryGameCode.Tanks
 
 		private void Reset(bool enteringGame)
 		{
-			LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
+            LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
+            Debug.LogAlways("objects/tanks/tank_generic_" + Team + ".cdf");
 
 			if(enteringGame)
 			{
@@ -117,10 +123,10 @@ namespace CryGameCode.Tanks
 			set
 			{
 				var gameRules = GameRules.Current as SinglePlayer;
-				if(gameRules != null && gameRules.IsTeamValid(value))
-				{
-					team = value;
-				}
+                if (gameRules != null && gameRules.IsTeamValid(value))
+                {
+                    team = value;
+                }
 			}
 		}
 
