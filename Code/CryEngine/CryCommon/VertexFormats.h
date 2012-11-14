@@ -20,6 +20,23 @@
 
 #include <CryArray.h>
 
+// Stream Configuration options 
+#if !defined(XENON) && !defined(PS3)
+# ifndef ENABLE_NORMALSTREAM_SUPPORT
+#  define ENABLE_NORMALSTREAM_SUPPORT 1
+# endif
+# ifndef ENABLE_SHAPEDEFORMATION_SUPPORT
+#  define ENABLE_SHAPEDEFORMATION_SUPPORT 1
+# endif ENABLE_SHAPEDEFORMATION_SUPPORT
+#endif 
+
+#ifndef ENABLE_NORMALSTREAM_SUPPORT
+# define ENABLE_NORMALSTREAM_SUPPORT 0
+#endif 
+#ifndef ENABLE_SHAPEDEFORMATION_SUPPORT
+# define ENABLE_SHAPEDEFORMATION_SUPPORT 0
+#endif 
+
 enum EVertexFormat
 {
   eVF_Unknown = 0,
@@ -29,7 +46,7 @@ enum EVertexFormat
   eVF_P3S_C4B_T2S = 2,
   eVF_P3S_N4B_C4B_T2S = 3,
 
-  eVF_P3F_C4B_I4B_PS4F = 4, // Particles.
+  eVF_P3F_C4B_T4B_N3F2 = 4, // Particles.
   eVF_TP3F_C4B_T2F = 5, // Fonts (28 bytes).
   eVF_TP3F_T2F_T3F = 6,  // Miscellaneus.
   eVF_P3F_T3F = 7,       // Miscellaneus.
@@ -45,7 +62,9 @@ enum EVertexFormat
 	// Stream formats for SPU skinning
   eVF_C4B_T2S = 14,     // General (Position is merged with Tangent stream)
 
-  eVF_Max = 15,
+	eVF_P2S_N4B_C4B_T1F = 15,
+	eVF_P3F_C4B_T2S = 16,
+  eVF_Max = 17,
 };
 
 
@@ -88,7 +107,7 @@ _inline EVertexFormat VertFormatForComponents(bool bNeedCol, bool bHasTC, bool b
   EVertexFormat RequestedVertFormat;
 
   if (bHasPS)
-    RequestedVertFormat = eVF_P3F_C4B_I4B_PS4F;
+    RequestedVertFormat = eVF_P3F_C4B_T4B_N3F2;
   else
   if (bHasNormal)
     RequestedVertFormat = eVF_P3S_N4B_C4B_T2S;
@@ -104,6 +123,13 @@ struct UCol
   {
     uint32 dcolor;
     uint8  bcolor[4];
+
+
+
+
+			struct { uint8 b, g, r, a; };
+			struct { uint8 z, y, x, w; };
+
   };
 
   AUTO_STRUCT_INFO
@@ -209,10 +235,10 @@ struct Vec3f16 : public CryHalf4
 
 
 
-    x = CryConvertFloatToHalf(sl.x);
-    y = CryConvertFloatToHalf(sl.y);
-    z = CryConvertFloatToHalf(sl.z);
-    w = CryConvertFloatToHalf(sl.w);
+		x = CryConvertFloatToHalf(sl.x);
+		y = CryConvertFloatToHalf(sl.y);
+		z = CryConvertFloatToHalf(sl.z);
+		w = CryConvertFloatToHalf(sl.w);
 
 #endif
     return *this;
@@ -311,12 +337,28 @@ struct SVF_P3S_C4B_T2S
   UCol color;
   Vec2f16 st;
 };
+
+struct SVF_P3F_C4B_T2S
+{
+	Vec3 xyz;
+	UCol color;
+	Vec2f16 st;
+};
+
 struct SVF_P3S_N4B_C4B_T2S
 {
   Vec3f16 xyz;
   UCol normal;
   UCol color;
   Vec2f16 st;
+};
+
+struct SVF_P2S_N4B_C4B_T1F
+{
+	Vec2f16 xy;
+	UCol normal;
+	UCol color;
+	float z;
 };
 
 struct SVF_T2F
@@ -360,24 +402,19 @@ struct SVF_TP3F_T2F_T3F
   Vec2 st0;
   Vec3 st1;
 };
-struct SVF_P3F_C4B_I4B_PS4F
+
+struct SVF_P3F_C4B_T4B_N3F2
 {
   Vec3 xyz;
-	Vec2 prevXaxis;
-	Vec2 prevYaxis;
   UCol color;
+  UCol st;
+  Vec3 xaxis;
+  Vec3 yaxis;
+#if PARTICLE_MOTION_BLUR
 	Vec3 prevPos;
-  struct SpriteInfo
-  {
-
-
-
-    uint8		tex_x, tex_y, tex_z, backlight;		// xyzw
-    // PC DX9 swapped in shaders to						// zyxw
-
-  } info;
-  Vec2 xaxis;
-  Vec2 yaxis;
+	Vec3 prevXTan;
+	Vec3 prevYTan;
+#endif
 };
 
 struct SVF_C4B_T2S
@@ -474,6 +511,32 @@ struct SQTangents
   Vec4sf Tangent;
 };
 
+// Normal extraction from vertex formats
+inline Vec3 GetNormal(const SPipTangents& tan2)
+{
+	Vec3 vTan1, vTan2;
+	tPackB2F(tan2.Tangent, vTan1);
+	tPackB2F(tan2.Binormal, vTan2);
+	return (vTan1 ^ vTan2) * tPackB2F(tan2.Binormal.w);
+}
+
+inline Vec3 GetNormal(const SQTangents& qtan)
+{
+	Vec4 v = tPackB2F(qtan.Tangent);
+	Quat q(v.w, v.x, v.y, v.z);
+	return q.GetColumn2() * fsgnf(v.w);
+}
+
+inline Vec3 GetNormal(UCol col)
+{
+	return Vec3
+	(
+		(col.bcolor [0] - 128.0f) / 127.5f,
+		(col.bcolor [1] - 128.0f) / 127.5f,
+		(col.bcolor [2] - 128.0f) / 127.5f
+	);
+}
+
 //==================================================================================================
 
 typedef SVF_P3F_C4B_T2F SAuxVertex;
@@ -500,8 +563,10 @@ enum EStreamIDs
   VSF_QTANGENTS,		  					// Tangents buffer
   VSF_HWSKIN_INFO,							// HW skinning buffer
   VSF_HWSKIN_MORPHTARGET_INFO,  // HW skinning (morph targets) buffer
-#if !defined(XENON) && !defined(PS3) 
+# if ENABLE_SHAPEDEFORMATION_SUPPORT
   VSF_HWSKIN_SHAPEDEFORM_INFO,  // HW skinning (shape deformation) buffer
+# endif
+# if ENABLE_NORMALSTREAM_SUPPORT
   VSF_NORMALS,                  // Normals, used for skinning
 #endif
   // <- Insert new stream IDs here
@@ -518,8 +583,10 @@ enum EStreamMasks
   VSM_TANGENTS   = ((1<<VSF_TANGENTS) | (1<<VSF_QTANGENTS)),
   VSM_HWSKIN     = 1 << VSF_HWSKIN_INFO,
   VSM_HWSKIN_MORPHTARGET       = 1 << VSF_HWSKIN_MORPHTARGET_INFO,
-#if !defined(XENON) && !defined(PS3) 
+# if ENABLE_SHAPEDEFORMATION_SUPPORT
   VSM_HWSKIN_SHAPEDEFORM       = 1 << VSF_HWSKIN_SHAPEDEFORM_INFO,
+# endif
+# if ENABLE_NORMALSTREAM_SUPPORT
   VSM_NORMALS                  = 1 << VSF_NORMALS,
 #endif
 

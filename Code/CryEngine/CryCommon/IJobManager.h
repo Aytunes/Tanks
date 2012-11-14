@@ -46,9 +46,18 @@
 #define _ALIGN(x) __attribute__((aligned(x)))
 #endif
 
+#if !defined(_MS_ALIGN)
+// needed for SPU compilation (should be removed as soon as the spus doesn't depend on this header anymore
+#define _MS_ALIGN(x)
+#endif
+
 // for some spu/crycg compile path, STATIC_CHECK is not defined, but for those it doesn't really matter
 #if !defined(STATIC_CHECK)
 	#define STATIC_CHECK(a, b)
+#endif
+
+#if !defined(CHAR_BIT)
+	#define CHAR_BIT 8
 #endif
 
 
@@ -95,9 +104,11 @@ class SJobFinishedConditionVariable;
 class SJobFinishedConditionVariable
 {
 public:
-	SJobFinishedConditionVariable()
+	SJobFinishedConditionVariable() :
+			m_nRefCounter(0),
+			m_pOwner(NULL)
 	{
-		m_nFinished = 0;
+		m_nFinished = 1;
 	}
 
 	void Acquire()
@@ -109,7 +120,7 @@ public:
 		m_Notify.Unlock();
 	}
 
-	void Release(  )
+	void Release()
 	{		
 		m_Notify.Lock();
 		m_nFinished = 1;
@@ -122,37 +133,91 @@ public:
 		m_nFinished = 0;
 	}
 
+	bool IsRunning()
+	{
+		return m_nFinished == 0;
+	}
+
+	void SetStopped()
+	{
+		m_nFinished = 1;
+	}
+
+	void SetOwner(volatile const void *pOwner)
+	{
+		if(m_pOwner!=NULL)
+			__debugbreak();
+		m_pOwner = pOwner;		
+	}
+	
+	void ClearOwner(volatile const void *pOwner)
+	{
+		if(m_pOwner != pOwner)		
+			__debugbreak();
+
+		m_pOwner = NULL;		
+	}
+
+	bool AddRef(volatile const void *pOwner) 
+	{ 
+		if(m_pOwner != pOwner)
+			return false;
+
+		++m_nRefCounter; 
+		return true;
+	}
+	uint32 DecRef(volatile const void *pOwner) 
+	{ 
+		if(m_pOwner != pOwner)
+			__debugbreak();
+
+		return --m_nRefCounter; 			
+	}
+
+	bool HasOwner() const { return m_pOwner != NULL; }
+
 private:
 	CryMutex							m_Notify;
 	CryConditionVariable	m_CondNotify;	
 	volatile uint32				m_nFinished;
+	volatile uint32				m_nRefCounter;
+	volatile const void*	m_pOwner;
 };
 #endif
 
+
+///////////////////////////////////////////////////////////////////////////////
+//forward declarations
 namespace NSPU{ namespace NDriver{ struct SJobPerfStats; } }
 
 namespace JobManager { class CJobBase; }
 namespace JobManager { struct ISPUBackend; }
+namespace JobManager { class CJobDelegator; }
+namespace JobManager { struct SJobQueueSlotState; }
 
-// for friend declaration
+///////////////////////////////////////////////////////////////////////////////
+// function forward declarations for friend declaration
 namespace NSPU { namespace NDriver { void ProcessJob(const uint32, const uint32, const uint32); } }
 
+
+///////////////////////////////////////////////////////////////////////////////
 // Wrapper for Vector4 Uint
-
-
-
-
-
-
-
-
-
 struct SVEC4_UINT
 {
+
+
+
+
+
+
+
+
+#if defined(LINUX)
 	uint32 v[4];
-};
-
-
+#else
+	__m128 v;	
+#endif
+} _ALIGN(16);
 
 
 // ==============================================================================
@@ -161,8 +226,15 @@ struct SVEC4_UINT
 // front end values
 namespace JobManager
 {	
+	/////////////////////////////////////////////////////////////////////////////
+	// type to reprensent a semaphore handle of the jobmanager
+	typedef uint16 TSemaphoreHandle;
+
+	/////////////////////////////////////////////////////////////////////////////
+	// magic value to reprensent an invalid job handle
 	enum { INVALID_JOB_HANDLE = ((unsigned int)-1) };
 
+	/////////////////////////////////////////////////////////////////////////////
 	//return results for AddJob
 	enum EAddJobRes
 	{
@@ -177,6 +249,7 @@ namespace JobManager
 		eAJR_JobTooLarge,				//spu job cannot fit into a single SPU local store
 		eAJR_JobSetupViolation,	//spu job has some invalid setup for packets/depending jobs
 		eAJR_InvalidJobHandle,	//spu job was invoked with an invalid job handle (job has not been found in spu repository)		
+		eAJR_NeedFallbackJobInfoBlock, 
 		eAJR_UnknownError,			//unknown error
 	};
 
@@ -198,8 +271,8 @@ namespace SPUBackend
 	enum { MAX_PROF_ID = 1024 };						//max num of supported cache lookup id's
 	enum { SPU_PRINTF_BUF_SIZE = 512	 };
 
-	enum { scMaxWorkerSPU	= 4 };									//maximum number of SPUs to manage as worker threads
-	enum { scMaxSPU	= 5 };												//maximum number of SPUs to manage (one extra SPU dedicated for DXPS)
+	enum { scMaxWorkerSPU	= 5 };									//maximum number of SPUs to manage as worker threads
+	enum { scMaxSPU	= 6 };												//maximum number of SPUs to manage (one extra SPU dedicated for DXPS)
 
 	//maximum cache size, 
 	enum ECacheMode
@@ -310,7 +383,6 @@ namespace JobManager
 		uint32 nThreadId;
 	} _ALIGN(16); // 48 bytes
 
-
 	// special combination of a volatile spinning variable combined with a semaphore
 	// which is used if the running state is not yet set to finish during waiting
 	struct SJobSyncVariable
@@ -323,29 +395,32 @@ namespace JobManager
 		// interface, should only be used by the job manager or the job state classes
 		void Wait() volatile;		
 		void SetRunning() volatile;
-		void SetStopped() volatile;				
+		bool SetStopped() volatile;		
+
+
+
+
+
 	private:
 		friend class CJobManager;		
-		friend void NSPU::NDriver::ProcessJob(const uint32, const uint32, const uint32);
+		friend void NSPU::NDriver::ProcessJob(const uint32, const uint32, const uint32);		
 
 		// union used to combine the semaphore and the running state in a single word
 		union SyncVar
 		{
-			volatile SPU_DRIVER_INT_PTR running;
-			volatile SJobFinishedConditionVariable *pSemaphore;
-#if defined(WIN64) || defined(LINUX64) 
-			volatile int64 exchangeValue;
-#else
-			volatile long exchangeValue;
-#endif
+			volatile long wordValue;
+			struct
+			{
+				uint16 nRunningCounter;
+				TSemaphoreHandle semaphoreHandle;
+			};
 		};
-
-		// util function to the C-A-S operation
-		bool CompareExchange( SyncVar newValue, SyncVar oldValue, SyncVar &rResValue ) volatile;		
 		 
 		// members
 		SyncVar syncVar;		// sync-variable which contain the running state or the used semaphore
-
+#if defined(PLATFORM_64BIT)
+		char padding[4];
+#endif
 	};
 
 
@@ -355,21 +430,39 @@ namespace JobManager
 	{
 	public:		
 		ILINE bool IsRunning() const		{	return syncVar.IsRunning(); }
-		ILINE void SetRunning( )				{ syncVar.SetRunning(); }
-		ILINE void SetStopped()					
+		ILINE void SetRunning( )				
+		{
+
+
+
+			syncVar.SetRunning(); 
+
+		}
+		ILINE bool SetStopped()					
 		{ 
 
 
 
-			syncVar.SetStopped(); 
+			return syncVar.SetStopped(); 
 
 		}			
-		ILINE void Wait()								{ syncVar.Wait(); }
+		ILINE void Wait()								
+		{ 
+
+
+
+			syncVar.Wait(); 
+
+		}
+
+
+
+
 
 	private:
-		friend class CJobManager;	
+		friend class CJobManager;			
 
-		SJobSyncVariable syncVar;
+		SJobSyncVariable syncVar;		
 	};
 
 	// for speed use 16 byte aligned job state
@@ -379,26 +472,30 @@ namespace JobManager
 
 		// when doing profiling, intercept the SetRunning() and SetStopped() functions for profiling informations
 
-		ILINE SJobState() 		
+		ILINE SJobState() 
+			: m_pFollowUpJob(NULL)
 #if defined(JOBMANAGER_SUPPORT_PROFILING)
-		: pJobProfilingData(NULL),
-			lock(0)
+		, pJobProfilingData(NULL)
+		, lock(0)
 #endif
 		{}
 
 		ILINE void SetRunning();		
-		ILINE void SetStopped();	
+		void SetStopped();	
 #if !defined(__SPU__) && defined(JOBMANAGER_SUPPORT_PROFILING)
 		ILINE void LockProfilingData() { CrySpinLock( &lock, 0, 1 ); }
 		ILINE void UnLockProfilingData() { CrySpinLock( &lock, 1, 0 ); }
 #endif
+
+		ILINE void RegisterPostJob(CJobBase *pFollowUpJob) { m_pFollowUpJob = pFollowUpJob; }
 
 #if defined(JOBMANAGER_SUPPORT_PROFILING)	
 		SJobProfilingData *pJobProfilingData;
 		volatile int lock;
 #endif
 
-	} _ALIGN(16);
+		CJobBase *m_pFollowUpJob;
+	}_ALIGN(16);
 
 
 	struct SSPUFrameStats
@@ -530,7 +627,7 @@ namespace JobManager
 
 
 	// struct to represent a packet for the consumer producer queue
-	struct SAddPacketData
+	_MS_ALIGN(16) struct SAddPacketData
 	{
 		unsigned char opMode;
 		unsigned short nInvokerIndex; // to keep the struct 16 byte big, we use a index into the info block
@@ -576,14 +673,55 @@ namespace JobManager
 	//we have to transfer the info block, parameter block, input memory needed for execution, data and text of job
 	//first 16 bytes gets overwritten for job state from SPU, dont store some post job persistent data there
 	//parameter data, packet chain ptr and dma list data are transferred at once since they got allocated consecutively
-	struct SInfoBlock
+	_MS_ALIGN(128) struct SInfoBlock
 	{
-		// data needed to run the job and it's functionality
-		JobManager::SJobStateBase jobState;				//job state variable, set via DMA from SPU, 4 bytes (16 byte aligned)
+		// struct to represent the state of a SInfoBlock
+		struct SInfoBlockState
+		{
+			// union of requiered members and uin32 to allow easy atomic operations
+			union
+			{
+				struct
+				{
+					TSemaphoreHandle	nSemaphoreHandle;			// handle for the conditon variable to use in case some thread is waiting
+					uint16						nRoundID;							// number of rounds over the job queue, to prevent a race condition with SInfoBlock reuse (we have 15 bits, thus 32k full job queue iterations are safe)
+				};
+				volatile long nValue;											// value for easy Compare and Swap
+			};
+
+			void IsInUse(uint32 nRoundIdToCheckOrg, bool &rWait, bool &rRetry, uint32 nMaxValue) volatile const 
+			{ 
+				uint32 nRoundIdToCheck = nRoundIdToCheckOrg & 0x7FFF; // clamp nRoundID to 15 bit
+				uint32 nLoadedRoundID = nRoundID;
+				uint32 nNextLoadedRoundID = ((nLoadedRoundID+1) & 0x7FFF);
+				nNextLoadedRoundID = nNextLoadedRoundID >= nMaxValue ? 0 : nNextLoadedRoundID;
+				
+				if(nLoadedRoundID == nRoundIdToCheck) // job slot free
+				{
+					rWait = false;
+					rRetry = false;					
+				}else if( nNextLoadedRoundID == nRoundIdToCheck ) // job slot need to be worked on by worker
+				{
+					rWait = true;
+					rRetry = false;
+				}
+				else // producer was suspended long enough that the worker overtook it
+				{
+					rWait = false;
+					rRetry = true;
+				}				
+			}
+		};
+
+		// data needed to run the job and it's functionality		
+		volatile SInfoBlockState				jobState;							// state of the SInfoBlock in job queue, should only be modified by access functions
 		JobManager::SCallback callBackData;				// struct to contain information about a possible callback when the job finished( 8 bytes)
-		Invoker jobInvoker;		
-		SPU_DRIVER_INT_PTR eaExtJobStateAddress;	//external job state address /shared with address of prod-cons queue
-		SPU_DRIVER_INT_PTR eaJobPerfAddress;			//source address of profiling stats for this job
+		Invoker													jobInvoker;						// callback function to job invoker (extracts parameters and calls entry function)
+		SPU_DRIVER_INT_PTR eaExtJobStateAddress;	//external job state address /shared with address of prod-cons queue		
+		union {
+		JobManager::SInfoBlock *pNext;					// single linked list for fallback jobs in the case the queue is full, and a worker wants to push new work		
+			SPU_DRIVER_INT_PTR eaJobPerfAddress;			//source address of profiling stats for this job
+		};
 		SPU_DRIVER_INT_PTR eaDMAJobAddress;				//source address of job program data
 		
 		// per job settings like cache size and so on
@@ -603,12 +741,6 @@ namespace JobManager
 		unsigned short funcProfTimingCount;				//size of function profiler area to add to bss
 		unsigned short jobSize;										//size of job to transfer (contains .data and .text section) (multiple of 4 bytes)			
 
-		//if adding more data here, please adjust copying inside AddJob
-#if defined(WIN64) || defined(LINUX64)
-		static const unsigned int scAvailParamSize = 256 - 72;//size to keep it 128 byte aligned
-#else
-		static const unsigned int scAvailParamSize = 128 - 48;//size to keep it 128 byte aligned
-#endif
 		static const unsigned int scNoThreadId		 = 0xFFFFFFFF;//indicates that spu index acts as thread id
 		
 		//bits used for flags
@@ -618,33 +750,35 @@ namespace JobManager
 		static const unsigned int scTransferProfDataBack	= 0x10;
 		static const unsigned int scKeepQueueCache				= 0x20;
 		
-		//sizes for accessing the SQueueNodeSPU array
-#if defined(WIN64) || defined(LINUX64)
-		static const unsigned int scSizeOfSJobQueueEntry			= 256;	//sizeof SInfoBlock (extra coded because shift)
-		static const unsigned int scSizeOfSJobQueueEntryShift = 8;		//SInfoBlock in shifts
+		// size of the SInfoBlock struct and how much memory we have to store parameters
+#if defined(PLATFORM_64BIT)
+		static const unsigned int scSizeOfSJobQueueEntry			= 512;
+		static const unsigned int scSizeOfJobQueueEntryHeader	= 88; // Please adjust when adding/removing members
+		static const unsigned int scAvailParamSize						= scSizeOfSJobQueueEntry - scSizeOfJobQueueEntryHeader;
 #else
-		static const unsigned int scSizeOfSJobQueueEntry			= 128;	//sizeof SInfoBlock (extra coded because shift)
-		static const unsigned int scSizeOfSJobQueueEntryShift = 7;		//SInfoBlock in shifts
+		static const unsigned int scSizeOfSJobQueueEntry			= 256;
+		static const unsigned int scSizeOfJobQueueEntryHeader	= 48; // Please adjust when adding/removing members
+		static const unsigned int scAvailParamSize						= scSizeOfSJobQueueEntry - scSizeOfJobQueueEntryHeader;
 #endif
 		
 
 		//parameter data are enclosed within to save a cache miss
-		unsigned char paramData[scAvailParamSize];//is 32 byte aligned, make sure it is kept aligned
+		_MS_ALIGN(16) unsigned char paramData[scAvailParamSize] _ALIGN(16);	//is 16 byte aligned, make sure it is kept aligned
 		
 		ILINE void AssignMembersTo(SInfoBlock* const pDest) const
 		{
-			SVEC4_UINT *const __restrict pDst = (SVEC4_UINT*)pDest;
-			const SVEC4_UINT *const __restrict cpSrc = (const SVEC4_UINT*)this;
-			pDst[0] = cpSrc[0];
-			pDst[1] = cpSrc[1];
-			pDst[2] = cpSrc[2];		
-			pDst[3] = cpSrc[3];		
-#if defined(WIN64) || defined(LINUX64)
-			pDst[4] = cpSrc[4];
-			pDst[5] = cpSrc[5];
-			pDst[6] = cpSrc[6];		
-			pDst[7] = cpSrc[7];		
+			SVEC4_UINT *const __restrict pDst = (SVEC4_UINT *const __restrict)(pDest);
+			SVEC4_UINT *const __restrict pSrc = (SVEC4_UINT *const __restrict)(this);
+			
+			pDest->callBackData = callBackData;
+			pDest->jobInvoker = jobInvoker;		
+			pDest->eaExtJobStateAddress = eaExtJobStateAddress;
+			pDst[1] = pSrc[1];
+			pDst[2] = pSrc[2];		
 
+#if defined(PLATFORM_64BIT) // copy more data, since the block itself is bigger
+			pDst[3] = pSrc[3];		
+			pDst[4] = pSrc[4];		
 #endif
 		}
 
@@ -765,22 +899,131 @@ namespace JobManager
 			assert(!HasQueue());
 			return &paramData[0];
 		}
-	} _ALIGN(128);
 
+		// functions to access jobstate of SInfoBlock		
+		ILINE void IsInUse(uint32 nRoundId, bool &rWait, bool &rRetry, uint32 nMaxValue) const { return jobState.IsInUse(nRoundId,rWait,rRetry,nMaxValue); }
+		
+		void Release(uint32 nMaxValue);
+		void Wait(uint32 nRoundID,uint32 nMaxValue);
+
+	} _ALIGN(128);
 
 	//state information for the fill and empty pointers of the job queue
 	//this is usable as shared memory with concurrent accesses from several SPUs at once
 	struct SJobQueuePos
-	{
-		union	// lockObtained is only use for pull pointer, while fetchIndex is only use for the push pointer
+	{		
+		unsigned int										lockObtained;																// keeps track if the consumer state is locked (and by which SPUid, only pull and on SPU only)		
+		JobManager::SInfoBlock*					jobQueue[JobManager::eNumPriorityLevel];		// base of job queue per priority level, duplicated for more efficient SPU fetches
+		JobManager::SJobQueueSlotState*	jobQueueStates[JobManager::eNumPriorityLevel];		// base of job queue per priority level, duplicated for more efficient SPU fetches
+		volatile uint64									index;																			// index use for job slot publishing (is mapped into the job queue and checked by SPU), each priority level is encoded in this single value
+
+		// util function to increase counter for their priority level only
+		static const uint64 eBitsInIndex = sizeof(uint64) * CHAR_BIT;
+		static const uint64 eBitsPerPriorityLevel = eBitsInIndex / JobManager::eNumPriorityLevel;
+		static const uint64 eMaskLowPriority			= (1ULL<<eBitsPerPriorityLevel)-1ULL;
+		static const uint64 eMaskRegularPriority = (((1ULL<<eBitsPerPriorityLevel)<<eBitsPerPriorityLevel)-1ULL) & ~eMaskLowPriority;
+		static const uint64 eMaskHighPriority		= ((((1ULL<<eBitsPerPriorityLevel)<<eBitsPerPriorityLevel)<<eBitsPerPriorityLevel)-1ULL) & ~(eMaskRegularPriority | eMaskLowPriority);
+
+		static uint64 ExtractIndex( uint64 currentIndex, uint32 nPriorityLevel )
 		{
-			unsigned int									lockObtained;		// keeps track if the consumer state is locked (and by which SPUid, only pull and on SPU only)
-			volatile unsigned int					fetchIndex;			// index use for job slot fetching (is mapped into the job queue)
-		};
+			switch(nPriorityLevel)
+			{
+				case eHighPriority:			return (((currentIndex & eMaskHighPriority) >> eBitsPerPriorityLevel) >> eBitsPerPriorityLevel);
+				case eRegularPriority:	return ((currentIndex & eMaskRegularPriority) >> eBitsPerPriorityLevel);
+				case eLowPriority:			return (currentIndex & eMaskLowPriority);
+				default: return ~0;
+			}
+		}
+
+		static bool IncreasePullIndex( uint64 currentPullIndex, uint64 currentPushIndex, uint64 &rNewPullIndex, uint32 &rPriorityLevel,
+			uint32 nJobQueueSizeHighPriority, uint32 nJobQueueSizeRegularPriority, uint32 nJobQueueSizeLowPriority)
+		{
+			uint32 nPushExtractedHighPriority			= static_cast<uint32>(ExtractIndex(currentPushIndex,eHighPriority));
+			uint32 nPushExtractedRegularPriority	= static_cast<uint32>(ExtractIndex(currentPushIndex,eRegularPriority));
+			uint32 nPushExtractedLowPriority			= static_cast<uint32>(ExtractIndex(currentPushIndex,eLowPriority));
+
+			uint32 nPullExtractedHighPriority			= static_cast<uint32>(ExtractIndex(currentPullIndex,eHighPriority));
+			uint32 nPullExtractedRegularPriority	= static_cast<uint32>(ExtractIndex(currentPullIndex,eRegularPriority));
+			uint32 nPullExtractedLowPriority			= static_cast<uint32>(ExtractIndex(currentPullIndex,eLowPriority));
+
+			uint32 nRoundPushHighPriority				= nPushExtractedHighPriority / nJobQueueSizeHighPriority;
+			uint32 nRoundPushRegularPriority		= nPushExtractedRegularPriority / nJobQueueSizeRegularPriority;
+			uint32 nRoundPushLowPriority				= nPushExtractedLowPriority / nJobQueueSizeLowPriority;
+			
+			uint32 nRoundPullHighPriority				= nPullExtractedHighPriority / nJobQueueSizeHighPriority;
+			uint32 nRoundPullRegularPriority		= nPullExtractedRegularPriority / nJobQueueSizeRegularPriority;
+			uint32 nRoundPullLowPriority				= nPullExtractedLowPriority / nJobQueueSizeLowPriority;
+
+			uint32 nPushJobSlotHighPriority			= nPushExtractedHighPriority & (nJobQueueSizeHighPriority-1);
+			uint32 nPushJobSlotRegularPriority	= nPushExtractedRegularPriority & (nJobQueueSizeRegularPriority-1);
+			uint32 nPushJobSlotLowPriority			= nPushExtractedLowPriority & (nJobQueueSizeLowPriority-1);
+
+			uint32 nPullJobSlotHighPriority			= nPullExtractedHighPriority & (nJobQueueSizeHighPriority-1);
+			uint32 nPullJobSlotRegularPriority	= nPullExtractedRegularPriority & (nJobQueueSizeRegularPriority-1);
+			uint32 nPullJobSlotLowPriority			= nPullExtractedLowPriority & (nJobQueueSizeLowPriority-1);
+
+			//NOTE: if this shows in the profiler, find a lockless variant of it
+			if( ((nRoundPushHighPriority == nRoundPullHighPriority) && nPullJobSlotHighPriority < nPushJobSlotHighPriority) || 
+					((nRoundPushHighPriority != nRoundPullHighPriority) && nPullJobSlotHighPriority >= nPushJobSlotHighPriority) )
+			{				
+				rPriorityLevel = eHighPriority;
+				rNewPullIndex = IncreaseIndex(currentPullIndex,eHighPriority);
+			}
+			else if (	((nRoundPushRegularPriority == nRoundPullRegularPriority) && nPullJobSlotRegularPriority < nPushJobSlotRegularPriority) || 
+								((nRoundPushRegularPriority != nRoundPullRegularPriority) && nPullJobSlotRegularPriority >= nPushJobSlotRegularPriority) )
+			{				
+				rPriorityLevel = eRegularPriority;
+				rNewPullIndex = IncreaseIndex(currentPullIndex,eRegularPriority);
+			}
+			else if (	((nRoundPushLowPriority == nRoundPullLowPriority) && nPullJobSlotLowPriority < nPushJobSlotLowPriority ) || 
+								((nRoundPushLowPriority != nRoundPullLowPriority) && nPullJobSlotLowPriority >= nPushJobSlotLowPriority ) )
+			{
+				rPriorityLevel = eLowPriority;
+				rNewPullIndex = IncreaseIndex(currentPullIndex,eLowPriority);
+			}
+			else
+			{
+				rNewPullIndex = ~0;
+				return false;
+			}
+
+			return true;
+		}
+
+		static uint64 IncreasePushIndex( uint64 currentPushIndex, uint32 nPriorityLevel )
+		{
+			return IncreaseIndex(currentPushIndex,nPriorityLevel);
+		}
+
+		static uint64 IncreaseIndex( uint64 currentIndex, uint32 nPriorityLevel )
+		{
+			uint64 nIncrease = 1ULL;
+			uint64 nMask = 0;
+			switch(nPriorityLevel) // unrolled loop, high priority two shifts, regular one, else no shift
+			{
+				case eHighPriority:			
+					nIncrease <<= eBitsPerPriorityLevel; 
+					nIncrease <<= eBitsPerPriorityLevel; 
+					nMask = eMaskHighPriority;
+					break;
+				case eRegularPriority:						
+					nIncrease <<= eBitsPerPriorityLevel; 
+					nMask = eMaskRegularPriority;
+					break;
+				case eLowPriority:
+					nMask = eMaskLowPriority;
+					break;
+			}
+			
+			// increase counter while preventing overflow
+			uint64 nCurrentValue					= currentIndex & nMask;							// extract all bits for this priority only
+			uint64 nCurrentValueCleared		= currentIndex & ~nMask;						// extract all bits of other priorities (they shouldn't change)
+			nCurrentValue += nIncrease;																				// increase value by one (already at the right bit position)
+			nCurrentValue &= nMask;																						// mask out again to handle overflow
+			uint64 nNewCurrentValue = nCurrentValueCleared | nCurrentValue;		// add new value to other priorities
+			return nNewCurrentValue;
+		}
 		
-		SPU_DRIVER_INT_PTR							baseAddr;				// base of job queue
-		SPU_DRIVER_INT_PTR							topAddr;				// top of job queue
-		volatile unsigned int						publishIndex;		// index use for job slot publishing (is mapped into the job queue and checked by SPU)
 	} _ALIGN(16);
 
 	//struct covers DMA data setup common to all jobs and packets
@@ -839,22 +1082,27 @@ namespace JobManager
 			return m_pGenericDelecator;
 		}
 
-		bool IsHighPriority() const { return m_bIsHighPriority; }
-		void SetHighPriority() { m_bIsHighPriority = true; }
+		unsigned int GetPriorityLevel() const { return m_nPrioritylevel; }
+		bool IsBlocking() const { return m_bIsBlocking; };
+
+		void SetPriorityLevel( unsigned int nPrioritylevel ) { m_nPrioritylevel = nPrioritylevel; }
+		void SetBlocking() { m_bIsBlocking = true; }
+
 		bool IsDedicatedThreadOnly() const { return m_bDedicatedThreadOnly; }
 		void SetDedicatedThreadOnly() { m_bDedicatedThreadOnly = true; }
 
 	protected:
 		volatile NSPU::NDriver::SJobPerfStats* m_pJobPerfData;	//job performance data pointer
-		JobManager::SJobState*m_pJobState;			//extern job state
-		SCallback	m_Callbackdata;										//callback data
-		const void*	m_pQueue;												//consumer/producer queue
-		bool m_KeepCache;														//if true then the cache is kept between packets
-		bool m_bIsHighPriority;												//if true then the job should use a high priority thread
-		bool m_bDedicatedThreadOnly;												// if true, can only be executed on Raw SPUs
-		unsigned int		m_ParamDataSize;						//sizeof parameter struct 		
-		unsigned int		m_CurThreadID;							//current thread id
-		Invoker m_pGenericDelecator;	//		
+		JobManager::SJobState*m_pJobState;					// extern job state
+		SCallback	m_Callbackdata;										// callback data
+		const void*	m_pQueue;												// consumer/producer queue
+		bool m_KeepCache;														// if true then the cache is kept between packets
+		unsigned int m_nPrioritylevel;							// enum represent the priority level to use
+		bool m_bIsBlocking;													// if true, then the job could block on a mutex/sleep
+		bool m_bDedicatedThreadOnly;								// if true, can only be executed on Raw SPUs
+		unsigned int		m_ParamDataSize;						// sizeof parameter struct 		
+		unsigned int		m_CurThreadID;							// current thread id
+		Invoker m_pGenericDelecator;
 	};
 
 	//base class for jobs
@@ -923,6 +1171,11 @@ namespace JobManager
 		ILINE void SetJobPerfStats(volatile NSPU::NDriver::SJobPerfStats* pPerfStats) volatile
 		{
 			((CJobBase*)this)->m_JobDelegator.SetJobPerfStats(pPerfStats);
+		}
+
+		ILINE CJobDelegator* GetJobDelegator()
+		{
+			return &m_JobDelegator;
 		}
 
 	protected:
@@ -1027,11 +1280,17 @@ namespace JobManager
 
 		virtual uint32 GetNumWorkerThreads() const = 0;
 
-		// get a free semaphore from the Job Manager pool
-		virtual SJobFinishedConditionVariable* GetSemaphore() = 0;
+		// get a free semaphore handle from the Job Manager pool
+		virtual JobManager::TSemaphoreHandle AllocateSemaphore( volatile const void* pOwner ) = 0;
 
-		// return a semaphore to the Job Manager pool
-		virtual void FreeSemaphore(SJobFinishedConditionVariable*pSemaphore) =0;
+		// return a semaphore handle to the Job Manager pool
+		virtual void DeallocateSemaphore( JobManager::TSemaphoreHandle nSemaphoreHandle, volatile const void* pOwner ) =0;
+
+		// increase the refcounter of a semaphore, but only if it is > 0, else returns false
+		virtual bool AddRefSemaphore( JobManager::TSemaphoreHandle nSemaphoreHandle, volatile const void* pOwner ) = 0;
+
+		// get the actual semaphore object for aquire/release calls
+		virtual SJobFinishedConditionVariable* GetSemaphore( JobManager::TSemaphoreHandle nSemaphoreHandle, volatile const void* pOwner ) =0;
 
 		virtual void DumpJobList() = 0;
 	};
@@ -1067,10 +1326,7 @@ namespace JobManager
 		virtual void GetAndResetSPUFrameStats(JobManager::SSPUFrameStats& rStats, const JobManager::SFrameProfileData*& rpCurFrameProfVec, uint32& rCount) = 0;
 		//obtains and resets the SPU function profiling stats of the last frame
 		virtual void GetAndResetSPUFuncProfStats(const JobManager::SFrameProfileData*& rpCurFuncProfStatVec, uint32& rCount, const uint32 cThresholdUSecs=100) = 0;
-	
-		//retrieve initialized spurs memory
-		virtual CellSpurs* GetSPURS() = 0;
-
+			
 		//initialize values required for spu-libgcm usage
 		virtual void GcmInit
 		(
@@ -1090,8 +1346,14 @@ namespace JobManager
 		// returns true in case a SPU repository was loaded succcessful
 		virtual bool HasValidSPURepository() const = 0;
 		
+		// suspends a shared worker thread, to allow other SPU threads to run
+		virtual void SuspendSharedWorkerThread() =0;
+
+		// resume execution of a previously suspended worker thread
+		virtual void ResumeSharedWorkerThread() =0;
 	};
 	
+	/////////////////////////////////////////////////////////////////////////////
 	ILINE ISPUBackend* GetSPUBackEnd()
 	{
 
@@ -1102,16 +1364,53 @@ namespace JobManager
 
 	}
 
+	/////////////////////////////////////////////////////////////////////////////
 	// util function to get the worker thread id in a job, returns 0xFFFFFFFF otherwise
 	ILINE uint32 GetWorkerThreadId()
 	{
 
 
 
-		return gEnv->GetJobManager()->GetWorkerThreadId();
+		uint32 nWorkerThreadID = gEnv->GetJobManager()->GetWorkerThreadId();
+		return nWorkerThreadID == ~0 ? ~0 : (nWorkerThreadID & ~0x40000000);
 
 	}
 
+	/////////////////////////////////////////////////////////////////////////////
+	// util function to find out if a call comes from the mainthread or from a worker thread
+	ILINE bool IsWorkerThread()
+	{
+
+
+
+		return gEnv->GetJobManager()->GetWorkerThreadId() != ~0;
+
+	}
+	
+		/////////////////////////////////////////////////////////////////////////////
+	// util function to find out if a call comes from the mainthread or from a worker thread
+	ILINE bool IsBlockingWorkerThread()
+	{
+
+
+
+		return (gEnv->GetJobManager()->GetWorkerThreadId() != ~0) && ((gEnv->GetJobManager()->GetWorkerThreadId() & 0x40000000) != 0);
+
+	}
+
+	
+	/////////////////////////////////////////////////////////////////////////////
+	// util function to check if a specific job should really run as job
+	ILINE bool InvokeAsJob( const char *pJobName )
+	{
+#if defined(__SPU__) || defined(_RELEASE)
+		return true; // on SPU and in release alwasy assume to execute the job
+#else
+		return gEnv->pJobManager->InvokeAsJob(pJobName);
+#endif
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
 	ILINE void SJobState::InitProfilingData()
 	{
 #if defined(JOBMANAGER_SUPPORT_PROFILING) && !defined(__SPU__)
@@ -1120,7 +1419,8 @@ namespace JobManager
 		this->UnLockProfilingData();
 #endif
 	}
-
+	
+	/////////////////////////////////////////////////////////////////////////////
 	ILINE void SJobState::SetRunning( )
 	{			
 #if defined(JOBMANAGER_SUPPORT_PROFILING) && !defined(__SPU__)
@@ -1132,9 +1432,22 @@ namespace JobManager
 #endif
 		SJobStateBase::SetRunning();
 	}
-	ILINE void SJobState::SetStopped()
+
+
+
+
+
+
+
+
+
+
+
+	/////////////////////////////////////////////////////////////////////////////
+	// special function is provided for SPUs, living in SPUDriver_spu.cpp
+	inline void SJobState::SetStopped()
 	{		
-#if defined(JOBMANAGER_SUPPORT_PROFILING) && !defined(__SPU__)
+#if defined(JOBMANAGER_SUPPORT_PROFILING)
 		LockProfilingData();
 		if(pJobProfilingData)
 		{
@@ -1143,8 +1456,17 @@ namespace JobManager
 		}
 		UnLockProfilingData();
 #endif
-		SJobStateBase::SetStopped();
+		CJobBase *pFollowUpJob = m_pFollowUpJob;	// take this pointer early as the job state could be freed by another thread
+		bool bStopped = SJobStateBase::SetStopped();
+
+		// start post job if set
+		if( pFollowUpJob != NULL && bStopped)
+		{
+			m_pFollowUpJob->Run();
+			m_pFollowUpJob = NULL;
+		}
 	}
+
 
 // ==============================================================================
 // Interface of the Producer/Consumer Queue for JobManager
@@ -1353,11 +1675,13 @@ extern "C"
 template <class TJobType, unsigned int Size>
 ILINE JobManager::CProdConsQueue<TJobType, Size>::~CProdConsQueue()
 {
+	if(m_pRingBuffer)
+	gEnv->GetJobManager()->Free(m_pRingBuffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 template <class TJobType, unsigned int Size>
-ILINE JobManager::CProdConsQueue<TJobType, Size>::CProdConsQueue(const bool cKeepCache) : m_Initialized(0)
+ILINE JobManager::CProdConsQueue<TJobType, Size>::CProdConsQueue(const bool cKeepCache) : m_Initialized(0), m_pRingBuffer(NULL)
 {
 	assert(Size > 2);
 	m_JobInstance.RegisterQueue((void*)this, cKeepCache);
@@ -1433,7 +1757,7 @@ ILINE void* const JobManager::CProdConsQueue<TJobType, Size>::GetIncrementedPoin
 {
 	//returns branch free the incremented wrapped aware param pointer
 	SPU_DRIVER_INT_PTR cNextPtr = (SPU_DRIVER_INT_PTR)m_pPush + m_PullIncrement;
-#if defined(WIN64) || defined(LINUX64)
+#if defined(PLATFORM_64BIT)
 	if((SPU_DRIVER_INT_PTR)cNextPtr >= (SPU_DRIVER_INT_PTR)m_RingBufferEnd)	cNextPtr = (SPU_DRIVER_INT_PTR)m_RingBufferStart;
 	return (void*)cNextPtr;
 #else
@@ -1480,16 +1804,13 @@ inline void JobManager::CProdConsQueue<TJobType, Size>::AddPacket
 			
 		SPU_DRIVER_INT_PTR nPushPtr = (SPU_DRIVER_INT_PTR)cpCurPush;
 		SPU_DRIVER_INT_PTR markedPushPtr = JobManager::ProdConsQueueBase::MarkPullPtrThatWeAreWaitingOnASemaphore(nPushPtr);
-		m_pQueueFullSemaphore = gEnv->pJobManager->GetSemaphore();
+		TSemaphoreHandle nSemaphoreHandle = gEnv->pJobManager->AllocateSemaphore( this );
+		m_pQueueFullSemaphore = gEnv->pJobManager->GetSemaphore( nSemaphoreHandle, this );
 		
 		bool bNeedSemaphoreWait = false;
-#if defined(WIN64) || defined(LINUX64)// for 64 bit, we need to atomicly swap 128 bit
+#if defined(PLATFORM_64BIT) // for 64 bit, we need to atomicly swap 128 bit
 		int64 compareValue[2] = { *alias_cast<int64*>(&curQueueRunningState),(int64)nPushPtr};		
-#if defined(WIN64)
 		_InterlockedCompareExchange128((volatile int64*)this, (int64)markedPushPtr, *alias_cast<int64*>(&curQueueRunningState), compareValue);
-#else
-		CryInterlockedCompareExchange128((volatile int64*)this, (int64)markedPushPtr, *alias_cast<int64*>(&curQueueRunningState), compareValue);
-#endif
 		// make sure nobody set the state to stopped in the meantime
 		bNeedSemaphoreWait = ( compareValue[0] == *alias_cast<int64*>(&curQueueRunningState) && compareValue[1] == (int64)nPushPtr ); 
 #else
@@ -1522,19 +1843,23 @@ inline void JobManager::CProdConsQueue<TJobType, Size>::AddPacket
 		// C-A-S successful, now we need to do a yield-wait
 		IF( bNeedSemaphoreWait,0)
 			m_pQueueFullSemaphore->Acquire();
+		else
+			m_pQueueFullSemaphore->SetStopped();
 
-		gEnv->pJobManager->FreeSemaphore(m_pQueueFullSemaphore);
+		gEnv->pJobManager->DeallocateSemaphore(nSemaphoreHandle, this );
 		m_pQueueFullSemaphore = NULL;
 	}
 
-#if defined(JOBMANAGER_SUPPORT_PROFILING) && !defined(__SPU__)
-	if(crPacket.GetJobStateAddess())
+#if !defined(__SPU__)
+	if(crPacket.GetJobStateAddress())
 	{
-		JobManager::SJobState *pJobState = reinterpret_cast<JobManager::SJobState*>(crPacket.GetJobStateAddess());
+		JobManager::SJobState *pJobState = reinterpret_cast<JobManager::SJobState*>(crPacket.GetJobStateAddress());
 		pJobState->SetRunning();
+#if defined(JOBMANAGER_SUPPORT_PROFILING)
 		pJobState->LockProfilingData();		
 		pJobState->pJobProfilingData->jobHandle = pJobParam->GetJobProgramData();				
 		pJobState->UnLockProfilingData();
+#endif
 	}
 #endif
 
@@ -1554,7 +1879,7 @@ inline void JobManager::CProdConsQueue<TJobType, Size>::AddPacket
 	SAddPacketData* const __restrict pAddPacketData = (SAddPacketData*)((unsigned char*)cpCurPush + m_AddPacketDataOffset);
 	pAddPacketData->SetCacheMode(cCacheMode);
 	pAddPacketData->jobEA = 0;
-	pAddPacketData->eaJobState = crPacket.GetJobStateAddess();
+	pAddPacketData->eaJobState = crPacket.GetJobStateAddress();
 	// used for non-spu backends during job switching
 	pAddPacketData->nInvokerIndex = pJobParam->GetProgramHandle()->nJobInvokerIdx;
 
@@ -1565,11 +1890,11 @@ inline void JobManager::CProdConsQueue<TJobType, Size>::AddPacket
 		uint32 jobHandle = pJobParam->GetProgramHandle()->jobHandle; 
 
 		pAddPacketData->jobEA =  pJobParam->GetJobAddress();
-		pJob	= (SJob*)handle;
+		pJob	= (SJob*)jobHandle;
 		pAddPacketData->binJobEA	= (uint32)pJob;
 		if (IsValidJobHandle(handle))
 			pAddPacketData->SetPageMode((JobManager::SPUBackend::EPageMode)pJob->GetPageMode());
-
+		
 	
 	}
 
@@ -1591,13 +1916,9 @@ inline void JobManager::CProdConsQueue<TJobType, Size>::AddPacket
 
 	bool bAtomicSwapSuccessfull = false;  
 	JobManager::SJobSyncVariable newSyncVar; newSyncVar.SetRunning(); 
-#if defined(WIN64) || defined(LINUX64)// for 64 bit, we need to atomicly swap 128 bit
+#if defined(PLATFORM_64BIT) // for 64 bit, we need to atomicly swap 128 bit
 	int64 compareValue[2] = { *alias_cast<int64*>(&newSyncVar),(int64)cpCurPush};		
-#if defined(WIN64)
 	_InterlockedCompareExchange128((volatile int64*)this, (int64)cpNextPushPtr, *alias_cast<int64*>(&newSyncVar), compareValue);
-#else
-	CryInterlockedCompareExchange128((volatile int64*)this, (int64)cpNextPushPtr, *alias_cast<int64*>(&newSyncVar), compareValue);
-#endif
 	// make sure nobody set the state to stopped in the meantime
 	bAtomicSwapSuccessfull = ( compareValue[0] > 0 ); 
 #else
@@ -1652,7 +1973,8 @@ ILINE JobManager::CJobDelegator::CJobDelegator() : m_ParamDataSize(0), m_CurThre
 	m_pQueue = NULL;
 	m_KeepCache = false;
 	m_pJobState = NULL;
-	m_bIsHighPriority =false;
+	m_nPrioritylevel = JobManager::eRegularPriority;
+	m_bIsBlocking =false;
 	m_bDedicatedThreadOnly = false;
 }
 
@@ -1768,99 +2090,280 @@ ILINE void JobManager::CJobDelegator::SetRunning()
 #if !defined(_SPU_DRIVER_PERSISTENT) // no constructor for SPU driver, to spare code size
 inline JobManager::SJobSyncVariable::SJobSyncVariable()  
 { 
-	syncVar.running = 0; 
+	syncVar.wordValue = 0; 
+#if defined(PLATFORM_64BIT)
+	padding[0] = padding[1] = padding[2] = padding[3]  = 0;
+#endif
 }
 #endif
 
 /////////////////////////////////////////////////////////////////////////////////
 inline bool JobManager::SJobSyncVariable::IsRunning() const volatile		
 {
-	return syncVar.running != 0;
+	return syncVar.nRunningCounter != 0;
 }
 
+// provide a special path for SPUs, since they use a different atomic operations
+// and require a interrupt thread call to unlock the semaphore
+// the SPU version is living in SPUDriver_spu.cpp due to dependency issues
+#if !defined(__SPU__)
 /////////////////////////////////////////////////////////////////////////////////
 inline void JobManager::SJobSyncVariable::Wait() volatile
 {
 
 
 
-	if( syncVar.running == 0 )
+	if( syncVar.wordValue == 0 )
 		return;
-			
-	SyncVar newValue;  newValue.pSemaphore = gEnv->GetJobManager()->GetSemaphore();
-	SyncVar oldValue; oldValue.running = 1;
-	SyncVar resValue; 
-	// if this C-A-S failles, it means that the job has set the running state to 0
-	if( CompareExchange(newValue,oldValue, resValue) )
-	{				
-		const_cast<SJobFinishedConditionVariable*>(newValue.pSemaphore)->Acquire();
-	}
+				
+	IJobManager *pJobManager = gEnv->GetJobManager();
 
-	// we already had another condition at this place so wait for the original one
-	if(resValue.running > 1)
+	SyncVar currentValue;
+	SyncVar newValue;
+	SyncVar resValue;
+	TSemaphoreHandle semaphoreHandle = gEnv->GetJobManager()->AllocateSemaphore( this );	
+
+retry:
+	// volatile read
+	currentValue.wordValue = syncVar.wordValue; 
+
+	if( currentValue.wordValue != 0 )
 	{
-		const_cast<SJobFinishedConditionVariable*>(resValue.pSemaphore)->Acquire();
+		// there is already a semaphore, wait for this one
+		if(currentValue.semaphoreHandle)
+		{
+			// prevent the following race condition: Thread A Gets the semaphore and waits, then Thread B fails the earlier C-A-S
+			// thus will wait for the same semaphore, but Thread A already release the semaphore and now another Thread (could even be A again)
+			// is using the same semaphore to wait for the job (executed by thread B) which waits for the samephore -> Deadlock
+			// this works since the jobmanager semphore function internally are using locks
+			// so if the following line succeeds, we got the lock before the release and have increased the use counter
+			// if not, it means that thread A release the semaphore, which also means thread B doesn't have to wait anymore
+
+			if(pJobManager->AddRefSemaphore( currentValue.semaphoreHandle, this ) )
+			{			
+				pJobManager->GetSemaphore(currentValue.semaphoreHandle, this )->Acquire();
+				pJobManager->DeallocateSemaphore( currentValue.semaphoreHandle, this );
+			}
+		}
+		else // no semaphore found
+		{
+			newValue = currentValue;
+			newValue.semaphoreHandle = semaphoreHandle;
+
+			resValue.wordValue = CryInterlockedCompareExchange(&syncVar.wordValue,newValue.wordValue,currentValue.wordValue);
+
+			// four case are now possible:
+			//a) job has finished -> we only need to free our semaphore
+			//b) we succeeded setting our semaphore, thus wait for it
+			//c) another waiter has set it's sempahore wait for the other one
+			//d) another thread has increased/decreased the num runner variable, we need to do the run again
+
+			if(resValue.wordValue != 0 ) // case a), do nothing
+			{
+				if(resValue.wordValue == currentValue.wordValue) // case b)
+				{
+					pJobManager->GetSemaphore( semaphoreHandle, this )->Acquire();
+				}
+				else // C-A-S not succeeded, check how to proceed
+				{
+					if(resValue.semaphoreHandle) // case c)
+					{
+						// prevent the following race condition: Thread A Gets the semaphore and waits, then Thread B fails the earlier C-A-S
+						// thus will wait for the same semaphore, but Thread A already release the semaphore and now another Thread (could even be A again)
+						// is using the same semaphore to wait for the job (executed by thread B) which waits for the samephore -> Deadlock
+						// this works since the jobmanager semphore function internally are using locks
+						// so if the following line succeeds, we got the lock before the release and have increased the use counter
+						// if not, it means that thread A release the semaphore, which also means thread B doesn't have to wait anymore
+
+						if(pJobManager->AddRefSemaphore( resValue.semaphoreHandle, this ) )
+						{
+							pJobManager->GetSemaphore( resValue.semaphoreHandle, this )->Acquire();					
+							pJobManager->DeallocateSemaphore( resValue.semaphoreHandle, this );
+						}
+					}
+					else // case d
+					{
+						goto retry;
+					}
+				}
+			}
+		}
 	}
 
-	gEnv->GetJobManager()->FreeSemaphore( const_cast<SJobFinishedConditionVariable*>(newValue.pSemaphore) );
+	// mark an old semaphore as stopped, in case we didn't use use	(if we did use it, this is a nop)		
+	pJobManager->GetSemaphore( semaphoreHandle, this )->SetStopped(); 	
+	pJobManager->DeallocateSemaphore( semaphoreHandle, this );
 
 }
 
 /////////////////////////////////////////////////////////////////////////////////
 inline void JobManager::SJobSyncVariable::SetRunning() volatile
 {
-	// thread-safe, since called before the job is started
-	assert(syncVar.exchangeValue == 0);
-	syncVar.running = 1;
-}
-
-
-// provide a special path for SPUs, since they use a different atomic operations
-// and require a interrupt thread call to unlock the semaphore
-// the SPU version is living in SPUDriver_spu.cpp due to dependency issues
-/////////////////////////////////////////////////////////////////////////////////
-#if !defined(__SPU__)
-inline void JobManager::SJobSyncVariable::SetStopped() volatile
-{	
-	if( syncVar.running == 0 )
-		return;
-
-	SyncVar resValue; 
-	SyncVar newValue;  newValue.running = 0;
-	SyncVar oldValue;
-
-	// first try to set the result value to 0 atomically
-	do 
-	{				
-			oldValue.exchangeValue = syncVar.exchangeValue;
-	} while (!CompareExchange(newValue,oldValue,resValue));
-
-	// now we have two cases: running was 1, which means no semaphore
-	// or we have a semaphore which we have to release
-	if( resValue.exchangeValue > 1 )
-	{			
-		const_cast<SJobFinishedConditionVariable*>(resValue.pSemaphore)->Release();
-	}			
-}
-#endif
-
-/////////////////////////////////////////////////////////////////////////////////
-inline bool JobManager::SJobSyncVariable::CompareExchange( SyncVar newValue, SyncVar oldValue, SyncVar &rResValue ) volatile
-{
-#if !defined(__SPU__)
-#if defined(WIN64) || defined(LINUX64)			
-	rResValue.exchangeValue = CryInterlockedCompareExchange64( (volatile int64*)&syncVar, newValue.exchangeValue, oldValue.exchangeValue );
-	return rResValue.exchangeValue == oldValue.exchangeValue;
-#else		
-	rResValue.exchangeValue = CryInterlockedCompareExchange( (volatile long*)&syncVar, newValue.exchangeValue, oldValue.exchangeValue );
-	return rResValue.exchangeValue == oldValue.exchangeValue;
-#endif
-
-
-
-#endif
-}
-
-
+	SyncVar currentValue;
+	SyncVar newValue;	
 		
+	do
+	{
+		// volatile read
+		currentValue.wordValue = syncVar.wordValue; 
+
+		newValue = currentValue;
+		newValue.nRunningCounter += 1;
+	} while( CryInterlockedCompareExchange(&syncVar.wordValue,newValue.wordValue,currentValue.wordValue) != currentValue.wordValue );	
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+inline bool JobManager::SJobSyncVariable::SetStopped() volatile
+{	
+	SyncVar currentValue;
+	SyncVar newValue;
+	SyncVar resValue;
+
+	// first use atomic operations to decrease the running counter
+	do
+	{
+		// volatile read
+		currentValue.wordValue = syncVar.wordValue; 
+
+		newValue = currentValue;
+		assert(newValue.nRunningCounter > 0 );
+		newValue.nRunningCounter -= 1;
+
+		resValue.wordValue = CryInterlockedCompareExchange(&syncVar.wordValue,newValue.wordValue,currentValue.wordValue);
+	} while(  resValue.wordValue != currentValue.wordValue );	
+
+	// we now successfull decreased our counter, check if we need to signal a semaphore
+	if(newValue.nRunningCounter > 0 ) // return if we still have other jobs on this syncvar
+		return false;
+
+	// do we need to release a semaphore
+	if(currentValue.semaphoreHandle)
+	{
+		// try to set the running counter to 0 atomically
+		bool bNeedSemaphoreRelease = true;
+		do
+		{
+			// volatile read
+			currentValue.wordValue = syncVar.wordValue;
+			newValue = currentValue;			
+			newValue.semaphoreHandle = 0;
+
+			// another thread increased the running counter again, don't call semaphore release in this case
+			if(currentValue.nRunningCounter)
+				return false;
+		}while( CryInterlockedCompareExchange(&syncVar.wordValue,newValue.wordValue,currentValue.wordValue) != currentValue.wordValue);
+		
+		// set the running successfull to 0, now we can release the semaphore
+		gEnv->GetJobManager()->GetSemaphore(resValue.semaphoreHandle, this)->Release();
+	}
+
+	return true;
+}
+#endif
+		
+#if !defined(__SPU__)
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+// SPU have their private implemantion in the driver/jobAPi_SPU.cpp
+// SInfoBlock State functions
+
+
+/////////////////////////////////////////////////////////////////////////////////	
+inline void JobManager::SInfoBlock::Release(uint32 nMaxValue)
+{	
+	JobManager::IJobManager *pJobManager = gEnv->GetJobManager();
+
+	SInfoBlockState currentInfoBlockState;
+	SInfoBlockState newInfoBlockState;
+	SInfoBlockState resultInfoBlockState;
+
+	// use atomic operations to set the running flag
+	do
+	{
+		// volatile read
+		currentInfoBlockState.nValue = *(const_cast<volatile long*>(&jobState.nValue)); 
+		
+		newInfoBlockState.nSemaphoreHandle = 0;		
+		newInfoBlockState.nRoundID = (currentInfoBlockState.nRoundID + 1) & 0x7FFF;		
+		newInfoBlockState.nRoundID = newInfoBlockState.nRoundID >= nMaxValue ? 0 : newInfoBlockState.nRoundID;
+		resultInfoBlockState.nValue = CryInterlockedCompareExchange(&jobState.nValue, newInfoBlockState.nValue, currentInfoBlockState.nValue);
+	} while( resultInfoBlockState.nValue != currentInfoBlockState.nValue );	
+
+	// do we need to release a semaphore
+	if(currentInfoBlockState.nSemaphoreHandle)	
+		gEnv->GetJobManager()->GetSemaphore(currentInfoBlockState.nSemaphoreHandle, this)->Release();
+	
+}
+
+/////////////////////////////////////////////////////////////////////////////////	
+inline void JobManager::SInfoBlock::Wait(uint32 nRoundID,uint32 nMaxValue)
+{		
+	bool bWait = false;
+	bool bRetry = false;
+	jobState.IsInUse(nRoundID,bWait,bRetry,nMaxValue);
+	if( bWait == false )
+		return;
+	
+	JobManager::IJobManager *pJobManager = gEnv->GetJobManager();
+	
+	// get a semaphore to wait on
+	TSemaphoreHandle semaphoreHandle = pJobManager->AllocateSemaphore( this );
+
+	// try to set semaphore (info block could have finished in the meantime, or another thread has set the semaphore
+	SInfoBlockState currentInfoBlockState;
+	SInfoBlockState newInfoBlockState;
+	SInfoBlockState resultInfoBlockState;
+	
+	currentInfoBlockState.nValue = *(const_cast<volatile long*>(&jobState.nValue));
+
+	// make sure the 
+	currentInfoBlockState.IsInUse(nRoundID,bWait,bRetry,nMaxValue);
+	if( bWait == true )
+	{
+		// is a semaphore already set
+		if(currentInfoBlockState.nSemaphoreHandle != 0)
+		{
+			if(pJobManager->AddRefSemaphore( currentInfoBlockState.nSemaphoreHandle, this ) )
+			{			
+				pJobManager->GetSemaphore(currentInfoBlockState.nSemaphoreHandle, this )->Acquire();
+				pJobManager->DeallocateSemaphore( currentInfoBlockState.nSemaphoreHandle, this );
+			}
+		}
+		else
+		{
+			// try to set the semaphore
+			newInfoBlockState.nRoundID = currentInfoBlockState.nRoundID;
+			newInfoBlockState.nSemaphoreHandle = semaphoreHandle;
+				
+			resultInfoBlockState.nValue = CryInterlockedCompareExchange(&jobState.nValue, newInfoBlockState.nValue, currentInfoBlockState.nValue);
+				
+			// three case are now possible:
+			//a) job has finished -> we only need to free our semaphore
+			//b) we succeeded setting our semaphore, thus wait for it
+			//c) another waiter has set it's sempahore wait for the other one		
+			resultInfoBlockState.IsInUse(nRoundID,bWait,bRetry,nMaxValue);
+			if( bWait == true ) // case a) do nothing
+			{
+				if(resultInfoBlockState.nValue == currentInfoBlockState.nValue) // case b)
+				{
+					pJobManager->GetSemaphore( semaphoreHandle, this )->Acquire();
+				}
+				else // case c)
+				{
+					if(pJobManager->AddRefSemaphore( resultInfoBlockState.nSemaphoreHandle, this ) )
+					{			
+						pJobManager->GetSemaphore( resultInfoBlockState.nSemaphoreHandle, this )->Acquire();
+						pJobManager->DeallocateSemaphore( resultInfoBlockState.nSemaphoreHandle, this );
+					}
+				}
+			}						
+		}
+	}
+	
+	pJobManager->GetSemaphore( semaphoreHandle, this )->SetStopped(); 	
+	pJobManager->DeallocateSemaphore( semaphoreHandle, this );
+}
+
+#endif
+
 #endif //__IJOBMAN_SPU_H

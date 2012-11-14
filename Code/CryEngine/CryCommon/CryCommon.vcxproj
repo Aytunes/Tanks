@@ -49,19 +49,12 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="UnitTests|Win32">
-      <Configuration>UnitTests</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="UnitTests|x64">
-      <Configuration>UnitTests</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AEB958D4-45CA-478B-BA8E-D0E897CE974B}</ProjectGuid>
     <RootNamespace>CryCommon</RootNamespace>
     <Keyword>MakeFileProj</Keyword>
+    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'" Label="Configuration">
@@ -76,11 +69,6 @@
     <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
-    <ConfigurationType>Utility</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v110</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='UnitTests|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <PlatformToolset>v110</PlatformToolset>
@@ -119,11 +107,6 @@
     <UseOfMfc>false</UseOfMfc>
     <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='UnitTests|x64'" Label="Configuration">
-    <ConfigurationType>Utility</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v110</PlatformToolset>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
@@ -157,10 +140,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='UnitTests|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(SolutionDir).\StandardSDKs.props" />
-  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
@@ -182,10 +161,6 @@
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(SolutionDir).\StandardSDKs.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='UnitTests|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(SolutionDir).\StandardSDKs.props" />
   </ImportGroup>
@@ -217,13 +192,9 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\..\Bin64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='UnitTests|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='UnitTests|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)..\..\Bin64\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='UnitTests|x64'">$(SolutionDir)..\..\Bin64\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='UnitTests|x64'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
@@ -232,6 +203,24 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'">$(SolutionDir)..\..\BinTemp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release Server Only|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release Server Only|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|Xbox 360'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|Xbox 360'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|Xbox 360'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Profile|Xbox 360'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Profile|Xbox 360'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Profile|Xbox 360'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Xbox 360'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Xbox 360'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Xbox 360'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Performance|Xbox 360'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Performance|Xbox 360'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Performance|Xbox 360'" />
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -249,11 +238,6 @@
     </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <Midl>
-      <TargetEnvironment>X64</TargetEnvironment>
-    </Midl>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UnitTests|x64'">
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
@@ -279,6 +263,7 @@
     <ClInclude Include="CryExtension\Impl\Conversion.h" />
     <ClInclude Include="CryFixedArray.h" />
     <ClInclude Include="CryLobbyEvent.h" />
+    <ClInclude Include="DebugHelper.h" />
     <ClInclude Include="FinalizingSpline.h" />
     <ClInclude Include="GenericParam.h" />
     <ClInclude Include="HardwareBreakpoint.h" />
@@ -287,6 +272,7 @@
     <ClInclude Include="I3DSampler.h" />
     <ClInclude Include="IAnimationGraphSystem.h" />
     <ClInclude Include="IAnimationPoseModifier.h" />
+    <ClInclude Include="IAntiCheatManager.h" />
     <ClInclude Include="IAttachment.h" />
     <ClInclude Include="IAudioDevice.h" />
     <ClInclude Include="IBitStream.h" />
@@ -346,6 +332,7 @@
     <ClInclude Include="IGameStatistics.h" />
     <ClInclude Include="IGameTokens.h" />
     <ClInclude Include="IHardwareMouse.h" />
+    <ClInclude Include="IIKTargetSystem.h" />
     <ClInclude Include="IIndexedMesh.h" />
     <ClInclude Include="IIndexedMesh_info.h" />
     <ClInclude Include="IInput.h" />
@@ -409,10 +396,10 @@
     <ClInclude Include="IThreadTask.h" />
     <ClInclude Include="ITimer.h" />
     <ClInclude Include="IValidator.h" />
-    <ClInclude Include="IVideoPlayer.h" />
     <ClInclude Include="IVisualLog.h" />
     <ClInclude Include="IXml.h" />
     <ClInclude Include="IZLibCompressor.h" />
+    <ClInclude Include="JobManager_SPUDriver.h" />
     <ClInclude Include="LCGRandom.h" />
     <ClInclude Include="LMCompStructures.h" />
     <ClInclude Include="LMCompStructures_info.h" />
@@ -461,9 +448,9 @@
     <ClInclude Include="CGFContent_info.h" />
     <ClInclude Include="CoherentValue.h" />
     <ClInclude Include="Common_TypeInfo.h" />
+    <ClInclude Include="CompileTimeAssert.h" />
     <ClInclude Include="CompileTimeUtils.h" />
     <ClInclude Include="ConfigurableVariant.h" />
-    <ClInclude Include="CopyProtection.h" />
     <ClInclude Include="CountedValue.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="CrtDebugStats.h" />
@@ -513,7 +500,6 @@
     <ClInclude Include="HeapContainer.h" />
     <ClInclude Include="HidespotQueryContext.h" />
     <ClInclude Include="IAVI_Reader.h" />
-    <ClInclude Include="IDirectBee.h" />
     <ClInclude Include="IDiskProfiler.h" />
     <ClInclude Include="IDMap.h" />
     <ClInclude Include="InplaceFactory.h" />
@@ -543,6 +529,7 @@
     <ClInclude Include="Range.h" />
     <ClInclude Include="RangeIter.h" />
     <ClInclude Include="RayCastQueue.h" />
+    <ClInclude Include="RenderObjectDefines.h" />
     <ClInclude Include="ResourceCompilerHelper.h" />
     <ClInclude Include="ScopedVariableSetter.h" />
     <ClInclude Include="ScreenPlotter.h" />
@@ -553,6 +540,7 @@
     <ClInclude Include="SimpleHashLookUp.h" />
     <ClInclude Include="SimpleSerialize.h" />
     <ClInclude Include="smartptr.h" />
+    <ClInclude Include="SpuUtils.h" />
     <ClInclude Include="StackContainer.h" />
     <ClInclude Include="StlDbgAlloc.h" />
     <ClInclude Include="STLGlobalAllocator.h" />
@@ -620,6 +608,12 @@
     <ClInclude Include="Cry_XOptimise.h" />
     <ClInclude Include="CryHalf_info.h" />
     <ClInclude Include="GeomQuery.h" />
+    <ClInclude Include="console\Cry_Xenon_HWMatrix3.h" />
+    <ClInclude Include="console\Cry_Xenon_HWVector3.h" />
+    <ClInclude Include="console\Cry_Xenon_Math.h" />
+    <ClInclude Include="console\Cry_Xenon_Matrix3.h" />
+    <ClInclude Include="console\Cry_Xenon_Optimize.h" />
+    <ClInclude Include="console\Cry_Xenon_Vector3.h" />
     <ClInclude Include="CryAssert_impl.h" />
     <ClInclude Include="CryDLMalloc.h" />
     <ClInclude Include="CryLibrary.h" />
@@ -642,7 +636,6 @@
     <ClInclude Include="STLPortConfig.h" />
     <ClInclude Include="Win32specific.h" />
     <ClInclude Include="Win64specific.h" />
-    <ClInclude Include="CheatProtection.h" />
     <ClInclude Include="CryExtension\CryCreateClassInstance.h" />
     <ClInclude Include="CryExtension\CryGUID.h" />
     <ClInclude Include="CryExtension\CryTypeID.h" />
@@ -677,9 +670,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile Server Only|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='UnitTests|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='UnitTests|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server Only|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Server Only|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -687,7 +678,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Performance|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="LCGRandom.cpp" />
     <ClCompile Include="MTPseudoRandom.cpp" />
     <ClCompile Include="ResourceCompilerHelper.cpp" />
     <ClCompile Include="CryStructPack.cpp" />
@@ -695,8 +685,12 @@
     <ClCompile Include="CryPool\PAUnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cpuid64\cpuid64.asm" />
     <None Include="CryHalf_branchfree.inl" />
     <None Include="CryHalf.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="cpuid64\cpuid64.obj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

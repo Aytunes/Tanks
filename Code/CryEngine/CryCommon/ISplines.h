@@ -32,6 +32,7 @@ enum ESplineType
 // These flags are mostly applicable for hermit based splines.
 enum ESplineKeyTangentType
 {
+	SPLINE_KEY_TANGENT_NONE    = 0,
 	SPLINE_KEY_TANGENT_CUSTOM  = 1,
 	SPLINE_KEY_TANGENT_ZERO    = 2,
 	SPLINE_KEY_TANGENT_STEP    = 3,

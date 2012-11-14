@@ -148,6 +148,7 @@ template<class F> ILINE F cry_sqr(const F &op) { return sqr(op); }
 #define MIN(a,b)    (((a) < (b)) ? (a) : (b))
 
 #define	VEC_EPSILON	( 0.05f )
+#define	RAD_EPSILON	( 0.01f )
 #define DEG2RAD( a ) ( (a) * (gf_PI/180.0f) )
 #define RAD2DEG( a ) ( (a) * (180.0f/gf_PI) )
 
@@ -905,7 +906,7 @@ ILINE int32 iszero(long x) {
 	return -(x>>31^(x-1)>>31);
 }
 #endif
-#if defined(WIN64) || defined(LINUX64)
+#if defined(PLATFORM_64BIT)
 // AMD64 port: TODO: optimize
 ILINE int64 iszero(__int64 x) 
 {
@@ -1179,7 +1180,7 @@ ILINE T BiRandom(T fRange)
 #include "Cry_HWVector3.h"
 #include "Cry_HWMatrix.h"
 
-#if (defined(WIN32) || defined (_XBOX))
+#if (defined(WIN32) || defined (_XBOX) || defined(GRINGO))
 #include "Cry_XOptimise.h"
 #endif
 

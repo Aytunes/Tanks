@@ -176,13 +176,13 @@ public:
 		{
 			void *p = (void*)pBlock;
 			pBlock = pBlock->m_pNext;
-			NVirtualMem::FreeVirtualMem(p);
+			free(p);
 		}
 		for (SNameTableBlock *pBlock = m_pClosedBlocks; pBlock != NULL; )
 		{
 			void *p = (void*)pBlock;
 			pBlock = pBlock->m_pNext;
-			NVirtualMem::FreeVirtualMem(p);
+			free(p);
 		}
 	}
 
@@ -416,12 +416,6 @@ public:
 	int	length() const { return _length(); };
 
 	static bool find( const char *str ) { return GetNameTable()->FindEntry(str) != 0; }
-  static const char *create( const char *str )
-  {
-    CCryName name = CCryName(str);
-    name._addref(name.c_str());
-    return name.c_str();
-  }
 	void GetMemoryUsage( ICrySizer *pSizer ) const  
 	{
 		//pSizer->AddObject(m_str);

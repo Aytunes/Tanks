@@ -150,20 +150,29 @@ typedef uint32	tSoundID;
 #define FLAG_SOUND_START_PAUSED								BIT(20) // Start the sound paused, so an additional call to unpause is needed.
 #define FLAG_SOUND_VOICE											BIT(21) // Sound used as a voice (sub-titles and lip sync can be applied).
 #define FLAG_SOUND_EVENT											BIT(22) // This sound is a sound event.
-#define FLAG_SOUND_LISTENER_DIST_CHANGED      BIT(23)	// This flag indicates whether the distance between active listener and this sound has changed.
-#define FLAG_SOUND_PARAM_DOPPLER_REL					BIT(24)	// This sound has a doppler parameter (relative to listener).
-#define FLAG_SOUND_PARAM_SPREAD								BIT(25) // This sound has a spread parameter.
-#define FLAG_SOUND_PARAM_SQUELCH							BIT(26) // This sound has a radio squelch parameter.
-#define FLAG_SOUND_PARAM_ENVIRONMENT					BIT(27) // This sound has a environment parameter.
+#define FLAG_SOUND_UNUSED                     BIT(23)	// This flag is currently unused.
+#define FLAG_SOUND_PARAM_DOPPLER_ABS          BIT(24) // This sound has a doppler parameter (relative to world).
+#define FLAG_SOUND_PARAM_DOPPLER_REL					BIT(25)	// This sound has a doppler parameter (relative to listener).
+#define FLAG_SOUND_PARAM_SPREAD								BIT(26) // This sound has a spread parameter.
+#define FLAG_SOUND_PARAM_SQUELCH							BIT(27) // This sound has a radio squelch parameter.
 #define FLAG_SOUND_PARAM_FRONTLEFTREAR				BIT(28) // This sound has a front_left_rear FLR_degree parameter, describing rotation around z.
 #define FLAG_SOUND_PARAM_TOPREARDOWN					BIT(29) // This sound has a top_read_down TRD_degree parameter, describing rotation around x.
 #define FLAG_SOUND_PARAM_TOPLEFTDOWN					BIT(30) // This sound has a top_left_down TLD_degree parameter, describing rotation around y.
 #define FLAG_SOUND_MOVIE											BIT(31) // this is a movie sound
 
+// Extended sound flags
+enum ESoundFlagsExtended
+{
+	eSFE_ENVIRONMENT_SOUND        = BIT(0), // Is set when the sound is interested in the environment setting at the sound's position.
+	eSFE_ENVIRONMENT_LISTENER     = BIT(1), // Is set when the sound is interested in the environment setting at the listener's position.
+	eSFE_ENVIRONMENT_MIX_SOUND    = BIT(2), // Is set when the sound is interested in the mixed environment setting at the sound's position.
+	eSFE_ENVIRONMENT_MIX_LISTENER = BIT(3), // Is set when the sound is interested in the mixed environment setting at the listener's position.
+	eSFE_POS_CHANGE_SOUND         = BIT(4), // This flag indicates that the sound object changed its position.
+	eSFE_POS_CHANGE_LISTENER      = BIT(5), // This flag indicates that the listener object changed its position.
+	eSFE_LISTENER_ANGLE           = BIT(6), // Is set when the sound is interested in the "(listener angle)" parameter setting.
+	eSFE_PARAM_LISTENER_SPEED	    = BIT(7), // This sound has a listener speed parameter.
+};
 
-//#define FLAG_SOUND_DEFAULT_3D (FLAG_SOUND_3D | FLAG_SOUND_RADIUS | FLAG_SOUND_CULLING | FLAG_SOUND_OBSTRUCTION )
-
-//
 #define FLAG_SOUND_DEFAULT_3D ( FLAG_SOUND_CULLING | FLAG_SOUND_OBSTRUCTION )
 
 #define FLAG_SOUND_ACTIVELIST	 	(FLAG_SOUND_RADIUS | FLAG_SOUND_CULLING | FLAG_SOUND_INDOOR | FLAG_SOUND_OUTDOOR)
@@ -219,10 +228,10 @@ enum ESoundSemantic
 	eSoundSemantic_OnlyVoice								= BIT(0),
 	eSoundSemantic_NoVoice									= BIT(1),
 	eSoundSemantic_Sandbox									= BIT(2),
-	eSoundSemantic_Unused1									= BIT(3),
+	eSoundSemantic_Sandbox_Browser          = BIT(3),
 
-	eSoundSemantic_Unused2									= BIT(4),
-	eSoundSemantic_Unused3									= BIT(5),
+	eSoundSemantic_Unused1									= BIT(4),
+	eSoundSemantic_Unused2									= BIT(5),
 	eSoundSemantic_Ambience									= BIT(6), //a
 	eSoundSemantic_Ambience_OneShot					= BIT(7), //b
 
@@ -372,7 +381,7 @@ typedef struct IListener
 	virtual void SetActive(bool bActive) = 0;
 	
 	virtual void SetRecordLevel(float fRecord) = 0;
-	virtual float GetRecordLevel() = 0;
+	virtual float GetRecordLevel() const = 0;
 
 	virtual Vec3 GetPosition() const = 0;
 	virtual void SetPosition(const Vec3 Position) = 0;
@@ -397,15 +406,16 @@ typedef struct IListener
 //	 Sound events sent to callback that can registered to every sound.
 enum ESoundCallbackEvent
 {
-	SOUND_EVENT_ON_LOADED,					// Fired when sound is loaded.
-	SOUND_EVENT_ON_LOAD_FAILED,				// Fired if sound loading is failed.
-	SOUND_EVENT_ON_START,					// Fired when sound is started.
-	SOUND_EVENT_ON_PLAYBACK_STARTED,		// Fired when sound's playback started.
-	SOUND_EVENT_ON_PLAYBACK_UNPAUSED,		// Fired when sound's playback unpaused.
-	SOUND_EVENT_ON_STOP,					// Fired when sound stops.
-	SOUND_EVENT_ON_PLAYBACK_STOPPED,		// Fired when sound's playback stops.
-	SOUND_EVENT_ON_PLAYBACK_PAUSED,			// Fired when sound's playback paused.
-	SOUND_EVENT_ON_SYNCHPOINT				// Fired when sound reaches a syncpoint.
+	SOUND_EVENT_ON_LOADED,            // Fired once the sound has been loaded.
+	SOUND_EVENT_ON_LOAD_FAILED,       // Fired once the sound failed loading.
+	SOUND_EVENT_ON_START,             // Fired once the sound is started.
+	SOUND_EVENT_ON_PLAYBACK_STARTED,  // Fired once the sound's playback started.
+	SOUND_EVENT_ON_PLAYBACK_UNPAUSED, // Fired once the sound's playback unpaused.
+	SOUND_EVENT_ON_STOP,              // Fired once the sound stops.
+	SOUND_EVENT_ON_PLAYBACK_STOPPED,  // Fired once the sound's playback stops.
+	SOUND_EVENT_ON_PLAYBACK_PAUSED,   // Fired once the sound's playback paused.
+	SOUND_EVENT_ON_SYNCHPOINT,        // Fired once the sound reaches a syncpoint.
+	SOUND_EVENT_ON_INFO,              // Fired once the sound's definition is loaded.
 };
 
 // Description:
@@ -805,8 +815,6 @@ enum EAudioFileCacheType
 	eAFCT_GLOBAL,
 	eAFCT_LEVEL_SPECIFIC,
 	eAFCT_GAME_HINT,
-	eAFCT_GAME_HINT_NO_SERIALIZE,
-	eAFCT_GAME_HINT_ALL,
 	eAFCT_MUSIC,
 	eAFCT_FSB_HEADER,
 	eAFCT_ALL
@@ -815,18 +823,18 @@ enum EAudioFileCacheType
 // State of file cached in the FileCacheManager
 enum EAudioFileCacheState
 {
-	eAFCS_VALID               = BIT(0),
-	eAFCS_NOTCACHED           = BIT(1),
-	eAFCS_NOTFOUND            = BIT(2),
-	eAFCS_MEMALLOCFAIL        = BIT(3),
-	eAFCS_REMOVABLE           = BIT(4),
-	eAFCS_LOADING             = BIT(5),
-	eAFCS_QUEUED_FOR_CACHING  = BIT(6),
-	eAFCS_QUEUED_FOR_PRELOAD  = BIT(7),
-	eAFCS_QUEUED_FOR_UNLOAD   = BIT(8),
-	eAFCS_PRELOADED           = BIT(9),
-	eAFCS_VIRTUAL             = BIT(10),
-	eAFCS_REMOVE_AFTER_UNLOAD = BIT(11)
+	eAFCS_CACHED               = BIT(0),
+	eAFCS_NOTCACHED            = BIT(1),
+	eAFCS_NOTFOUND             = BIT(2),
+	eAFCS_MEMALLOCFAIL         = BIT(3),
+	eAFCS_REMOVABLE            = BIT(4),
+	eAFCS_LOADING              = BIT(5),
+	eAFCS_QUEUED_FOR_CACHING   = BIT(6),
+	eAFCS_QUEUED_FOR_PRELOAD   = BIT(7),
+	eAFCS_QUEUED_FOR_UNLOAD    = BIT(8),
+	eAFCS_PRELOADED            = BIT(9),
+	eAFCS_VIRTUAL              = BIT(10),
+	eAFCS_UNCACHE_AFTER_UNLOAD = BIT(11),
 };
 
 // Summary:
@@ -837,6 +845,10 @@ struct ISoundSystem
 	//////////////////////////////////////////////////////////////////////////
 	// CORE FUNCTIONALITY
 	//////////////////////////////////////////////////////////////////////////
+
+	// Summary:
+	//	 Called after all engine modules have been initialized.
+	virtual void PostInit() = 0;
 
 	// Summary:
 	//	 Has to be called regularly.	
@@ -958,9 +970,10 @@ struct ISoundSystem
 	//	 Creates a sound object by combining the definition of the sound and the buffer of sound data.
 	// Arguments:
 	//	 nFlags - Sound flags.
+	//   nFlagsExtended - Extended sound flags.
 	// Return Value:
 	//	 ISound* is a Ptr to a Sound, this will change to the unique Sound ID later.
-	virtual ISound* CreateSound			( const char *sGroupAndSoundName, uint32 nFlags ) = 0;
+	virtual ISound* const CreateSound       (char const* const sGroupAndSoundName, uint32 nFlags, uint32 nFlagsExtended = 0) = 0;
 
 	// Description:
 	//	 Creates a sound object by combining the definition of the sound and the buffer of sound data.
@@ -968,7 +981,7 @@ struct ISoundSystem
 	//	 nFlags - Sound flags.
 	// Return Value:
 	//	 ISound* is a Ptr to a Sound, this will change to the unique Sound ID later.
-	virtual ISound* CreateLineSound		( const char *sGroupAndSoundName, uint32 nFlags, const Vec3 &vStart, const Vec3 &VEnd ) = 0;
+	virtual ISound* const CreateLineSound   (char const* const sGroupAndSoundName, uint32 nFlags, uint32 nFlagsExtended, const Vec3 &vStart, const Vec3 &VEnd ) = 0;
 
 	// Description:
 	//	 Creates a sound object by combining the definition of the sound and the buffer of sound data.
@@ -976,7 +989,7 @@ struct ISoundSystem
 	//	 nFlags - Sound flags.
 	// Return Value:
 	//	 ISound* is a Ptr to a Sound, this will change to the unique Sound ID later.
-	virtual ISound* CreateSphereSound	( const char *sGroupAndSoundName, uint32 nFlags, const float fRadius ) = 0;
+	virtual ISound* const CreateSphereSound (char const* const sGroupAndSoundName, uint32 nFlags, uint32 nFlagsExtended, const float fRadius ) = 0;
 
 	// Summary:
 	//	 Gets a sound interface from the sound system.
@@ -994,6 +1007,16 @@ struct ISoundSystem
 	//	 EPrecacheResult result code.
 	virtual EPrecacheResult Precache( const char *sGroupAndSoundName, uint32 nSoundFlags, uint32 nPrecacheFlags ) = 0;
 
+	// Description:
+	//	 Precaches a dialog line plus dialog project and buffer if needed.
+	//
+	// Parameters:
+	//	 sKeyName       - dialog line key name
+	//
+	// Return Value:
+	//	 EPrecacheResult result enum
+	virtual EPrecacheResult const PrecacheDialogLine(char const* const sKeyName) = 0;
+	
 	//////////////////////////////////////////////////////////////////////////
 	// VOLUME CONTROL
 	//////////////////////////////////////////////////////////////////////////
@@ -1205,7 +1228,7 @@ struct ISoundSystem_Extended : public ISoundSystem
 
 	// Description:
 	//	 Need to call this after the AudioDevice was set and initialized.
-	virtual bool Init() = 0; 
+	virtual bool Init() = 0;
 
 	// Description:
 	// Creates a music-system. You should only create one music-system at a time.
@@ -1362,7 +1385,8 @@ enum enumSoundParamSemantics
 	spSPEAKERPAN,
 	spREVERBWET,
 	spREVERBDRY,
-	spSYNCTIMEOUTINSEC
+	spSYNCTIMEOUTINSEC,
+	spLISTENERANGLE,
 };
 
 enum eUnloadDataOptions
@@ -1436,7 +1460,7 @@ struct ISound
 	//	 Gets sound source position.
 	virtual Vec3 GetPosition() const = 0;	
 	
-	virtual void			SetMatrix(const Matrix34 newTransformation) = 0;
+	virtual void			SetMatrix(Matrix34 const& newTransformation) = 0;
 	virtual Matrix34	GetMatrix() const = 0;
 	virtual void			SetDirection(const Vec3 &vDir) = 0; // overwrites transformation matrix
 	virtual Vec3			GetForward() const = 0;
@@ -1450,7 +1474,7 @@ struct ISound
 	virtual bool			GetParam(enumSoundParamSemantics eSemantics, ptParam* pParam) const = 0;
 	// Summary:
 	//	 Sets parameter defined in the enumAssetParam list.
-	virtual bool			SetParam(enumSoundParamSemantics eSemantics, ptParam* pParam) = 0;
+	virtual bool			SetParam(enumSoundParamSemantics const eSemantics, ptParam const* const pParam, bool const bDisableAutomation = false) = 0;
 
 	// Summary:
 	//	 Gets parameter defined by string and float value, returns the index of that parameter
@@ -1482,9 +1506,16 @@ struct ISound
 	//	 Gets name of sound file.
 	virtual const char*	GetName() = 0;
 
+	//! Get name of sound file. Convenience for voice files and old localization system
+	virtual const char* GetFilePathAndName() = 0;
+
 	// Summary:
 	//	 Gets the Sound Flags to query information about the sound
-	virtual uint32	GetFlags() const = 0;
+	virtual uint32 GetFlags() const = 0;
+
+	// Summary:
+	//	 Gets the extended sound flags to query information about the sound.
+	virtual uint32 GetFlagsExtended() const = 0;
 
 	virtual bool IsPlaying() const = 0;
 	virtual bool IsPlayingVirtual() const = 0;
@@ -1577,7 +1608,7 @@ struct ISound_Extended : public ISound
 	
 	// Summary:
 	//	 Sets the Sound Flags, SetFlags will overwrite all old Flags!
-	virtual void	            SetFlags(uint32 nFlags) = 0;
+	virtual void SetFlags(uint32 const nFlags) = 0;
 
 	// Summary:
 	//	 Sets sound pitch. Better control pitch using a parameter
@@ -1859,8 +1890,10 @@ enum enumParamType
 {
 	ptBOOL,
 	ptVOIDP,
+	ptCHARP,
 	ptF32,
 	ptINT32,
+	ptUINT32,
 	ptCRYSTRING,
 	ptVEC3F32
 };
@@ -1869,18 +1902,22 @@ enum enumParamType
 
 struct ptParamBOOL;
 struct ptParamVOIDP;
+struct ptParamCHARP;
 struct ptParamF32;
 struct ptParamINT32;
+struct ptParamUINT32;
 struct ptParamCRYSTRING;
 struct ptParamVEC3F32;
 
 template<typename T> struct Map2ptParam;
-template<> struct Map2ptParam<bool>			{ typedef bool Tkey; typedef ptParamBOOL Tval; enum { TypeId = ptBOOL }; };
-template<> struct Map2ptParam<void*>		{ typedef void* Tkey; typedef ptParamVOIDP Tval; enum { TypeId = ptVOIDP }; };
-template<> struct Map2ptParam<f32>			{ typedef f32 Tkey; typedef ptParamF32 Tval; enum { TypeId = ptF32 }; };
-template<> struct Map2ptParam<int32>		{ typedef int32 Tkey; typedef ptParamINT32 Tval; enum { TypeId = ptINT32 }; };
-template<> struct Map2ptParam<string>		{ typedef string Tkey; typedef ptParamCRYSTRING Tval; enum { TypeId = ptCRYSTRING }; };
-template<> struct Map2ptParam<Vec3>			{ typedef Vec3 Tkey; typedef ptParamVEC3F32 Tval; enum { TypeId = ptVEC3F32 }; };
+template<> struct Map2ptParam<bool>        { typedef bool        Tkey; typedef ptParamBOOL      Tval; enum { TypeId = ptBOOL }; };
+template<> struct Map2ptParam<void*>       { typedef void*       Tkey; typedef ptParamVOIDP     Tval; enum { TypeId = ptVOIDP }; };
+template<> struct Map2ptParam<char const*> { typedef char const* Tkey; typedef ptParamCHARP     Tval; enum { TypeId = ptCHARP }; };
+template<> struct Map2ptParam<f32>         { typedef f32         Tkey; typedef ptParamF32       Tval; enum { TypeId = ptF32 }; };
+template<> struct Map2ptParam<int32>       { typedef int32       Tkey; typedef ptParamINT32     Tval; enum { TypeId = ptINT32 }; };
+template<> struct Map2ptParam<uint32>      { typedef uint32      Tkey; typedef ptParamUINT32    Tval; enum { TypeId = ptUINT32 }; };
+template<> struct Map2ptParam<string>      { typedef string      Tkey; typedef ptParamCRYSTRING Tval; enum { TypeId = ptCRYSTRING }; };
+template<> struct Map2ptParam<Vec3>        { typedef Vec3        Tkey; typedef ptParamVEC3F32   Tval; enum { TypeId = ptVEC3F32 }; };
 
 // Todo:
 //	 Rename.
@@ -1928,9 +1965,17 @@ private:
 struct ptParamVOIDP : ptParam
 {
 	friend struct ptParam;
-	ptParamVOIDP(void * newVal) : ptParam(ptVOIDP), m_val(newVal) {}
+	ptParamVOIDP(void* newVal) : ptParam(ptVOIDP), m_val(newVal) {}
 private:
 	void* m_val;
+};
+
+struct ptParamCHARP : ptParam
+{
+	friend struct ptParam;
+	ptParamCHARP(char const* newVal) : ptParam(ptCHARP), m_val(newVal) {}
+private:
+	char const* m_val;
 };
 
 struct ptParamF32 : ptParam 
@@ -1947,6 +1992,14 @@ struct ptParamINT32 : ptParam
 	ptParamINT32(int32 newVal) : ptParam(ptINT32), m_val(newVal) {}
 private:
 	int32 m_val;
+};
+
+struct ptParamUINT32 : ptParam 
+{ 
+	friend struct ptParam;
+	ptParamUINT32(uint32 newVal) : ptParam(ptUINT32), m_val(newVal) {}
+private:
+	uint32 m_val;
 };
 
 struct ptParamCRYSTRING : ptParam 

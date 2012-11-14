@@ -6,7 +6,7 @@ class CREMesh : public CRendElementBase
 public:
 
 	struct CRenderChunk *m_pChunk;
-	class  CRenderMesh2 *m_pRenderMesh;
+	class  CRenderMesh *m_pRenderMesh;
 
 	// Copy of Chunk to avoid indirections
 	int32 m_nFirstIndexId;

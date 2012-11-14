@@ -108,13 +108,14 @@ public:
 #if DEBUG_CRYFIXED_ARRAY
 		if (i < size())
 		{
-			return ((T*)(m_data))[i];
+			return alias_cast<T*>(m_data)[i];
 		}
 		else
 		{
 			// Log is required now as its possible to turn off assert output logging, yet you really want to know if this is happening!!!!
 			CryLogAlways("CryFixedArray::at(i=%d) failed as i is out of range of curSize=%d (maxSize=%d) - forcing a crash", i, m_curSize[0], N);
 			CRY_ASSERT_MESSAGE(0, string().Format("CryFixedArray::at(i=%d) failed as i is out of range of curSize=%d (maxSize=%d)", i, m_curSize[0], N));
+			// cppcheck-suppress nullPointer
 			return *((T*)(NULL));		// crash on using me
 		}
 #else		
@@ -127,7 +128,7 @@ public:
 #if DEBUG_CRYFIXED_ARRAY
 		if (i < size())
 		{
-			return ((const T*)(m_data))[i];
+			return alias_cast<T*>(m_data)[i];
 		}
 		else
 		{

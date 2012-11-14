@@ -66,8 +66,6 @@ UNIQUE_IFACE struct IAIGroup
 	virtual bool				RequestReadabilitySound(int id, float duration) = 0;
 	/// Gets the number of attention targets in the group
 	virtual int					GetTargetCount(bool bHostileOnly, bool bLiveOnly) const = 0;
-	/// triggers reinforcements state
-	virtual void				NotifyReinfDone(const IAIObject* obj, bool isDone) = 0;
 };
 
 

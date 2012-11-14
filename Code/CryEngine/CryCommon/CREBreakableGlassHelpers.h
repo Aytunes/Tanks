@@ -292,6 +292,7 @@ struct SBreakableGlassCVars
 	, m_drawWireframe(0)
 	, m_drawDebugData(0)
 	, m_drawFragData(0)
+	, m_decalAlwaysRebuild(0)
 	, m_decalScale(2.15f)
 	, m_decalMinRadius(0.25f)
 	, m_decalMaxRadius(1.25f)
@@ -308,9 +309,6 @@ struct SBreakableGlassCVars
 	, m_particleFXUseColours(0)
 	, m_particleFXScale(0.25f)
 	{
-#ifndef RELEASE
-		m_decalAlwaysRebuild = 0;
-#endif
 	}
 
 	int			m_draw;
@@ -318,9 +316,7 @@ struct SBreakableGlassCVars
 	int			m_drawDebugData;
 	int			m_drawFragData;
 
-#ifndef RELEASE
 	int			m_decalAlwaysRebuild;
-#endif
 	float		m_decalScale;
 	float		m_decalMinRadius;
 	float		m_decalMaxRadius;

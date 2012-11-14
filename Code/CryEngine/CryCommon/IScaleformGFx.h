@@ -36,6 +36,7 @@ UNIQUE_IFACE struct IScaleformGFx
 	virtual void SetThreadIDs(uint32 mainThreadID, uint32 renderThreadID) = 0;
 	virtual void AmpEnable(bool bEnable) = 0;
 	virtual void AmpAdvanceFrame() = 0;
+	virtual void ResetFlashMeshCache() const = 0;
 };
 
 #endif // ifndef __IScaleformGFx_H_

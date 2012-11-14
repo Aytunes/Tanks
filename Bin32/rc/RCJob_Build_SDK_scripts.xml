@@ -34,6 +34,13 @@
   <ifnot enable_cuda="true">
     <Properties imagecompressor="NvDxt" />
   </ifnot>
+  
+  <ConvertJob>
+    <ifnot p="PC">
+      <Job sourceroot="${src_game}"   targetroot="${trg_game}"    input="${xml_types}" overwriteextension="xml" xmlfilterfile="${rcDir}\xmlfilter.txt" />
+      <Job sourceroot="${src_engine}" targetroot="${trg_engine}"  input="${xml_types}" overwriteextension="xml" xmlfilterfile="${rcDir}\xmlfilter.txt" />
+    </ifnot>
+  </ConvertJob>
 
   <CopyJob>
 	
@@ -72,6 +79,7 @@
   <CompileAssetsJob>
    </CompileAssetsJob>
 
+  <Run Job="ConvertJob"/>
   <Run Job="CopyJob"/>
   <Run Job="PakJob"/>
   <Run Job="CleanJob"/>

@@ -32,8 +32,35 @@ static const TModuleInstanceId MODULEINSTANCE_INVALID = -1;
 // Parameter passing object
 typedef std::vector<TFlowInputData> TModuleParams;
 
+struct IModuleInstance
+{
+	IFlowGraphPtr pGraph;
+	TFlowGraphId callerGraph;
+	TFlowNodeId callerNode;
+	TModuleInstanceId instanceId;
+	bool bUsed;
+
+	IModuleInstance(TModuleInstanceId id) : pGraph(NULL), callerGraph(InvalidFlowGraphId), callerNode(InvalidFlowNodeId), bUsed(false), instanceId(id) {}
+};
+
+struct IFlowGraphModuleInstanceIterator
+{
+	virtual ~IFlowGraphModuleInstanceIterator(){}
+	virtual size_t Count() = 0;
+	virtual IModuleInstance* Next() = 0;
+	virtual void AddRef() = 0;
+	virtual void Release() = 0;
+};
+typedef _smart_ptr<IFlowGraphModuleInstanceIterator> IModuleInstanceIteratorPtr;
+
 struct IFlowGraphModule
 {
+	enum EType
+	{
+		eT_Global = 0,
+		eT_Level
+	};
+
 	virtual ~IFlowGraphModule() {}
 
 	struct SModulePortConfig
@@ -53,9 +80,13 @@ struct IFlowGraphModule
 	virtual const char* GetName() const = 0;
 	virtual const char* GetPath() const = 0;
 	virtual TModuleId GetId() const = 0;
+	virtual IFlowGraphModule::EType GetType() const = 0;
+	virtual void SetType(IFlowGraphModule::EType type) = 0;
 
 	virtual IFlowGraph* GetRootGraph() const = 0;
 	virtual IFlowGraphPtr GetInstanceGraph(TModuleInstanceId instanceID) = 0;
+
+	virtual IModuleInstanceIteratorPtr CreateInstanceIterator() = 0;
 
 	virtual void RemoveModulePorts() = 0;
 	virtual bool AddModulePort(const SModulePortConfig& port) = 0;
@@ -118,7 +149,7 @@ struct IFlowGraphModuleManager
 	virtual const char* GetModulePath(const char* name) = 0;
 
 	virtual bool SaveModule(const char* moduleName, XmlNodeRef saveTo) = 0;
-	virtual IFlowGraphModule* LoadModuleFile(const char* moduleName, const char* fileName) = 0;
+	virtual IFlowGraphModule* LoadModuleFile(const char* moduleName, const char* fileName, bool bGlobal) = 0;
 
 	virtual IFlowGraphModule* GetModule(IFlowGraphPtr pFlowgraph) const = 0;
 	virtual IFlowGraphModule* GetModule(const char* moduleName) const = 0;

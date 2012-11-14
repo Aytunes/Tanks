@@ -28,9 +28,6 @@ typedef void (*GpuCallbackFunc)(DWORD context);
 // Callback for shadercache miss
 typedef void (*ShaderCacheMissCallback)(const char* acShaderRequest);
 
-//Please ensure that this is big enough for all of the EGPUProfileSegmentFlags in FrameProfiler.h
-typedef uint8 gpu_profile_flags_t;
-
 UNIQUE_IFACE struct ICaptureFrameListener 
 {
 	virtual ~ICaptureFrameListener (){}
@@ -91,7 +88,6 @@ struct SSkyLightRenderParams;
 struct SParticleRenderInfo;
 struct SParticleAddJobCompare;
 struct IFlashPlayer_RenderProxy;
-struct IVideoPlayer;
 struct IColorGradingController;
 struct IStereoRenderer;
 struct IFFont_RenderProxy;
@@ -980,13 +976,12 @@ struct SAddParticlesToSceneJob
 	SShaderItem* pShaderItem;
 	CRenderObject* pRenderObject;
 	IParticleVertexCreator* pPVC;
+	class CREParticle* pREParticle;
+
+	int16 nCustomTexId;
+	uint16 nRenderElemFlags;
 	EHalfResFlag eAllowHalfRes;
 	bool bAfterWater;
-	bool bOctagonal;
-	bool bCanUseGeomShader;
-	bool bAllowMerging;
-	int16 nCustomTexId;
-	class CREParticle* pREParticle;
 
 	void GetMemoryUsage( ICrySizer* pSizer ) const {}
 } 
@@ -1042,6 +1037,7 @@ _ALIGN(16)
 #define FRT_CLEAR_FOGCOLOR 0x8
 #define FRT_CLEAR_IMMEDIATE 0x10
 #define FRT_CLEAR_COLORMASK 0x20
+#define FRT_CLEAR_RESET_VIEWPORT 0x40
 
 #define FRT_CAMERA_REFLECTED_WATERPLANE 0x40
 #define FRT_CAMERA_REFLECTED_PLANE      0x80
@@ -1065,22 +1061,38 @@ _ALIGN(16)
 //	 Text must be fixed pixel size.
 enum EDrawTextFlags
 {
-  eDrawText_Center        = BIT(1),		// centered alignment, otherwise right or left
-  eDrawText_Right         = BIT(2),		// right alignment, otherwise center or left
-	eDrawText_CenterV       = BIT(8),		// center vertically, oterhwise top
-	eDrawText_Bottom				= BIT(9),		// bottom alignment
+  eDrawText_Center        = BIT(0),		// centered alignment, otherwise right or left
+  eDrawText_Right         = BIT(1),		// right alignment, otherwise center or left
+	eDrawText_CenterV       = BIT(2),		// center vertically, oterhwise top
+	eDrawText_Bottom				= BIT(3),		// bottom alignment
 
 	eDrawText_2D            = BIT(4),		// 3 component vector is used for xy screen position, otherwise it's 3d world space position
 
-	eDrawText_FixedSize     = BIT(3),		// font size is defined in the actual pixel resolution, otherwise it's in the virtual 800x600
-	eDrawText_800x600       = BIT(5),		// position are specified in the virtual 800x600 resolution, otherwise coordinates are in pixels
+	eDrawText_FixedSize     = BIT(5),		// font size is defined in the actual pixel resolution, otherwise it's in the virtual 800x600
+	eDrawText_800x600       = BIT(6),		// position are specified in the virtual 800x600 resolution, otherwise coordinates are in pixels
 
-	eDrawText_Monospace     = BIT(6),		// non proportional font rendering (Font width is same for all characters)
+	eDrawText_Monospace     = BIT(7),		// non proportional font rendering (Font width is same for all characters)
 
-	eDrawText_Framed				= BIT(7),		// draw a transparent, rectangular frame behind the text to ease readability independent from the background
+	eDrawText_Framed				= BIT(8),		// draw a transparent, rectangular frame behind the text to ease readability independent from the background
 
-	eDrawText_DepthTest			= BIT(9),		// text should be occluded by world geometry using the depth buffer
+	eDrawText_DepthTest			= BIT(9),	// text should be occluded by world geometry using the depth buffer
+	eDrawText_IgnoreOverscan= BIT(10),	// ignore the overscan borders, text should be drawn at the location specified
 };
+
+// Debug views for Partial resolves
+#ifdef _RELEASE
+	#define REFRACTION_PARTIAL_RESOLVE_DEBUG_VIEWS 0
+#else
+	#define REFRACTION_PARTIAL_RESOLVE_DEBUG_VIEWS 1
+#endif
+
+#if REFRACTION_PARTIAL_RESOLVE_DEBUG_VIEWS
+enum ERefractionPartialResolvesDebugViews
+{
+	eRPR_DEBUG_VIEW_2D_AREA = 1,
+	eRPR_DEBUG_VIEW_3D_BOUNDS
+};
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // Description:
@@ -1150,7 +1162,10 @@ struct SSF_GlobalDrawParams
 		G1TextureColor,
 		G2Texture,
 		G2TextureColor,
-		G3Texture
+		G3Texture,
+
+		GlyphTextureMat,
+		GlyphTextureMatMul,
 	};
 	EFillType fillType;
 
@@ -1200,6 +1215,7 @@ struct SSF_GlobalDrawParams
 
 	ColorF colTransform1st;
 	ColorF colTransform2nd;
+	ColorF colTransformMat[4];
 
 	uint32 blendModeStates;
 	uint32 renderMaskedStates;
@@ -1216,6 +1232,63 @@ struct SSF_GlobalDrawParams
 		Max
 	};
 	EAlphaBlendOp blendOp;
+
+	enum EBlurType
+	{
+		BlurNone = 0,
+		start_shadows,
+		Box2InnerShadow = 1,
+		Box2InnerShadowHighlight,
+		Box2InnerShadowMul,
+		Box2InnerShadowMulHighlight,
+		Box2InnerShadowKnockout,
+		Box2InnerShadowHighlightKnockout,
+		Box2InnerShadowMulKnockout,
+		Box2InnerShadowMulHighlightKnockout,
+		Box2Shadow,
+		Box2ShadowHighlight,
+		Box2ShadowMul,
+		Box2ShadowMulHighlight,
+		Box2ShadowKnockout,
+		Box2ShadowHighlightKnockout,
+		Box2ShadowMulKnockout,
+		Box2ShadowMulHighlightKnockout,
+		Box2Shadowonly,
+		Box2ShadowonlyHighlight,
+		Box2ShadowonlyMul,
+		Box2ShadowonlyMulHighlight,
+		end_shadows = 20,
+		start_blurs,
+		Box1Blur = 21,
+		Box2Blur,
+		Box1BlurMul,
+		Box2BlurMul,
+		end_blurs = 24,
+// 		start_cmatrix,
+// 		CMatrix = 25,
+// 		CMatrixMul,
+// 		end_cmatrix = 26,
+		BlurCount,
+
+		shadows_Highlight            = 0x00000001,
+		shadows_Mul                  = 0x00000002,
+		shadows_Knockout             = 0x00000004,
+		blurs_Box2                 = 0x00000001,
+		blurs_Mul                  = 0x00000002,
+// 		cmatrix_Mul                  = 0x00000001,
+	};
+
+	struct BlurFilterParams
+	{
+		EBlurType blurType;
+		Vec4	blurFilterSize;
+		Vec2	blurFilterScale;
+		Vec2	blurFilterOffset;
+		ColorF	blurFilterColor1;
+		ColorF	blurFilterColor2;
+	};
+
+	BlurFilterParams blurParams;
 
 	//////////////////////////////////////////////////////////////////////////
 	SSF_GlobalDrawParams()
@@ -1250,6 +1323,11 @@ struct SSF_GlobalDrawParams
 		colTransform1st = ColorF(0, 0, 0, 0);
 		colTransform2nd = ColorF(0, 0, 0, 0);
 
+		colTransformMat[0] = ColorF(0, 0, 0, 0);
+		colTransformMat[1] = ColorF(0, 0, 0, 0);
+		colTransformMat[2] = ColorF(0, 0, 0, 0);
+		colTransformMat[3] = ColorF(0, 0, 0, 0);
+
 		blendModeStates = 0;
 		renderMaskedStates = 0;
 
@@ -1257,6 +1335,13 @@ struct SSF_GlobalDrawParams
 		premultipliedAlpha = false;
 
 		blendOp = Add;
+
+		blurParams.blurType = BlurNone;
+		blurParams.blurFilterSize = Vec4(0.f,0.f,0.f,0.f);
+		blurParams.blurFilterScale = Vec2(0.f,0.f);
+		blurParams.blurFilterOffset = Vec2(0.f,0.f);
+		blurParams.blurFilterColor1 = ColorF(0.f, 0.f, 0.f, 0.f);
+		blurParams.blurFilterColor2 = ColorF(0.f, 0.f, 0.f, 0.f);
 	}
 };
 #endif // #ifndef EXCLUDE_SCALEFORM_SDK
@@ -1319,7 +1404,6 @@ enum eDeferredLightType
 	eDLT_NumShadowCastingLights = eDLT_DeferredAmbientLight + 1,
 	// these lights cannot cast shadows
 	eDLT_DeferredCubemap = eDLT_NumShadowCastingLights,
-	eDLT_DeferredNegative,
 	eDLT_NumLightTypes,
 };
 
@@ -1362,6 +1446,19 @@ struct MTRenderInfo
 	float fSpuDXPSLoad;
 };
 
+class ITextureStreamListener
+{
+public:
+	virtual void OnCreatedStreamedTexture(void* pHandle, const char* name, int nMips, int nMinMipAvailable) = 0;
+	virtual void OnDestroyedStreamedTexture(void* pHandle) = 0;
+	virtual void OnTextureWantsMip(void* pHandle, int nMinMip) = 0;
+	virtual void OnTextureHasMip(void* pHandle, int nMinMip) = 0;
+	virtual void OnBegunUsingTextures(void** pHandles, size_t numHandles) = 0;
+	virtual void OnEndedUsingTextures(void** pHandle, size_t numHandles) = 0;
+
+protected:
+	virtual ~ITextureStreamListener() {}
+};
 
 typedef void (*OnPostRenderCallbackFunc)();
 
@@ -1602,6 +1699,10 @@ struct IRenderer//: public IRendererCallbackServer
 	// Summary:
 	//	Gets textures streaming update count
 	virtual void GetTextureUpdates(float * updates) = 0;
+	// Summary:
+	//	Sets an event listener for texture streaming updates
+	virtual void SetTextureStreamListener(ITextureStreamListener* pListener) = 0;
+
 	virtual int GetOcclusionBuffer(uint16* pOutOcclBuffer, int32 nSizeX, int32 nSizeY, Matrix44* pmViewProj, Matrix44* pmCamBuffer) = 0;
 	
 	// Summary:
@@ -1660,10 +1761,6 @@ struct IRenderer//: public IRendererCallbackServer
 	//	For editor.
 	virtual void  GetProjectionMatrix(float *mat)=0;
 
-	// Remarks:
-	//	For editor.
-	virtual Vec3 GetUnProject(const Vec3 &WindowCoords,const CCamera &cam)=0;
-
 	virtual bool WriteDDS(byte *dat, int wdt, int hgt, int Size, const char *name, ETEX_Format eF, int NumMips)=0;
 	virtual bool WriteTGA(byte *dat, int wdt, int hgt, const char *name, int src_bits_per_pixel, int dest_bits_per_pixel )=0;
 	virtual bool WriteJPG(byte *dat, int wdt, int hgt, char *name, int src_bits_per_pixel, int nQuality = 100 )=0;
@@ -1702,11 +1799,9 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual void PostLevelLoading() = 0;
 	virtual void PostLevelUnload() = 0;
 
-	virtual CREParticle* EF_AddParticlesToScene(const SAddParticlesToSceneJob& job, const SParticleRenderContext& context) = 0;
+	virtual CREParticle* EF_AddParticlesToScene(const SAddParticlesToSceneJob& job, const CCamera& cam) = 0;
 	virtual void EF_ProcessAddedParticles() = 0;
-	virtual void EF_ComputeQueuedParticles() = 0;
-	virtual void GetMemoryUsageParticleREs( ICrySizer * pSizer ) {}
-	
+	virtual void GetMemoryUsageParticleREs(size_t& nAlloc, size_t& nUse) {}
 	virtual CRenderObject* EF_AddPolygonToScene(SShaderItem& si, int numPts, const SVF_P3F_C4B_T2F *verts, const SPipTangents *tangs, CRenderObject *obj, uint16 *inds, int ninds, int nAW, bool bMerge = true)=0;
 	virtual CRenderObject* EF_AddPolygonToScene(SShaderItem& si, CRenderObject* obj, int numPts, int ninds, SVF_P3F_C4B_T2F*& verts, SPipTangents*& tangs, uint16*& inds, int nAW, bool bMerge = true)=0;
 
@@ -2112,6 +2207,8 @@ struct IRenderer//: public IRendererCallbackServer
 	// Return:
 	//    Created IShaderPublicParams interface.
 	virtual IShaderPublicParams* CreateShaderPublicParams() = 0;
+		
+	virtual void GetThreadIDs(uint32& mainThreadID, uint32& renderThreadID) const = 0;
 
 #ifndef EXCLUDE_SCALEFORM_SDK
 	struct SUpdateRect
@@ -2143,33 +2240,65 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual void SF_DrawIndexedTriList(int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int triangleCount, const SSF_GlobalDrawParams& params) = 0;
 	virtual void SF_DrawLineStrip(int baseVertexIndex, int lineCount, const SSF_GlobalDrawParams& params) = 0;
 	virtual void SF_DrawGlyphClear(const SSF_GlobalDrawParams& params) = 0;
+	virtual void SF_DrawBlurRect(const SSF_GlobalDrawParams *pParams) = 0;
 	virtual void SF_Flush() = 0;
 	virtual int SF_CreateTexture(int width, int height, int numMips, unsigned char* pData, ETEX_Format eTF, int flags) = 0;
 #endif // #ifndef EXCLUDE_SCALEFORM_SDK
-	virtual void SF_GetThreadIDs(uint32& mainThreadID, uint32& renderThreadID) const = 0;
 
-	//GPU Timers
-	virtual void	RT_BeginGPUTimer(const char* name, gpu_profile_flags_t flags=0) = 0;
-	virtual void	RT_EndGPUTimer(const char* name) = 0;
-	virtual void	SwapGpuTimers() = 0;
-	virtual void	RenderGpuStats() = 0;
-	virtual void  RenderGpuStatsDebugNode() = 0;
+
+	struct SArtProfileData
+	{
+		enum EArtProfileSections
+		{
+			eArtProfile_Shadows=0,
+			eArtProfile_ZPass,
+			eArtProfile_Decals,
+			eArtProfile_Lighting,
+			eArtProfile_Opaque,
+			eArtProfile_Transparent,
+			eArtProfile_Max,
+		};
+
+		float times[eArtProfile_Max];
+		float budgets[eArtProfile_Max];
+		float total, budgetTotal;
+
+		// detailed values for anything that is grouped together and can be timed
+		enum EBreakdownDetailValues
+		{
+			// Lighting
+			eArtProfileDetail_LightsAmbient,
+			eArtProfileDetail_LightsCubemaps,
+			eArtProfileDetail_LightsDeferred,
+			eArtProfileDetail_LightsShadowMaps, // just the cost of the shadow maps
+
+			// Transparent
+			eArtProfileDetail_Reflections,
+			eArtProfileDetail_Caustics,
+			eArtProfileDetail_RefractionOverhead, // partial resolves
+
+			eArtProfileDetail_Max,
+		};
+
+		float breakdowns[eArtProfileDetail_Max];
+
+		int batches, drawcalls, lightingDrawcalls;
+#if defined(ENABLE_ACCURATE_RSX_PROFILING)
+		int nRSXStallReleases;
+#endif
+	};
 
 	virtual void EnableGPUTimers2( bool bEnabled ) = 0;
 	virtual float GetGPUTimer2( const char *name, bool bCalledFromMainThread = true ) = 0;
 
+	virtual void FillArtProfileData( SArtProfileData &data ) = 0;
+
 	virtual int GetPolygonCountByType(uint32 EFSList, EVertexCostTypes vct, uint32 z, bool bCalledFromMainThread = true) = 0;
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Summary:
-	//	 Creates an instance of the IVideoPlayer interface.
-	virtual IVideoPlayer* CreateVideoPlayerInstance() const = 0;
 
 	virtual void StartLoadtimeFlashPlayback(ILoadtimeCallback* pCallback) = 0;
 	virtual void StopLoadtimeFlashPlayback() = 0;
 
-	virtual void SetCloudShadowTextureId( int id, const Vec3 & vSpeed  ) = 0;
+	virtual void SetCloudShadowsParams(int nTexID, const Vec3& speed, float tiling, bool invert, float brightness) = 0;
 	virtual uint16 PushFogVolumeContribution( const ColorF& fogVolumeContrib ) = 0;
 
 	virtual int GetMaxTextureSize()=0;
@@ -2275,6 +2404,18 @@ struct IRenderer//: public IRendererCallbackServer
 		va_end(args);
 	}
 
+	void Draw2dLabel( float x,float y, float font_size, const ColorF &fColor, bool bCenter, const char * label_text, ...) PRINTF_PARAMS(7, 8)
+	{
+		va_list args;
+		va_start(args,label_text);
+		SDrawTextInfo ti;
+		ti.xscale = ti.yscale = font_size;
+		ti.flags = eDrawText_2D|eDrawText_800x600 | eDrawText_FixedSize | ((bCenter)?eDrawText_Center:0);
+		{ ti.color[0] = fColor[0]; ti.color[1] = fColor[1]; ti.color[2] = fColor[2]; ti.color[3] = fColor[3]; }
+		DrawTextQueued( Vec3(x,y,0.5f),ti,label_text,args );
+		va_end(args);
+	}
+
 	// Summary:
 	//	Determine if a switch to stereo mode will occur at the start of the next frame
 	virtual bool IsStereoModeChangePending() = 0;
@@ -2286,6 +2427,11 @@ struct IRenderer//: public IRendererCallbackServer
 	// Summary:
 	// Clear the queue for ComputeVertices when using the job system for particles
 	virtual void ClearComputeVerticesQueue() = 0;
+
+	// Summary:
+	// Lock/Unlock the video memory buffer used by particles when using the jobsystem
+	virtual void LockParticleVideoMemory( uint32 nId ) = 0;
+	virtual void UnLockParticleVideoMemory( uint32 nId ) = 0;
 
 #if !defined (_RELEASE)
 	// Summary:
@@ -2372,7 +2518,6 @@ enum ERenderQueryTypes
 	EFQ_Mesh_Count,
 
 	EFQ_HDRModeEnabled,
-	EFQ_DeferredShading,
 	EFQ_GetShadowPoolFrustumsNum,
 	EFQ_GetShadowPoolAllocThisFrameNum,
 
@@ -2425,7 +2570,11 @@ enum ERenderQueryTypes
 	EFQ_GetFogCullDistance,
 	EFQ_GetMaxRenderObjectsNum,
 
-	EFQ_IsRenderLoadingThreadActive
+	EFQ_IsRenderLoadingThreadActive,
+
+	EFQ_GetParticleVertexBufferSize,
+	EFQ_GetParticleIndexBufferSize,
+	EFQ_GetMaxParticleContainer,
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -2559,13 +2708,17 @@ _MS_ALIGN(16) struct SRendParams
 	//	Defines what peaces of pre-broken geometry has to be rendered
 	uint64 nSubObjHideMask;
 
+	//	 Defines per object cloak highlight strength
+	float fCloakHighlightStrength;
+
 	//	 Custom TextureID 
 	int16 nTextureID;
-	//	 Defines per object custom data
-	uint8 nCustomData;
 
 	//	 Defines per object custom flags
-	uint8 nCustomFlags;
+	uint16 nCustomFlags;
+	//	 Defines per object custom data
+	uint8 nCustomData;
+	
 	// Summary:
 	//	 Defines per object DissolveRef value if used by shader.
 	uint8 nDissolveRef;

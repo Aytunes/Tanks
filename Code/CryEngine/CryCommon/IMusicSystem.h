@@ -19,7 +19,6 @@
 
 #include "StlUtils.h"
 #include "ISerialize.h"
-//#include "SerializeFwd.h"
 
 //////////////////////////////////////////////////////////////////////////
 // String Iterator
@@ -46,7 +45,6 @@ UNIQUE_IFACE struct IStringItVec
 #define MUSICLAYER_END							0x00000020
 #define MUSICLAYER_MAIN_ANY					0x000000FF    
 #define MUSICLAYER_PATTERN_BY_NAME	0x00000100
-//#define MUSICLAYER_STINGER					0x00000200
 
 
 //
@@ -436,11 +434,10 @@ typedef TPatternInstancesVec::const_iterator	TPatternInstancesVecItConst;
 
 struct SMusicSystemStatus
 {
-	bool									bPlaying;
-	string								sTheme;
-	string								sMood;
-	TPatternStatusVec			m_vecStatusPlayingPatterns;
-	TPatternInstancesVec	m_vecPatternInstances;
+	bool                  bPlaying;
+	string                sTheme;
+	string                sMood;
+	TPatternStatusVec     m_vecStatusPlayingPatterns;
 };
 
 // Music mood hierarchy info struct
@@ -530,7 +527,7 @@ struct IMusicSystem
 	//////////////////////////////////////////////////////////////////////////
 	virtual void UpdatePattern( SMusicInfo::Pattern *pPattern ) = 0;
 	virtual void RenamePattern( const char *sOldName,const char *sNewName ) = 0;
-	virtual void PlayPattern( const char *sPattern, bool bStopPrevious, bool bPlaySynched ) = 0;
+	virtual void PlayPattern(char const* const sPattern, bool const bStopPrevious, bool const bPlaySynched, bool const bPlayOnTop) = 0;
 	virtual bool StopPattern(char const* const sPatternNameToStop) = 0;
 	virtual void DeletePattern( const char *sPattern ) = 0;
 	virtual char const* const GetPatternNameTrack1() const = 0;
@@ -538,9 +535,11 @@ struct IMusicSystem
 
 	virtual void PlayStinger() = 0;
 
-	// for serialization
+	// For serialization where the called passed its own TSerialize object for serialization.
 	virtual void Serialize(TSerialize ser) = 0;
-	virtual bool SerializeInternal(bool bSave) = 0;
+
+	// For serialization where the called doesn't provide a TSerialize object for serialization.
+	virtual void Serialize(bool const bSave) = 0;
 
 	//main update timing
 	virtual float GetUpdateMilliseconds() = 0;

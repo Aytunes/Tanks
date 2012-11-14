@@ -35,6 +35,7 @@ struct IVisualLog;
 struct ICombatLog;
 struct IAIActorProxy;
 struct ICooperativeAnimationManager;
+struct IIKTargetSystem;
 struct IGameSessionHandler;
 struct IRealtimeRemoteUpdate;
 struct IForceFeedbackSystem;
@@ -701,6 +702,10 @@ UNIQUE_IFACE struct IGameFramework
 	virtual ICooperativeAnimationManager* GetICooperativeAnimationManager() = 0;
 
 	// Description:
+	//		Pointer to IIKTargetSystem interface.
+	virtual IIKTargetSystem* GetIKTargetSystem() const = 0;
+
+	// Description:
 	//		Pointer to ICheckpointSystem interface.
 	virtual ICheckpointSystem* GetICheckpointSystem() = 0;
 
@@ -743,6 +748,11 @@ UNIQUE_IFACE struct IGameFramework
 	// Return Value:
 	//    true if a game context is starting
 	virtual bool StartingGameContext() const = 0;
+	// Description:
+	//    Return the current game context
+	// Return Value:
+	//    The current game context
+	virtual IGameContext *GetGameContext() const = 0;
 
 	// Description:
 	//    Sets the current game session handler to another implementation.
@@ -974,6 +984,10 @@ UNIQUE_IFACE struct IGameFramework
 	// Description:
 	//		Returns true if the supplied game session is a game session
 	virtual bool IsGameSession(CrySessionHandle sessionHandle) = 0;
+
+	// Description:
+	//		Returns true if the nub should be migrated for a given session
+	virtual bool ShouldMigrateNub(CrySessionHandle sessionHandle) = 0;
 
 	// Description:
 	//		Adds a timer that will trigger a callback function passed by parameter. Allows to pass some user data pointer

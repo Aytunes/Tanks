@@ -95,7 +95,8 @@ public:
 	VIRTUAL int GetVersion() const { return  m_version; }
 	VIRTUAL void SetVersion(int version) { m_version = version; }
 	VIRTUAL void EnumerateActions( IActionMapPopulateCallBack* pCallBack ) const;
-	VIRTUAL int  GetActionsCount() const;
+	VIRTUAL int GetActionsCount() const;
+	VIRTUAL int GetActionMapsCount() const {return m_actionMaps.size();}
 
 	VIRTUAL bool AddInputDeviceMapping(const EActionInputDevice deviceType, const char* szDeviceTypeStr);
 	VIRTUAL bool RemoveInputDeviceMapping(const EActionInputDevice deviceType);
@@ -107,7 +108,7 @@ public:
 
 	// ~IActionMapManager
 
-	bool ActionFiltered(const ActionId& action);
+	VIRTUAL bool ActionFiltered(const ActionId& action);
 
 	void RemoveActionFilter(CActionFilter *pActionFilter);
 

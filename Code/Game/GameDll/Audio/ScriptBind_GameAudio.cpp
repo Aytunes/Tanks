@@ -25,7 +25,7 @@ CScriptBind_GameAudio::CScriptBind_GameAudio(CGameAudio *pGameAudio)
 	m_pSS					= gEnv->pScriptSystem;
 	m_pGameAudio = pGameAudio;
 
-	Init(m_pSS, m_pSystem);
+	Init(m_pSS);
 	SetGlobalName("GameAudio");
 
 	RegisterMethods();

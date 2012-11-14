@@ -3,8 +3,9 @@
 
 #if USE_LEVEL_HEAP
 
-#include "CryMemoryAllocator.h"
+#include "BucketAllocator.h"
 #include "CryDLMalloc.h"
+#include "GeneralMemoryHeap.h"
 
 class CLevelHeap
 {
@@ -34,7 +35,7 @@ public:
 		if (sz <= m_buckets.MaxSize)
 			ptr = m_buckets.allocate(sz);
 		else
-			ptr = DLMalloc(sz);
+			ptr = m_dlHeap.Malloc(sz);
 
 		TrackAlloc(ptr);
 		return ptr;
@@ -47,7 +48,7 @@ public:
 		if (reinterpret_cast<UINT_PTR>(ptr) >= m_dlEndAddress)
 			sz = m_buckets.deallocate(ptr);
 		else
-			sz = DLFree(ptr);
+			sz = m_dlHeap.Free(ptr);
 
 		TrackFree(sz);
 		return sz;
@@ -65,22 +66,10 @@ public:
 	void ReplayRegisterAddressRanges();
 
 private:
-	static void* DLMMap(void* self, size_t sz);
-	static int DLMUnMap(void* self, void* mem, size_t sz);
-
-private:
-	static void* PlatformReserve(size_t sz);
-	static void* PlatformMapPage(void* base);
-	static void PlatformUnMapPage(void* base);
-
-private:
 	CLevelHeap(const CLevelHeap&);
 	CLevelHeap& operator = (const CLevelHeap&);
 
 private:
-	void* DLMalloc(size_t sz);
-	size_t DLFree(void* ptr);
-
 #if TRACK_LEVEL_HEAP_USAGE
 	void TrackAlloc(void* ptr);
 	void TrackFree(size_t sz);
@@ -102,27 +91,19 @@ private:
 	static int s_sys_LevelHeap;
 
 private:
-	CryCriticalSectionNonRecursive m_lock;
-
-	dlmspace m_mspace;
-
-	LevelBuckets m_buckets;
+	UINT_PTR m_baseAddress;
+	UINT_PTR m_dlEndAddress;
+	UINT_PTR m_endAddress;
 
 	volatile long m_active;
 
-	int m_dlmallocContents;
+	CGeneralMemoryHeap m_dlHeap;
+	LevelBuckets m_buckets;
 
 #if TRACK_LEVEL_HEAP_USAGE
 	volatile int m_numLiveAllocs;
 	volatile int m_sizeLiveAllocs;
 #endif
-
-public:
-	UINT_PTR m_baseAddress;
-	UINT_PTR m_dlEndAddress;
-	UINT_PTR m_endAddress;
-
-	uint32 m_pageBitmap[DLAddressSpace / ((64*1024) * 32)];
 };
 
 #else

@@ -60,7 +60,7 @@ History:
 // CRY_ASSERT_TRACE(expression,("This should never happen because parameter n' %d named %s is %f",iParameter,szParam,fValue));
 //-----------------------------------------------------------------------------------------------------
 
-#if defined(USE_CRY_ASSERT) && (defined(WIN32) || defined(XENON))
+#if defined(USE_CRY_ASSERT) && (defined(WIN32) || defined(XENON) || defined(GRINGO))
 
 	#pragma message("CryAssert enabled.")
 

@@ -441,6 +441,10 @@ public:
 			return ok;
 	}
 
+	bool SyncWithError(EDisconnectionCause &disconnectCause, string &disconnectMessage)
+	{
+		return Sync();
+	}
 
 	void DeleteThis()
 	{

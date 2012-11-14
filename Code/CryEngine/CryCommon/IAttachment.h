@@ -276,7 +276,7 @@ public:
 	void SetEntityId(EntityId id) { m_id = id; };
 	EntityId GetEntityId() { return m_id; }
 
-	virtual void UpdateAttachment(IAttachment *pIAttachment,const QuatT &m, float fZoomAdjustedDistanceFromCamera, uint32 OnRender )
+	void UpdateAttachment(IAttachment *pIAttachment,const QuatT &m, float fZoomAdjustedDistanceFromCamera, uint32 OnRender )
 	{
 		const QuatT& quatT = pIAttachment->GetAttWorldAbsolute();
 		
@@ -400,19 +400,13 @@ public:
 	virtual EType GetAttachmentType() { return eAttachment_Effect; };
 
 	CEffectAttachment(const char *effectName, const Vec3 &offset, const Vec3 &dir, f32 scale)
-		:	m_offset(offset),
-		m_dir(dir),
-		m_scale(scale),
-		m_pEmitter(0)
+		: m_loc( IParticleEffect::ParticleLoc(offset, dir, scale) )
 	{
 		m_pEffect = gEnv->pParticleManager->FindEffect(effectName,"Character Attachment",true);
 	}
 
 	CEffectAttachment(IParticleEffect* pParticleEffect, const Vec3 &offset, const Vec3 &dir, f32 scale)
-		:	m_offset(offset),
-		m_dir(dir),
-		m_scale(scale),
-		m_pEmitter(0)
+		: m_loc( IParticleEffect::ParticleLoc(offset, dir, scale) )
 	{
 		m_pEffect = pParticleEffect;
 	}
@@ -421,24 +415,6 @@ public:
 	{
 		if (m_pEmitter)
 			m_pEmitter->Activate(false);
-		m_pEmitter = 0;
-		m_pEffect = 0;
-	}
-
-	void CreateEffect(const Matrix34A& a_baseMatrix)
-	{
-		if (!m_pEmitter && m_pEffect != 0)
-		{
-			if (m_dir.len2()>0)
-				m_loc = Matrix34(Matrix33::CreateRotationVDir(m_dir));
-			else
-				m_loc.SetIdentity();
-			m_loc.AddTranslation(m_offset);
-			m_loc.Scale(Vec3(m_scale));
-
-			const Matrix34 spawnMatrix = a_baseMatrix * m_loc;
-			m_pEmitter = m_pEffect->Spawn(false, spawnMatrix);
-		}
 	}
 
 	IParticleEmitter *GetEmitter()
@@ -446,22 +422,24 @@ public:
 		return m_pEmitter;
 	}
 
-	void UpdateAttachment(IAttachment *pIAttachment,const QuatT &m, float fZoomAdjustedDistanceFromCamera, uint32 OnRender )
+	void UpdateAttachment(IAttachment *pIAttachment)
 	{
 		if (!pIAttachment->IsAttachmentHidden())
 		{
-			if (!m_pEmitter)
-			{
-				CreateEffect(Matrix34A(pIAttachment->GetAttWorldAbsolute()));
-			}
-
-			if (m_pEmitter)
-				m_pEmitter->SetMatrix( Matrix34A(pIAttachment->GetAttWorldAbsolute()) * m_loc);
+			PivotLocation loc(pIAttachment->GetAttWorldAbsolute() * m_loc, (pIAttachment->GetAttModelRelative() * m_loc).GetInverted().t, eCoord_Local);
+			if (!m_pEmitter && m_pEffect != 0)
+				m_pEmitter = m_pEffect->Spawn(loc);
+			else if (m_pEmitter)
+				m_pEmitter->SetLocation(loc);
 		}
 		else
 		{
 			m_pEmitter = 0;
 		}
+	}
+	void UpdateAttachment(IAttachment *pIAttachment, const QuatT &, float, uint32)
+	{
+		UpdateAttachment(pIAttachment);
 	}
 
 	AABB GetAABB()
@@ -508,10 +486,7 @@ public:
 private:
 	_smart_ptr<IParticleEmitter>	m_pEmitter;
 	_smart_ptr<IParticleEffect>		m_pEffect;
-	Vec3							m_offset;
-	Vec3							m_dir;
-	f32							m_scale;
-	Matrix34					m_loc;
+	QuatTS												m_loc;
 };
 
 #endif // IAttachment_h

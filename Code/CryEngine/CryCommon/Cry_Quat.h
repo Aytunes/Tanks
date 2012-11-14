@@ -13,22 +13,12 @@
 #ifndef _CRYQUAT_H
 #define _CRYQUAT_H
 
-//for PS3, the intrinsics generate larger and slower code unfortunately
-#if (defined(PS3) || defined(XENON)) && defined(XENON_INTRINSICS)
-#define XENON_INTRINSICS_ENABLED
-#undef XENON_INTRINSICS
-#endif
-
-
-
-
-
 
 //----------------------------------------------------------------------
 // Quaternion
 //----------------------------------------------------------------------
 
-template <typename F> struct Quat_tpl
+template <typename F> struct __passinreg Quat_tpl
 {
 
 	Vec3_tpl<F> v;	F w;
@@ -50,116 +40,157 @@ template <typename F> struct Quat_tpl
 		}
 	}
 #else
-	//	ILINE Quat_tpl() : w(1),v(0,0,0) {}
 	ILINE Quat_tpl() {}
 #endif
 
+		//ASSIGNMENT OPERATOR of identical Quat types. 
+	//The assignment operator has precedence over assignment constructor 
+	//Quat q; q=q0;
+	ILINE Quat_tpl<F>& operator = (const Quat_tpl<F> &src) 
+	{ 
+		v.x=src.v.x; v.y=src.v.y; v.z=src.v.z; w=src.w; 
+		return *this; 
+	}
 
 
-	ILINE Quat_tpl( F W, F X, F Y, F Z, bool bNorm = false ) 
-		: w(W),v(X,Y,Z)	
+
+
+	//CONSTRUCTOR to initialize a Quat from 4 floats 
+	//Quat q(1,0,0,0);  
+	ILINE Quat_tpl<F>( F qw, F qx, F qy, F qz)	
 	{
-		if (bNorm) Normalize();
-		assert(IsValid()); 
+		w=qw; v.x=qx; v.y=qy; v.z=qz; 
 	}
-	ILINE Quat_tpl( F angle, const Vec3_tpl<F> &axis) : w(angle),v(axis) {};
-	ILINE Quat_tpl(type_identity) : w(1),v(0,0,0) {}
+	//CONSTRUCTOR to initialize a Quat with a scalar and a vector 
+	//Quat q(1,Vec3(0,0,0));  
+	ILINE Quat_tpl<F>( F scalar, const Vec3_tpl<F> &vector) 
+	{
+		v=vector; w=scalar; 
+		assert(IsValid()); //this can be 0,0,0,0 because it is used in the DualQuat as well
+	};
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	explicit ILINE Quat_tpl( const Ang3_tpl<F>& rad ) {
-		assert(rad.IsValid());
-		SetRotationXYZ(rad);
+	//CONSTRUCTOR for identical types 
+	//Quat q=q0;  
+	ILINE  Quat_tpl<F>( const Quat_tpl<F>& q )  
+	{
+		//assert(q.IsValid()); //this can be 0,0,0,0 because it is used in the DualQuat as well
+		w=q.w; v.x=q.v.x; v.y=q.v.y; v.z=q.v.z; 
 	}
 
-	explicit Quat_tpl(const Matrix33_tpl<F>& m);
-	explicit Quat_tpl(const Matrix34_tpl<F>& m);
+	//CONSTRUCTOR for identical types which converts between double/float 
+	//Quat q32=q64;  
+	//Quatr q64=q32;  
+	template <class F1> ILINE  Quat_tpl<F>( const Quat_tpl<F1>& q ) 
+	{
+		assert(q.IsValid()); 
+		w=F(q.w); v.x=F(q.v.x); v.y=F(q.v.y); v.z=F(q.v.z);  
+	}
 
-	//template<class B> explicit Quat_tpl(const Matrix44_tpl<F, B>& m)
-	//{ *this=GetQuatFromMat33(Matrix33_tpl<f32>(m));	} 
-	template<class B> explicit Quat_tpl(const Matrix44_tpl<F, B>& m);
 
-	//CONSTRUCTOR: implement the copy/casting/assignment constructor:	
-	template <class T> ILINE  Quat_tpl( const Quat_tpl<T>& q )  { w=F(q.w); v.x=F(q.v.x); v.y=F(q.v.y); v.z=F(q.v.z);  assert(this->IsValid()); }
-#if !defined(__SPU__) && (defined(PS3) || defined(XENON)) // Note: This copy constructor changes crycg inlining behaviour so that errors in animation occur
-	ILINE  Quat_tpl( const Quat_tpl<F>& q )  { w=q.w; v.x=q.v.x; v.y=q.v.y; v.z=q.v.z; assert(this->IsValid()); }
-#endif
 
-	ILINE Quat_tpl &operator=(const Quat_tpl &src) { v.x=src.v.x; v.y=src.v.y; v.z=src.v.z; w=src.w; return *this; }
 
+
+
+
+
+
+	//CONSTRUCTOR for different types. It converts a Euler Angle into a Quat. 
+	//Needs to be 'explicit' because we loose fp-precision in the conversion process 
+	//Quat(Ang3(1,2,3));
+	explicit ILINE Quat_tpl<F>( const Ang3_tpl<F>& ang ) 
+	{
+		assert(ang.IsValid());
+		SetRotationXYZ(ang);
+	}
+	//CONSTRUCTOR for different types. It converts a Euler Angle into a Quat and converts between double/float. . 
+	//Needs to be 'explicit' because we loose fp-precision in the conversion process 
+	//Quat(Ang3r(1,2,3));
+	template<class F1> explicit ILINE Quat_tpl<F>( const Ang3_tpl<F1>& ang ) 
+	{
+		assert(ang.IsValid());
+		SetRotationXYZ( Ang3_tpl<F>(F(ang.x),F(ang.y),F(ang.z)) );
+	}
+
+
+	//CONSTRUCTOR for different types. It converts a Matrix33 into a Quat. 
+	//Needs to be 'explicit' because we loose fp-precision in the conversion process 
+	//Quat(m33);
+	explicit ILINE Quat_tpl<F>(const Matrix33_tpl<F>& m)	
+	{ 
+		assert( m.IsOrthonormalRH(0.1f) );
+		F s,p,tr = m.m00 + m.m11 + m.m22;
+		w=1,v.x=0,v.y=0,v.z=0;
+		if(tr>0)
+			s=sqrt_tpl(tr+1.0f),p=0.5f/s,w=s*0.5f,v.x=(m.m21-m.m12)*p,v.y=(m.m02-m.m20)*p,v.z=(m.m10-m.m01)*p;
+		else if ((m.m00>=m.m11) && (m.m00>=m.m22))
+			s=sqrt_tpl(m.m00-m.m11-m.m22+1.0f),p=0.5f/s,w=(m.m21-m.m12)*p,v.x=s*0.5f,v.y=(m.m10+m.m01)*p,v.z=(m.m20+m.m02)*p;
+		else if ((m.m11>=m.m00) && (m.m11>=m.m22))
+			s=sqrt_tpl(m.m11-m.m22-m.m00+1.0f),p=0.5f/s,w=(m.m02-m.m20)*p,v.x=(m.m01+m.m10)*p,v.y=s*0.5f,v.z=(m.m21+m.m12)*p;
+		else if ((m.m22>=m.m00) && (m.m22>=m.m11))
+			s=sqrt_tpl(m.m22-m.m00-m.m11+1.0f),p=0.5f/s,w=(m.m10-m.m01)*p,v.x=(m.m02+m.m20)*p,v.y=(m.m12+m.m21)*p,v.z=s*0.5f;
+	}
+	//CONSTRUCTOR for different types. It converts a Matrix33 into a Quat and converts between double/float. 
+	//Needs to be 'explicit' because we loose fp-precision the conversion process 
+	//Quat(m33r);
+	//Quatr(m33);
+	template<class F1> explicit ILINE Quat_tpl<F>(const Matrix33_tpl<F1>& m)	
+	{
+		assert( m.IsOrthonormalRH(0.1f) );
+		F1 s,p,tr = m.m00 + m.m11 + m.m22;
+		w=1,v.x=0,v.y=0,v.z=0;
+		if(tr>0)
+			s=sqrt_tpl(tr+1.0f),p=0.5f/s,w=F(s*0.5),v.x=F((m.m21-m.m12)*p),v.y=F((m.m02-m.m20)*p),v.z=F((m.m10-m.m01)*p);
+		else if ((m.m00>=m.m11) && (m.m00>=m.m22))
+			s=sqrt_tpl(m.m00-m.m11-m.m22+1.0f),p=0.5f/s,w=F((m.m21-m.m12)*p),v.x=F(s*0.5),v.y=F((m.m10+m.m01)*p),v.z=F((m.m20+m.m02)*p);
+		else if ((m.m11>=m.m00) && (m.m11>=m.m22))
+			s=sqrt_tpl(m.m11-m.m22-m.m00+1.0f),p=0.5f/s,w=F((m.m02-m.m20)*p),v.x=F((m.m01+m.m10)*p),v.y=F(s*0.5),v.z=F((m.m21+m.m12)*p);
+		else if ((m.m22>=m.m00) && (m.m22>=m.m11))
+			s=sqrt_tpl(m.m22-m.m00-m.m11+1.0f),p=0.5f/s,w=F((m.m10-m.m01)*p),v.x=F((m.m02+m.m20)*p),v.y=F((m.m12+m.m21)*p),v.z=F(s*0.5);
+	}
+
+	//CONSTRUCTOR for different types. It converts a Matrix34 into a Quat. 
+	//Needs to be 'explicit' because we loose fp-precision in the conversion process 
+	//Quat(m34);
+	explicit ILINE Quat_tpl<F>(const Matrix34_tpl<F>& m)	
+	{ 
+		*this=Quat_tpl<F>(Matrix33_tpl<F>(m));
+	}
+	//CONSTRUCTOR for different types. It converts a Matrix34 into a Quat and converts between double/float. 
+	//Needs to be 'explicit' because we loose fp-precision the conversion process 
+	//Quat(m34r);
+	//Quatr(m34);
+	template<class F1> explicit ILINE Quat_tpl<F>(const Matrix34_tpl<F1>& m)	
+	{
+		*this=Quat_tpl<F>(Matrix33_tpl<F1>(m));
+	}
+
+
+
+
+
+	/*!
+	* invert quaternion.
+	* 
+	* Example 1:
+	*  Quat q=Quat::CreateRotationXYZ(Ang3(1,2,3));
+	*  Quat result = !q;
+	*  Quat result = GetInverted(q);
+	*  q.Invert();
+	*/
+	ILINE Quat_tpl<F> operator ! () const { return Quat_tpl(w,-v); }
+	ILINE void Invert( void ) { *this=!*this;	}
+	ILINE Quat_tpl<F> GetInverted() const { return !(*this); } 
+	//flip quaternion. don't confuse this with quaternion-inversion.
+	ILINE Quat_tpl<F>	operator - () const { return Quat_tpl<F>( -w,-v ); };
 	//multiplication by a scalar
 	void operator *= (F op) {	w*=op; v*=op;	}
 
 	// Exact compare of 2 quats.
-	ILINE bool operator==(const Quat_tpl<F> &q) const { return IsEquivalent(q,0.0000001f); }
+	ILINE bool operator==(const Quat_tpl<F> &q) const { return (v == q.v) && (w == q.w); }
 	ILINE bool operator!=(const Quat_tpl<F> &q) const { return !(*this == q); }
 
-	//flip quaternion. don't confuse this with quaternion-inversion.
-	ILINE Quat_tpl<F>	operator - () const { return Quat_tpl<F>( -w,-v ); };
 
-	ILINE Quat_tpl<F> operator ! () const;
-
-	// Description:
-	//    Check if identity quaternion.
-	ILINE bool IsIdentity() const { return w == 1 && v.x == 0 && v.y == 0 && v.z == 0; }
-
-	ILINE void	SetIdentity(void);
-	static Quat_tpl<F> CreateIdentity(void);
-
-	ILINE bool IsUnit(F e = VEC_EPSILON) const
-	{
-		return fabs_tpl( 1 - ((*this) | (*this)) ) < e;
-	}
-
-	ILINE bool IsValid(F e = VEC_EPSILON) const
-	{
-		if (!v.IsValid())	return false;
-		if (!NumberValid(w)) return false;
-		//if (!IsUnit(e))	return false;
-		return true;
-	}
-
-
-	ILINE void SetRotationAA(F rad, const Vec3_tpl<F> &axis);
-	static Quat_tpl<F> CreateRotationAA(F rad, const Vec3_tpl<F> &axis);
-
-	ILINE void SetRotationAA(F cosha, F sinha, const Vec3_tpl<F> &axis);
-	static Quat_tpl<F> CreateRotationAA(F cosha, F sinha, const Vec3_tpl<F> &axis);
-
-
-	ILINE void SetRotationXYZ(const Ang3 &a);
-	static Quat_tpl<F> CreateRotationXYZ(const Ang3 &a);
-
-	ILINE void SetRotationX( f32 r );
-	static Quat_tpl<F> CreateRotationX( f32 r );
-	ILINE void SetRotationY( f32 r );
-	static Quat_tpl<F> CreateRotationY( f32 r );
-	ILINE void SetRotationZ( f32 r );
-	static Quat_tpl<F> CreateRotationZ( f32 r );
-
-	ILINE void SetRotationV0V1(const Vec3_tpl<F>& v0, const Vec3_tpl<F>& v1);
-	static Quat_tpl<F> CreateRotationV0V1(const Vec3_tpl<F>& v0, const Vec3_tpl<F>& v1);
-
-
-	ILINE void SetRotationVDir( const Vec3_tpl<F>& vdir );
-	static Quat_tpl<F> CreateRotationVDir( const Vec3_tpl<F>& vdir); 
-	ILINE void SetRotationVDir( const Vec3_tpl<F>& vdir, F roll );
-	static Quat_tpl<F> CreateRotationVDir( const Vec3_tpl<F>& vdir, F roll ); 
 
 	//A quaternion is a compressed matrix. Thus there is no problem extracting the rows & columns. 
 	ILINE Vec3_tpl<F> GetColumn(uint32 i) 
@@ -184,14 +215,284 @@ template <typename F> struct Quat_tpl
 	ILINE F GetFwdZ() const { return (2*(v.z*v.y+v.x*w)); }
 	ILINE F GetRotZ() const { return atan2_tpl(-GetFwdX(), GetFwdY()); }
 
-	ILINE void Invert( void );
-	ILINE Quat_tpl<F> GetInverted() const;
 
-	ILINE void	Normalize(void);
-	ILINE Quat_tpl<F> GetNormalized() const;
 
-	ILINE void	NormalizeSafe(void);
-	ILINE Quat_tpl<F> GetNormalizedSafe() const;
+	/*!
+	* set identity quaternion
+	* 
+	* Example:
+	*		Quat q=Quat::CreateIdentity();
+	*   or
+	*		q.SetIdentity();
+	*   or
+	*		Quat p=Quat(IDENTITY);
+	*/
+	ILINE void SetIdentity(void) 
+	{
+		w=1; v.x=0; v.y=0; v.z=0; 
+	}
+	ILINE static Quat_tpl<F> CreateIdentity(void)	
+	{
+		return Quat_tpl<F>(1,0,0,0); 
+	}
+	ILINE Quat_tpl<F>(type_identity) : w(1),v(0,0,0) {}
+
+
+
+
+	// Description:
+	//    Check if identity quaternion.
+	ILINE bool IsIdentity() const 
+	{
+		return w == 1 && v.x == 0 && v.y == 0 && v.z == 0; 
+	}
+
+	ILINE bool IsUnit(F e = VEC_EPSILON) const
+	{
+		return fabs_tpl(1-(w*w + v.x*v.x + v.y*v.y + v.z*v.z)) < e;
+	}
+
+	ILINE bool IsValid(F e = VEC_EPSILON) const
+{
+		if (!v.IsValid())	return false;
+		if (!NumberValid(w)) return false;
+		//if (!IsUnit(e))	return false;
+		return true;
+} 
+
+
+
+	ILINE void SetRotationAA(F rad, const Vec3_tpl<F> &axis) 
+	{ 
+		F s,c; sincos_tpl( rad*(F)0.5, &s,&c);	SetRotationAA(c,s, axis); 
+}
+	ILINE static Quat_tpl<F> CreateRotationAA(F rad, const Vec3_tpl<F> &axis) 
+	{ 	
+		Quat_tpl<F> q;	q.SetRotationAA(rad,axis); 	return q;	
+}
+
+	ILINE void SetRotationAA(F cosha, F sinha, const Vec3_tpl<F> &axis)	
+	{ 
+		assert(axis.IsUnit(0.001f));
+		w=cosha; v=axis*sinha; 
+}
+	ILINE static Quat_tpl<F> CreateRotationAA(F cosha, F sinha, const Vec3_tpl<F> &axis) 
+	{ 
+		Quat_tpl<F> q;	q.SetRotationAA(cosha,sinha,axis); 	return q;	
+}
+
+/*!
+* Create rotation-quaternion that around the fixed coordinate axes.
+*
+* Example:
+*		Quat q=Quat::CreateRotationXYZ( Ang3(1,2,3) );
+*   or
+*		q.SetRotationXYZ( Ang3(1,2,3) );
+*/
+	ILINE void SetRotationXYZ(const Ang3_tpl<F> &a)	
+	{	
+		assert(a.IsValid());
+		F sx,cx;  sincos_tpl(F(a.x*F(0.5)),&sx,&cx);
+		F sy,cy;  sincos_tpl(F(a.y*F(0.5)),&sy,&cy);
+		F sz,cz;  sincos_tpl(F(a.z*F(0.5)),&sz,&cz);
+		w		= cx*cy*cz + sx*sy*sz;
+		v.x = cz*cy*sx - sz*sy*cx;
+		v.y = cz*sy*cx + sz*cy*sx;
+		v.z = sz*cy*cx - cz*sy*sx;
+	}
+	ILINE static Quat_tpl<F> CreateRotationXYZ(const Ang3_tpl<F> &a) 
+	{	
+		assert(a.IsValid());
+		Quat_tpl<F> q;	q.SetRotationXYZ(a); 	return q;	
+	}
+
+/*!
+* Create rotation-quaternion that about the x-axis.
+*
+* Example:
+*		Quat q=Quat::CreateRotationX( radiant );
+*   or
+*		q.SetRotationX( Ang3(1,2,3) );
+*/
+	ILINE void SetRotationX( f32 r ) 
+	{	
+		F s,c;	sincos_tpl(F(r*F(0.5)),&s,&c); w=c; v.x=s; v.y=0; v.z=0;	
+	}
+	ILINE static Quat_tpl<F> CreateRotationX( f32 r ) 
+	{ 
+		Quat_tpl<F> q;	q.SetRotationX(r); 	return q;	
+	}
+
+
+/*!
+* Create rotation-quaternion that about the y-axis.
+*
+* Example:
+*		Quat q=Quat::CreateRotationY( radiant );
+*   or
+*		q.SetRotationY( radiant );
+*/
+	ILINE void SetRotationY( f32 r ) 
+	{	
+		F s,c; sincos_tpl(F(r*F(0.5)),&s,&c); w=c; v.x=0; v.y=s; v.z=0;	
+	}
+	ILINE static Quat_tpl<F> CreateRotationY( f32 r ) 
+	{ 
+		Quat_tpl<F> q;	q.SetRotationY(r); 	return q;	
+	}
+
+
+/*!
+* Create rotation-quaternion that about the z-axis.
+*
+* Example:
+*		Quat q=Quat::CreateRotationZ( radiant );
+*   or
+*		q.SetRotationZ( radiant );
+*/
+	ILINE void SetRotationZ( f32 r ) 
+	{	
+		F s,c; sincos_tpl(F(r*F(0.5)),&s,&c); w=c; v.x=0; v.y=0; v.z=s;	
+	}
+	ILINE static Quat_tpl<F> CreateRotationZ( f32 r ) 
+	{ 
+		Quat_tpl<F> q;	q.SetRotationZ(r); 	return q;	
+	}
+
+
+
+/*!
+*
+* Create rotation-quaternion that rotates from one vector to another.
+* Both vectors are assumed to be normalized.
+*
+* Example:
+*		Quat q=Quat::CreateRotationV0V1( v0,v1 );
+*		q.SetRotationV0V1( v0,v1 );
+*/
+	ILINE void SetRotationV0V1(const Vec3_tpl<F>& v0, const Vec3_tpl<F>& v1)	
+	{ 
+		assert(v0.IsUnit(0.01f));
+		assert(v1.IsUnit(0.01f));
+		F dot = v0.x*v1.x+v0.y*v1.y+v0.z*v1.z+F(1.0);
+		if (dot > F(0.0001) ) 
+		{
+			F vx=v0.y*v1.z-v0.z*v1.y; 
+			F vy=v0.z*v1.x-v0.x*v1.z; 
+			F vz=v0.x*v1.y-v0.y*v1.x; 
+			F d = isqrt_tpl(dot*dot + vx*vx+vy*vy+vz*vz);
+			w=F(dot*d);	v.x=F(vx*d); v.y=F(vy*d); v.z=F(vz*d);
+			return;
+		}
+		w=0; v=v0.GetOrthogonal().GetNormalized();
+	}
+	ILINE static Quat_tpl<F> CreateRotationV0V1(const Vec3_tpl<F>& v0, const Vec3_tpl<F>& v1) {	Quat_tpl<F> q;	q.SetRotationV0V1(v0,v1); 	return q;	}
+
+
+
+/*!
+*
+* \param vdir  normalized view direction.
+* \param roll  radiant to rotate about Y-axis.
+*
+*  Given a view-direction and a radiant to rotate about Y-axis, this function builds a 3x3 look-at quaternion 
+*  using only simple vector arithmetic. This function is always using the implicit up-vector Vec3(0,0,1). 
+*  The view-direction is always stored in column(1).
+*  IMPORTANT: The view-vector is assumed to be normalized, because all trig-values for the orientation are beeing 
+*  extracted  directly out of the vector. This function must NOT be called with a view-direction 
+*  that is close to Vec3(0,0,1) or Vec3(0,0,-1). If one of these rules is broken, the function returns a quaternion 
+*  with an undefined rotation about the Z-axis.
+*
+*  Rotation order for the look-at-quaternion is Z-X-Y. (Zaxis=YAW / Xaxis=PITCH / Yaxis=ROLL)
+*
+*  COORDINATE-SYSTEM       
+*                                   
+*  z-axis                                 
+*    ^                               
+*    |                               
+*    |  y-axis                   
+*    |  /                         
+*    | /                           
+*    |/                             
+*    +--------------->   x-axis     
+*                                  
+*  Example:
+*		Quat LookAtQuat=Quat::CreateRotationVDir( Vec3(0,1,0) );
+*   or
+*		Quat LookAtQuat=Quat::CreateRotationVDir( Vec3(0,1,0), 0.333f );
+*/
+	ILINE void SetRotationVDir( const Vec3_tpl<F>& vdir )
+	{
+		assert(vdir.IsUnit(0.01f));
+		//set default initialization for up-vector	
+		w=F(0.70710676908493042);	v.x=F(vdir.z*0.70710676908493042);	v.y=F(0.0); 	v.z=F(0.0); 
+		F l = sqrt_tpl(vdir.x*vdir.x+vdir.y*vdir.y);
+		if (l>F(0.00001))	
+		{
+			//calculate LookAt quaternion
+			Vec3_tpl<F> hv	=	Vec3_tpl<F> (vdir.x/l,vdir.y/l+1.0f,l+1.0f);
+			F r = sqrt_tpl(hv.x*hv.x + hv.y*hv.y);
+			F s	= sqrt_tpl(hv.z*hv.z + vdir.z*vdir.z);
+			//generate the half-angle sine&cosine
+			F hacos0=0.0;			F hasin0=-1.0;			
+			if (r>F(0.00001)) { hacos0=hv.y/r; hasin0=-hv.x/r; }	//yaw
+			F hacos1=hv.z/s;	F hasin1=vdir.z/s;					//pitch
+			w=F(hacos0*hacos1); v.x=F(hacos0*hasin1);	v.y=F(hasin0*hasin1);	v.z=F(hasin0*hacos1);  
+		}
+	}
+	ILINE static Quat_tpl<F> CreateRotationVDir( const Vec3_tpl<F>& vdir ) {	Quat_tpl<F> q;	q.SetRotationVDir(vdir); return q;	}
+
+
+	ILINE void SetRotationVDir( const Vec3_tpl<F>& vdir, F r )
+	{
+		SetRotationVDir(vdir);
+		F sy,cy;  sincos_tpl(r*(F)0.5,&sy,&cy);
+		F vx=v.x,vy=v.y;  
+		v.x=F(vx*cy-v.z*sy); v.y=F(w*sy+vy*cy); v.z=F(v.z*cy+vx*sy); w=F(w*cy-vy*sy);
+	}
+	ILINE static Quat_tpl<F> CreateRotationVDir( const Vec3_tpl<F>& vdir, F roll ) {	Quat_tpl<F> q; q.SetRotationVDir(vdir,roll);	return q;	}
+
+
+
+/*!
+* normalize quaternion.
+* 
+* Example 1:
+	*  Quat q; q.Normalize();
+*
+* Example 2:
+*  Quat q=Quat(1,2,3,4);
+*  Quat qn=q.GetNormalized();
+*/
+	ILINE void Normalize(void)	
+{
+	F d = isqrt_tpl(w*w + v.x*v.x+v.y*v.y+v.z*v.z);
+	w*=d;	v.x*=d; v.y*=d; v.z*=d;
+}
+	ILINE Quat_tpl<F> GetNormalized() const
+{
+		Quat_tpl<F> t=*this; 	t.Normalize(); return t;	
+}
+
+
+	ILINE void NormalizeSafe(void)	
+{
+	F d = w*w + v.x*v.x+v.y*v.y+v.z*v.z;
+	if (d > 1e-8f)
+	{
+		d = isqrt_tpl(d);
+		w*=d;	v.x*=d; v.y*=d; v.z*=d;
+	}
+	else
+	{
+		SetIdentity();
+	}
+}
+	ILINE Quat_tpl<F> GetNormalizedSafe() const
+{  
+	Quat_tpl<F> t = *this; t.NormalizeSafe(); return t;	
+}
+
 
 	ILINE void	NormalizeFast(void)
 	{
@@ -199,60 +500,216 @@ template <typename F> struct Quat_tpl
 			F fInvLen = isqrt_fast_tpl( v.x*v.x + v.y*v.y + v.z*v.z + w*w );
 			v.x*=fInvLen; v.y*=fInvLen; v.z*=fInvLen; w *= fInvLen;
 	}
-	ILINE Quat_tpl<F> GetNormalizedFast() const;
-
-	ILINE F GetLength() const;
-
-	ILINE bool IsEquivalent( const Quat_tpl<F>& q, F e=VEC_EPSILON) const {
-
-
-
-
-
-
-		Quat_tpl<F> p=-q;
-		bool t0= (fabs_tpl(v.x-q.v.x)<=e) && (fabs_tpl(v.y-q.v.y)<=e) && (fabs_tpl(v.z-q.v.z)<=e) && (fabs_tpl(w-q.w)<=e);	
-		bool t1= (fabs_tpl(v.x-p.v.x)<=e) && (fabs_tpl(v.y-p.v.y)<=e) && (fabs_tpl(v.z-p.v.z)<=e) && (fabs_tpl(w-p.w)<=e);	
-		t0 |= t1;
-		return t0;
-
+	ILINE Quat_tpl<F> GetNormalizedFast() const
+	{  
+		Quat_tpl<F> t=*this; t.NormalizeFast(); return t;	
 	}
 
-	ILINE void SetNlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t  ); 
-	static Quat_tpl<F> CreateNlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ); 
 
-	ILINE void SetNlerp2( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t  ); 
-	static Quat_tpl<F> CreateNlerp2( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ); 
+/*!
+* get length of quaternion.
+* 
+* Example 1:
+*  f32 l=q.GetLength();
+*/
+	ILINE F GetLength() const 
+{ 
+	return sqrt_tpl(w*w + v.x*v.x+v.y*v.y+v.z*v.z); 
+}
 
-	ILINE void SetSlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ); 
-	static Quat_tpl<F> CreateSlerp( const Quat_tpl<F>& p, const Quat_tpl<F>& tq, F t );
+	ILINE static bool IsEquivalent( const Quat_tpl<F>& q1, const Quat_tpl<F>& q2, F qe=RAD_EPSILON) 
+	{
+		Quat_tpl<f64> q1r=q1; 	Quat_tpl<f64> q2r=q2;
+		real rad = acos(min(1.0,fabs_tpl( q1r.v.x*q2r.v.x + q1r.v.y*q2r.v.y + q1r.v.z*q2r.v.z + q1r.w*q2r.w )));
+		bool qdif = rad<=qe;	
+		return qdif;	
+	}
 
-	ILINE void SetExpSlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ); 
-	static Quat_tpl<F> CreateExpSlerp( const Quat_tpl<F>& p, const Quat_tpl<F>& tq, F t );
 
-	static Quat_tpl<F> CreateSquad( const Quat_tpl<F>& p,const Quat_tpl<F>& a,const Quat_tpl<F>& b,const Quat_tpl<F>& q, F t );
-	static Quat_tpl<F> CreateSquadRev( F angle, const Vec3& axis, const Quat_tpl<F>& p, const Quat_tpl<F>& a, const Quat_tpl<F>& b, const Quat_tpl<F>& q, F t );
+// Exponent of Quaternion.
+	ILINE static Quat_tpl<F> exp(const Vec3_tpl<F>& v) 
+{
+	F lensqr = v.len2();
+	if (lensqr > F(0))
+	{
+		F len = sqrt_tpl(lensqr);
+		F s,c; sincos_tpl(len,&s,&c); 
+		s /= len;
+		return Quat_tpl<F>( c, v.x*s, v.y*s, v.z*s );
+	}
+	return Quat_tpl<F> (IDENTITY);
+}
 
+// logarithm of a quaternion, imaginary part (the real part of the logarithm is always 0)
+	ILINE static Vec3_tpl<F> log (const Quat_tpl<F>& q) 
+{
+	assert(q.IsValid());
+	F lensqr = q.v.len2();
+		if (lensqr > 0.0f)
+{
+		F len = sqrt_tpl(lensqr);
+		F angle = atan2_tpl(len, q.w) / len;
+		return q.v * angle;
+}
+		// logarithm of a quaternion, imaginary part (the real part of the logarithm is always 0)
+		return Vec3_tpl<F>(0,0,0);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	//! Logarithm of Quaternion difference.
+	ILINE static Quat_tpl<F> LnDif( const Quat_tpl<F>& q1,const Quat_tpl<F>& q2 )
+	{
+		return Quat_tpl<F>(0,log(q2/q1));
+}
+
+
+
+/*!
+* linear-interpolation between quaternions (lerp)
+* 
+* Example:
+*  CQuaternion result,p,q;
+*  result=qlerp( p, q, 0.5f );
+*/
+	ILINE void SetNlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
+{	
+	Quat_tpl<F> q=tq;
+	assert(p.IsValid());
+	assert(q.IsValid());
+	if( (p|q) < 0 ) { q=-q;	} 
+		v.x = p.v.x*(1.0f-t) + q.v.x*t;
+		v.y = p.v.y*(1.0f-t) + q.v.y*t;
+		v.z = p.v.z*(1.0f-t) + q.v.z*t;
+		w		= p.w  *(1.0f-t) + q.w  *t;
+	Normalize();
+}
+
+	ILINE static Quat_tpl<F> CreateNlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
+{
+	Quat_tpl<F> d;  d.SetNlerp(p,tq,t); 	return d;
+}
+
+
+	/*!
+	* linear-interpolation between quaternions (nlerp)
+	* in this case we convert the t-value into a 1d cubic spline to get closer to Slerp
+	* 
+	* Example:
+	*  Quat result,p,q;
+	*  result.SetNlerpCubic( p, q, 0.5f );
+	*/
+	ILINE void SetNlerpCubic( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
+{
+	Quat_tpl<F> q=tq;
+		assert((fabs_tpl(1-(p|p)))<0.001); //check if unit-quaternion
+		assert((fabs_tpl(1-(q|q)))<0.001); //check if unit-quaternion
+	F cosine=(p|q);
+	if(cosine<0) q=-q; 
+		F k=(1-fabs_tpl(cosine))*F(0.4669269);
+	F s = 2*k*t*t*t - 3*k*t*t + (1+k)*t;
+	v.x = p.v.x*(1.0f-s) + q.v.x*s;
+	v.y = p.v.y*(1.0f-s) + q.v.y*s;
+	v.z = p.v.z*(1.0f-s) + q.v.z*s;
+	w		= p.w  *(1.0f-s) + q.w*s;
+	Normalize();
+}
+	ILINE static Quat_tpl<F> CreateNlerpCubic( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
+{
+		Quat_tpl<F> d;  d.SetNlerpCubic(p,tq,t); 	return d;
+}
+
+
+
+/*!
+* spherical-interpolation between quaternions (geometrical slerp)
+* 
+* Example:
+*  Quat result,p,q;
+*  result.SetSlerp( p, q, 0.5f );
+*/
+	ILINE void SetSlerp( const Quat_tpl<F> &tp, const Quat_tpl<F> &tq, F t ) 
+{
+	assert(tp.IsValid());
+	assert(tq.IsUnit());
+	Quat_tpl<F> p=tp,q=tq;
+	Quat_tpl<F> q2;
+
+	F cosine = (p|q);
+	if (cosine < 0.0f ) { cosine=-cosine; q=-q;	} //take shortest arc
+	if (cosine > 0.9999f)
+	{
+		SetNlerp(p,q,t);
+		return;
+	}
+	// from now on, a division by 0 is not possible any more
+	q2.w		= q.w-p.w*cosine;
+	q2.v.x	= q.v.x-p.v.x*cosine;
+	q2.v.y	= q.v.y-p.v.y*cosine;
+	q2.v.z	= q.v.z-p.v.z*cosine;
+	F sine	= sqrt(q2|q2);
+	F s,c;	sincos_tpl(atan2_tpl(sine,cosine)*t,&s,&c);
+	w =   F(p.w  *c + q2.w  *s/sine);
+	v.x = F(p.v.x*c + q2.v.x*s/sine);
+	v.y = F(p.v.y*c + q2.v.y*s/sine);
+	v.z = F(p.v.z*c + q2.v.z*s/sine);
+}
+
+	ILINE static Quat_tpl<F> CreateSlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
+{
+	Quat_tpl<F> d;  d.SetSlerp(p,tq,t); 	return d;
+}
+
+
+
+
+
+/*!
+* spherical-interpolation between quaternions (algebraic slerp_a)
+* I have included this function just for the sake of completeness, because 
+* its the only useful application to check if exp & log really work. 
+* Both slerp-functions are returning the same result.
+*	
+* Example:
+*  Quat result,p,q;
+*  result.SetExpSlerp( p,q,0.3345f );
+*/
+	ILINE void SetExpSlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
+	{
+		assert((fabs_tpl(1-(p|p)))<0.001); //check if unit-quaternion
+		assert((fabs_tpl(1-(tq|tq)))<0.001); //check if unit-quaternion
+	Quat_tpl<F> q=tq;
+	if((p|q)<0) { q=-q;	} 
+	*this = p * exp( log(!p*q)*t );			//algebraic slerp (1)
+
+	//...and some more exp-slerp-functions producing all the same result
+	//*this = exp( log (p* !q) * (1-t)) * q;		    //algebraic slerp (2)
+	//*this = exp( log (q* !p) * t) * p;			//algebraic slerp (3)
+	//*this = q * exp( log (!q*p) * (1-t));	//algebraic slerp (4)
+}
+	ILINE static Quat_tpl<F> CreateExpSlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &q, F t ) 
+{
+	Quat_tpl<F> d;  d.SetExpSlerp(p,q,t); 	return d;
+}
+
+	//! squad(p,a,b,q,t) = slerp( slerp(p,q,t),slerp(a,b,t), 2(1-t)t).
+	ILINE void SetSquad( const Quat_tpl<F>& p,const Quat_tpl<F>& a,const Quat_tpl<F>& b,const Quat_tpl<F>& q, F t )
+	{
+		SetSlerp( CreateSlerp(p,q,t), CreateSlerp(a,b,t), 2.0f*(1.0f-t)*t );
+	}
+
+	ILINE static Quat_tpl<F> CreateSquad( const Quat_tpl<F>& p,const Quat_tpl<F>& a,const Quat_tpl<F>& b,const Quat_tpl<F>& q, F t )
+	{
+		Quat_tpl<F> d;  d.SetSquad(p,a,b,q, t); 	return d;
+	}
+
+
+	//useless, please delete
 	ILINE Quat_tpl<F> GetScaled(F scale) const
 	{
 		return CreateNlerp(IDENTITY, *this, scale);
-		/*
-		AngleAxis_tpl<F> aa = *this;
-		aa.angle *= scale;
-		return CreateRotationAA(aa.angle, aa.axis);
-		*/
 	}
 
-	ILINE void ClampAngle(F maxAngleDeg)
-	{
-		F maxAngleRad = DEG2RAD(maxAngleDeg);
-		F wMax = cry_cosf((F)(2.0) * maxAngleRad);
-		if (w < wMax)
-		{
-			w = wMax;
-			Normalize();
-		}
-	}
 
 	AUTO_STRUCT_INFO
 };
@@ -264,8 +721,7 @@ template <typename F> struct Quat_tpl
 
 #ifndef MAX_API_NUM
 typedef Quat_tpl<f32>	Quat;
-typedef Quat_tpl<f64>	Quatr;
-typedef Quat_tpl<real>	Quat_f64;
+typedef Quat_tpl<real>	Quatr;
 #endif
 
 typedef Quat_tpl<f32>	CryQuat;
@@ -276,20 +732,7 @@ typedef Quat_tpl<real>	quaternion;
 #ifndef MAX_API_NUM
 typedef DEFINE_ALIGNED_DATA(Quat, QuatA, 16); 				// typedef __declspec(align(16)) Quat_tpl<f32>		CryQuatA;
 typedef DEFINE_ALIGNED_DATA(Quatr, QuatrA, 32); // typedef __declspec(align(16)) Quat_tpl<f32>		quaternionfA;
-typedef DEFINE_ALIGNED_DATA(Quat_f64, Quat_f64A, 32); 	// typedef __declspec(align(16)) Quat_tpl<real>		quaternionA;
 #endif
-
-//-------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------
-
-
-
-
-
 
 
 
@@ -310,7 +753,7 @@ template<typename F1,typename F2> ILINE F1 operator | (const Quat_tpl<F1>& q, co
 	assert(q.v.IsValid());
 	assert(p.v.IsValid());
 	return (q.v.x*p.v.x + q.v.y*p.v.y + q.v.z*p.v.z + q.w*p.w); 
-} 
+}
 
 
 /*!
@@ -356,11 +799,10 @@ template<class F1,class F2> ILINE void operator *= (Quat_tpl<F1> &q, const Quat_
 *   QuatT quatpos	=	QuatT::CreateRotationZ(3.14192f,Vec3(11,22,33));
 *	  QuatT qp			=	quat*quatpos;
 */
-template<class F1,class F2> ILINE QuatT_tpl<F1> operator * (const Quat_tpl<F1> &q, const QuatT_tpl<F2> &p) { 
+template<class F1,class F2> ILINE QuatT_tpl<F1> operator * (const Quat_tpl<F1> &q, const QuatT_tpl<F2> &p) 
+{ 
 	return QuatT_tpl<F1>(q*p.q, q*p.t);
 }
-
-
 
 /*!
 *  division operator
@@ -373,10 +815,12 @@ template<class F1,class F2> ILINE QuatT_tpl<F1> operator * (const Quat_tpl<F1> &
 *   Quat p(1,0,0,0),q(1,0,0,0);
 *   Quat p/=q;
 */
-template<class F1,class F2> ILINE Quat_tpl<F1> operator / (const Quat_tpl<F1> &q, const Quat_tpl<F2> &p) { 
+template<class F1,class F2> ILINE Quat_tpl<F1> operator / (const Quat_tpl<F1> &q, const Quat_tpl<F2> &p) 
+{ 
 	return (!p*q); 
 }
-template<class F1,class F2> ILINE void operator /= (Quat_tpl<F1> &q, const Quat_tpl<F2> &p) { 
+template<class F1,class F2> ILINE void operator /= (Quat_tpl<F1> &q, const Quat_tpl<F2> &p) 
+{ 
 	q=(!p*q);
 }
 
@@ -399,16 +843,6 @@ template<class F1,class F2> ILINE void operator += (Quat_tpl<F1> &q, const Quat_
 	q.w+=p.w; q.v+=p.v; 
 }
 
-template<class F1,class F2> ILINE Quat_tpl<F1> operator % (const Quat_tpl<F1> &q, const Quat_tpl<F2> &tp) { 
-	Quat_tpl<F1> p=tp;
-	if( (p|q) < 0 ) { p=-p;	} 
-	return Quat_tpl<F1>( q.w+p.w, q.v+p.v ); 
-}
-template<class F1,class F2> ILINE void operator %= (Quat_tpl<F1> &q, const Quat_tpl<F2> &tp) { 
-	Quat_tpl<F1> p=tp;
-	if( (p|q) < 0 ) { p=-p;	} 
-	q = Quat_tpl<F1>( q.w+p.w, q.v+p.v ); 
-}
 
 
 /*!
@@ -454,7 +888,8 @@ template <typename F1,typename F2> ILINE Quat_tpl<F1>	operator / ( const Quat_tp
 *  Vec3 v(33,44,55);
 *	 Vec3 result = q*v;
 */
-template<class F,class F2> ILINE Vec3_tpl<F> operator * (const Quat_tpl<F> &q, const Vec3_tpl<F2> &v) {
+template<class F,class F2> ILINE Vec3_tpl<F> operator * (const Quat_tpl<F> &q, const Vec3_tpl<F2> &v) 
+{
 	assert(v.IsValid());
 	assert(q.IsValid());
 	//muls=15 / adds=15
@@ -477,7 +912,8 @@ template<class F,class F2> ILINE Vec3_tpl<F> operator * (const Quat_tpl<F> &q, c
 *  Vec3 v(33,44,55);
 *	 Vec3 result = v*q;
 */
-template<class F,class F2> ILINE Vec3_tpl<F2> operator * (const Vec3_tpl<F> &v, const Quat_tpl<F2> &q) {
+template<class F,class F2> ILINE Vec3_tpl<F2> operator * (const Vec3_tpl<F> &v, const Quat_tpl<F2> &q) 
+{
 	assert(v.IsValid());
 	assert(q.IsValid());
 	//muls=15 / adds=15
@@ -493,595 +929,18 @@ template<class F,class F2> ILINE Vec3_tpl<F2> operator * (const Vec3_tpl<F> &v, 
 
 
 
-
-
-
-
-
-/*!
-* invert quaternion.
-* 
-* Example 1:
-*  Quat q=Quat::CreateRotationXYZ(Ang3(1,2,3));
-*  Quat result = !q;
-*  Quat result = GetInverted(q);
-*  q.Invert();
-*/
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::operator ! () const { return Quat_tpl(w,-v); }
-template<typename F> ILINE void Quat_tpl<F>::Invert( void ) { *this=!*this;	}
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::GetInverted() const { return !(*this); } 
-
-
-
-/*!
-* set identity quaternion
-* 
-* Example:
-*		Quat q=Quat::CreateIdentity();
-*   or
-*		q.SetIdentity();
-*   or
-*		Quat p=Quat(IDENTITY);
-*/
-template <typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateIdentity(void)	{ return Quat_tpl(1,0,0,0); }
-template <typename F> ILINE void	Quat_tpl<F>::SetIdentity(void) { w=1; v.x=0; v.y=0; v.z=0; }
-
-
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationAA(F rad, const Vec3_tpl<F> &axis) { 	
-	Quat_tpl<F> q;	q.SetRotationAA(rad,axis); 	return q;	
-}
-template<typename F> ILINE void Quat_tpl<F>::SetRotationAA(F rad, const Vec3_tpl<F> &axis) { 
-	F s,c; sincos_tpl( rad*(F)0.5, &s,&c);	SetRotationAA(c,s, axis); 
-}
-
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationAA(F cosha, F sinha, const Vec3_tpl<F> &axis) { 
-	Quat_tpl<F> q;	q.SetRotationAA(cosha,sinha,axis); 	return q;	
-}
-template<typename F> ILINE void Quat_tpl<F>::SetRotationAA(F cosha, F sinha, const Vec3_tpl<F> &axis)	{ 
-	assert(axis.IsUnit(0.001f));
-	w=cosha; v=axis*sinha; 
-}
-
-/*!
-* Create rotation-quaternion that around the fixed coordinate axes.
-*
-* Example:
-*		Quat q=Quat::CreateRotationXYZ( Ang3(1,2,3) );
-*   or
-*		q.SetRotationXYZ( Ang3(1,2,3) );
-*/
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationXYZ(const Ang3 &a) 
-{	
-	assert(a.IsValid());
-	Quat_tpl<F> q;	q.SetRotationXYZ(a); 	return q;	
-}
-template<typename F>  void Quat_tpl<F>::SetRotationXYZ(const Ang3 &a)	
+template<class F1,class F2> ILINE Quat_tpl<F1> operator % (const Quat_tpl<F1> &q, const Quat_tpl<F2> &tp) 
 { 
-	assert(a.IsValid());
-	F sx,cx;  sincos_tpl(F(a.x*(F)0.5),&sx,&cx);
-	F sy,cy;  sincos_tpl(F(a.y*(F)0.5),&sy,&cy);
-	F sz,cz;  sincos_tpl(F(a.z*(F)0.5),&sz,&cz);
-	w		= cx*cy*cz + sx*sy*sz;
-	v.x = cz*cy*sx - sz*sy*cx;
-	v.y = cz*sy*cx + sz*cy*sx;
-	v.z = sz*cy*cx - cz*sy*sx;
+	Quat_tpl<F1> p=tp;
+	if( (p|q) < 0 ) { p=-p;	} 
+	return Quat_tpl<F1>( q.w+p.w, q.v+p.v ); 
 }
-
-/*!
-* Create rotation-quaternion that about the x-axis.
-*
-* Example:
-*		Quat q=Quat::CreateRotationX( radiant );
-*   or
-*		q.SetRotationX( Ang3(1,2,3) );
-*/
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationX( f32 r ) 
-{	
-	Quat_tpl<F> q;	q.SetRotationX(r); 	return q;	
-}
-template<typename F> ILINE void Quat_tpl<F>::SetRotationX( f32 r ) 
+template<class F1,class F2> ILINE void operator %= (Quat_tpl<F1> &q, const Quat_tpl<F2> &tp) 
 { 
-	F s,c; 
-	sincos_tpl(F(r*(F)0.5),&s,&c); w=c; v.x=s; v.y=0; v.z=0;	
+	Quat_tpl<F1> p=tp;
+	if( (p|q) < 0 ) { p=-p;	} 
+	q = Quat_tpl<F1>( q.w+p.w, q.v+p.v ); 
 }
-
-
-/*!
-* Create rotation-quaternion that about the y-axis.
-*
-* Example:
-*		Quat q=Quat::CreateRotationY( radiant );
-*   or
-*		q.SetRotationY( radiant );
-*/
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationY( f32 r ) 
-{	
-	Quat_tpl<F> q;	q.SetRotationY(r); 	return q;	
-}
-template<typename F> ILINE void Quat_tpl<F>::SetRotationY( f32 r ) 
-{ 
-	F s,c; sincos_tpl(F(r*(F)0.5),&s,&c); w=c; v.x=0; v.y=s; v.z=0;	
-}
-
-
-/*!
-* Create rotation-quaternion that about the z-axis.
-*
-* Example:
-*		Quat q=Quat::CreateRotationZ( radiant );
-*   or
-*		q.SetRotationZ( radiant );
-*/
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationZ( f32 r ) 
-{	
-	Quat_tpl<F> q;	q.SetRotationZ(r); 	return q;	
-}
-template<typename F> ILINE void Quat_tpl<F>::SetRotationZ( f32 r ) 
-{ 
-	F s,c; sincos_tpl(F(r*(F)0.5),&s,&c); w=c; v.x=0; v.y=0; v.z=s;	
-}
-
-
-
-/*!
-*
-* Create rotation-quaternion that rotates from one vector to another.
-* Both vectors are assumed to be nomalised.
-*
-* Example:
-*		Quat q=Quat::CreateRotationV0V1( v0,v1 );
-*		q.SetRotationV0V1( v0,v1 );
-*/
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationV0V1(const Vec3_tpl<F>& v0, const Vec3_tpl<F>& v1) {	Quat_tpl<F> q;	q.SetRotationV0V1(v0,v1); 	return q;	}
-template<typename F> void Quat_tpl<F>::SetRotationV0V1(const Vec3_tpl<F>& v0, const Vec3_tpl<F>& v1)	
-{ 
-	assert(v0.IsUnit(0.01f));
-	assert(v1.IsUnit(0.01f));
-	real dot = v0.x*v1.x+v0.y*v1.y+v0.z*v1.z+1.0;
-	if (dot > real(0.0001f) ) 
-	{
-		real vx=v0.y*v1.z-v0.z*v1.y; 
-		real vy=v0.z*v1.x-v0.x*v1.z; 
-		real vz=v0.x*v1.y-v0.y*v1.x; 
-		real d = isqrt_tpl(dot*dot + vx*vx+vy*vy+vz*vz);
-		w=F(dot*d);	v.x=F(vx*d); v.y=F(vy*d); v.z=F(vz*d);
-		return;
-	}
-	w=0; v=v0.GetOrthogonal().GetNormalized();
-}
-
-
-/*!
-*
-* \param vdir  normalized view direction.
-* \param roll  radiant to rotate about Y-axis.
-*
-*  Given a view-direction and a radiant to rotate about Y-axis, this function builds a 3x3 look-at quaternion 
-*  using only simple vector arithmetic. This function is always using the implicit up-vector Vec3(0,0,1). 
-*  The view-direction is always stored in column(1).
-*  IMPORTANT: The view-vector is assumed to be normalized, because all trig-values for the orientation are beeing 
-*  extracted  directly out of the vector. This function must NOT be called with a view-direction 
-*  that is close to Vec3(0,0,1) or Vec3(0,0,-1). If one of these rules is broken, the function returns a quaternion 
-*  with an undifined rotation about the Z-axis.
-*
-*  Rotation order for the look-at-quaternion is Z-X-Y. (Zaxis=YAW / Xaxis=PITCH / Yaxis=ROLL)
-*
-*  COORDINATE-SYSTEM       
-*                                   
-*  z-axis                                 
-*    ^                               
-*    |                               
-*    |  y-axis                   
-*    |  /                         
-*    | /                           
-*    |/                             
-*    +--------------->   x-axis     
-*                                  
-*  Example:
-*		Quat LookAtQuat=Quat::CreateRotationVDir( Vec3(0,1,0) );
-*   or
-*		Quat LookAtQuat=Quat::CreateRotationVDir( Vec3(0,1,0), 0.333f );
-*/
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationVDir( const Vec3_tpl<F>& vdir ) {	Quat_tpl<F> q;	q.SetRotationVDir(vdir); return q;	}
-template<typename F> void Quat_tpl<F>::SetRotationVDir( const Vec3_tpl<F>& vdir )
-{
-	assert(vdir.IsUnit(0.01f));
-	//set default initialisation for up-vector	
-	w=F(0.70710676908493042);	v.x=F((vdir.z+vdir.z)*0.35355338454246521);	v.y=F(0.0); 	v.z=F(0.0); 
-	real l = sqrt(vdir.x*vdir.x+vdir.y*vdir.y);
-	if (l>(real)0.00001)	
-	{
-		//calculate LookAt quaternion
-		Vec3r hv	=	Vec3r(vdir.x/l,vdir.y/l+1.0f,l+1.0f);
-		real r = sqrt(hv.x*hv.x + hv.y*hv.y);
-		real s	= sqrt(hv.z*hv.z + vdir.z*vdir.z);
-		//generate the half-angle sine&cosine
-		real hacos0=0.0;			real hasin0=-1.0;			
-		if (r>(real)0.00001) { hacos0=hv.y/r; hasin0=-hv.x/r; }	//yaw
-		real hacos1=hv.z/s;	real hasin1=vdir.z/s;					//pitch
-		w=F(hacos0*hacos1); v.x=F(hacos0*hasin1);	v.y=F(hasin0*hasin1);	v.z=F(hasin0*hacos1);  
-	}
-}
-
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateRotationVDir( const Vec3_tpl<F>& vdir, F roll ) {	Quat_tpl<F> q; q.SetRotationVDir(vdir,roll);	return q;	}
-template<typename F> void Quat_tpl<F>::SetRotationVDir( const Vec3_tpl<F>& vdir, F r )
-{
-	SetRotationVDir(vdir);
-	real sy,cy;  sincos_tpl(r*(F)0.5,&sy,&cy);
-	real vx=v.x,vy=v.y;  
-	v.x=F(vx*cy-v.z*sy); v.y=F(w*sy+vy*cy); v.z=F(v.z*cy+vx*sy); w=F(w*cy-vy*sy);
-}
-
-
-
-/*!
-* normalize quaternion.
-* 
-* Example 1:
-*  Quat q;
-*  q.Normalize();
-*
-* Example 2:
-*  Quat q=Quat(1,2,3,4);
-*  Quat qn=q.GetNormalized();
-*/
-template <typename F> ILINE void	Quat_tpl<F>::Normalize(void)	
-{
-	F d = isqrt_tpl(w*w + v.x*v.x+v.y*v.y+v.z*v.z);
-	w*=d;	v.x*=d; v.y*=d; v.z*=d;
-}
-template <typename F> ILINE Quat_tpl<F> Quat_tpl<F>::GetNormalized() const
-{
-	Quat_tpl<F> t=*this; 
-	t.Normalize(); 
-	return t;	
-}
-
-
-template <typename F> void	Quat_tpl<F>::NormalizeSafe(void)	
-{
-	F d = w*w + v.x*v.x+v.y*v.y+v.z*v.z;
-	if (d > 1e-8f)
-	{
-		d = isqrt_tpl(d);
-		w*=d;	v.x*=d; v.y*=d; v.z*=d;
-	}
-	else
-	{
-		SetIdentity();
-	}
-}
-template <typename F> ILINE Quat_tpl<F> Quat_tpl<F>::GetNormalizedSafe() const
-{  
-	Quat_tpl<F> t = *this; t.NormalizeSafe(); return t;	
-}
-
-/*!
-* get length of quaternion.
-* 
-* Example 1:
-*  f32 l=q.GetLength();
-*/
-template <typename F> ILINE F Quat_tpl<F>::GetLength() const 
-{ 
-	return sqrt_tpl(w*w + v.x*v.x+v.y*v.y+v.z*v.z); 
-}
-
-
-
-// Exponent of Quaternion.
-template <typename F> ILINE Quat_tpl<F> exp(const Vec3_tpl<F>& v) 
-{
-	F lensqr = v.len2();
-	if (lensqr > F(0))
-	{
-		F len = sqrt_tpl(lensqr);
-		F s,c; sincos_tpl(len,&s,&c); 
-		s /= len;
-		return Quat_tpl<F>( c, v.x*s, v.y*s, v.z*s );
-	}
-	return Quat_tpl<F> (IDENTITY);
-}
-
-// logarithm of a quaternion, imaginary part (the real part of the logarithm is always 0)
-template <typename F> ILINE Vec3_tpl<F> log (const Quat_tpl<F>& q) 
-{
-	assert(q.IsValid());
-	F lensqr = q.v.len2();
-	if (lensqr > F(0))
-
-
-// Exponent of Quaternion.
-{
-		F len = sqrt_tpl(lensqr);
-		F angle = atan2_tpl(len, q.w) / len;
-		return q.v * angle;
-}
-
-// logarithm of a quaternion, imaginary part (the real part of the logarithm is always 0)
-	return Vec3_tpl<F>(0);
-}
-
-
-
-
-/*!
-* linear-interpolation between quaternions (lerp)
-* 
-* Example:
-*  CQuaternion result,p,q;
-*  result=qlerp( p, q, 0.5f );
-*/
-template<typename F> void Quat_tpl<F>::SetNlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
-{	
-	Quat_tpl<F> q=tq;
-	assert(p.IsValid());
-	assert(q.IsValid());
-	if( (p|q) < 0 ) { q=-q;	} 
-
-	Vec3_tpl<F> vDiff = q.v - p.v;
-
-	v = p.v + (vDiff * t);
-	w	= p.w + ((q.w - p.w) * t);
-
-	// 	v.x = p.v.x*(1.0f-t) + q.v.x*t;
-	// 	v.y = p.v.y*(1.0f-t) + q.v.y*t;
-	// 	v.z = p.v.z*(1.0f-t) + q.v.z*t;
-	// 	w		= p.w  *(1.0f-t) + q.w*t;
-
-	Normalize();
-}
-
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateNlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
-{
-	Quat_tpl<F> d;  d.SetNlerp(p,tq,t); 	return d;
-}
-
-
-
-template<typename F> void Quat_tpl<F>::SetNlerp2( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
-{
-	Quat_tpl<F> q=tq;
-	assert(p.IsValid());
-	assert(tq.IsValid());
-	F cosine=(p|q);
-	if(cosine<0) q=-q; 
-	F k=(1-fabs_tpl(cosine))*0.4669269f;
-	F s = 2*k*t*t*t - 3*k*t*t + (1+k)*t;
-	v.x = p.v.x*(1.0f-s) + q.v.x*s;
-	v.y = p.v.y*(1.0f-s) + q.v.y*s;
-	v.z = p.v.z*(1.0f-s) + q.v.z*s;
-	w		= p.w  *(1.0f-s) + q.w*s;
-	Normalize();
-}
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateNlerp2( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
-{
-	Quat_tpl<F> d;  d.SetNlerp2(p,tq,t); 	return d;
-}
-
-
-
-/*!
-* spherical-interpolation between quaternions (geometrical slerp)
-* 
-* Example:
-*  Quat result,p,q;
-*  result.SetSlerp( p, q, 0.5f );
-*/
-template<typename F> void Quat_tpl<F>::SetSlerp( const Quat_tpl<F> &tp, const Quat_tpl<F> &tq, F t ) 
-{
-	assert(tp.IsValid());
-	assert(tq.IsUnit());
-	Quat_tpl<F> p=tp,q=tq;
-	Quat_tpl<F> q2;
-
-	F cosine = (p|q);
-	if (cosine < 0.0f ) { cosine=-cosine; q=-q;	} //take shortest arc
-	if (cosine > 0.9999f)
-	{
-		SetNlerp(p,q,t);
-		return;
-	}
-	// from now on, a division by 0 is not possible any more
-	q2.w		= q.w-p.w*cosine;
-	q2.v.x	= q.v.x-p.v.x*cosine;
-	q2.v.y	= q.v.y-p.v.y*cosine;
-	q2.v.z	= q.v.z-p.v.z*cosine;
-	F sine	= sqrt(q2|q2);
-	F s,c;	
-
-	sincos_tpl(atan2f(sine,cosine)*t,&s,&c);
-	w =   F(p.w  *c + q2.w  *s/sine);
-	v.x = F(p.v.x*c + q2.v.x*s/sine);
-	v.y = F(p.v.y*c + q2.v.y*s/sine);
-	v.z = F(p.v.z*c + q2.v.z*s/sine);
-}
-
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateSlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
-{
-	Quat_tpl<F> d;  d.SetSlerp(p,tq,t); 	return d;
-}
-
-
-
-
-
-/*!
-* spherical-interpolation between quaternions (algebraic slerp_a)
-* I have included this function just for the sake of completeness, because 
-* its the only useful application to check if exp & log really work. 
-* Both slerp-functions are returning the same result.
-*	
-* Example:
-*  Quat result,p,q;
-*  result.SetExpSlerp( p,q,0.3345f );
-*/
-template <typename F> ILINE void Quat_tpl<F>::SetExpSlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &tq, F t ) 
-{
-	assert(p.IsValid());
-	assert(tq.IsValid());
-	Quat_tpl<F> q=tq;
-	if((p|q)<0) { q=-q;	} 
-	*this = p * exp( log(!p*q)*t );			//algebraic slerp (1)
-
-	//...and some more exp-slerp-functions producing all the same result
-	//*this = exp( log (p* !q) * (1-t)) * q;		    //algebraic slerp (2)
-	//*this = exp( log (q* !p) * t) * p;			//algebraic slerp (3)
-	//*this = q * exp( log (!q*p) * (1-t));	//algebraic slerp (4)
-}
-template<typename F> ILINE Quat_tpl<F> Quat_tpl<F>::CreateExpSlerp( const Quat_tpl<F> &p, const Quat_tpl<F> &q, F t ) 
-{
-	Quat_tpl<F> d;  d.SetExpSlerp(p,q,t); 	return d;
-}
-
-
-
-
-
-
-
-
-
-//! squad(p,a,b,q,t) = slerp( slerp(p,q,t),slerp(a,b,t), 2(1-t)t).
-template <typename F>
-ILINE Quat_tpl<F> Quat_tpl<F>::CreateSquad( const Quat_tpl<F>& p,const Quat_tpl<F>& a,const Quat_tpl<F>& b,const Quat_tpl<F>& q, F t )
-{
-	F k = 2.0f*(1.0f-t)*t;
-	return CreateSlerp( CreateSlerp(p,q,t), CreateSlerp(a,b,t), k );
-}
-
-
-
-
-//! Quaternion interpolation for angles > 2PI.
-template <typename F>
-Quat_tpl<F> Quat_tpl<F>::CreateSquadRev(	F angle,				// angle of rotation 
-																				const Vec3& axis,	// the axis of rotation 
-																				const Quat_tpl<F>& p,		// start quaternion 
-																				const Quat_tpl<F>& a, 	// start tangent quaternion 
-																				const Quat_tpl<F>& b, 	// end tangent quaternion 
-																				const Quat_tpl<F>& q,		// end quaternion 
-																				F t	)						// Time parameter, in range [0,1]
-{
-	F s,v;
-	F omega = 0.5f*angle;
-	F nrevs = 0;
-	Quat_tpl<F> r,pp,qq;
-
-	if (omega < (gf_PI - 0.00001f)) { 
-		return CreateSquad( p,a,b,q,t );
-	}
-
-	while (omega > (gf_PI - 0.00001f)) { 
-		omega -= gf_PI;
-		nrevs += 1.0f;
-	}
-	if (omega < 0) omega = 0;
-	s = t*angle/gf_PI;		// 2t(omega+Npi)/pi
-
-	if (s < 1.0f) {
-		pp = p*Quat_tpl<F>(0.0f,axis);//pp = p.Orthog( axis );
-		r = CreateSquad(p,a,pp,pp,s);	// in first 90 degrees.
-	}	else {
-		v = s + 1.0f - 2.0f*(nrevs+(omega/gf_PI));
-		if (v <= 0.0f)  {
-			// middle part, on great circle(p,q).
-			while (s >= 2.0f) s -= 2.0f;
-			pp = p*Quat_tpl<F>(0.0f,axis);//pp = p.Orthog(axis);
-			r = CreateSlerp(p,pp,s);
-		}	else {
-			// in last 90 degrees.
-			qq = -q*Quat_tpl<F>(0.0f,axis);
-			r = CreateSquad(qq,qq,b,q,v);
-		}
-	}
-	return r;
-}
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//! Logarithm of Quaternion difference.
-template <typename F>
-ILINE Quat_tpl<F> LnDif( const Quat_tpl<F> &q1,const Quat_tpl<F> &q2 ){
-	return Quat(0,log(q2/q1));
-}
-
-
-
-
-
-/*!
-*
-* quaternion copy constructor; Quat q=mat33
-* We take only the rotation of the 3x3 part 
-* 
-* Example 1:
-* \code
-*  Matrix33 mat33;
-*  mat33.rotationXYZ33(0.5f, 2.5f, 1.5f);
-*  Quat q=mat33;
-* \endcode
-* 
-* Example 2:
-* \code
-*  CMatrix34 mat34;
-*  mat34.rotationXYZ34(0.5f, 2.5f, 1.5f);
-*  Quat q=Matrix33(mat34);
-* \endcode
-*/
-template<typename F> Quat_tpl<F> ILINE GetQuatFromMat33(const Matrix33_tpl<F>& m)	{ 
-	//check if we have an orthonormal-base (assuming we are using a right-handed coordinate system)
-	//assert removed by ivo: it was impossible to load a level because of this assert!
-	//but be warned, if you convert a non-uniform-scaled matrix into a quaternion 
-	//you get a worthless quaternion!
-#if !defined(PS3) && !defined(LINUX)
-	//assert( m.IsOrthonormalRH(0.1f) );
-#endif
-	F s,p,tr = m.m00 + m.m11 + m.m22;
-
-	//check the diagonal
-	if(tr > (F)0.0) {
-		s=sqrt_tpl(tr+1.0f);	assert(s); p=0.5f/s;
-		return Quat_tpl<F>( s*0.5f, (m.m21-m.m12)*p, (m.m02-m.m20)*p, (m.m10-m.m01)*p );
-	}
-	//diagonal is negative. now we have to find the biggest element on the diagonal
-	//check if "m00" is the biggest element
-	if	( (m.m00>=m.m11) && (m.m00>=m.m22) ) {
-		s=sqrt_tpl(m.m00-m.m11-m.m22+1.0f);	assert(s);	p=0.5f/s;
-		return Quat_tpl<F>( (m.m21-m.m12)*p, s*0.5f, (m.m10+m.m01)*p, (m.m20+m.m02)*p );
-	}
-	//check if "m11" is the biggest element
-	if	( (m.m11>=m.m00) && (m.m11>=m.m22) ) {
-		s=sqrt_tpl(m.m11-m.m22-m.m00+1.0f);	assert(s); p=0.5f/s;
-		return Quat_tpl<F>( (m.m02-m.m20)*p, (m.m01+m.m10)*p, s*0.5f, (m.m21+m.m12)*p );
-	}
-	//check if "m22" is the biggest element
-	if	( (m.m22>=m.m00) && (m.m22>=m.m11) ) {
-		s=sqrt_tpl(m.m22-m.m00-m.m11+1.0f);	assert(s); p=0.5f/s;
-		return Quat_tpl<F>( (m.m10-m.m01)*p, (m.m02+m.m20)*p, (m.m12+m.m21)*p, s*0.5f );
-	}
-	assert(0); return Quat_tpl<F>(IDENTITY);//if it ends here, then we have no valid rotation matrix
-}
-
-template<class F> ILINE Quat_tpl<F>::Quat_tpl(const Matrix33_tpl<F>& m) { *this=GetQuatFromMat33(m); }
-template<class F> ILINE Quat_tpl<F>::Quat_tpl(const Matrix34_tpl<F>& m) { *this=GetQuatFromMat33(Matrix33(m));	} 
-template<class F> template<class B> ILINE Quat_tpl<F>::Quat_tpl(const Matrix44_tpl<F, B>& m) { *this=GetQuatFromMat33(Matrix33_tpl<f32>(m)); } 
-
-//template<class F, bool bAligned1> ILINE Quat_tpl<F>::Quat_tpl(const Matrix44_tpl<F, bAligned1>& m) { *this=GetQuatFromMat33(Matrix33_tpl<f32>(m));	} 
-
-
-
-
-
-
-
-
 
 
 
@@ -1094,7 +953,7 @@ template<class F> template<class B> ILINE Quat_tpl<F>::Quat_tpl(const Matrix44_t
 //----------------------------------------------------------------------
 // Quaternion with translation vector
 //----------------------------------------------------------------------
-template <typename F> struct QuatT_tpl
+template <typename F> struct __passinreg QuatT_tpl
 {
 	Quat_tpl<F> q; //this is the quaternion  
 	Vec3_tpl<F> t; //this is the translation vector and a scalar (for uniform scaling?)
@@ -1126,6 +985,7 @@ template <typename F> struct QuatT_tpl
 		q=qt.q; t=qt.t; 
 		return *this;
 	}
+
 	//CONSTRUCTOR: implement the copy/casting/assignment constructor:	
 	template <typename F1> ILINE QuatT_tpl( const QuatT_tpl<F1>& qt ) 
 	{	
@@ -1154,7 +1014,7 @@ template <typename F> struct QuatT_tpl
 
 	explicit ILINE QuatT_tpl(	const Matrix34_tpl<F>& m)	
 	{ 
-		q=GetQuatFromMat33( Matrix33(m) );	t=m.GetTranslation();
+		q=Quat_tpl<F>( Matrix33(m) );	t=m.GetTranslation();
 	}
 
 	ILINE QuatT_tpl(const Quat_tpl<F>& quat, const Vec3_tpl<F>& trans) 
@@ -1211,11 +1071,13 @@ template <typename F> struct QuatT_tpl
 	}
 
 
-	ILINE void Invert() { // in-place transposition
+	ILINE void Invert() 
+	{ // in-place transposition
 		assert(q.IsValid());
 		t=-t*q; q=!q; 	
 	}
-	ILINE QuatT_tpl<F> GetInverted() const {
+	ILINE QuatT_tpl<F> GetInverted() const 
+	{
 		assert(q.IsValid());
 		QuatT_tpl<F> qpos;
 		qpos.q=!q; 	qpos.t=-t*q; 	
@@ -1232,21 +1094,12 @@ template <typename F> struct QuatT_tpl
 	ILINE Vec3_tpl<F> GetRow1() const {	return q.GetRow1(); }
 	ILINE Vec3_tpl<F> GetRow2() const {	return q.GetRow2(); }
 
-	ILINE bool IsEquivalent( const QuatT_tpl<F>& p, F e=VEC_EPSILON) const {
-
-
-
-
-
-
-
-
-		Quat q0= p.q;
-		Quat q1=-p.q;
-		uint32 t0= (fabs_tpl(q.v.x-q0.v.x)<=e) &&	(fabs_tpl(q.v.y-q0.v.y)<=e) && (fabs_tpl(q.v.z-q0.v.z)<=e) && (fabs_tpl(q.w-q0.w)<=e);	
-		uint32 t1= (fabs_tpl(q.v.x-q1.v.x)<=e) &&	(fabs_tpl(q.v.y-q1.v.y)<=e) && (fabs_tpl(q.v.z-q1.v.z)<=e) && (fabs_tpl(q.w-q1.w)<=e);	
-		return  (	(t0|t1) &&	(fabs_tpl(t.x-p.t.x)<=e) &&	(fabs_tpl(t.y-p.t.y)<=e) &&	(fabs_tpl(t.z-p.t.z)<=e) );	
-
+	ILINE static bool IsEquivalent( const QuatT_tpl<F>& qt1, const QuatT_tpl<F>& qt2, F qe=RAD_EPSILON,F ve=VEC_EPSILON) 
+	{
+		real rad = acos(min(1.0f,fabs_tpl(qt1.q|qt2.q)));
+		bool qdif = rad<=qe;	
+		bool vdif	= fabs_tpl(qt1.t.x-qt2.t.x)<=ve && fabs_tpl(qt1.t.y-qt2.t.y)<=ve &&	fabs_tpl(qt1.t.z-qt2.t.z)<=ve;	
+		return (qdif &&	vdif);	
 	}
 
 	ILINE bool IsValid() const
@@ -1256,8 +1109,30 @@ template <typename F> struct QuatT_tpl
 		return true;
 	}
 
-	void SetNLerp( const QuatT_tpl<F> &p, const QuatT_tpl<F> &q, F t ); 
-	static QuatT_tpl<F> CreateNLerp( const QuatT_tpl<F> &p, const QuatT_tpl<F> &q, F t ); 
+	/*!
+	* linear-interpolation between quaternions (lerp)
+	* 
+	* Example:
+	*  CQuaternion result,p,q;
+	*  result=qlerp( p, q, 0.5f );
+	*/
+	ILINE void SetNLerp( const QuatT_tpl<F> &p, const QuatT_tpl<F> &tq, F ti ) 
+	{	
+		assert(p.q.IsValid());
+		assert(tq.q.IsValid());
+		Quat_tpl<F> d=tq.q;
+		if( (p.q|d) < 0 ) { d=-d;	} 
+		Vec3_tpl<F> vDiff = d.v - p.q.v;
+		q.v = p.q.v + (vDiff * ti);
+		q.w	= p.q.w + ((d.w - p.q.w) * ti);
+		q.Normalize();
+		vDiff = tq.t - p.t;
+		t = p.t + (vDiff * ti);
+	}
+	ILINE static QuatT_tpl<F> CreateNLerp( const QuatT_tpl<F> &p, const QuatT_tpl<F> &q, F t ) 
+	{
+		QuatT_tpl<F> d;  d.SetNLerp(p,q,t); 	return d;
+	}
 
 	//NOTE: all vectors are stored in columns
 	ILINE void SetFromVectors(const Vec3& vx, const Vec3& vy, const Vec3& vz, const Vec3& pos)	
@@ -1268,14 +1143,9 @@ template <typename F> struct QuatT_tpl
 		m34.m20=vx.z;		m34.m21=vy.z;		m34.m22=vz.z;		m34.m23 = pos.z;
 		*this = QuatT_tpl<F>(m34);
 	}
-	ILINE static QuatT_tpl<F> CreateFromVectors(const Vec3_tpl<F>& vx, const Vec3_tpl<F>& vy, const Vec3_tpl<F>& vz, const Vec3_tpl<F>& pos) {
-		QuatT_tpl<F> qt; qt.SetFromVectors(vx,vy,vz,pos); return qt;
-	}
-
-	void ClampLengthAngle(F maxLength, F maxAngleDeg)
+	ILINE static QuatT_tpl<F> CreateFromVectors(const Vec3_tpl<F>& vx, const Vec3_tpl<F>& vy, const Vec3_tpl<F>& vz, const Vec3_tpl<F>& pos) 
 	{
-		t.ClampLength(maxLength);
-		q.ClampAngle(maxAngleDeg);
+		QuatT_tpl<F> qt; qt.SetFromVectors(vx,vy,vz,pos); return qt;
 	}
 
 	QuatT_tpl<F> GetScaled(F scale)
@@ -1294,50 +1164,6 @@ typedef QuatT_tpl<f64>	QuatT_f64;
 typedef DEFINE_ALIGNED_DATA(QuatT, QuatTA, 32); 				//wastest 4byte per quatT // typedef __declspec(align(16)) Quat_tpl<f32>		QuatTA; 
 typedef DEFINE_ALIGNED_DATA(QuatTr, QuatTrA, 16); 			// typedef __declspec(align(16)) Quat_tpl<f32>		QuatTrA;
 typedef DEFINE_ALIGNED_DATA(QuatT_f64, QuatT_f64A, 16); // typedef __declspec(align(16)) Quat_tpl<real>		QuatT_f64A;
-
-/*!
-* linear-interpolation between quaternions (lerp)
-* 
-* Example:
-*  CQuaternion result,p,q;
-*  result=qlerp( p, q, 0.5f );
-*/
-/*!
-* linear-interpolation between quaternions (lerp)
-* 
-* Example:
-*  CQuaternion result,p,q;
-*  result=qlerp( p, q, 0.5f );
-*/
-template<typename F> void QuatT_tpl<F>::SetNLerp( const QuatT_tpl<F> &p, const QuatT_tpl<F> &tq, F ti ) 
-{	
-	assert(p.q.IsValid());
-	assert(tq.q.IsValid());
-	Quat_tpl<F> d=tq.q;
-	if( (p.q|d) < 0 ) { d=-d;	} 
-
-	Vec3_tpl<F> vDiff = d.v - p.q.v;
-
-	q.v = p.q.v + (vDiff * ti);
-	q.w	= p.q.w + ((d.w - p.q.w) * ti);
-
-	//q.v.x = p.q.v.x*(1-ti) + d.v.x*ti;
-	//q.v.y = p.q.v.y*(1-ti) + d.v.y*ti;
-	//q.v.z = p.q.v.z*(1-ti) + d.v.z*ti;
-	//q.w		= p.q.w  *(1-ti) + d.w  *ti;
-	q.Normalize();
-
-	vDiff = tq.t - p.t;
-	t = p.t + (vDiff * ti);
-	//t.x   = p.t.x*(1-ti)   + tq.t.x*ti;
-	//t.y   = p.t.y*(1-ti)   + tq.t.y*ti;
-	//t.z   = p.t.z*(1-ti)   + tq.t.z*ti;
-}
-
-template<typename F> ILINE QuatT_tpl<F> QuatT_tpl<F>::CreateNLerp( const QuatT_tpl<F> &p, const QuatT_tpl<F> &q, F t ) 
-{
-	QuatT_tpl<F> d;  d.SetNLerp(p,q,t); 	return d;
-}
 
 /*!
 *
@@ -1386,7 +1212,8 @@ template<class F1,class F2> ILINE QuatT_tpl<F1> operator * ( const QuatT_tpl<F1>
 *  Vec3 v(33,44,55);
 *	 Vec3 result = q*v;
 */
-template<class F,class F2> Vec3_tpl<F> operator * (const QuatT_tpl<F> &q, const Vec3_tpl<F2> &v) {
+template<class F,class F2> Vec3_tpl<F> operator * (const QuatT_tpl<F> &q, const Vec3_tpl<F2> &v) 
+{
 	assert(v.IsValid());
 	assert(q.IsValid());
 	//muls=15 / adds=15+3
@@ -1406,7 +1233,7 @@ template<class F,class F2> Vec3_tpl<F> operator * (const QuatT_tpl<F> &q, const 
 // Similar to QuatT, but s is not ignored. 
 // Most functions then differ, so we don't inherit.
 //----------------------------------------------------------------------
-template <typename F> struct QuatTS_tpl
+template <typename F> struct __passinreg QuatTS_tpl
 {
 	Quat_tpl<F>	q;
 	Vec3_tpl<F>	t; 
@@ -1472,9 +1299,12 @@ template <typename F> struct QuatTS_tpl
 		const Vec3_tpl<F> v1 = (r2 % r0).GetNormalized();
 		const Vec3_tpl<F> v2 = (v0 % v1);
 
-		Matrix33_tpl<F> m3 = Matrix33_tpl<F>::CreateFromRows(v0, v1, v2);
+		Matrix33_tpl<F> m3;
+		m3.SetRow(0,v0);
+		m3.SetRow(1,v1);
+		m3.SetRow(2,v2);
 
-		q = GetQuatFromMat33(m3);
+		q = Quat_tpl<F>(m3);
 	}
 
 	void Invert() 
@@ -1492,26 +1322,46 @@ template <typename F> struct QuatTS_tpl
 		return inv;
 	}
 
-	void SetNLerp( const QuatTS_tpl<F> &p, const QuatTS_tpl<F> &q, F t ); 
-	static QuatTS_tpl<F> CreateNLerp( const QuatTS_tpl<F> &p, const QuatTS_tpl<F> &q, F t ); 
+	/*!
+	* linear-interpolation between quaternions (nlerp)
+	* 
+	* Example:
+	*  CQuaternion result,p,q;
+	*  result=qlerp( p, q, 0.5f );
+	*/
+	ILINE void SetNLerp( const QuatTS_tpl<F> &p, const QuatTS_tpl<F> &tq, F ti ) 
+	{	
+		assert(p.q.IsValid());
+		assert(tq.q.IsValid());
+		Quat_tpl<F> d=tq.q;
+		if( (p.q|d) < 0 ) { d=-d;	} 
+		Vec3_tpl<F> vDiff = d.v - p.q.v;
+		q.v = p.q.v + (vDiff * ti);
+		q.w	= p.q.w + ((d.w - p.q.w) * ti);
+		q.Normalize();
 
-	bool IsEquivalent( const QuatTS_tpl<F>& p, F e=VEC_EPSILON) const {
+		vDiff = tq.t - p.t;
+		t = p.t + (vDiff * ti);
 
-
-
-
-
-
-
-
-
-		Quat q0= p.q;
-		Quat q1=-p.q;
-		uint32 t0= (fabs_tpl(q.v.x-q0.v.x)<=e) &&	(fabs_tpl(q.v.y-q0.v.y)<=e) && (fabs_tpl(q.v.z-q0.v.z)<=e) && (fabs_tpl(q.w-q0.w)<=e);	
-		uint32 t1= (fabs_tpl(q.v.x-q1.v.x)<=e) &&	(fabs_tpl(q.v.y-q1.v.y)<=e) && (fabs_tpl(q.v.z-q1.v.z)<=e) && (fabs_tpl(q.w-q1.w)<=e);	
-		return  (	(t0|t1) &&	(fabs_tpl(t.x-p.t.x)<=e) &&	(fabs_tpl(t.y-p.t.y)<=e) &&	(fabs_tpl(t.z-p.t.z)<=e) &&	(fabs_tpl(s-p.s)<=e) );	
-
+		s     = p.s + ((tq.s - p.s) * ti);
 	}
+
+	ILINE static QuatTS_tpl<F> CreateNLerp( const QuatTS_tpl<F> &p, const QuatTS_tpl<F> &q, F t ) 
+	{
+		QuatTS_tpl<F> d;  d.SetNLerp(p,q,t); 	return d;
+	}
+
+
+
+	ILINE static bool IsEquivalent( const QuatTS_tpl<F>& qts1, const QuatTS_tpl<F>& qts2, F qe=RAD_EPSILON,F ve=VEC_EPSILON) 
+	{
+		real rad  =	acos(min(1.0f,fabs_tpl(qts1.q|qts2.q)));
+		bool qdif = rad<=qe;	
+		bool vdif	= fabs_tpl(qts1.t.x-qts2.t.x)<=ve && fabs_tpl(qts1.t.y-qts2.t.y)<=ve &&	fabs_tpl(qts1.t.z-qts2.t.z)<=ve;	
+		bool sdif	= fabs_tpl(qts1.s-qts2.s)<=ve;	
+		return (qdif &&	vdif &&	sdif);	
+	}
+
 
 	bool IsValid(F e = VEC_EPSILON) const
 	{
@@ -1582,65 +1432,6 @@ template<class F,class F2> ILINE Vec3_tpl<F> operator * ( const QuatTS_tpl<F> &q
 	return q.q * v * q.s + q.t;
 }
 
-/*!
-* linear-interpolation between quaternions (lerp)
-* 
-* Example:
-*  CQuaternion result,p,q;
-*  result=qlerp( p, q, 0.5f );
-*/
-/*!
-* linear-interpolation between quaternions (lerp)
-* 
-* Example:
-*  CQuaternion result,p,q;
-*  result=qlerp( p, q, 0.5f );
-*/
-template<typename F> void QuatTS_tpl<F>::SetNLerp( const QuatTS_tpl<F> &p, const QuatTS_tpl<F> &tq, F ti ) 
-{	
-	assert(p.q.IsValid());
-	assert(tq.q.IsValid());
-	Quat_tpl<F> d=tq.q;
-	if( (p.q|d) < 0 ) { d=-d;	} 
-
-	Vec3_tpl<F> vDiff = d.v - p.q.v;
-
-	q.v = p.q.v + (vDiff * ti);
-	q.w	= p.q.w + ((d.w - p.q.w) * ti);
-	q.Normalize();
-
-	vDiff = tq.t - p.t;
-	t = p.t + (vDiff * ti);
-
-	s     = p.s + ((tq.s - p.s) * ti);
-
-	//q.v.x = p.q.v.x*(1-ti) + d.v.x*ti;
-	//q.v.y = p.q.v.y*(1-ti) + d.v.y*ti;
-	//q.v.z = p.q.v.z*(1-ti) + d.v.z*ti;
-	//q.w		= p.q.w  *(1-ti) + d.w  *ti;
-	//q.Normalize();
-
-	//t.x   = p.t.x*(1-ti)   + tq.t.x*ti;
-	//t.y   = p.t.y*(1-ti)   + tq.t.y*ti;
-	//t.z   = p.t.z*(1-ti)   + tq.t.z*ti;
-
-	//s     = p.s*(1-ti)     + tq.s*ti;
-}
-
-template<typename F> ILINE QuatTS_tpl<F> QuatTS_tpl<F>::CreateNLerp( const QuatTS_tpl<F> &p, const QuatTS_tpl<F> &q, F t ) 
-{
-	QuatTS_tpl<F> d;  d.SetNLerp(p,q,t); 	return d;
-}
-
-
-
-
-//reenable intrinsics
-
-
-
-
-
 //----------------------------------------------------------------------
 // Dual Quaternion
 //----------------------------------------------------------------------
@@ -1699,34 +1490,6 @@ template <typename F> struct QuatD_tpl
 		SetZero(); 
 	}
 
-	//CONSTRUCTOR: implement the copy/casting/assignment constructor:	
-	template <typename F1> ILINE QuatD_tpl( const QuatD_tpl<F1>& QDual ) 
-	{	
-		nq.w		=	QDual.nq.w; 
-		nq.v.x	=	QDual.nq.v.x; 
-		nq.v.y	=	QDual.nq.v.y; 
-		nq.v.z	=	QDual.nq.v.z; 
-
-		dq.w		=	QDual.dq.w; 
-		dq.v.x	=	QDual.dq.v.x; 
-		dq.v.y	=	QDual.dq.v.y; 
-		dq.v.z	=	QDual.dq.v.z; 
-	}
-
-	ILINE QuatD_tpl& operator = (const QuatD_tpl<F>& QDual ) 
-	{ 
-		nq.w		=	QDual.nq.w; 
-		nq.v.x	=	QDual.nq.v.x; 
-		nq.v.y	=	QDual.nq.v.y; 
-		nq.v.z	=	QDual.nq.v.z; 
-		dq.w		=	QDual.dq.w; 
-		dq.v.x	=	QDual.dq.v.x; 
-		dq.v.y	=	QDual.dq.v.y; 
-		dq.v.z	=	QDual.dq.v.z; 
-		return *this;
-	}
-
-
 	ILINE void SetIdentity() 
 	{
 		nq.SetIdentity();
@@ -1746,6 +1509,14 @@ template <typename F> struct QuatD_tpl
 		dq.v.x=0.0f;
 		dq.v.y=0.0f;
 		dq.v.z=0.0f;
+	}
+
+	ILINE void Normalize()
+	{
+		// Normalize both components so that nq is unit
+		F norm = isqrt_tpl(nq.v.len2() + sqr(nq.w));
+		nq *= norm;
+		dq *= norm;
 	}
 
 	AUTO_STRUCT_INFO
@@ -1771,5 +1542,11 @@ ILINE QuatD_tpl<F1> operator+(const QuatD_tpl<F1> &l, const QuatD_tpl<F2> &r) {
 	return dual;
 }
 
+template<class F1, class F2> 
+ILINE Vec3_tpl<F1> operator*(const QuatD_tpl<F1> &dq, const Vec3_tpl<F2> &v) 
+{
+	Vec3 r=dq.nq*v + (dq.nq.w*dq.dq.v - dq.dq.w*dq.nq.v + dq.nq.v%dq.dq.v)*2; //10ALU - perfect for HLSL
+	return r;
+}
 
 #endif // _Quaternion_tpl_H

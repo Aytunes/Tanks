@@ -89,7 +89,7 @@ public _reference_target_t
 
 	virtual IEntity* GetGrabbedEntity() const = 0;
 
-	virtual const char* GetVoiceLibraryName() const = 0;
+	virtual const char* GetVoiceLibraryName(const bool useForcedDefaultName = false) const = 0;
 	virtual const char* GetCommunicationConfigName() const = 0;
 	virtual const char* GetBehaviorSelectionTreeName() const = 0;
 	virtual const char* GetNavigationTypeName() const = 0;

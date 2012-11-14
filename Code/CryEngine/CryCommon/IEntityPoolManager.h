@@ -25,11 +25,12 @@ struct IEntityPoolListener
 	{
 		PoolBookmarkCreated			= BIT(0),
 		EntityPreparedFromPool	= BIT(1),
-		EntityReturnedToPool		= BIT(2),
-		PoolDefinitionsLoaded		= BIT(3),
-		BookmarkEntitySerialize = BIT(4),
+		EntityReturningToPool		= BIT(2),
+		EntityReturnedToPool		= BIT(3),
+		PoolDefinitionsLoaded		= BIT(4),
+		BookmarkEntitySerialize = BIT(5),
 	};
-	enum { COUNT_SUBSCRIPTIONS = 5 };
+	enum { COUNT_SUBSCRIPTIONS = 6 };
 
 	virtual ~IEntityPoolListener() {}
 
@@ -38,6 +39,9 @@ struct IEntityPoolListener
 
 	//! Called when a bookmarked entity is prepared from the pool
 	virtual void OnEntityPreparedFromPool(EntityId entityId, IEntity *pEntity) {}
+
+	//! Called when a bookmarked entity is returning to the pool but has not been serialized to a bookmark
+	virtual void OnEntityReturningToPool(EntityId entityId, IEntity *pEntity) {}
 
 	//! Called when a bookmarked entity is returned to the pool
 	virtual void OnEntityReturnedToPool(EntityId entityId, IEntity *pEntity) {}

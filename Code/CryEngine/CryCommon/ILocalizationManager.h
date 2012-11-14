@@ -135,6 +135,9 @@ UNIQUE_IFACE struct ILocalizationManager
 	virtual uint32 CountEntriesFromXmlSpreadsheet( const char* sFileName ) = 0;
 	virtual void ReloadData() = 0;
 
+	virtual int GetMemoryUsage( ICrySizer *pSizer ) = 0;
+
+
 	// Summary:
 	//   Free localization data.
 	virtual	void FreeData() = 0;

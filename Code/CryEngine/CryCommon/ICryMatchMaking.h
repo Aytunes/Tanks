@@ -82,6 +82,63 @@
 // When the session is complete SessionDelete should be called this will free up all resources used by the session.
 //
 
+enum EDisconnectionCause
+{
+	// This cause must be first! - timeout occurred.
+	eDC_Timeout = 0,
+	// Incompatible protocols.
+	eDC_ProtocolError,
+	// Failed to resolve an address.
+	eDC_ResolveFailed,
+	// Versions mismatch.
+	eDC_VersionMismatch,
+	// Server is full.
+	eDC_ServerFull,
+	// User initiated kick.
+	eDC_Kicked,
+	// Teamkill ban/ admin ban.
+	eDC_Banned,
+	// Context database mismatch.
+	eDC_ContextCorruption,
+	// Password mismatch, cdkey bad, etc.
+	eDC_AuthenticationFailed,
+	// Misc. game error.
+	eDC_GameError,
+	// DX11 not found.
+	eDC_NotDX11Capable,
+	// The nub has been destroyed.
+	eDC_NubDestroyed,
+	// Icmp reported error.
+	eDC_ICMPError,
+	// NAT negotiation error.
+	eDC_NatNegError,
+	// Punk buster detected something bad.
+	eDC_PunkDetected,
+	// Demo playback finished.
+	eDC_DemoPlaybackFinished,
+	// Demo playback file not found.
+	eDC_DemoPlaybackFileNotFound,
+	// User decided to stop playing.
+	eDC_UserRequested,
+	// User should have controller connected.
+	eDC_NoController,
+	// Unable to connect to server.
+	eDC_CantConnect,
+	// Arbitration failed in a live arbitrated session.
+	eDC_ArbitrationFailed,
+	// Failed to successfully join migrated game
+	eDC_FailedToMigrateToNewHost,
+	// The session has just been deleted
+	eDC_SessionDeleted,
+	// Kicked due to having a high ping
+	eDC_KickedHighPing,
+	// Kicked due to reserved user joining
+	eDC_KickedReservedUser,
+	// Class registry mismatch
+	eDC_ClassRegistryMismatch,
+	// This cause must be last! - unknown cause.
+	eDC_Unknown
+};
 
 typedef uint32 CrySessionHandle;
 const CrySessionHandle CrySessionInvalidHandle = 0xffffffff;
@@ -194,6 +251,7 @@ enum eHostMigrationState
 	eHMS_PromoteToServer,
 	eHMS_ReconnectClient,
 	eHMS_Finalise,
+	eHMS_StateCheck,
 	eHMS_Terminate,
 	eHMS_Resetting,
 	eHMS_Unknown,
@@ -741,11 +799,13 @@ public:
 	// cxID - connection ID to kick (or CryLobbyInvalidConnectionID to ignore this param)
 	// userID - e.g. GPProfile id to kick (or 0 to ignore this param)
 	// pName - user name to ban (or NULL to ignore this param)
-	virtual void KickCmd(CryLobbyConnectionID cxID, uint64 userID, const char* pName) = 0;
+	// cause - reason for the kick
+	virtual void KickCmd(CryLobbyConnectionID cxID, uint64 userID, const char* pName, EDisconnectionCause cause) = 0;
 
 	// Kick
 	// pUserID - CryUserID* of the user to kick
-	virtual void Kick(const CryUserID* pUserID) = 0;
+	// cause - reason for the kick
+	virtual void Kick(const CryUserID* pUserID, EDisconnectionCause cause) = 0;
 
 	// BanCmd
 	// ban console command

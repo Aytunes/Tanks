@@ -135,7 +135,7 @@ public:
 	friend class CScriptBind_GameStatistics;
 	
 	virtual ~CScriptableBase() { Done(); };
-	virtual void Init( IScriptSystem *pSS,ISystem *pSystem,int nParamIdOffset=0 )
+	virtual void Init( IScriptSystem *pSS,int nParamIdOffset=0 )
 	{
 		m_pSS = pSS;
 		m_pMethodsTable = m_pSS->CreateTable();

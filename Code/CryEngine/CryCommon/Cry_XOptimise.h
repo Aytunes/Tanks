@@ -28,12 +28,16 @@
 
 
 
+
+
 #if defined(LINUX64)
 	#define PrefetchLine(ptr, off) cryPrefetchT0SSE((void*)((UINT_PTR)ptr + off))
 	#define ResetLine128(ptr, off) (void)(0)
+	#define FlushLine128(ptr, off) (void)(0)
 #else
 	#define	PrefetchLine(ptr, off) cryPrefetchT0SSE((void*)((unsigned int)ptr + off))
 	#define ResetLine128(ptr, off) (void)(0)
+	#define FlushLine128(ptr, off) (void)(0)
 #endif
 
 //========================================================================================
@@ -43,19 +47,7 @@
 #define MC_GPU_TO_CPU 0x20
 #define MC_CPU_TO_CPU 0x40
 
-#ifdef CRYANIMATION_EXPORTS
-	#define CRYANIMATION_API	DLL_EXPORT
-#else
-  #ifndef CRYANIMATION_API
-		#define CRYANIMATION_API	DLL_IMPORT
-	#endif
-#endif
-
-//#ifndef _XBOX
- extern int g_CpuFlags;
-//#else
- //extern CRYANIMATION_API int g_CpuFlags;
-//#endif
+extern int g_CpuFlags;
 
 //
 #define CPUF_SSE   1
@@ -182,7 +174,6 @@ inline float Word2Degr(unsigned short s)
 {
   return (float)s / 65536.0f * 360.0f;
 }
-
 
 
 

@@ -62,11 +62,23 @@ enum EGeomType
 };
 AUTO_TYPE_INFO(EGeomType)
 
-struct RandomPos
+struct PosNorm
 {
 	Vec3	vPos;
 	Vec3	vNorm;
 };
+
+inline void Transform(PosNorm& ran, Matrix34 const& mx)
+{
+	ran.vPos = mx * ran.vPos;
+	ran.vNorm = Matrix33(mx) * ran.vNorm;
+}
+
+inline void Transform(PosNorm& ran, QuatTS const& qts)
+{
+	ran.vPos = qts * ran.vPos;
+	ran.vNorm = qts.q * ran.vNorm;
+}
 
 struct RectF
 {
@@ -676,8 +688,50 @@ typedef Triangle_tpl<f64>	Triangle_f64;
 
 
 
+//////////////////////////////////////////////////////////////////////////
+// Manage linear and rotational 3D velocity in a class
+class Velocity3
+{
+public:
+	Vec3		vLin, vRot;
 
+	Velocity3() 
+		{}
+	Velocity3(type_zero)
+		: vLin(ZERO), vRot(ZERO) {}
+	Velocity3(Vec3 const& vLin)
+		: vLin(vLin), vRot(ZERO) {}
+	Velocity3(Vec3 const& vLin, Vec3 const& vRot)
+		: vLin(vLin), vRot(vRot) {}
 
+	void FromDelta(QuatT const& loc0, QuatT const& loc1, float fTime)
+	{
+		float fInvT = 1.f / fTime;
+		vLin = (loc1.t - loc0.t) * fInvT;
+		vRot = Quat::log(loc1.q * loc0.q.GetInverted()) * fInvT;
+	}
+
+	Vec3 VelocityAt(Vec3 const& vPosRel) const
+		{ return vLin + (vRot % vPosRel); }
+
+	void operator += (Velocity3 const& vv)
+	{
+		vLin += vv.vLin;
+		vRot += vv.vRot;
+	}
+	void operator *= (float f)
+	{
+		vLin *= f;
+		vRot *= f;
+	}
+	void Interp(Velocity3 const& vv, float f)
+	{
+		vLin += (vv.vLin - vLin) * f;
+		vRot += (vv.vRot - vRot) * f;
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////
 #include "Cry_GeoDistance.h" 
 #include "Cry_GeoOverlap.h" 
 #include "Cry_GeoIntersect.h" 

@@ -41,7 +41,6 @@ namespace stl
 		typedef SizePoolAllocator<
 			HeapAllocator<
 				L,
-				true,
 				typename metautils::select<FreeWhenEmpty, HeapSysAllocator, GlobalHeapSysAllocator>::type>
 				> AllocatorType;
 
@@ -51,7 +50,7 @@ namespace stl
 				return allocator;
 
 			ScopedSwitchToGlobalHeap useGlobalHeap;
-			allocator = new AllocatorType(S, A, 0, FreeWhenEmpty);
+			allocator = new AllocatorType(S, A, 0, FHeap().FreeWhenEmpty(FreeWhenEmpty));
 			return allocator;
 		}
 

@@ -361,7 +361,7 @@ struct IRenderNode : public IShadowCaster
 
   // Summary:
   //   Retrieves the view distance settings.
-  ILINE int GetViewDistRatio() const { return (m_ucViewDistRatio==255) ? 1000l : m_ucViewDistRatio; }
+  ILINE int GetViewDistRatio() const { return (m_ucViewDistRatio==255) ? 1000L : m_ucViewDistRatio; }
 
   // Summary:
   //   Retrieves the view distance settings without any value interpretation.

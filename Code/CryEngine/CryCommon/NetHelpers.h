@@ -242,11 +242,17 @@ template <class T, class Obj>
 class CNetSimpleAtSyncItem : public INetAtSyncItem
 {
 public:
-	typedef bool (Obj::*CallbackFunc)( const T&, EntityId, bool, INetChannel * );
+	typedef bool (Obj::*CallbackFunc)( const T&, EntityId, bool, INetChannel *, EDisconnectionCause &disconnectCause, string &disconnectMessage );
 	CNetSimpleAtSyncItem( Obj* pObj, CallbackFunc callback, const T& data, EntityId id, bool fromDemo, INetChannel * pChannel ) : m_pObj(pObj), m_callback(callback), m_data(data), m_id(id), m_fromDemo(fromDemo), m_pChannel(pChannel) {}
 	bool Sync()
 	{
-		if (!(m_pObj->*m_callback)(m_data, m_id, m_fromDemo, m_pChannel))
+		EDisconnectionCause disconnectCause = eDC_Unknown;
+		string disconnectMessage;
+		return SyncWithError(disconnectCause, disconnectMessage);
+	}
+	bool SyncWithError(EDisconnectionCause &disconnectCause, string &disconnectMessage)
+	{
+		if (!(m_pObj->*m_callback)(m_data, m_id, m_fromDemo, m_pChannel, disconnectCause, disconnectMessage))
 			return false;
 		return true;
 	}
@@ -268,7 +274,7 @@ private:
 		static TNetMessageCallbackResult Trampoline##name( uint32,                 \
 			INetMessageSink*, TSerialize,                                            \
 			uint32, uint32, EntityId*, INetChannel * );                                              \
-		bool Handle##name( const CClass&, EntityId, bool bFromDemoSystem, INetChannel* );        \
+		bool Handle##name( const CClass&, EntityId, bool bFromDemoSystem, INetChannel*, EDisconnectionCause &disconnectCause, string &disconnectMessage );        \
 		typedef CClass TParam##name;                                               \
 	public:                                                                      \
 		template <class T>                                                         \
@@ -296,7 +302,7 @@ private:
 				(cls*)p, &cls::Handle##name, param, *pEntityId,                          \
 				curSeq == DEMO_PLAYBACK_SEQ_NUMBER && oldSeq == DEMO_PLAYBACK_SEQ_NUMBER, pChannel ) ); \
 	}                                                                            \
-	inline bool cls::Handle##name( const TParam##name& param, EntityId entityId, bool bFromDemoSystem, INetChannel *pNetChannel )
+	inline bool cls::Handle##name( const TParam##name& param, EntityId entityId, bool bFromDemoSystem, INetChannel *pNetChannel, EDisconnectionCause &disconnectCause, string &disconnectMessage )
 
 // helpers for writing channel establishment tasks
 class CCET_Base : public IContextEstablishTask

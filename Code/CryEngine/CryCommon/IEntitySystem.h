@@ -104,7 +104,7 @@ UNIQUE_IFACE struct IAreaManager
 	//	 Additional Query based on position. Needs preallocated space to write nMaxResults to pResults.
 	// Return Value:
 	//	 True on success or false on error or if provided structure was too small.
-	virtual bool QueryAreas( Vec3 vPos, SAreaManagerResult *pResults, int nMaxResults) = 0;
+	virtual bool QueryAreas(Vec3 const& vPos, SAreaManagerResult *pResults, int nMaxResults, bool const bForceCalculation = false) = 0;
 
 	// Description:
 	//	Query areas linked to other entities (these links are shape links)
@@ -123,6 +123,11 @@ UNIQUE_IFACE struct IAreaManager
 	// Description:
 	// Invokes a re-compilation of the area grid
 	virtual void	SetAreasDirty() = 0;
+
+
+	// Description:
+	//	Passed in player exits all areas. Meant for when players are killed. 
+	virtual void					ExitAllAreas( IEntity const* const pPlayer ) = 0;
 };
 
 
@@ -224,7 +229,8 @@ UNIQUE_IFACE struct IEntityArchetype
 	virtual IEntityClass* GetClass() const = 0;
 	virtual const char* GetName() const = 0;
 	virtual IScriptTable* GetProperties() = 0;
-	virtual void LoadFromXML( XmlNodeRef &propertiesNode ) = 0;
+	virtual IScriptTable* GetObjectParams() = 0;
+	virtual void LoadPropertiesFromXML( XmlNodeRef &propertiesNode) = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -563,6 +569,8 @@ UNIQUE_IFACE struct IEntitySystem
 	virtual void PurgeDeferredCollisionEvents( bool bForce = false ) =0;
 
 	virtual void DebugDraw() = 0;
+
+	virtual void DeleteDynamicEntities() = 0;
 };
 
 extern "C"

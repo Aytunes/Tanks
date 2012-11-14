@@ -56,6 +56,10 @@ struct IResourceManager
 	//Unloads the mode switching pak file
 	virtual void UnloadModeSwitchPak( const char *sPakName, const char *sResourceListName ) = 0;
 
+	// Load general pak file to memory.
+	virtual bool LoadPakToMemAsync( const char *pPath, bool bLevelLoadOnly ) = 0;
+	// Unload all aync paks
+	virtual void UnloadAllAsyncPaks() = 0;
 	// Load pak file from active layer to memory.
 	virtual bool LoadLayerPak( const char * sLayerName) = 0;
 	// Unloads layer pak file from memory if no more references.

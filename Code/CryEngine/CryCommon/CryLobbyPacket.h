@@ -451,6 +451,7 @@ public:
 	}
 
 	uint8*												GetWriteBuffer()																			{ return m_pWriteBuffer; }
+	uint32												GetWriteBufferSize()																	{ return m_bufferSize; }
 	uint32												GetWriteBufferPos()																		{ return m_bufferPos; }
 	void													SetWriteBufferPos(uint32 pos)													{ m_bufferPos = pos; }
 

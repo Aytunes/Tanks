@@ -46,11 +46,11 @@
     <Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="*.cga" SplitLODs="1" />
 
 	
-	<!--ifnot p="PC">
-      <Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="*.chr" />
+	<ifnot p="PC">
+      <!--<Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="*.chr" />-->
       <Job sourceroot="${src_game}"   targetroot="${trg_game}"   input="${xml_types}" overwriteextension="xml" xmlfilterfile="xmlfilter.txt" />
       <Job sourceroot="${src_engine}" targetroot="${trg_engine}" input="${xml_types}" overwriteextension="xml" xmlfilterfile="xmlfilter.txt" />
-    </ifnot-->
+    </ifnot>
 
     <if p="PC">
       <Job sourceroot="${src_game}"    targetroot="${trg_game}"   input="*.tif" imagecompressor="${imagecompressor}" />
@@ -131,6 +131,26 @@
       <Job sourceroot="${src_languages}\Korean\Game\" input="*.xma" targetroot="${trg_languages}\Korean" copyonly="1" />
     </if>
 	
+	
+	<if p="PC">
+      <Job sourceroot="${src}\LocalizationNew\English\!pc\" input="*.*" targetroot="${trg_game}\LocalizationNew\English" copyonly="1" />
+      <Job sourceroot="${src}\LocalizationNew\German\!pc\" input="*.*" targetroot="${trg_game}\LocalizationNew\German" copyonly="1" />
+      <Job sourceroot="${src}\LocalizationNew\Korean\!pc\" input="*.*" targetroot="${trg_game}\LocalizationNew\Korean" copyonly="1" />
+	</if>
+    <if p="PS3">
+      <Job sourceroot="${src}\LocalizationNew\English\!ps3\" input="*.*" targetroot="${trg_game}\LocalizationNew\English" copyonly="1" />
+      <Job sourceroot="${src}\LocalizationNew\German\!ps3\" input="*.*" targetroot="${trg_game}\LocalizationNew\German" copyonly="1" />
+      <Job sourceroot="${src}\LocalizationNew\Korean\!ps3\" input="*.*" targetroot="${trg_game}\LocalizationNew\Korean" copyonly="1" />
+    </if>
+    <if p="X360">
+      <Job sourceroot="${src}\LocalizationNew\English\!xbox360\" input="*.*" targetroot="${trg_game}\LocalizationNew\English" copyonly="1" />
+      <Job sourceroot="${src}\LocalizationNew\German\!xbox360\" input="*.*" targetroot="${trg_game}\LocalizationNew\German" copyonly="1" />
+      <Job sourceroot="${src}\LocalizationNew\Korean\!xbox360\" input="*.*" targetroot="${trg_game}\LocalizationNew\Korean" copyonly="1" />
+    </if>
+
+	<Job sourceroot="${src}\LocalizationNew\English\dialog\" input="*.*" targetroot="${trg_game}\LocalizationNew\English" copyonly="1" />
+    <Job sourceroot="${src}\LocalizationNew\German\dialog\" input="*.*" targetroot="${trg_game}\LocalizationNew\German" copyonly="1" />
+    <Job sourceroot="${src}\LocalizationNew\Korean\dialog\" input="*.*" targetroot="${trg_game}\LocalizationNew\Korean" copyonly="1" />
   </CopyJob>
 
   <PakJob>
@@ -195,7 +215,6 @@
       <Job sourceroot="${trg_game}" input="Scripts\*.*"     zip="${pak_game}\Scripts.pak" />
       <Job sourceroot="${trg_game}" input="Textures\*.*"    zip="${pak_game}\Textures.pak" />
 
-
       <Job sourceroot="${trg_game}" input="Music\*.*"       zip="${pak_game}\Music.pak"  zip_compression="0" />
       <Job sourceroot="${trg_game}" input="Sounds\*.*"      zip="${pak_game}\Sounds.pak" zip_compression="0" />
       <Job sourceroot="${trg_game}" input="Videos\*.*"      zip="${pak_game}\Videos.pak" zip_compression="0" />
@@ -205,7 +224,11 @@
 	<!-- add each language here -->
     <Job sourceroot="${trg_languages}\German" input="*.*"   zip="${pak_game}\Localized\German.pak" zip_compression="0"/>
     <Job sourceroot="${trg_languages}\Korean" input="*.*"   zip="${pak_game}\Localized\Korean.pak" zip_compression="0"/>
-	
+		
+	<Job sourceroot="${trg_game}\LocalizationNew\English" input="*.*"  zip="${pak_game}\Localized\New.English.pak" zip_compression="0"/>
+    <Job sourceroot="${trg_game}\LocalizationNew\German" input="*.*"  zip="${pak_game}\Localized\New.German.pak" zip_compression="0"/>
+	<Job sourceroot="${trg_game}\LocalizationNew\Korean" input="*.*"  zip="${pak_game}\Localized\New.Korean.pak" zip_compression="0"/>
+		
     <Job sourceroot="${trg_engine}" input="Config\*.*;Fonts\*.*;EngineAssets\*.*" zip="${pak_engine}\Engine.pak"/>
 	<Job sourceroot="${trg_engine}" input="Shaders\*.ext;Shaders\*.cfi;Shaders\*.cfx"     zip="${pak_engine}\Shaders.pak" />
     <if p="PC">

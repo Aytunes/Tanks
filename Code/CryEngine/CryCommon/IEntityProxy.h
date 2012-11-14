@@ -367,17 +367,16 @@ UNIQUE_IFACE struct IEntitySoundProxy : public IEntityProxy
 	virtual void SetFlags( int nSoundProxyFlags ) = 0;
 	virtual int  GetFlags() const = 0;
 
-	virtual ISound* GetSound( tSoundID nSoundId ) = 0;
-	virtual ISound* GetSoundByIndex(uint32 nIndex) = 0; // will return NULL on invalid index
+	virtual ISound* const GetSound(tSoundID const nSoundId) = 0;
 	virtual bool PlaySound( ISound *pSound, const Vec3 &vPos=Vec3(0,0,0),const Vec3 &vDirection=FORWARD_DIRECTION,float fSoundScale=1.0f, bool bLipSync=true ) = 0;
 	// new calls
-	virtual tSoundID PlaySound( const char *sSoundOrEventName, const Vec3 &vOffset,const Vec3 &vDirection, uint32 nSoundFlags, ESoundSemantic eSemantic, EntityId *pSkipEnts,int nSkipEnts) = 0;
-	virtual tSoundID PlaySound( const char *sSoundOrEventName, const Vec3 &vOffset,const Vec3 &vDirection, uint32 nSoundFlags, ESoundSemantic eSemantic) = 0;
-	virtual tSoundID PlaySoundEx( const char *sSoundOrEventName, const Vec3 &vOffset,const Vec3 &vDirection, uint32 nSoundFlags, float fVolume, float fMinRadius,float fMaxRadius, ESoundSemantic eSemantic) = 0;
-	virtual tSoundID PlaySoundEx( const char *sSoundOrEventName, const Vec3 &vOffset,const Vec3 &vDirection, uint32 nSoundFlags, float fVolume, float fMinRadius,float fMaxRadius, ESoundSemantic eSemantic, EntityId *pSkipEnts,int nSkipEnts) = 0;
+	virtual tSoundID PlaySound( const char *sSoundOrEventName, const Vec3 &vOffset,const Vec3 &vDirection, uint32 nSoundFlags, uint32 nSoundFlagsExtended, ESoundSemantic eSemantic, EntityId *pSkipEnts,int nSkipEnts) = 0;
+	virtual tSoundID PlaySound( const char *sSoundOrEventName, const Vec3 &vOffset,const Vec3 &vDirection, uint32 nSoundFlags, uint32 nSoundFlagsExtended, ESoundSemantic eSemantic) = 0;
+	virtual tSoundID PlaySoundEx( const char *sSoundOrEventName, const Vec3 &vOffset,const Vec3 &vDirection, uint32 nSoundFlags, uint32 nSoundFlagsExtended, float fVolume, float fMinRadius,float fMaxRadius, ESoundSemantic eSemantic) = 0;
+	virtual tSoundID PlaySoundEx( const char *sSoundOrEventName, const Vec3 &vOffset,const Vec3 &vDirection, uint32 nSoundFlags, uint32 nSoundFlagsExtended, float fVolume, float fMinRadius,float fMaxRadius, ESoundSemantic eSemantic, EntityId *pSkipEnts,int nSkipEnts) = 0;
 	virtual bool SetStaticSound(tSoundID nSoundId, bool bStatic) = 0;
 	virtual bool GetStaticSound(const tSoundID nSoundId) = 0;
-	virtual void StopSound( tSoundID nSoundId, ESoundStopMode eStopMode=ESoundStopMode_EventFade ) = 0;
+	virtual void StopSound(tSoundID const nSoundId, ESoundStopMode const eStopMode = ESoundStopMode_EventFade, bool const bLoopedOnly = false) = 0;
 	virtual void PauseSound( tSoundID nSoundId,bool bPause ) = 0;
 	virtual void StopAllSounds() = 0;
 	virtual void SetSoundPos( tSoundID nSoundId,const Vec3 &vPos ) = 0;
@@ -524,6 +523,15 @@ UNIQUE_IFACE struct IEntityRenderProxy : public IEntityProxy
   //    overrides material layers blend amount
   virtual void SetMaterialLayersBlend( uint32 nMtlLayersBlend ) = 0;
   virtual uint32 GetMaterialLayersBlend( ) const = 0;
+
+	// Description:
+	//    set/get cloak interference state
+	virtual void SetCloakInterferenceState( bool bHasCloakInterference ) = 0;
+	virtual bool GetCloakInterferenceState( ) const = 0;
+
+	// Description:
+	//    set cloak highlight strength
+	virtual void SetCloakHighlightStrength( float highlightStrength ) = 0;
 
 	// Description:
 	//    set/get cloak color channel

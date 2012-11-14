@@ -6,7 +6,7 @@
 #include "CryThread.h"
 #include <IJobManager.h>
 
-typedef SVF_P3F_C4B_I4B_PS4F		SVertexParticle;
+typedef SVF_P3F_C4B_T4B_N3F2		SVertexParticle;
 
 // forward declarations
 class CREParticle;
@@ -31,96 +31,67 @@ struct SRenderVertices
 		aSrc.erase_front(nVerts);
 	}
 
+	ILINE static void DuplicateVertices( Array<SVertexParticle> aDest, const SVertexParticle& Src )
+	{
+		static const uint nStride = sizeof(SVertexParticle) / sizeof(uint);
+		CryPrefetch(aDest.end());
+		const uint* ps = reinterpret_cast<const uint*>(&Src);
+		uint* pd = reinterpret_cast<uint*>(aDest.begin());
+		for (uint n = aDest.size(); n > 0; n--)
+		{
+			for (uint i = 0; i < nStride; i++)
+				*pd++ = ps[i];
+		}
+	}
+
 	ILINE static void SetQuadVertices(SVertexParticle aV[4])
 	{
-		aV[1].info.tex_x = 255;
-		aV[2].info.tex_y = 255;
-		aV[3].info.tex_x = 255;
-		aV[3].info.tex_y = 255;
+		aV[1].st.x = 255;
+		aV[2].st.y = 255;
+		aV[3].st.x = 255;
+		aV[3].st.y = 255;
 	}
 
 	inline void ExpandQuadVertices()
 	{
-		SVertexParticle* aV = aVertices.grow_raw(3)-1;
-		aV[3] = aV[2] = aV[1] = aV[0];
-		SetQuadVertices(aV);
+		SVertexParticle& vert = aVertices.back();
+		DuplicateVertices(aVertices.append_raw(3), vert);
+		SetQuadVertices(&vert);
 	}
 
-	inline void ExpandQuadVertices(const SVertexParticle& RESTRICT_REFERENCE part)
+	inline void ExpandQuadVertices(const SVertexParticle& RESTRICT_REFERENCE vert)
 	{
-		SVertexParticle* aV = aVertices.grow_raw(4);
-		CryPrefetch(aV + 4);
-
-		const uint32* s = reinterpret_cast<const uint32*>(&part);
-		uint32* a = reinterpret_cast<uint32*>(aV);
-		uint32* b = reinterpret_cast<uint32*>(aV + 1);
-		uint32* c = reinterpret_cast<uint32*>(aV + 2);
-		uint32* d = reinterpret_cast<uint32*>(aV + 3);
-
-		for (size_t i = 0; i < sizeof(SVertexParticle) / sizeof(uint32); ++ i)
-		{
-			uint32 v = s[i];
-			a[i] = v;
-			b[i] = v;
-			c[i] = v;
-			d[i] = v;
-		}
-
-		SetQuadVertices(aV);
+		DuplicateVertices(aVertices.append_raw(4), vert);
+		SetQuadVertices(aVertices.end()-4);
 	}
 
 	inline void SetOctVertices(SVertexParticle aV[8])
 	{
-		aV[0].info.tex_x = 75;
-		aV[1].info.tex_x = 180;
-		aV[2].info.tex_x = 255;
-		aV[2].info.tex_y = 75;
-		aV[3].info.tex_x = 255;
-		aV[3].info.tex_y = 180;
-		aV[4].info.tex_x = 180;
-		aV[4].info.tex_y = 255;
-		aV[5].info.tex_x = 75;
-		aV[5].info.tex_y = 255;
-		aV[6].info.tex_y = 180;
-		aV[7].info.tex_y = 75;
+		aV[0].st.x = 75;
+		aV[1].st.x = 180;
+		aV[2].st.x = 255;
+		aV[2].st.y = 75;
+		aV[3].st.x = 255;
+		aV[3].st.y = 180;
+		aV[4].st.x = 180;
+		aV[4].st.y = 255;
+		aV[5].st.x = 75;
+		aV[5].st.y = 255;
+		aV[6].st.y = 180;
+		aV[7].st.y = 75;
 	}
 
 	inline void ExpandOctVertices()
 	{
-		SVertexParticle* aV = aVertices.grow_raw(7) - 1;
-		aV[7] = aV[6] = aV[5] = aV[4] = aV[3] = aV[2] = aV[1] = aV[0];
-		SetOctVertices(aV);
+		SVertexParticle& vert = aVertices.back();
+		DuplicateVertices(aVertices.append_raw(7), vert);
+		SetOctVertices(&vert);
 	}
 
-	inline void ExpandOctVertices(const SVertexParticle& RESTRICT_REFERENCE part)
+	inline void ExpandOctVertices(const SVertexParticle& RESTRICT_REFERENCE vert)
 	{
-		SVertexParticle* aV = aVertices.grow_raw(8);
-		CryPrefetch(aV + 8);
-
-		const uint32* s = reinterpret_cast<const uint32*>(&part);
-		uint32* a = reinterpret_cast<uint32*>(aV);
-		uint32* b = reinterpret_cast<uint32*>(aV + 1);
-		uint32* c = reinterpret_cast<uint32*>(aV + 2);
-		uint32* d = reinterpret_cast<uint32*>(aV + 3);
-		uint32* e = reinterpret_cast<uint32*>(aV + 4);
-		uint32* f = reinterpret_cast<uint32*>(aV + 5);
-		uint32* g = reinterpret_cast<uint32*>(aV + 6);
-		uint32* h = reinterpret_cast<uint32*>(aV + 7);
-
-		for (size_t i = 0; i < sizeof(SVertexParticle) / sizeof(uint32); ++ i)
-		{
-			uint32 v = s[i];
-			a[i] = v;
-			b[i] = v;
-			c[i] = v;
-			d[i] = v;
-			e[i] = v;
-			f[i] = v;
-			g[i] = v;
-			h[i] = v;
-		}
-
-		SetOctVertices(aV);
+		DuplicateVertices(aVertices.append_raw(8), vert);
+		SetOctVertices(aVertices.end()-8);
 	}
 
 	inline void SetQuadIndices(int nVertAdvance = 4)
@@ -179,10 +150,8 @@ struct SRenderVertices
 		int nOcts = aVertices.size() >> 3;
 		assert(aIndices.available() >= nOcts*18);
 
-		for (int i = 0; i < nOcts; i++)
-		{
+		while (nOcts-- > 0)
 			SetOctIndices();
-		}
 	}
 
 	inline void SetPolyIndices( int nVerts )
@@ -217,33 +186,16 @@ struct SRenderVertices
 
 struct IAllocRender: SRenderVertices
 {
-	bool		bDirect;
-	bool		bGeomShader;
-
-	IAllocRender()
-		: bDirect(false), bGeomShader(false)
-	{}
-
 	// Render existing SVertices, alloc new ones.
 	virtual void Alloc( int nAllocVerts, int nAllocInds = 0 ) = 0; 
 	virtual CREParticle* RenderElement() const { return 0; }
 	virtual ~IAllocRender(){}
 };
 
-struct SParticleRenderContext
-{
-	Vec3		m_vCamPos;
-	Vec3		m_vCamDir;
-	float		m_fAngularRes;		// Pixels per radian
-	uint16	m_nWidth;					// Screen dimensions.
-	uint16	m_nHeight;
-	bool		m_bOctagonal;			// Specify octagonal vertex creation
-};
-
 UNIQUE_IFACE struct IParticleVertexCreator
 {
 	// Create the vertices for the particle emitter.
-	virtual void ComputeVertices( const SParticleRenderContext& context, IAllocRender& alloc ) = 0;
+	virtual void ComputeVertices( const CCamera& cam, IAllocRender& alloc ) = 0;
 	virtual float GetDistSquared( const Vec3& vPos ) const = 0;
 	virtual float GetApproxParticleArea () const = 0;
 
@@ -256,33 +208,32 @@ UNIQUE_IFACE struct IParticleVertexCreator
 class CREParticle : public CRendElementBase
 {
 public:
-	CREParticle( IParticleVertexCreator* pVC, const SParticleRenderContext& context );
-	void Reset( IParticleVertexCreator* pVC, const SParticleRenderContext& context );
+	CREParticle( IParticleVertexCreator* pVC, const CCamera& cam );
+
+	void Reset( IParticleVertexCreator* pVC, const CCamera& cam );
 
 	// Custom copy constructor required to avoid m_Lock copy.
 	CREParticle( const CREParticle& in )
 	: m_pVertexCreator(in.m_pVertexCreator)
-	, m_Context(in.m_Context)
+	, m_pCamera(in.m_pCamera)
 	, m_fPixels(0.f)
 	{
 	}
+
+	virtual ~CREParticle();
+	virtual void Release(bool bForce);
 
 	virtual void GetMemoryUsage(ICrySizer *pSizer) const 
 	{
 		//pSizer->AddObject(this, sizeof(*this)); // allocated in own allocator
 	}
 	// CRendElement implementation.
-	static CREParticle* Create( IParticleVertexCreator* pVC, const SParticleRenderContext& context, bool bOctagonal, int nThreadList );
-	static void ClearComputeVerticesQueue();
-	static void WakeUp();
-	static void SetParticleFillThread(int nThreadList);
-	static int GetParticleFillThread() { return m_nParticleFillThread; }
+	static CREParticle* Create( IParticleVertexCreator* pVC, const CCamera& cam, int nThreadList );
 
 	virtual CRendElementBase* mfCopyConstruct()
 	{
 		return new CREParticle(*this);
 	}
-  virtual ~CREParticle();
   virtual int Size()
 	{
 		return sizeof(*this);
@@ -295,8 +246,6 @@ public:
 	virtual bool mfDraw( CShader *ef, SShaderPass *sl );
 
 	// Additional methods.
-	void PushOntoQueue(int threadList);
-
 	void StoreVertices( bool bWait );
 	void TransferVertices() const;
 
@@ -304,10 +253,13 @@ public:
 	{
 		m_aVerts = aVerts;
 		m_aVertCounts = aVertCounts;
-		assert(m_aVerts.empty() || !m_aVertCounts.empty());
 		m_fPixels = fPixels;
 	}
 
+	float GetPixelCount() const
+	{
+		return m_fPixels;
+	}
 	JobManager::SJobState* GetSPUState()
 	{
 		return &m_SPUState;
@@ -319,35 +271,12 @@ public:
 	}
 
 private:
-	CryCriticalSectionNonRecursive			m_Lock;							// Serialises access to vertex creator and verts.
 	IParticleVertexCreator*							m_pVertexCreator;		// Particle object which computes vertices.
-	SParticleRenderContext							m_Context;					// Camera position and resolution.
+	CCamera const*											m_pCamera;
 	Array<SVertexParticle>							m_aVerts;						// Computed particle vertices.
 	Array<uint16>												m_aVertCounts;			// Verts in each particle (multi-seg particles only).
 	float																m_fPixels;					// Total pixels rendered.
-
-	static int													m_nParticleFillThread; // Thread ID used for the particle thread this frame
 	JobManager::SJobState								m_SPUState;
-
-	bool Lock(const bool bWait)
-	{
-
-
-
-		if (bWait)
-		{
-			m_Lock.Lock();
-			return true;
-		}
-		return m_Lock.TryLock();
-
-	}
-	void Unlock()
-	{
-#if !defined(__SPU__)
-		m_Lock.Unlock();
-#endif // !SPU
-	}
 };
 
 #endif  // __CREPARTICLE_H__

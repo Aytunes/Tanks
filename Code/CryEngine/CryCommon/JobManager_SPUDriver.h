@@ -1,6 +1,9 @@
 #ifndef _JOBMANAGER_SPUDRIVER_H_
 #define _JOBMANAGER_SPUDRIVER_H_
 
+// this is the central configuration file for the jobmanager, normally these defines/enums should live in IJobManager.h,
+// but due includes from SPU compiled code as well as includes from ASM files, these were extraced into this header
+
 #if !defined(_ALIGN)
 // needed for SPU compilation (should be removed as soon as the spus doesn't depend on this header anymore
 #if defined(_MSC_VER)
@@ -18,7 +21,7 @@
 
 // collect per job informations about dispatch, start, stop and sync times
 #if ! defined(DEDICATED_SERVER)
-#define JOBMANAGER_SUPPORT_PROFILING
+//#define JOBMANAGER_SUPPORT_PROFILING
 #endif
 
 // store the latest fnresolv, stackframe and dma access
@@ -32,28 +35,44 @@
 #undef SUPP_SPU_FRAME_STATS
 #undef JOBMANAGER_SUPPORT_PROFILING
 #undef JOBMANAGER_STORE_DEBUG_HELP_INFORMATIONS
-#undef JOBMANAGER_SUPPORT_TUNER_CAPTURES
+
+#if !defined(PERFORMANCE_BUILD) // keep tuner SPU captures for performance builds
+	#undef JOBMANAGER_SUPPORT_TUNER_CAPTURES
+#endif
 #endif
 
 
 // ==============================================================================
-// Common Job manager defines
+// MessageIDs for events send by SPU which request PPU work
 // ==============================================================================
-//ppu event calls
-//highest bit set for event cond
-#define EVENT_COND (1 << 31)
-#define EVENT_OPCODE_MASK (7)
-#define EVENT_ADRESS_SHIFT 1
-#define EVENT_ADRESS_MASK ~(EVENT_COND | EVENT_OPCODE_MASK)
-#define eEOC_CondNotify 0
-//for now NotifySingle is just an alias for Notify - this _might_ change some day.
-#define eEOC_CondNotifySingle 0
-#define eEOC_CondDestroy 1
-#define eEOC_ReleaseSemaphore 2
-#define eEOC_Unused 3
-#define eEOC_JobStateSetStopped 4
-// when adding new values here, make sure the OPCODE_MASK is big enough
-// don't add to many, these are stored in the lower bits of a 16 byte aligned value
+#define JOBMANAGER_SPU_REQUEST_CONDITION_NOTIFY 1
+#define JOBMANAGER_SPU_REQUEST_CONDITION_DESTROY 2
+#define JOBMANAGER_SPU_REQUEST_JOBSTATE_SET_STOPPED 3
+#define JOBMANAGER_SPU_REQUEST_JOBSTATE_SET_STOPPED_NO_DEC 4
+#define JOBMANAGER_SPU_REQUEST_RELEASE_JOB_FINISHED_STATE 5
+#define JOBMANAGER_SPU_REQUEST_CUSTOM_CALLBACK 6
+#define JOBMANAGER_SPU_REQUEST_MEMORY_HANDLING 7
+#define JOBMANAGER_SPU_REQUEST_MEMORY_CLEANUP 8
+#define JOBMANAGER_SPU_REQUEST_ACQUIERE_SEMAPHORE 9
+#define JOBMANAGER_SPU_REQUEST_RELEASE_SEMAPHORE 10
+#define JOBMANAGER_SPU_REQUEST_ACQUIERE_FAST_SEMAPHORE 11
+#define JOBMANAGER_SPU_REQUEST_RELEASE_FAST_SEMAPHORE 12
+
+
+// ==============================================================================
+// Constant addresses used for SPU/PPU communication over local store
+// uses the padding of the SPU GUID, so we can use the address range of [0x10-0x7c]
+// ==============================================================================
+#define JOBMANAGER_LS_PROFILING_TRACE_BUFFER_FIELD 0x10
+#define JOBMANAGER_LS_PROFILING_TRACE_BUFFER_SIZE_FIELD 0x14
+#define JOBMANAGER_LS_PROFILING_TRACE_BUFFER_CONTINOUS_FIELD 0x18
+#define JOBMANAGER_LS_PROFILING_TRACE_RUNNING_FIELD 0x1c
+#define JOBMANAGER_LS_PRINTF_WORKER_ID_ADDRESS_FIELD 0x20
+#define JOBMANAGER_LS_PRINTF_INFOBLOCK_ADDRESS_FIELD 0x24
+#define JOBMANAGER_LS_JOB_IS_PROCESSING 0x28
+#define JOBMANAGER_LS_JOB_WAS_SUSPENDED_FIELD 0x2c
+#define JOBMANAGER_LS_FRAMEPROFILER_CURRENT_FRAME_INDEX 0x30
+#define JOBMANAGER_LS_FRAMEPROFILER_ENABLED 0x34
 
 // ==============================================================================
 // Common Job manager enums (needed to be ifdefs since this file is included by asm files
@@ -63,6 +82,14 @@
 namespace JobManager {
 	enum { SPU_EVENT_QUEUE_CHANNEL = 42 }; // channel id used for SPU -> PPU communication
 	enum { SPU_EVENT_QUEUE_NUM_ENTRIES = 32 } ; // number of slots in the event queue from SPU to PPU
+
+	// priority settings used for jobs
+	enum TPriorityLevel {
+		eHighPriority			= 0,
+		eRegularPriority	= 1,
+		eLowPriority			= 2,
+		eNumPriorityLevel = 3
+	};
 
 namespace SPUBackend {
 	
@@ -109,9 +136,54 @@ namespace JobManager {
 		enum { nAcknowledgeCleared = 0};
 		enum { nAcknowledgeSend = 1};
 
-		unsigned int nAck;					// ack value, set to != 0 to wake up SPU
-		unsigned int nReturnValue;	// value to return to the SPU
+		unsigned int nAck;					// ack value, value is returned in SPU SendPPUThread (used nAcknowledgeSend if nothing is to return)
+		
 	} _ALIGN(128);
+
+
+	///////////////////////////////////////////////////////////////////////////////
+	// struct to collect all parameters passed to SPU
+	struct SSPUDriverParameter
+	{
+		// spu number parameters
+		unsigned int nNumAllowedSPUs;
+		unsigned int nSPUIndex;
+		unsigned int nWorkerIndex;
+		unsigned int bIsSharedWithOS;
+
+		// driver information
+		unsigned int nDriverSize;
+
+		// main memory addresses
+		unsigned int eaSPUJobQueuePull;
+		unsigned int eaSPUJobQueuePush;
+
+		unsigned int eaBlockingJobQueuePull;
+		unsigned int eaBlockingJobQueuePush;
+		unsigned int eaBlockingQueueSemaphore;
+
+		unsigned int eaJobSlotStateBase;
+		unsigned int eaJobSlotStateBaseBlocking;
+
+		unsigned int eaInvokerListEA;
+
+		unsigned int eaMemoryAreaManager;
+		unsigned int eaPageInfo;
+
+		unsigned int eaCustomCallbackArea;
+		unsigned int eaAcknowledgeCacheLine;
+
+		unsigned int eaBucketAllocatorList;
+
+
+
+
+
+		unsigned int eaAddJobToQueueModule;
+		unsigned int sizeAddJobToQueueModule;
+
+		unsigned int eaFallbackInfoBlockBlockingList;
+	} _ALIGN(16);
 
 } // namespace JobManager
 

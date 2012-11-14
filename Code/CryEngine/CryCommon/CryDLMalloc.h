@@ -12,6 +12,7 @@ extern "C"
 	typedef int (*dlmunmap_handler)(void* user, void* mem, size_t sz);
 	static void* const dlmmap_error = (void*) -1;
 
+	int dlmspace_create_overhead(void);
 	dlmspace dlcreate_mspace(size_t capacity, int locked, void* user = NULL, dlmmap_handler mmap = NULL, dlmunmap_handler munmap = NULL);
 	size_t dldestroy_mspace(dlmspace msp);
 	dlmspace dlcreate_mspace_with_base(void* base, size_t capacity, int locked);

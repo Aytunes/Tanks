@@ -148,7 +148,7 @@ public:
 	VIRTUAL bool CompleteInit();
 	VIRTUAL void Shutdown();
 	VIRTUAL bool PreUpdate(bool haveFocus, unsigned int updateFlags);
-	CRYDEV_TAGES_EXPORT VIRTUAL void PostUpdate(bool haveFocus, unsigned int updateFlags);
+	VIRTUAL void PostUpdate(bool haveFocus, unsigned int updateFlags);
 	VIRTUAL void Reset(bool clients);
 	VIRTUAL void GetMemoryUsage( ICrySizer *pSizer ) const;
 
@@ -190,7 +190,7 @@ public:
 	VIRTUAL ICheckpointSystem* GetICheckpointSystem();
 	VIRTUAL IForceFeedbackSystem* GetIForceFeedbackSystem() const;
 	VIRTUAL ICommunicationVoiceLibrary* GetICommunicationVoiceLibrary() const;
-	VIRTUAL CIKTargetSystem* GetIKTargetSystem() const;
+	VIRTUAL IIKTargetSystem* GetIKTargetSystem() const;
 	VIRTUAL CIKInteractionManager* GetIKInteractionManager() const;
 	
 
@@ -207,6 +207,7 @@ public:
 	VIRTUAL bool StartedGameContext() const;
 	VIRTUAL bool StartingGameContext() const;
 	VIRTUAL bool BlockingSpawnPlayer();
+	VIRTUAL IGameContext *GetGameContext() const;
 
 	VIRTUAL void ReleaseGameStats();
 
@@ -284,6 +285,7 @@ public:
 	VIRTUAL bool IsVoiceRecordingEnabled() {return m_VoiceRecordingEnabled!=0;}
 
 	VIRTUAL bool IsGameSession(CrySessionHandle sessionHandle);
+	VIRTUAL bool ShouldMigrateNub(CrySessionHandle sessionHandle);
 
 	VIRTUAL ISharedParamsManager *GetISharedParamsManager();
 	VIRTUAL float GetLoadSaveDelay()const {return m_lastSaveLoad;}
@@ -499,6 +501,7 @@ private:
 	bool							m_forcedpause;
 
 	bool							m_levelPrecachingDone;
+	bool							m_usingLevelHeap;
 
 	static CCryAction *m_pThis;
 
@@ -608,11 +611,11 @@ private:
 	CNetworkCVars * m_pNetworkCVars;
 	CCryActionCVars * m_pCryActionCVars;
 
-	//-- Network Stall ticker thread - PS3 only
-
-
-
-
+	//-- Network Stall ticker thread
+#ifdef USE_NETWORK_STALL_TICKER_THREAD
+	CNetworkStallTickerThread			*m_pNetworkStallTickerThread;
+	uint32												m_networkStallTickerReferences;
+#endif // #ifdef USE_NETWORK_STALL_TICKER_THREAD
 
 	// Console Variables with some CryAction as owner
 	CMaterialEffectsCVars         *m_pMaterialEffectsCVars;
@@ -629,6 +632,7 @@ private:
 	ICVar *m_pDebugSignalTimers;
   ICVar *m_pDebugRangeSignaling;
 	ICVar *m_pDeferredViewSystemUpdate;
+	ICVar *m_pUseLegacyLanBrowser;
 
 	bool m_bShowLanBrowser;
 	//

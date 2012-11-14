@@ -343,7 +343,7 @@ UNIQUE_IFACE struct ICryPak
 	virtual bool SetPackAccessible( bool bAccessible, const char* pName, unsigned nFlags = FLAGS_PATH_REAL) =0;
 
 	// Load or unload pak file completely to memory.
-	virtual bool LoadPakToMemory( const char *pName,unsigned int nPathFlags,bool bLoadToMemory ) = 0;
+	virtual bool LoadPakToMemory( const char *pName, bool bLoadToMemory, IMemoryBlock *pMemoryBlock=NULL ) = 0;
 	virtual void LoadPaksToMemory( int nMaxPakSize,bool bLoadToMemory ) = 0;
 
 	// adds a mod to the list

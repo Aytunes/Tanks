@@ -13,6 +13,31 @@
 #define __CryMemReplay_h__
 #pragma once
 
+namespace EMemReplayAllocClass
+{
+	enum Class
+	{
+		C_UserPointer = 0,
+		C_D3DDefault,
+		C_D3DManaged,
+	};
+}
+
+namespace EMemReplayUserPointerClass
+{
+	enum Class
+	{
+		C_Unknown = 0,
+		C_CrtNew,
+		C_CrtNewArray,
+		C_CryNew,
+		C_CryNewArray,
+		C_CrtMalloc,
+		C_CryMalloc,
+		C_STL,
+	};
+}
+
 #if CAPTURE_REPLAY_LOG
 // Memory replay interface, access it with CryGetMemReplay call
 struct IMemReplay
@@ -21,19 +46,27 @@ struct IMemReplay
 	virtual void DumpStats() = 0;
 	virtual void DumpSymbols() = 0;
 
+	virtual void StartOnCommandLine(const char* cmdLine) = 0;
 	virtual void Start(bool bPaused=false, const char* openString = NULL) = 0;
 	virtual void Stop() = 0;
 	virtual void Flush() = 0;
 
 	virtual void GetInfo(CryReplayInfo& infoOut) = 0;
 
-	virtual int EnterAlloc() = 0;
-	virtual void LeaveAlloc(void* p, size_t sz, size_t alignment = 0, void** cs = NULL, int csLength = 0) = 0;
-	virtual int EnterRealloc() = 0;
-	virtual void LeaveRealloc(void* originalPtr, void* newPtr, size_t sz, size_t alignment = 0, void** cs = NULL, int csLength = 0) = 0;
-	virtual int EnterFree() = 0;
-	virtual void LeaveFree(void* p) = 0;
-	virtual void AllocUsage(void* p, size_t used) = 0;
+
+
+
+
+	// Call to begin a new allocation scope.
+	virtual bool EnterScope(EMemReplayAllocClass::Class cls, uint16 subCls, int moduleId) = 0;
+
+	// Records an event against the currently active scope and exits it.
+	virtual void ExitScope_Alloc(UINT_PTR id, UINT_PTR sz, UINT_PTR alignment = 0) = 0;
+	virtual void ExitScope_Realloc(UINT_PTR originalId, UINT_PTR newId, UINT_PTR sz, UINT_PTR alignment = 0) = 0;
+	virtual void ExitScope_Free(UINT_PTR id) = 0;
+	virtual void ExitScope() = 0;
+
+	virtual void AllocUsage(EMemReplayAllocClass::Class allocClass, UINT_PTR id, UINT_PTR used) = 0;
 
 	virtual void AddAllocReference(void* ptr, void* ref) = 0;
 	virtual void RemoveAllocReference(void* ref) = 0;
@@ -46,8 +79,6 @@ struct IMemReplay
 	virtual void AddContext(int type, uint32 flags, const char* str) = 0;
 	virtual void AddContextV(int type, uint32 flags, const char* format, va_list args) = 0;
 	virtual void RemoveContext() = 0;
-
-	virtual void OwnMemory (void* p, size_t size) = 0;
 
 	virtual void MapPage(void* base, size_t size) = 0;
 	virtual void UnMapPage(void* base, size_t size) = 0;
@@ -69,25 +100,38 @@ struct IMemReplay
 	virtual void UnbindFromContainer(const void* key, const void* alloc) = 0;
 	virtual void SwapContainers(const void* keyA, const void* keyB) = 0;
 };
+#endif
+
+#if CAPTURE_REPLAY_LOG
+struct CDummyMemReplay : IMemReplay
 #else //CAPTURE_REPLAY_LOG
 struct IMemReplay
+#endif
 {
 	void DumpStats() {}
 	void DumpSymbols() {}
 
+	void StartOnCommandLine(const char* cmdLine) {}
 	void Start(bool bPaused=false, const char* openString = NULL) {}
 	void Stop() {}
 	void Flush() {}
 
 	void GetInfo(CryReplayInfo& infoOut) {}
 
-	int EnterAlloc() {return 0;}
-	void LeaveAlloc(void* p, size_t sz, size_t alignment = 0, void** cs = NULL, int csLength = 0) {}
-	int EnterRealloc() {return 0;}
-	void LeaveRealloc(void* originalPtr, void* newPtr, size_t sz, size_t alignment = 0, void** cs = NULL, int csLength = 0) {}
-	int EnterFree() {return 0;}
-	void LeaveFree(void* p) {}
-	void AllocUsage(void* p, size_t used) {}
+
+
+
+
+	// Call to begin a new allocation scope.
+	bool EnterScope(EMemReplayAllocClass::Class cls, uint16 subCls, int moduleId) { return false; }
+
+	// Records an event against the currently active scope and exits it.
+	void ExitScope_Alloc(UINT_PTR id, UINT_PTR sz, UINT_PTR alignment = 0) {}
+	void ExitScope_Realloc(UINT_PTR originalId, UINT_PTR newId, UINT_PTR sz, UINT_PTR alignment = 0) {}
+	void ExitScope_Free(UINT_PTR id) {}
+	void ExitScope() {}
+
+	void AllocUsage(EMemReplayAllocClass::Class allocClass, UINT_PTR id, UINT_PTR used) {}
 
 	void AddAllocReference(void* ptr, void* ref) {}
 	void RemoveAllocReference(void* ref) {}
@@ -100,8 +144,6 @@ struct IMemReplay
 	void AddContext(int type, uint32 flags, const char* str) {}
 	void AddContextV(int type, uint32 flags, const char* format, va_list args) {}
 	void RemoveContext() {}
-
-	void OwnMemory (void* p, size_t size) {}
 
 	void MapPage(void* base, size_t size) {}
 	void UnMapPage(void* base, size_t size) {}
@@ -123,16 +165,20 @@ struct IMemReplay
 	void UnbindFromContainer(const void* key, const void* alloc) {}
 	void SwapContainers(const void* keyA, const void* keyB) {}
 };
-#endif //CAPTURE_REPLAY_LOG
 
 #if CAPTURE_REPLAY_LOG
 inline IMemReplay* CryGetIMemReplay()
 {
+	static CDummyMemReplay s_dummyMemReplay;
 	static IMemReplay *s_pMemReplay = 0;
 	if (!s_pMemReplay)
 	{
 		// get it from System		
-		s_pMemReplay = CryGetIMemoryManager()->GetIMemReplay();
+		IMemoryManager* pMemMan = CryGetIMemoryManager();
+		if (pMemMan)
+			s_pMemReplay = pMemMan->GetIMemReplay();
+		if (!s_pMemReplay)
+			return &s_dummyMemReplay;
 	}
 	return s_pMemReplay;
 }
@@ -188,6 +234,7 @@ namespace EMemStatContextTypes
 
 		MSC_AIObjects = 30,
 		MSC_Animation = 31,
+		MSC_Debug = 32,
 	};
 }
 
@@ -291,7 +338,7 @@ static void MemReplayRegisterContainerStub(const void* key, int type)
 #endif
 
 #if INCLUDE_MEMSTAT_ALLOC_USAGES
-#define MEMSTAT_USAGE(ptr, size) CryGetIMemReplay()->AllocUsage(ptr, size);
+#define MEMSTAT_USAGE(ptr, size) CryGetIMemReplay()->AllocUsage(EMemReplayAllocClass::C_UserPointer, (UINT_PTR)ptr, size)
 #else
 #define MEMSTAT_USAGE(ptr, size)
 #endif
@@ -333,89 +380,71 @@ private:
 #endif
 
 #if CAPTURE_REPLAY_LOG
-class CMemStatAllocLock
+
+class CMemReplayScope
 {
 public:
-	CMemStatAllocLock()
-		: m_lockState(CryGetIMemReplay()->EnterAlloc())
+	CMemReplayScope(EMemReplayAllocClass::Class cls, uint16 subCls, int moduleId)
+		: m_needsExit(CryGetIMemReplay()->EnterScope(cls, subCls, moduleId))
 	{
 	}
 
-	~CMemStatAllocLock()
+	~CMemReplayScope()
 	{
-		if (m_lockState)
-			CryGetIMemReplay()->LeaveAlloc(NULL, 0);
+		if (m_needsExit)
+			CryGetIMemReplay()->ExitScope();
 	}
 
-	void Stat(void* p, size_t sz, size_t alignment = 0)
+	void Alloc(UINT_PTR id, size_t sz, size_t alignment)
 	{
-		if (m_lockState)
-			CryGetIMemReplay()->LeaveAlloc(p, sz, alignment);
-		m_lockState = 0;
+		if (m_needsExit)
+		{
+			m_needsExit = false;
+			CryGetIMemReplay()->ExitScope_Alloc(id, sz, alignment);
+		}
 	}
+
+	void Realloc(UINT_PTR origId, UINT_PTR newId, size_t newSz, size_t newAlign)
+	{
+		if (m_needsExit)
+		{
+			m_needsExit = false;
+			CryGetIMemReplay()->ExitScope_Realloc(origId, newId, newSz, newAlign);
+		}
+	}
+	
+	void Free(UINT_PTR id)
+	{
+		if (m_needsExit)
+		{
+			m_needsExit = false;
+			CryGetIMemReplay()->ExitScope_Free(id);
+		}
+	}
+private:
+	CMemReplayScope(const CMemReplayScope&);
+	CMemReplayScope& operator = (const CMemReplayScope&);
 
 private:
-	CMemStatAllocLock(const CMemStatAllocLock&);
-	CMemStatAllocLock& operator = (const CMemStatAllocLock&);
-
-private:
-	int m_lockState;
+	bool m_needsExit;
 };
 
-class CMemStatReallocLock
-{
-public:
-	explicit CMemStatReallocLock(void* originalPtr)
-		: m_originalPtr(originalPtr)
-		, m_lockState(CryGetIMemReplay()->EnterRealloc())
-	{
-	}
+#ifdef eCryModule
+#define MEMREPLAY_SCOPE(cls,subCls) CMemReplayScope _mrCls((cls),(subCls),eCryModule)
+#else
+#define MEMREPLAY_SCOPE(cls,subCls) CMemReplayScope _mrCls((cls),(subCls),eCryM_Launcher)
+#endif
+#define MEMREPLAY_SCOPE_ALLOC(id,sz,align) _mrCls.Alloc((UINT_PTR)(id),(sz),(align))
+#define MEMREPLAY_SCOPE_REALLOC(oid,nid,sz,align) _mrCls.Realloc((UINT_PTR)(oid),(UINT_PTR)nid,(sz),(align))
+#define MEMREPLAY_SCOPE_FREE(id) _mrCls.Free((UINT_PTR)(id))
 
-	~CMemStatReallocLock()
-	{
-		if (m_lockState)
-			CryGetIMemReplay()->LeaveRealloc(m_originalPtr, NULL, 0);
-	}
+#else
 
-	void Stat(void* p, size_t sz, size_t alignment = 0)
-	{
-		if (m_lockState)
-			CryGetIMemReplay()->LeaveRealloc(m_originalPtr, p, sz, alignment);
-		m_lockState = 0;
-	}
+#define MEMREPLAY_SCOPE(cls,subCls)
+#define MEMREPLAY_SCOPE_ALLOC(id,sz,align)
+#define MEMREPLAY_SCOPE_REALLOC(oid,nid,sz,align)
+#define MEMREPLAY_SCOPE_FREE(id)
 
-private:
-	CMemStatReallocLock(const CMemStatReallocLock&);
-	CMemStatReallocLock& operator = (const CMemStatReallocLock&);
-
-private:
-	void* m_originalPtr;
-	int m_lockState;
-};
-
-class CMemStatFreeLock
-{
-public:
-	explicit CMemStatFreeLock(void* p)
-		: m_lockState(CryGetIMemReplay()->EnterFree())
-		, m_p(p)
-	{
-	}
-
-	~CMemStatFreeLock()
-	{
-		if (m_lockState)
-			CryGetIMemReplay()->LeaveFree(m_p);
-	}
-
-private:
-	CMemStatFreeLock(const CMemStatFreeLock&);
-	CMemStatFreeLock& operator = (const CMemStatFreeLock&);
-
-private:
-	int m_lockState;
-	void* m_p;
-};
 #endif
 
 #endif  //__CryMemReplay_h__

@@ -413,8 +413,6 @@ bool CGame::CompleteInit()
 		gEnv->pSystem->GetPlatformOS()->PostBootCheckProcessing();
 	}
 
-	RegisterGameFlowNodes();
-
 #ifdef GAME_DEBUG_MEM
 	DumpMemInfo("CGame::CompleteInit");
 #endif
@@ -424,7 +422,7 @@ bool CGame::CompleteInit()
 
 void CGame::RegisterGameFlowNodes()
 {
-	gEnv->pMonoScriptSystem->RegisterFlownodes();
+	//gEnv->pMonoScriptSystem->RegisterFlownodes();
 }
 
 void CGame::ResetServerGameTokenSynch()

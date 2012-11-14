@@ -225,6 +225,7 @@ struct IInventory: public IGameObjectExtension
 	virtual int GetSlotCount(int slotId) const = 0;
 
 	virtual EntityId GetItem(int slotId) const = 0;
+	virtual const char* GetItemString(int slotId) const = 0;
 	virtual EntityId GetItemByClass(IEntityClass *pClass, IItem *pIgnoreItem = NULL) const = 0;
 	virtual IItem* GetItemByName(const char* name) const = 0;
 

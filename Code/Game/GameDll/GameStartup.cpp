@@ -791,7 +791,6 @@ LRESULT CALLBACK CGameStartup::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				if (event.pSymbol)
 					event.keyId = event.pSymbol->keyId;
 
-				event.timestamp = GetTickCount();
 				event.inputChar = (wchar_t)wParam;
 				gEnv->pInput->PostInputEvent(event);
 			}

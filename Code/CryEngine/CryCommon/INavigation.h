@@ -53,7 +53,7 @@ UNIQUE_IFACE struct INavigation
 	/// Returns nearest designer created path/shape.
 	/// The devalue parameter specifies how long the path will be unusable by others after the query.
 	/// If useStartNode is true the start point of the path is used to select nearest path instead of the nearest point on path.
-	virtual const char*	GetNearestPathOfTypeInRange(IAIObject* requester, const Vec3& pos, float range, int type, float devalue, bool useStartNode) = 0;
+	virtual const char*	GetNearestPathOfTypeInRange(IAIObject* requester, const Vec3& pos, float range, int type, float devalue, bool useStartNode, bool ignoreCurrentPath) = 0;
 
 	/// Modifies the additional cost multiplier of a named cost nav modifier. If factor < 0 then
 	/// the cost is made infinite. If >= 0 then the cost is multiplied by 1 + factor.

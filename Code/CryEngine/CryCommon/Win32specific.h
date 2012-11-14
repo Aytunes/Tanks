@@ -91,6 +91,26 @@ typedef void *THREAD_HANDLE;
 typedef void *EVENT_HANDLE;
 
 //////////////////////////////////////////////////////////////////////////
+// pointer origin checks 
+#if defined(WIN32) && !defined(_RELEASE)
+# define PLATFORM_HAS_STACK_POINTER_CHECK 1
+	// The stack range is accessed via the thread info block stored in the FS segment 
+	// register on win32 machines. 
+	inline unsigned _IsPointerFromStack(void* __ptr)
+	{
+    void *bottom, *top;
+    _asm 
+		{
+        mov eax, FS:[0x08] 
+        mov bottom, eax
+        mov eax, FS:[0x04] 
+        mov top, eax
+    }
+    return __ptr < top && __ptr >= bottom;		
+	}
+#endif 
+
+//////////////////////////////////////////////////////////////////////////
 // Multi platform Hi resolution ticks function, should only be used for profiling.
 //////////////////////////////////////////////////////////////////////////
 

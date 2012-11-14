@@ -483,7 +483,7 @@ ILINE bool CCamera::Project(const Vec3& p, Vec3& result, Vec2i topLeft, Vec2i wi
 	Vec4 in, transformed, projected;
 
 	mathMatrixPerspectiveFov(&mProj, GetFov(), GetProjRatio(), GetNearPlane(), GetFarPlane());
-	mathMatrixLookAt(&mView, GetPosition(), GetPosition()+GetViewdir(), Vec3(0, 0, 1));
+	mathMatrixLookAt(&mView, GetPosition(), GetPosition()+GetViewdir(), m_Matrix.GetColumn2());
 
 	int pViewport[4] = {0, 0, GetViewSurfaceX(), GetViewSurfaceZ()};
 

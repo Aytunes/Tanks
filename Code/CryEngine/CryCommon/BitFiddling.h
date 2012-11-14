@@ -42,10 +42,10 @@ ILINE uint8 countLeadingZeros32( uint32 x)
 #else		// Windows implementation
 ILINE uint32 countLeadingZeros32(uint32 x)
 {
-    DWORD result;
+  DWORD result = 32^31;	// assumes result is unmodified if _BitScanReverse returns 0
 	_BitScanReverse(&result,x);
-	result^=31;								// needed because the index is from LSB (whereas all other implementations are from MSB)
-    return result;
+	result^=31; // needed because the index is from LSB (whereas all other implementations are from MSB)
+  return result;
 }
 #endif
 
@@ -83,6 +83,13 @@ inline bool IsPowerOfTwo( TInteger x )
 {
 	return (x & (x-1)) == 0;
 }
+
+// compile time version of IsPowerOfTwo, useful for STATIC_CHECK
+template <int nValue>
+struct IsPowerOfTwoCompileTime
+{
+	enum { IsPowerOfTwo = ((nValue & (nValue-1)) == 0) };	
+};
 
 inline uint8 IntegerLog2( uint8 x )
 {

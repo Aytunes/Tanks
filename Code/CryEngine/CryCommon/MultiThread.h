@@ -115,9 +115,6 @@ typedef SAtomicVar<float> TFloatAtomic;
 		void*	 CryInterlockedCompareExchangePointer(void* volatile * dst, void* exchange, void* comperand);
 		int64  CryInterlockedCompareExchange64( volatile int64 *addr, int64 exchange, int64 comperand );
 	#endif
-	#if defined(LINUX64)
-	unsigned char CryInterlockedCompareExchange128( int64 volatile *dst, int64 exchangehigh, int64 exchangelow, int64* comperand );
-	#endif
 	void*  CryCreateCriticalSection();
   void   CryCreateCriticalSectionInplace(void*);
 	void   CryDeleteCriticalSection( void *cs );
@@ -608,6 +605,64 @@ ILINE void CryInterlockedAdd(volatile int *pVal, int iAdd)
 
 #endif //__SPU__
 
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// CryInterlocked*SList Function, these are specialized C-A-S
+// functions for single-linked lists which prevent the A-B-A problem there
+// there are implemented in the platform specific CryThread_*.h files
+// TODO clean up the interlocked function the same was the CryThread_* header are
+
+//TODO somehow get their real size on WIN (without including windows.h...)
+//NOTE: The sizes are verifyed at compile-time in the implementation functions, but this is still ugly
+
+#if !defined(_SPU_JOB) || defined(JOB_LIB_COMP)
+#if defined(WIN64) || defined(GRINGO)
+_MS_ALIGN(16)
+#elif defined(WIN32)
+_MS_ALIGN(4)
+
+
+#endif
+struct SLockFreeSingleLinkedListEntry
+{
+	SLockFreeSingleLinkedListEntry *pNext;
+}
+
+
+
+;
+
+#if defined(WIN64) || defined(GRINGO)
+_MS_ALIGN(16)
+#elif defined(WIN32)
+_MS_ALIGN(8)
+
+
+#endif
+struct SLockFreeSingleLinkedListHeader
+{
+	SLockFreeSingleLinkedListEntry *pNext;
+}
+
+
+
+;
+
+
+// push a element atomically onto a single linked list
+void CryInterlockedPushEntrySList( SLockFreeSingleLinkedListHeader& list, SLockFreeSingleLinkedListEntry &element );
+
+// push a element atomically from a single linked list
+void* CryInterlockedPopEntrySList(  SLockFreeSingleLinkedListHeader& list );
+
+// initialzied the lock-free single linked list
+void CryInitializeSListHead(SLockFreeSingleLinkedListHeader& list);
+  
+// flush the whole list
+void* CryInterlockedFlushSList(SLockFreeSingleLinkedListHeader& list);
+#endif
+
+
 //special define to guard SPU driver compilation
 #if !defined(JOB_LIB_COMP) && !defined(_SPU_JOB)
 
@@ -987,6 +1042,8 @@ ILINE void JobAtomicAdd(volatile int *pVal, int iAdd) {	CryInterlockedAdd(pVal,i
 ILINE void JobAtomicAdd(volatile unsigned int *pVal, int iAdd) { CryInterlockedAdd((volatile int*)pVal,iAdd); }
 
 
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 // Definitions of default locking primitives for all platforms except PS3 
 #if !defined(PS3) 
   typedef ReadLock JobReadLock;

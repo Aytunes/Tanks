@@ -3231,8 +3231,14 @@ int64 CryInterlockedCompareExchange64( volatile int64 *addr, int64 exchange, int
 #endif
 }
 
+void*	 CryInterlockedCompareExchangePointer(void* volatile * dst, void* exchange, void* comperand)
+{
+	return (void*)CryInterlockedCompareExchange((long volatile*)dst, (long)exchange, (long)comperand);
+}
+
+
 #if defined(LINUX64)
-unsigned char CryInterlockedCompareExchange128( int64 volatile *dst, int64 exchangehigh, int64 exchangelow, int64* comperand )
+unsigned char _InterlockedCompareExchange128( int64 volatile *dst, int64 exchangehigh, int64 exchangelow, int64* comperand )
 {
 	CryDebugBreak();
 	int *null = NULL;
@@ -3323,6 +3329,7 @@ static void WrappedF_Break(long op_counter)
 {
 	printf("WrappedF_Break(op_counter = %li)\n", op_counter);
 }
+
 
 
 

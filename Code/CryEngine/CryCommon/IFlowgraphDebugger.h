@@ -67,21 +67,39 @@ enum EBreakpointType
 	eBT_Num_Breakoint_Types
 };
 
-struct SBreakPoint
+struct SBreakPointBase
 {
 	IFlowGraphPtr flowGraph;
 	SFlowAddress addr;
-	SFlowAddress addr2;
 	TFlowInputData value;
+
+	SBreakPointBase():flowGraph(NULL), addr(), value(){}
+	SBreakPointBase(const SBreakPointBase& breakpoint):
+		flowGraph(breakpoint.flowGraph),
+		addr(breakpoint.addr),
+		value(breakpoint.value)
+	{
+	}
+	SBreakPointBase(IFlowGraphPtr _flowGraph, SFlowAddress _addr, TFlowInputData _value):
+		flowGraph(_flowGraph),
+		addr(_addr),
+		value(_value)
+	{
+	}
+};
+
+struct STracePoint : public SBreakPointBase {};
+
+struct SBreakPoint : public SBreakPointBase
+{
+	SFlowAddress fromAddr;
 	EBreakpointType type;
 	int edgeIndex;
 
-	SBreakPoint():flowGraph(NULL), addr(), addr2(), value(), type(eBT_Invalid), edgeIndex(-1){}
+	SBreakPoint():fromAddr(), type(eBT_Invalid), edgeIndex(-1){}
 	SBreakPoint(const SBreakPoint& breakpoint):
-		flowGraph(breakpoint.flowGraph),
-		addr(breakpoint.addr),
-		addr2(breakpoint.addr2),
-		value(breakpoint.value),
+		SBreakPointBase(breakpoint.flowGraph, breakpoint.addr, breakpoint.value),
+		fromAddr(breakpoint.fromAddr),
 		type(breakpoint.type),
 		edgeIndex(breakpoint.edgeIndex)
 	{
@@ -106,7 +124,7 @@ struct IFlowGraphDebugListener
 	virtual void OnBreakpointHit(const SBreakPoint& breakpoint) = 0;
 
 	// Called once a tracepoint was hit
-	virtual void OnTracepointHit(const SBreakPoint& tracepoint) = 0;
+	virtual void OnTracepointHit(const STracePoint& tracepoint) = 0;
 
 	// Called once a breakpoint got invalidated
 	virtual void OnBreakpointInvalidated(const SBreakPoint& breakpoint) = 0;
@@ -115,7 +133,7 @@ struct IFlowGraphDebugListener
 	virtual void OnEnableBreakpoint(const SBreakPoint& breakpoint, bool enable) = 0;
 
 	// Called once a tracepoint gets enabled or disabled
-	virtual void OnEnableTracepoint(const SBreakPoint& tracepoint, bool enable) = 0;
+	virtual void OnEnableTracepoint(const STracePoint& tracepoint, bool enable) = 0;
 
 protected:
 	virtual ~IFlowGraphDebugListener() {}; 
@@ -180,6 +198,7 @@ public:
 	// Perform Activation of a port
 	virtual bool PerformActivation(IFlowGraphPtr pFlowgraph, int edgeIndex, const SFlowAddress& fromAddr, const SFlowAddress& toAddr, const TFlowInputData& value) = 0;
 
+	// Tries to reperform the port activation after a breakpoint was hit (resume game)
 	virtual bool RePerformActivation() = 0;
 
 	// Removes all internally stored breakpoints
@@ -187,6 +206,9 @@ public:
 
 	// Get all existing breakpoints as a dynarray
 	virtual bool GetBreakpoints(DynArray<SBreakPoint>& breakpointsDynArray) = 0;
+
+	// Get the root flowgraph of a Module or AI Action
+	virtual IFlowGraphPtr GetRootGraph(IFlowGraphPtr pFlowGraph) const = 0;
 };
 
 DECLARE_BOOST_POINTERS( IFlowGraphDebugger );

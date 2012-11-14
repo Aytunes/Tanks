@@ -16,14 +16,12 @@ public:
 	// constructor with 32 bit int as seed
 	CLCGRndGen(uint32 s) { seed(s); }
 
-	void seed(uint32 s) // seed with 32 bit integer
-	{
-		m_seed = (uint64)s;
-	}
+	// seed with 32 bit integer
+	void seed(uint32 s) { m_seed = (uint64)s; }
 
 	uint32 Generate()
 	{
-    	const uint64 newSeed = ((uint64)214013)*m_seed + ((uint64)2531011);
+		const uint64 newSeed = ((uint64)214013)*m_seed + ((uint64)2531011);
 		m_seed = newSeed;
 		return (uint32)(newSeed>>16);
 	}
@@ -35,13 +33,9 @@ private:
 	// make copy constructor and assignment operator unavailable, they don't make sense
 	CLCGRndGen(const CLCGRndGen&); // copy constructor not defined
 	void operator=(const CLCGRndGen&); // assignment operator not defined
+
 private:
-
-
-
-	static uint64 m_seed;
-
-
+	uint64 m_seed;
 };
 
 #endif

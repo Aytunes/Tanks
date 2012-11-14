@@ -71,7 +71,7 @@
 
 	#define STRUCT_INFO_EMPTY_BODY(T)						\
 		{																					\
-			static CStructInfo Info(#T, sizeof(*this));	\
+			static CStructInfo Info(#T, sizeof(T), alignof(T));	\
 			return Info;														\
 		}																					\
 
@@ -83,14 +83,14 @@
 		template<Key Arg> STRUCT_INFO_EMPTY(T<Arg>)
 
 	#define STRUCT_INFO_TYPE_EMPTY(T)						\
-		DEFINE_TYPE_INFO(T, CStructInfo, (#T, sizeof(T)))
+		DEFINE_TYPE_INFO(T, CStructInfo, (#T, sizeof(T), alignof(T)))
 
 	#define STRUCT_INFO_TYPE_T_EMPTY(T, TArgs, TDecl)						\
 		template TDecl const CTypeInfo& TypeInfo(const T TArgs*)	\
 			STRUCT_INFO_EMPTY_BODY(T TArgs)													\
 
 	// Define TypeInfo for a primitive type, without string conversion.
-	#define TYPE_INFO_PLAIN(T)												DEFINE_TYPE_INFO(T, CTypeInfo, (#T, sizeof(T)))
+	#define TYPE_INFO_PLAIN(T)												DEFINE_TYPE_INFO(T, CTypeInfo, (#T, sizeof(T), alignof(T)))
 
 	// Define TypeInfo for a basic type (undecomposable as far as TypeInfo cares), with external string converters.
 	#define TYPE_INFO_BASIC(T)												DEFINE_TYPE_INFO(T, TTypeInfo<T>, (#T))
@@ -104,27 +104,25 @@
 
 	#define STRUCT_INFO_END(T) \
 			}; \
-			static CStructInfo Info(#T, sizeof(*this), ARRAY_VAR(Vars)); \
+			static CStructInfo Info(#T, sizeof(T), alignof(T), ARRAY_VAR(Vars)); \
 			return Info; \
 		}
 
 	#define BASE_INFO_ATTRS(BaseType, Attrs) \
-		{ uint32((char*)static_cast<const BaseType*>(this) - (char*)this), ::TypeInfo((const BaseType*)this), 1, \
-		0, 0, 0, 1, 0, "", Attrs },
+		{ ::TypeInfo((const BaseType*)this), "", Attrs, uint32((char*)static_cast<const BaseType*>(this) - (char*)this), 1, 1, 0, 0, 0 },
 
 	#define BASE_INFO(BaseType) BASE_INFO_ATTRS(BaseType, "")
 
 	#define VAR_INFO_ATTRS(VarName, Attrs) \
-		{ uint32((char*)&VarName - (char*)this), ::TypeInfo(&ElemType(&VarName)), sizeof(VarName) / sizeof(ElemType(&VarName)), \
-			0, 0, 0, 0, 0, TYPE_INFO_NAME(VarName), Attrs },
+		{ ::TypeInfo(&ElemType(&VarName)), TYPE_INFO_NAME(VarName), Attrs, uint32((char*)&VarName - (char*)this), sizeof(VarName) / sizeof(ElemType(&VarName)), 0, 0, 0, 0 },
 
 	#define VAR_INFO(VarName) VAR_INFO_ATTRS(VarName, "")
 
 	#define ATTRS_INFO(Attrs) \
-		{ 0, ::TypeInfo((void*)0), 0, 0, 0, 0, 0, 1, "", Attrs },
+		{ ::TypeInfo((void*)0), "", Attrs, 0, 0, 0, 0, 0, 0 },
 
 	#define BITFIELD_INFO(VarName, Bits) \
-		{ 0, ::TypeInfo(&ValType(VarName)), Bits, 1, 0, 0, 0, 0, TYPE_INFO_NAME(VarName), "" },
+		{ ::TypeInfo(&ValType(VarName)), TYPE_INFO_NAME(VarName), "", 0, Bits, 0, 1, 0, 0 },
 
 	// Conversion macros for older system.
 	#define STRUCT_BASE_INFO(BaseType)										BASE_INFO(BaseType)
@@ -145,19 +143,20 @@
 
 	#define STRUCT_INFO_T_END(T, Key, Arg) \
 			}; \
-			static CStructInfo Info(#T "<>", sizeof(*this), ARRAY_VAR(Vars), TypeInfoArray1((Arg*)0));	\
+			static CStructInfo Info(#T "<>", sizeof(T<Arg>), alignof(T<Arg>), ARRAY_VAR(Vars), TypeInfoArray1((Arg*)0));	\
 			return Info; \
 		}
 
 	#define STRUCT_INFO_T2_BEGIN(T, Key1, Arg1, Key2, Arg2)		\
 		template<Key1 Arg1, Key2 Arg2>													\
 		const CTypeInfo& T<Arg1,Arg2>::TypeInfo() const {				\
+			typedef T<Arg1,Arg2> TThis;														\
 			static CStructInfo::CVarInfo Vars[] = {								\
 
 	#define STRUCT_INFO_T2_END(T, Key1, Arg1, Key2, Arg2) \
 			}; \
 			static CTypeInfo const* TemplateTypes[] = { &::TypeInfo((Arg1*)0), &::TypeInfo((Arg2*)0) }; \
-			static CStructInfo Info(#T "<,>", sizeof(*this), ARRAY_VAR(Vars), ARRAY_VAR(TemplateTypes)); \
+			static CStructInfo Info(#T "<,>", sizeof(TThis), alignof(TThis), ARRAY_VAR(Vars), ARRAY_VAR(TemplateTypes)); \
 			return Info; \
 		}
 
@@ -176,7 +175,7 @@
 
 		#define ENUM_INFO_END(T)												\
 				};																																	\
-				static CEnumInfo Info(#T, sizeof(T), ARRAY_COUNT(Elems), Elems);		\
+				static CEnumInfo Info(#T, sizeof(T), alignof(T), ARRAY_COUNT(Elems), Elems);		\
 				return Info;																												\
 			}																																			\
 

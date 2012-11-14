@@ -27,6 +27,7 @@ CScriptControlledPhysics::CScriptControlledPhysics()
 , m_rotationMaxSpeed(0.0f)
 , m_rotationAcceleration(0.0f)
 , m_rotationStopTime(0.0f)
+, m_usePivot(false)
 {
 }
 
@@ -54,14 +55,14 @@ void CScriptControlledPhysics::RegisterMethods()
 	SCRIPT_REG_TEMPLFUNC(GetAngularAcceleration, "");
 
 	SCRIPT_REG_TEMPLFUNC(MoveTo, "point, initialSpeed, speed, acceleration, stopTime");
-	SCRIPT_REG_TEMPLFUNC(RotateTo, "dir, roll, initialSpeed, speed, acceleration, stopTime");
-	SCRIPT_REG_TEMPLFUNC(RotateToAngles, "angles, initialSpeed, speed, acceleration, stopTime");
+	SCRIPT_REG_TEMPLFUNC(RotateTo, "dir, roll, initialSpeed, speed, acceleration, stopTime, usePivot");
+	SCRIPT_REG_TEMPLFUNC(RotateToAngles, "angles, initialSpeed, speed, acceleration, stopTime, usePivot");
 }
 
 //------------------------------------------------------------------------
 bool CScriptControlledPhysics::Init(IGameObject * pGameObject )
 {
-	CScriptableBase::Init(gEnv->pScriptSystem, gEnv->pSystem, 1);
+	CScriptableBase::Init(gEnv->pScriptSystem, 1);
 
 	SetGameObject(pGameObject);
 	pGameObject->EnablePhysicsEvent(true, eEPE_OnPostStepLogged);
@@ -114,6 +115,7 @@ void CScriptControlledPhysics::OnPostStep(EventPhysPostStep *pPostStep)
 
 	bool moving=m_moving;
 	bool rotating=m_rotating;
+	av.bRotationAroundPivot = m_usePivot;
 
 	float dt=pPostStep->dt;
 
@@ -260,7 +262,7 @@ int CScriptControlledPhysics::MoveTo(IFunctionHandler *pH, Vec3 point, float ini
 }
 
 //------------------------------------------------------------------------
-int CScriptControlledPhysics::RotateTo(IFunctionHandler *pH, Vec3 dir, float roll, float initialSpeed, float speed, float acceleration, float stopTime)
+int CScriptControlledPhysics::RotateTo(IFunctionHandler *pH, Vec3 dir, float roll, float initialSpeed, float speed, float acceleration, float stopTime, bool usePivot)
 {
 	m_rotationTarget=Quat::CreateRotationVDir(dir, roll);
 	m_rotating=true;
@@ -268,6 +270,7 @@ int CScriptControlledPhysics::RotateTo(IFunctionHandler *pH, Vec3 dir, float rol
 	m_rotationMaxSpeed=DEG2RAD(speed);
 	m_rotationAcceleration=DEG2RAD(acceleration);
 	m_rotationStopTime=stopTime;
+	m_usePivot = usePivot;
 
 	pe_action_awake aa;
 	aa.bAwake=1;
@@ -279,7 +282,7 @@ int CScriptControlledPhysics::RotateTo(IFunctionHandler *pH, Vec3 dir, float rol
 }
 
 //------------------------------------------------------------------------
-int CScriptControlledPhysics::RotateToAngles(IFunctionHandler *pH, Vec3 angles, float initialSpeed, float speed, float acceleration, float stopTime)
+int CScriptControlledPhysics::RotateToAngles(IFunctionHandler *pH, Vec3 angles, float initialSpeed, float speed, float acceleration, float stopTime, bool usePivot)
 {
 	m_rotationTarget=Quat::CreateRotationXYZ(Ang3(angles));
 	m_rotating=true;
@@ -287,6 +290,7 @@ int CScriptControlledPhysics::RotateToAngles(IFunctionHandler *pH, Vec3 angles, 
 	m_rotationMaxSpeed=DEG2RAD(speed);
 	m_rotationAcceleration=DEG2RAD(acceleration);
 	m_rotationStopTime=stopTime;
+	m_usePivot = usePivot;
 
 	pe_action_awake aa;
 	aa.bAwake=1;

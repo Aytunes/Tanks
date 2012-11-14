@@ -3,6 +3,11 @@
 
 #pragma once
 
+// Debugging (This should *always* be committed disabled...)
+#if !defined(RELEASE) && !defined(IS_CRYDEV)
+//#define GLASS_DEBUG_MODE
+#endif
+
 // Includes
 #include "CREBreakableGlassHelpers.h"
 
@@ -74,7 +79,7 @@ public:
 
 	virtual void	SetCVars(const SBreakableGlassCVars* pCVars);
 
-#ifndef RELEASE
+#ifdef GLASS_DEBUG_MODE
 #ifndef NULL_RENDERER
 	virtual void	DrawFragmentDebug(const uint fragIndex, const Matrix34& matrix, const uint8 buffId, const float alpha);
 #else
@@ -178,7 +183,7 @@ private:
 	void	UpdateImpactShaderConstants();
 	void	SetImpactShaderConstants(CShader* pShader);
 
-#ifndef RELEASE
+#ifdef GLASS_DEBUG_MODE
 	// Debug geometry
 	void	GenerateImpactGeom(const SGlassImpactParams& impact);
 	void	TransformPointList(PodArray<Vec3>& ptList, const bool inverse = false);
@@ -243,7 +248,7 @@ private:
 	SGlassGeom								m_planeGeom;
 	SGlassGeom								m_crackGeom;
 
-#ifndef RELEASE
+#ifdef GLASS_DEBUG_MODE
 	// Debug drawing
 	PodArray<Vec3>											m_impactLineList;
 #endif
@@ -283,6 +288,7 @@ private:
 	bool											m_geomDirty;
 	volatile bool							m_geomRebuilt; // Accessed by MT and RT
 	volatile bool							m_geomBufferLost; // Accessed by MT and RT
+	volatile uint8						m_dirtyGeomBufferCount; // Accessed by MT and RT
 };//------------------------------------------------------------------------------------------------
 
 #endif // _CRE_BREAKABLE_GLASS_

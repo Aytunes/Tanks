@@ -804,6 +804,8 @@ UNIQUE_IFACE struct IFlowGraph : public NFlowSystemUtils::IFlowSystemTyped<TFlow
 	virtual void SetEntityId( TFlowNodeId, EntityId ) = 0;
 	virtual EntityId GetEntityId( TFlowNodeId ) = 0;
 
+	virtual IFlowGraphPtr GetClonedFlowGraph() const = 0;
+
 	// Summary:
 	//	 Gets node configuration.
 	// Notes:

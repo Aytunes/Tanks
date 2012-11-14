@@ -94,11 +94,16 @@ ILINE int IsHeapValid()
 
 struct ICustomMemoryHeap;
 class IGeneralMemoryHeap;
+class IPageMappingHeap;
 
-#if !defined(_LIB) && !defined(PS3)
-#define MEMMAN_METHOD(...) virtual __VA_ARGS__ = 0
-#else
+#if (defined(_LIB) && (defined(XENON) || defined(GRINGO))) || defined(PS3)
+#define MEMMAN_STATIC
+#endif
+
+#ifdef MEMMAN_STATIC
 #define MEMMAN_METHOD(...) static __VA_ARGS__
+#else
+#define MEMMAN_METHOD(...) virtual __VA_ARGS__ = 0
 #endif
 
 // Description:
@@ -127,10 +132,10 @@ struct IMemoryManager
 		int64 FreeVideoMemory;
 	};
 
-#if !defined(_LIB) && !defined(PS3)
-	virtual ~IMemoryManager(){}
-#else
+#ifdef MEMMAN_STATIC
 	static IMemoryManager* GetInstance();
+#else
+	virtual ~IMemoryManager(){}
 #endif
 
 	MEMMAN_METHOD( bool GetProcessMemInfo( SProcessMemInfo &minfo ) );
@@ -150,6 +155,9 @@ struct IMemoryManager
 
 	// Enable the global heap for this thread only. Returns previous heap selection, which must be passed to LocalSwitchToHeap.
 	MEMMAN_METHOD( int LocalSwitchToGlobalHeap() );
+
+	// Enable the level heap for this thread only. Returns previous heap selection, which must be passed to LocalSwitchToHeap.
+	MEMMAN_METHOD( int LocalSwitchToLevelHeap() );
 
 	// Switch to a specific heap for this thread only. Usually used to undo a previous LocalSwitchToGlobalHeap
 	MEMMAN_METHOD( void LocalSwitchToHeap(int heap) );
@@ -173,13 +181,16 @@ struct IMemoryManager
 	// Create an instance of ICustomMemoryHeap
 	MEMMAN_METHOD( ICustomMemoryHeap* const CreateCustomMemoryHeapInstance(bool const bCanUseGPUMemory) );
 
+	MEMMAN_METHOD( IGeneralMemoryHeap* CreateGeneralExpandingMemoryHeap(size_t upperLimit, size_t reserveSize, const char* sUsage) );
 	MEMMAN_METHOD( IGeneralMemoryHeap* CreateGeneralMemoryHeap(void* base, size_t sz,const char *sUsage) );
+
+	MEMMAN_METHOD( IPageMappingHeap* CreatePageMappingHeap(size_t addressSpace, const char* sName) );
 };
 
 #undef MEMMAN_METHOD
 
 // Global function implemented in CryMemoryManager_impl.h
-#if defined(_LIB) || defined(PS3)
+#ifdef MEMMAN_STATIC
 inline IMemoryManager* CryGetIMemoryManager()
 {
 	extern IMemoryManager g_memoryManager;
@@ -278,18 +289,78 @@ CRYMEMORYMANAGER_API void CryGetIMemoryManagerInterface( void **pIMemoryManager 
 #define CRY_MEM_USAGE_API
 #endif //_USRDLL
 
+#include "CryMemReplay.h"
+
+#if CAPTURE_REPLAY_LOG
+#define CRYMM_INLINE inline
+#else
+#define CRYMM_INLINE ILINE
+#endif
+
 #if defined(NOT_USE_CRY_MEMORY_MANAGER)
 	#if !defined(__SPU__)
-		ILINE void* CryModuleMalloc(size_t size) { return malloc(size); };
-		ILINE void* CryModuleRealloc(void *memblock, size_t size) { return realloc(memblock,size); };
-		ILINE void  CryModuleFree(void *memblock) { free(memblock); };		
-		ILINE void  CryModuleMemalignFree( void *memblock ) throw() { return free(memblock); }
+		CRYMM_INLINE void* CryModuleMalloc(size_t size)
+		{
+			MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+			void* ptr = malloc(size);
+			MEMREPLAY_SCOPE_ALLOC(ptr, size, 0);
+			return ptr;
+		}
+		
+		CRYMM_INLINE void* CryModuleRealloc(void *memblock, size_t size)
+		{
+			MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+			void* ret = realloc(memblock,size);
+			MEMREPLAY_SCOPE_REALLOC(memblock, ret, size, 0);
+			return ret;
+		}
+		
+		CRYMM_INLINE void  CryModuleFree(void *memblock)
+		{
+			MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+			free(memblock);
+			MEMREPLAY_SCOPE_FREE(memblock);
+		}
+		
+		CRYMM_INLINE void  CryModuleMemalignFree( void *memblock )
+		{
+			MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+			free(memblock);
+			MEMREPLAY_SCOPE_FREE(memblock);
+		}
+		
 
 
 
 
-			ILINE void* CryModuleReallocAlign( void *memblock, size_t size,size_t alignment ) throw() { return realloc(memblock,size); }
-			ILINE void* CryModuleMemalign( size_t size,size_t alignment ) throw() { return malloc(size); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+			CRYMM_INLINE void* CryModuleReallocAlign( void *memblock, size_t size,size_t alignment )
+			{
+				MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+				void* ret = realloc(memblock,size);
+				MEMREPLAY_SCOPE_REALLOC(memblock, ret, size, alignment);
+				return ret;
+			}
+			
+			CRYMM_INLINE void* CryModuleMemalign( size_t size,size_t alignment )
+			{
+				MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+				void* ret = malloc(size);
+				MEMREPLAY_SCOPE_ALLOC(ret, size, alignment);
+				return ret;
+			}
 
 
 
@@ -315,16 +386,36 @@ extern "C"
 	void* CryModuleMemalign(size_t size, size_t alignment) throw() ;
 	void* CryModuleReallocAlign(void *memblock, size_t size,size_t alignment) throw();
 	void  CryModuleMemalignFree(void*) throw() ;
+	void* CryModuleCalloc(size_t a, size_t b) throw();
 }
 
-ILINE void CryModuleCRTFree(void* p)
+CRYMM_INLINE void* CryModuleCRTMalloc(size_t s)
 {
-	CryModuleFree(p);
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtMalloc);
+	void* ret = CryModuleMalloc(s);
+	MEMREPLAY_SCOPE_ALLOC(ret, s, 0);
+	return ret;
 }
 
-#define malloc   CryModuleMalloc
-#define realloc  CryModuleRealloc
-#define free     CryModuleFree
+CRYMM_INLINE void* CryModuleCRTRealloc(void* p, size_t s)
+{
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtMalloc);
+	void* ret = CryModuleRealloc(p, s);
+	MEMREPLAY_SCOPE_REALLOC(p, ret, s, 0);
+	return ret;
+}
+
+CRYMM_INLINE void CryModuleCRTFree(void* p)
+{
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtMalloc);
+	CryModuleFree(p);
+	MEMREPLAY_SCOPE_FREE(p);
+}
+
+#define malloc   CryModuleCRTMalloc
+#define realloc  CryModuleCRTRealloc
+#define free     CryModuleCRTFree
+#define calloc	 CryModuleCalloc
 
 #endif //NOT_USE_CRY_MEMORY_MANAGER
 
@@ -348,19 +439,125 @@ CRY_MEM_USAGE_API void CryModuleGetMemoryInfo( CryModuleMemoryInfo *pMemInfo );
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//#error hi2
+
 					#if !defined(XENON)
 						//ILINE void * __cdecl operator new   (size_t size) throw () { return CryModuleMalloc(size, eCryModule); }
 					#endif // !defined(XENON)
 
-					ILINE void * __cdecl operator new   (size_t size) { return CryModuleMalloc(size); }
+					CRYMM_INLINE void * __cdecl operator new   (size_t size)
+					{
+						MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtNew);
+						void* ret = CryModuleMalloc(size);
+						MEMREPLAY_SCOPE_ALLOC(ret, size, 0);
+						return ret;
+					}
 
 					#if !defined(XENON)
 						//ILINE void * __cdecl operator new[] (size_t size) throw () { return CryModuleMalloc(size, eCryModule); }
 					#endif // !defined(XENON)
 
-					ILINE void * __cdecl operator new[] (size_t size) { return CryModuleMalloc(size); }
-					ILINE void __cdecl operator delete  (void *p) throw (){ CryModuleFree(p); };
-					ILINE void __cdecl operator delete[](void *p) throw (){ CryModuleFree(p); };
+					CRYMM_INLINE void * __cdecl operator new[] (size_t size)
+					{
+						MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtNewArray);
+						void* ret = CryModuleMalloc(size);
+						MEMREPLAY_SCOPE_ALLOC(ret, size, 0);
+						return ret;
+					}
+					
+					CRYMM_INLINE void __cdecl operator delete  (void *p) throw ()
+					{
+						MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtNew);
+						CryModuleFree(p);
+						MEMREPLAY_SCOPE_FREE(p);
+					}
+					
+					CRYMM_INLINE void __cdecl operator delete[](void *p) throw ()
+					{
+						MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtNewArray);
+						CryModuleFree(p);
+						MEMREPLAY_SCOPE_FREE(p);
+					}
 
 
 	#endif // defined(_LIB) && !defined(NEW_OVERRIDEN)
@@ -372,13 +569,6 @@ size_t CryCrtFree(void *p);
 // wrapper for _msize on PC
 size_t CryCrtSize(void * p);
 
-#include "CryMemReplay.h"
-
-#if CAPTURE_REPLAY_LOG
-#define CRYMM_INLINE inline
-#else
-#define CRYMM_INLINE ILINE
-#endif
 
 #if !defined( NOT_USE_CRY_MEMORY_MANAGER) && !defined(JOB_LIB_COMP) // && !defined(_STLP_BEGIN_NAMESPACE) // Avoid non STLport version
 #include "CryMemoryAllocator.h"
@@ -391,28 +581,85 @@ size_t CryCrtSize(void * p);
 //////////////////////////////////////////////////////////////////////////
 class ScopedSwitchToGlobalHeap
 {
+#if USE_LEVEL_HEAP
+public:
+	ILINE ScopedSwitchToGlobalHeap()
+		: m_old(CryGetIMemoryManager()->LocalSwitchToGlobalHeap())
+	{
+	}
 
+	ILINE ~ScopedSwitchToGlobalHeap()
+	{
+		CryGetIMemoryManager()->LocalSwitchToHeap(m_old);
+	}
 
+private:
+	ScopedSwitchToGlobalHeap(const ScopedSwitchToGlobalHeap&);
+	ScopedSwitchToGlobalHeap& operator = (const ScopedSwitchToGlobalHeap&);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+private:
+	int m_old;
+#else
 public:
 	ILINE ScopedSwitchToGlobalHeap() {}
+#endif
+};
 
+class CondScopedSwitchToGlobalHeap
+{
+#if USE_LEVEL_HEAP
+public:
+	ILINE CondScopedSwitchToGlobalHeap(bool cond)
+	: m_old(0)
+	, m_cond(cond)
+	{
+		IF (cond, 0)
+			m_old = CryGetIMemoryManager()->LocalSwitchToGlobalHeap();
+	}
+
+	ILINE ~CondScopedSwitchToGlobalHeap()
+	{
+		IF (m_cond, 0)
+			CryGetIMemoryManager()->LocalSwitchToHeap(m_old);
+	}
+
+private:
+	CondScopedSwitchToGlobalHeap(const CondScopedSwitchToGlobalHeap&);
+	CondScopedSwitchToGlobalHeap& operator = (const CondScopedSwitchToGlobalHeap&);
+
+private:
+	int m_old;
+	bool m_cond;
+#else
+public:
+	ILINE CondScopedSwitchToGlobalHeap(bool) {}
+#endif
+};
+
+class ScopedSwitchToLevelHeap
+{
+#if USE_LEVEL_HEAP
+public:
+	ILINE ScopedSwitchToLevelHeap()
+		: m_old(CryGetIMemoryManager()->LocalSwitchToLevelHeap())
+	{
+	}
+
+	ILINE ~ScopedSwitchToLevelHeap()
+	{
+		CryGetIMemoryManager()->LocalSwitchToHeap(m_old);
+	}
+
+private:
+	ScopedSwitchToLevelHeap(const ScopedSwitchToLevelHeap&);
+	ScopedSwitchToLevelHeap& operator = (const ScopedSwitchToLevelHeap&);
+
+private:
+	int m_old;
+#else
+public:
+	ILINE ScopedSwitchToLevelHeap() {}
+#endif
 };
 
 

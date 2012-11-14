@@ -32,7 +32,8 @@ enum ECryLobbySystemEvent
 	eCLSE_ForcedFromRoom,			// returns SCryLobbyForcedFromRoomData;
 	eCLSE_LoginFailed,				// returns SCryLobbyOnlineStateData; for services that don't use the eOS_SigningIn intermediate state
 	eCLSE_SessionRequestInfo,	// returns SCryLobbySessionRequestInfo
-	eCLSE_KickedFromSession		// returns SCryLobbySessionEventData
+	eCLSE_KickedFromSession,	// returns SCryLobbySessionEventData
+	eCLSE_KickedHighPing			// returns SCryLobbySessionEventData
 };
 
 enum ECableState

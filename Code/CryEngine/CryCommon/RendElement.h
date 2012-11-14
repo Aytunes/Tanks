@@ -63,8 +63,9 @@ enum EDataType
 #define FCEF_ALLOC_CUST_FLOAT_DATA 0x200
 #define FCEF_MERGABLE    0x400
 
-#define FCEF_SKINNED    0x800
-#define FCEF_PRE_DRAW_DONE	0x1000
+#define FCEF_SKINNED        0x800
+#define FCEF_PRE_DRAW_DONE 0x1000
+#define FCEF_GEOM_SHADER	 0x2000
 
 #define FGP_NOCALC 1
 #define FGP_SRC    2
@@ -187,7 +188,6 @@ public:
 #include "CREFogVolume.h" 
 #include "CREWaterVolume.h" 
 #include "CREWaterOcean.h" 
-#include "CREParticle.h" 
 #include "CREVolumeObject.h" 
 #include "CRELightPropagationVolume.h" 
 #include "CREGameEffect.h" 

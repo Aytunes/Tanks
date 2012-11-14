@@ -46,6 +46,7 @@ struct ICustomMemoryHeap : public CMultiThreadRefCount
 class IGeneralMemoryHeap
 {
 public:
+	virtual void Cleanup() = 0;
 	virtual void Release() = 0;
 
 	virtual bool IsInAddressRange(void* ptr) const = 0;
@@ -64,6 +65,21 @@ public:
 
 protected:
 	virtual ~IGeneralMemoryHeap() {}
+};
+
+class IPageMappingHeap
+{
+public:
+	virtual void Release() = 0;
+
+	virtual size_t GetGranularity() const = 0;
+	virtual bool IsInAddressRange(void* ptr) const = 0;
+
+	virtual void* Map(size_t sz) = 0;
+	virtual void Unmap(void* ptr, size_t sz) = 0;
+
+protected:
+	virtual ~IPageMappingHeap() {}
 };
 
 #endif //__IMEMORY_H__

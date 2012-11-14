@@ -126,6 +126,9 @@ struct IActor: public IGameObjectExtension
 		virtual bool	IsThirdPerson() const = 0;
 		virtual void ToggleThirdPerson() = 0;
 
+		virtual void SetFlyMode(uint8 flyMode) {};
+		virtual uint8 GetFlyMode() const { return 0; };
+
 	//virtual void SendRevive(const Vec3& position, const Quat& orientation, int team, bool clearInventory) = 0;
 
 	virtual void	Release() = 0;
@@ -229,7 +232,10 @@ struct IActorSystem
 
 	virtual void SetDemoPlaybackMappedOriginalServerPlayer(EntityId id) = 0;
 	virtual EntityId GetDemoPlaybackMappedOriginalServerPlayer() const = 0;
-	virtual void SwitchDemoSpectator(EntityId id = 0) = 0;
+	
+	// If the view switch was successful, return the currently viewed entity id; otherwise, 0
+	virtual EntityId SwitchDemoSpectator(EntityId id = 0) = 0;
+	
 	virtual IActor *GetCurrentDemoSpectator() = 0;
 	virtual IActor *GetOriginalDemoSpectator() = 0;
 
@@ -241,6 +247,8 @@ struct IActorSystem
 	virtual const IItemParamsNode *GetActorParams(const char *actorClass) const = 0;
 
 	virtual bool IsActorClass(IEntityClass *pClass) const = 0;
+
+	virtual void SetLocalPlayerId(EntityId id) = 0;
 };
 
 

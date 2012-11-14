@@ -5,10 +5,14 @@
 
 #include "ICryLobby.h"
 
+#define CRYLOBBY_PRESENCE_MAX_SIZE				256
+
 struct SFriendInfo 
 {
 	CryUserID								userID;
 	char										name[CRYLOBBY_USER_NAME_LENGTH];
+	char										presence[CRYLOBBY_PRESENCE_MAX_SIZE];
+	ELobbyFriendStatus			status;
 };
 
 // CryFriendsCallback

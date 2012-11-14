@@ -81,8 +81,6 @@ typedef long long						LONGLONG;
 typedef	ULONG_PTR						SIZE_T;
 typedef uint8								byte;
 #define ILINE __forceinline
-#define _A_RDONLY (0x01)
-#define _A_SUBDIR (0x10)
 
 //////////////////////////////////////////////////////////////////////////
 // Win32 FileAttributes.
@@ -114,5 +112,7 @@ typedef uint8								byte;
 #include "LinuxSpecific.h"
 
 #define TARGET_DEFAULT_ALIGN (0x8U)
+
+#define PLATFORM_64BIT
 
 #endif //_CRY_COMMON_LINUX64_SPECIFIC_HDR_

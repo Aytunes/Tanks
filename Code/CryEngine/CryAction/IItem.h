@@ -57,6 +57,7 @@ struct IItemBox //: public IGameObjectExtension
 
 	//-------------------- HOLDING --------------------
 	virtual void Drop(float impulseScale=1.0f, bool selectNext=true, bool byDeath=false) = 0;
+	virtual void DropImmediate(float impulseScale=1.0f, bool selectNext=true, bool byDeath=false) = 0;
 	virtual void PickUp(EntityId picker, bool sound, bool select=true, bool keepHistory=true) = 0;
 	//virtual void Pickalize(bool enable, bool dropped) = 0;
 	virtual bool CanPickUp(EntityId userId) const = 0;
@@ -314,6 +315,7 @@ struct IItem : public IGameObjectExtension
 	virtual void MountAtEntity(EntityId entityId, const Vec3 &pos, const Ang3 &angles) = 0;
 	virtual bool FilterView(struct SViewParams &viewParams) = 0;
 	virtual void RemoveAllAccessories() = 0;
+	virtual const string GetAttachedAccessoriesString() = 0;
 	//virtual void FillAmmo() = 0;//bad code, remove this!!!
 
 	virtual int  GetDefaultHand() const = 0;

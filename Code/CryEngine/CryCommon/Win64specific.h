@@ -110,4 +110,6 @@ int64 CryGetTicks();
 
 #define TARGET_DEFAULT_ALIGN (0x8U)
 
+#define PLATFORM_64BIT
+
 #endif

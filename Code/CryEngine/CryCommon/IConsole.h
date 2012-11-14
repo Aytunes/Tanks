@@ -446,6 +446,37 @@ UNIQUE_IFACE struct IConsole
 	virtual void EnableActivationKey(bool bEnable)=0;
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Description:
+//	This interface for the remote console
+struct IRemoteConsoleListener
+{
+	virtual ~IRemoteConsoleListener() {}
+
+	virtual void OnConsoleCommand(const char* cmd) {};
+	virtual void OnGameplayCommand(const char* cmd) {};
+};
+
+UNIQUE_IFACE struct IRemoteConsole
+{
+	virtual ~IRemoteConsole() {};
+
+	virtual void RegisterConsoleVariables() = 0;
+	virtual void UnregisterConsoleVariables() = 0;
+
+	virtual void Start() = 0;
+	virtual void Stop() = 0;
+	virtual bool IsStarted() const = 0;
+
+	virtual void AddLogMessage(const char* log) = 0;
+	virtual void AddLogWarning(const char* log) = 0;
+	virtual void AddLogError(const char* log) = 0;
+
+	virtual void Update() = 0;
+
+	virtual void RegisterListener(IRemoteConsoleListener* pListener, const char* name) = 0;
+	virtual void UnregisterListener(IRemoteConsoleListener* pListener) = 0;
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Description:

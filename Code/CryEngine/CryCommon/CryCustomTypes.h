@@ -62,7 +62,7 @@ string NumToString(T val, int min_digits, int max_digits, bool floating)
 
 struct CStructInfo: CTypeInfo
 {
-	CStructInfo( cstr name, size_t size, Array<CVarInfo> vars = ZERO, Array<CTypeInfo const*> templates = ZERO );
+	CStructInfo( cstr name, size_t size, size_t align, Array<CVarInfo> vars = ZERO, Array<CTypeInfo const*> templates = ZERO );
 	virtual bool IsType( CTypeInfo const& Info ) const;
 	virtual string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const;
 	virtual bool FromString(void* data, cstr str, FFromString flags = 0) const;
@@ -108,7 +108,7 @@ struct CEnumInfo: CTypeInfo
 		cstr		ShortName;
 	};
 
-	CEnumInfo( cstr name, size_t size, size_t num_elems = 0, CEnumElem* elems = 0 );
+	CEnumInfo( cstr name, size_t size, size_t align, size_t num_elems = 0, CEnumElem* elems = 0 );
 
 	virtual string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const;
 	virtual bool FromString(void* data, cstr str, FFromString flags = 0) const;
@@ -132,7 +132,7 @@ template<class T>
 struct TTypeInfo: CTypeInfo
 {
 	TTypeInfo( cstr name )
-		: CTypeInfo( name, sizeof(T) )
+		: CTypeInfo( name, sizeof(T), alignof(T) )
 	{}
 
 	virtual bool ToValue(const void* data, void* value, const CTypeInfo& typeVal) const
@@ -180,7 +180,7 @@ template<class T, class S>
 struct TProxyTypeInfo: CTypeInfo
 {
 	TProxyTypeInfo( cstr name )
-		: CTypeInfo( name, sizeof(S) )
+		: CTypeInfo( name, sizeof(S), alignof(S) )
 	{}
 
 	virtual bool IsType( CTypeInfo const& Info ) const		

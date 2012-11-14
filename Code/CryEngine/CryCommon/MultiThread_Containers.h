@@ -265,6 +265,455 @@ namespace CryMT
 		mutable	CryCriticalSection	m_cs;
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+	// Producer/Consumer Queue for 1 to 1 thread communication
+	// Realized with only volatile variables and memory barriers
+	// *warning* this producer/consumer queue is only thread safe in a 1 to 1 situation
+	// and doesn't provide any yields or similar to prevent spinning
+	//////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	class SingleProducerSingleConsumerQueue
+	{
+	public:
+		SingleProducerSingleConsumerQueue() :
+			m_arrBuffer(NULL), m_nBufferSize(NULL), m_nProducerIndex(0), m_nComsumerIndex(0) {}
+
+		SingleProducerSingleConsumerQueue( T *arrBuffer, uint32 nBufferSize ) :
+			m_arrBuffer(arrBuffer), m_nBufferSize(nBufferSize), m_nProducerIndex(0), m_nComsumerIndex(0) 
+		{
+			assert(IsPowerOfTwo(nBufferSize));
+		}
+		
+		void SetBuffer( T *arrBuffer, uint32 nBufferSize )
+		{
+			assert(IsPowerOfTwo(nBufferSize));
+			m_arrBuffer = arrBuffer;
+			m_nBufferSize = nBufferSize;			
+		}
+
+		void Push( const T &rObj );
+		void Pop( T *pResult );
+	private:	
+		void Regular_Push( const T &rObj );
+		void Regular_Pop( T *pResult );
+	
+		void SPU_Push( const T &rObj );
+		void SPU_Pop( T *pResult );
+	
+		T *m_arrBuffer;
+		uint32 m_nBufferSize;
+	
+		volatile uint32 m_nProducerIndex _ALIGN(16);
+		volatile uint32 m_nComsumerIndex _ALIGN(16);
+	} _ALIGN(128);
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void SingleProducerSingleConsumerQueue<T>::Push( const T &rObj )
+	{
+		assert(m_arrBuffer != NULL);
+		assert(m_nBufferSize != 0);
+		
+
+
+
+		Regular_Push(rObj);
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void SingleProducerSingleConsumerQueue<T>::Regular_Push( const T &rObj )
+	{
+		// busy-loop if queue is full
+		int iter = 0;
+		while(m_nProducerIndex - m_nComsumerIndex == m_nBufferSize) { Sleep(iter++ > 10 ? 1 : 0); }
+
+		m_arrBuffer[m_nProducerIndex % m_nBufferSize] = rObj;
+		MemoryBarrier();
+		m_nProducerIndex += 1;
+		MemoryBarrier();
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void SingleProducerSingleConsumerQueue<T>::SPU_Push( const T &rObj )
+	{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void SingleProducerSingleConsumerQueue<T>::Pop( T *pResult )
+	{
+		assert(m_arrBuffer != NULL);
+		assert(m_nBufferSize != 0);
+
+
+
+
+		return Regular_Pop(pResult);
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void SingleProducerSingleConsumerQueue<T>::Regular_Pop( T *pResult )
+	{
+		// busy-loop if queue is empty
+		int iter = 0;
+		while(m_nProducerIndex - m_nComsumerIndex == 0) { Sleep(iter++ > 10 ? 1 : 0); }		
+
+		*pResult = m_arrBuffer[m_nComsumerIndex % m_nBufferSize];
+		MemoryBarrier();
+		m_nComsumerIndex += 1;
+		MemoryBarrier();
+	}
+	
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void SingleProducerSingleConsumerQueue<T>::SPU_Pop( T *pResult )
+	{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	// Producer/Consumer Queue for N to 1 thread communication
+	// lockfree implemenation, to copy with multiple producers, 
+	// a internal producer refcount is managed, the queue is empty
+	// as soon as there are no more producers and no new elements
+	//////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	class N_ProducerSingleConsumerQueue
+	{
+	public:
+		N_ProducerSingleConsumerQueue() :
+			m_arrBuffer(NULL), m_arrStates(NULL), m_nBufferSize(0), m_nProducerIndex(0), m_nComsumerIndex(0), m_nRunning(0), m_nProducerCount(0) 
+		{}
+
+		N_ProducerSingleConsumerQueue( T *arrBuffer, volatile uint32 *arrStateBuffer, uint32 nBufferSize ) :
+			m_arrBuffer(arrBuffer), m_arrStates(arrStateBuffer), m_nBufferSize(nBufferSize), m_nProducerIndex(0), m_nComsumerIndex(0), m_nRunning(0), m_nProducerCount(0) 
+		{
+			assert(IsPowerOfTwo(nBufferSize));
+		}
+		
+		void Push( const T &rObj );
+		bool Pop( T *pResult );
+		
+		// needs to be called before using, assumes that there is at least one producer
+		// so the first one doesn't need to call AddProducer, but he has to deregister itself
+		void SetRunningState()
+		{
+			memset((void*)m_arrStates, 0, sizeof(uint32)*m_nBufferSize);
+			m_nRunning = 1;
+			m_nProducerCount = 1;
+		}
+		
+		void SetBuffer( T *arrBuffer, volatile uint32 *arrStateBuffer, uint32 nBufferSize )
+		{
+			assert(IsPowerOfTwo(nBufferSize));
+			m_arrBuffer = arrBuffer;
+			m_arrStates = arrStateBuffer;
+			m_nBufferSize = nBufferSize;			
+		}
+
+		void AddProducer();
+		void RemoveProducer();
+	private:	
+		void Regular_Push( const T &rObj );
+		bool Regular_Pop( T *pResult );
+	
+		void SPU_Push( const T &rObj );
+		bool SPU_Pop( T *pResult );
+	
+		T *m_arrBuffer;
+		volatile uint32 *m_arrStates;
+		uint32 m_nBufferSize;
+	
+		volatile uint32 m_nProducerIndex;
+		volatile uint32 m_nComsumerIndex;
+		volatile uint32 m_nRunning;
+		volatile uint32 m_nProducerCount;
+	} _ALIGN(128);
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void N_ProducerSingleConsumerQueue<T>::AddProducer()
+	{
+		assert( m_arrBuffer != NULL );
+		assert( m_arrStates != NULL );
+		assert( m_nBufferSize != 0 );
+
+
+
+
+
+
+
+
+
+
+
+
+		CryInterlockedIncrement((volatile int*)&m_nProducerCount);
+
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void N_ProducerSingleConsumerQueue<T>::RemoveProducer( )
+	{
+		assert( m_arrBuffer != NULL );
+		assert( m_arrStates != NULL );
+		assert( m_nBufferSize != 0 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		if( CryInterlockedDecrement((volatile int*)&m_nProducerCount) == 0 )
+			m_nRunning = 0;
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void N_ProducerSingleConsumerQueue<T>::Push( const T &rObj )
+	{
+		assert( m_arrBuffer != NULL );
+		assert( m_arrStates != NULL );
+		assert( m_nBufferSize != 0 );
+
+
+
+
+		Regular_Push(rObj);
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void N_ProducerSingleConsumerQueue<T>::Regular_Push( const T &rObj )
+	{
+		uint32 nProducerIndex;
+		uint32 nComsumerIndex;
+		
+		do
+		{
+			nProducerIndex = m_nProducerIndex;
+			nComsumerIndex = m_nComsumerIndex;
+			
+			if( nProducerIndex - nComsumerIndex == m_nBufferSize)
+				continue;
+				
+			if(CryInterlockedCompareExchange( alias_cast<volatile long*>(&m_nProducerIndex), nProducerIndex + 1, nProducerIndex ) == nProducerIndex )
+				break;
+		}while(true);		
+
+		m_arrBuffer[nProducerIndex % m_nBufferSize] = rObj;
+		MemoryBarrier();
+		m_arrStates[nProducerIndex % m_nBufferSize] = 1;
+		MemoryBarrier();
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline void N_ProducerSingleConsumerQueue<T>::SPU_Push( const T &rObj )
+	{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline bool N_ProducerSingleConsumerQueue<T>::Pop( T *pResult )
+	{
+		assert( m_arrBuffer != NULL );
+		assert( m_arrStates != NULL );
+		assert( m_nBufferSize != 0 );
+
+
+
+
+		return Regular_Pop(pResult);
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline bool N_ProducerSingleConsumerQueue<T>::Regular_Pop( T *pResult )
+	{
+		// busy-loop if queue is empty
+		int iter = 0;
+		while(m_nRunning && m_nProducerIndex - m_nComsumerIndex == 0) { Sleep(iter++ > 10 ? 1 : 0); }
+
+		if( m_nRunning == 0 && m_nProducerIndex - m_nComsumerIndex == 0)
+			return false;
+			
+		iter = 0;
+		while(m_arrStates[m_nComsumerIndex % m_nBufferSize] == 0 )  { Sleep(iter++ > 10 ? 1 : 0); }
+		
+		*pResult = m_arrBuffer[m_nComsumerIndex % m_nBufferSize];
+		MemoryBarrier();
+		m_arrStates[m_nComsumerIndex % m_nBufferSize] = 0;
+		MemoryBarrier();
+		m_nComsumerIndex += 1;
+		MemoryBarrier();
+
+		return true;
+	}
+	
+
+
+	///////////////////////////////////////////////////////////////////////////////
+	template<typename T>
+	inline bool N_ProducerSingleConsumerQueue<T>::SPU_Pop( T *pResult )
+	{
+
+
+
+		return false;
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Class implementation are in the platform specific headers
@@ -335,6 +784,7 @@ namespace stl
 		v.free_memory();
 	}
 }
+
 
 
 

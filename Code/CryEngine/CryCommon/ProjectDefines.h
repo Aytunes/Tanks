@@ -24,7 +24,11 @@
 
 #if defined(LINUX)
 #	define EXCLUDE_SCALEFORM_SDK
-#	define EXCLUDE_CRI_SDK
+
+
+
+
+
 
 
 
@@ -45,16 +49,13 @@
 # if defined(DEDICATED_SERVER)
 #		define EXCLUDE_SCALEFORM_SDK
 # endif // defined(DEDICATED_SERVER)
-# define EXCLUDE_CRI_SDK
 #	if !defined(_RELEASE) || defined(PERFORMANCE_BUILD)
 #		define ENABLE_STATS_AGENT
 #	endif
 #else
 #	define EXCLUDE_SCALEFORM_SDK
-#	define EXCLUDE_CRI_SDK
 #endif
 
-//#define GAME_IS_CRYSIS2
 #define DYNTEX_USE_SHAREDRT
 #ifndef EXCLUDE_CRI_SDK
 #define DYNTEX_ALLOW_SFDVIDEO
@@ -128,9 +129,9 @@
   #define CAPTURE_REPLAY_LOG 0
 #endif
 
-#if (defined(PS3) || defined(XENON)) && !defined(PS3_CRYSIZER_HEAP_TRAVERSAL)
+#if (defined(PS3) || defined(XENON) || defined(WIN32) || defined(GRINGO)) && !defined(PS3_CRYSIZER_HEAP_TRAVERSAL)
 		#define USE_GLOBAL_BUCKET_ALLOCATOR
-	#endif
+#endif
 
 #if (defined(PS3) || defined(XENON)) && !defined(PS3_CRYSIZER_HEAP_TRAVERSAL)
 #define USE_LEVEL_HEAP 1
@@ -140,30 +141,9 @@
 //#define INCLUDE_PS3PAD
 //#define EXCLUDE_SCALEFORM_SDK
 
-
-
-
-
-
-
-
-
-
 #ifdef CRYTEK_VISUALIZATION
 #define CRYTEK_SDK_EVALUATION
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -185,24 +165,16 @@
 
 
 
-
-
-
-
 #	define TAGES_EXPORT
-
-
-
-
-
-# define CRYDEV_TAGES_EXPORT
 
 
 // test -------------------------------------
 //#define EXCLUDE_CVARHELP
 
 #define _DATAPROBE
-//#define ENABLE_COPY_PROTECTION
+#if defined(_RELEASE) && !defined(XENON) && !defined(PS3) && !defined(GRINGO)
+#define ENABLE_COPY_PROTECTION
+#endif // #if defined(_RELEASE) && !defined(XENON) && !defined(PS3)
 
 // GPU pass timers are enabled here for Release builds as well
 // Disable them before shipping, otherwise game is linked against instrumented libraries on 360
@@ -239,7 +211,7 @@
 #define TRACK_LEVEL_HEAP_USAGE 0
 #endif
 
-#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD)) && !defined(RESOURCE_COMPILER)
+#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD)) && !defined(RESOURCE_COMPILER) && !defined(linux)
 #ifndef ENABLE_PROFILING_CODE
 	#define ENABLE_PROFILING_CODE
 #endif
@@ -256,8 +228,11 @@
 
 
 #undef ENABLE_STATOSCOPE
-#if defined(ENABLE_PROFILING_CODE)
-  #define ENABLE_STATOSCOPE 1
+
+#ifndef IS_CRYDEV
+  #if defined(ENABLE_PROFILING_CODE)
+    #define ENABLE_STATOSCOPE 1
+  #endif
 #endif
 
 #if defined(ENABLE_PROFILING_CODE)
@@ -286,14 +261,6 @@
 
 
 
-#if !defined(XENON)
-#define PIXBeginNamedEvent(x,y,...)
-#define PIXEndNamedEvent()
-#define PIXSetMarker(x,y,...)
-#elif !defined(_RELEASE) && !defined(_DEBUG)
-#define USE_PIX
-#endif
-
 #if (defined(WIN32) || defined(WIN64)) && !defined(_LIB)
 #define CRY_ENABLE_RC_HELPER 1
 #endif
@@ -315,7 +282,7 @@
 #define USE_PIX
 #endif
 
-#if !defined(_RELEASE) && !defined(PS3) && !defined(LINUX)
+#if !defined(_RELEASE) && !defined(PS3) && !defined(LINUX) && !defined(GRINGO)
 	#define SOFTCODE_SYSTEM_ENABLED
 #endif
 
@@ -336,6 +303,12 @@
 	#define SC_API
 
 #endif
+
+// Enable additional structures and code for sprite motion blur: 0 or 1
+#define PARTICLE_MOTION_BLUR	0
+
+// a special ticker thread to run during load and unload of levels
+#define USE_NETWORK_STALL_TICKER_THREAD
 
 #if !defined(XENON) && !defined(PS3)
 

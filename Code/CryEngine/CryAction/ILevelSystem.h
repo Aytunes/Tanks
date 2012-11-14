@@ -104,6 +104,8 @@ UNIQUE_IFACE struct ILevelInfo
 	virtual const ILevelInfo::TGameTypeInfo *GetGameType(int gameType) const = 0;
 	virtual bool SupportsGameType(const char *gameTypeName) const = 0;
 	virtual const ILevelInfo::TGameTypeInfo *GetDefaultGameType() const = 0;
+	virtual const char* GetDefaultGameRules() const = 0;
+	virtual ILevelInfo::TStringVec GetGameRules() const = 0;
 	virtual bool HasGameRules() const = 0;
 
 	virtual const ILevelInfo::SMinimapInfo& GetMinimapInfo() const = 0;

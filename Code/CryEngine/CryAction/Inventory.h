@@ -203,6 +203,7 @@ public:
 	virtual int GetSlotCount(int slotId) const;
 	
 	virtual EntityId GetItem(int slotId) const;
+	virtual const char* GetItemString(int slotId) const;
 	virtual EntityId GetItemByClass(IEntityClass *pClass, IItem *pIgnoreItem = NULL) const;
 	virtual IItem* GetItemByName(const char* name) const;
 

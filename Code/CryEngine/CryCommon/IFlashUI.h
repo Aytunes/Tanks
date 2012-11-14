@@ -176,10 +176,10 @@ struct SUIConversion<string, bool>
 {
 	static ILINE bool ConvertValue( const string& from, bool& to )
 	{
-		int to_i;
-		if ( SUIConversion<string, int>::ConvertValue(from, to_i) )
+		float to_i;
+		if ( SUIConversion<string, float>::ConvertValue(from, to_i) )
 		{
-			to = !!to_i;
+			to = to_i != 0;
 			return true;
 		}
 		if (0 == stricmp (from.c_str(), "true"))
@@ -303,13 +303,13 @@ struct SUIConversion<wstring, string>
 enum EUIDataTypes
 {
 	eUIDT_Any = -1,
+	eUIDT_Bool =			NTypelist::IndexOf<bool, TUIDataTypes>::value,
 	eUIDT_Int =				NTypelist::IndexOf<int, TUIDataTypes>::value,
 	eUIDT_Float =			NTypelist::IndexOf<float, TUIDataTypes>::value,
 	eUIDT_EntityId =	NTypelist::IndexOf<EntityId, TUIDataTypes>::value,
 	eUIDT_Vec3 =			NTypelist::IndexOf<Vec3, TUIDataTypes>::value,
 	eUIDT_String =		NTypelist::IndexOf<string, TUIDataTypes>::value,
 	eUIDT_WString =		NTypelist::IndexOf<wstring, TUIDataTypes>::value,
-	eUIDT_Bool =			NTypelist::IndexOf<bool, TUIDataTypes>::value,
 };
 
 typedef CConfigurableVariant<TUIDataTypes, sizeof(void*), SUIConversion> TUIData;
@@ -319,6 +319,16 @@ typedef CConfigurableVariant<TUIDataTypes, sizeof(void*), SUIConversion> TUIData
 //////////////////////////////////////////// UI Arguments //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #define UIARGS_DEFAULT_DELIMITER "|"
+
+template<class T> struct SUIParamTypeHelper			{ static EUIDataTypes GetType(const T&) { return eUIDT_Any; } };
+template<> struct SUIParamTypeHelper<bool>			{ static EUIDataTypes GetType(const bool&) { return eUIDT_Bool; } };
+template<> struct SUIParamTypeHelper<int>				{ static EUIDataTypes GetType(const int&) { return eUIDT_Int; } };
+template<> struct SUIParamTypeHelper<EntityId>	{ static EUIDataTypes GetType(const EntityId&) { return eUIDT_EntityId; } };
+template<> struct SUIParamTypeHelper<float>			{ static EUIDataTypes GetType(const float&) { return eUIDT_Float; } };
+template<> struct SUIParamTypeHelper<Vec3>			{ static EUIDataTypes GetType(const Vec3&) { return eUIDT_Vec3; } };
+template<> struct SUIParamTypeHelper<string>		{ static EUIDataTypes GetType(const string&) { return eUIDT_String; } };
+template<> struct SUIParamTypeHelper<wstring>		{ static EUIDataTypes GetType(const wstring&) { return eUIDT_WString; } };
+template<> struct SUIParamTypeHelper<TUIData>		{ static EUIDataTypes GetType(const TUIData& d) { return (EUIDataTypes) d.GetType(); } };
 
 struct SUIArguments
 {
@@ -342,25 +352,29 @@ struct SUIArguments
 		const CryStringT<T>& delimiter = GetDelimiter<T>();
 		const T* delimiter_str = delimiter.c_str();
 		const int delimiter_len = delimiter.length();
-		const T* found = argStringList;
+		const size_t s = StrLenTmpl(argStringList) + 1;
+		T* buffer = new T[s];
+		memcpy(buffer, argStringList, s*sizeof(T));
+		T* found = buffer;
 		while ( *found ) 
 		{
-			const T* next = StrStrTmpl(found, delimiter_str);
+			T* next = StrStrTmpl(found, delimiter_str);
 			if ( next )
 			{
-				((T*)next)[0] = 0;
-				AddArgument( found );
-				((T*)next)[0] = delimiter_str[0];
+				next[0] = 0;
+				AddArgument( CryStringT<T>(found), eUIDT_Any );
+				next[0] = delimiter_str[0];
 				found = next + delimiter_len;
 			}
-			else
+			if (!next || (next && !*found))
 			{
-				AddArgument( found );
+				AddArgument( CryStringT<T>(found), eUIDT_Any );
 				break;
 			}
 		}
 		if (bufferStr)
 			setStringBuffer( argStringList );
+		delete[] buffer;
 	}
 
 	void SetArguments( const SFlashVarValue* vArgs, int iNumArgs )
@@ -390,11 +404,25 @@ struct SUIArguments
 		}
 	}
 
+	void AddArguments( const SUIArguments& args )
+	{
+		const int iNumArgs = args.GetArgCount();
+		m_ArgList.reserve( m_ArgList.size() + iNumArgs );
+		for (int i = 0; i < iNumArgs; ++i)
+			AddArgument(args.GetArg(i), args.GetArgType(i));
+	}
+
+	template <class T>
+	inline void AddArgument( const T& arg, EUIDataTypes type )
+	{
+		m_ArgList.push_back( SUIData(type, TUIData(arg)) );
+		m_Dirty = eBDF_ALL;
+	}
+
 	template <class T>
 	inline void AddArgument( const T& arg )
 	{
-		m_ArgList.push_back( TUIData( arg ) );
-		m_Dirty = eBDF_ALL;
+		AddArgument(arg, SUIParamTypeHelper<T>::GetType(arg));
 	}
 
 	template <class T>
@@ -435,15 +463,30 @@ struct SUIArguments
 	inline const TUIData& GetArg( int index ) const
 	{
 		assert( index >= 0 && index < m_ArgList.size() );
-		return m_ArgList[index];
+		return m_ArgList[index].Data;
+	}
+
+	inline EUIDataTypes GetArgType( int index ) const
+	{
+		assert( index >= 0 && index < m_ArgList.size() );
+		return m_ArgList[index].Type;
 	}
 
 	template < class T >
 	inline bool GetArg( int index, T &val ) const
 	{
 		if ( index >= 0 && index < m_ArgList.size() )
-			return m_ArgList[index].GetValueWithConversion( val );
+			return m_ArgList[index].Data.GetValueWithConversion( val );
 		return false;
+	}
+
+	template < class T >
+	inline void GetArgNoConversation( int index, T &val ) const
+	{
+		assert( index >= 0 && index < m_ArgList.size() );
+		const T* valPtr = m_ArgList[index].Data.GetPtr<T>();
+		assert(valPtr);
+		val = *valPtr;
 	}
 
 	inline void SetDelimiter( const string& delimiter ) 
@@ -456,13 +499,25 @@ struct SUIArguments
 	}
 
 	template < class T >
-	inline const T* StrStrTmpl( const T* str1, const T* str2 )
+	inline T* StrStrTmpl( T* str1, const T* str2 )
 	{
 		return strstr(str1, str2);
 	}
 
+	template < class T >
+	inline size_t StrLenTmpl( const T* str )
+	{
+		return strlen(str);
+	}
+
 private:
-	DynArray< TUIData > m_ArgList;
+	struct SUIData
+	{
+		SUIData(EUIDataTypes type, const TUIData& data) : Type(type), Data(data) {}
+		EUIDataTypes Type;
+		TUIData Data;
+	};
+	DynArray< SUIData > m_ArgList;
 	mutable string m_sArgStringBuffer;	// buffer for const char* GetAsString()
 	mutable wstring m_sArgWStringBuffer;	// buffer for const wchar_t* GetAsWString()
 	mutable DynArray< SFlashVarValue > m_FlashValueBuffer; // buffer for const SFlashVarValue* GetAsList()
@@ -485,48 +540,40 @@ private:
 		{
 			m_Dirty &= ~eBDF_FlashVar;
 			m_FlashValueBuffer.clear();
-			for (DynArray< TUIData >::const_iterator it = m_ArgList.begin(); it != m_ArgList.end(); ++it)
+			for (DynArray< SUIData >::const_iterator it = m_ArgList.begin(); it != m_ArgList.end(); ++it)
 			{
 				bool bConverted = false;
-				switch (it->GetType())
+				switch (it->Type)
 				{
 				case eUIDT_Bool:
-					AddValue<bool>(*it);
+					AddValue<bool>(it->Data);
 					break;
 				case eUIDT_Int:
-					AddValue<int>(*it);
+					AddValue<int>(it->Data);
 					break;
 				case eUIDT_EntityId:
-					AddValue<EntityId>(*it);
+					AddValue<EntityId>(it->Data);
 					break;
 				case eUIDT_Float:
-					{
-						bool bRes = TryAddValue<int>(*it)
-							|| AddValue<float>(*it);
-							assert(bRes);
-					}
+					AddValue<float>(it->Data);
 					break;
 				case eUIDT_String:
-					{
-						bool bRes = TryAddValue<int>(*it)
-							|| TryAddValue<float>(*it)
-							|| AddValue<string>(*it);
-							assert(bRes);
-					}
+					AddValue<string>(it->Data);
 					break;
 				case eUIDT_WString:
-					{
-						bool bRes = TryAddValue<int>(*it)
-							|| TryAddValue<float>(*it)
-							|| AddValue<wstring>(*it);
-							assert(bRes);
-					}
+					AddValue<wstring>(it->Data);
 					break;
 				case eUIDT_Any:
+					{
+						bool bRes = TryAddValue<int>(it->Data)
+							|| TryAddValue<float>(it->Data)
+							|| (it->Data.GetType() == eUIDT_String && AddValue<string>(it->Data))
+							|| (it->Data.GetType() == eUIDT_WString && AddValue<wstring>(it->Data));
+						assert(bRes);
+					}
+					break;
 				default:
-					assert(false);	// not supported since string->wstring or vice versa conversation 
-													// would need to make a copy of data ptr and buffer somewhere. 
-													// SFlashVarValue only stores char/wchar_t* ptr
+					assert(false);
 					break;
 				}
 			}
@@ -563,11 +610,11 @@ private:
 			m_Dirty &= ~flag;
 			CryStringT<T> delimiter_str = GetDelimiter<T>();
 			buffer.clear();
-			for ( DynArray< TUIData >::const_iterator it = m_ArgList.begin(); it != m_ArgList.end(); ++it )
+			for ( DynArray< SUIData >::const_iterator it = m_ArgList.begin(); it != m_ArgList.end(); ++it )
 			{
 				if (buffer.size() > 0) buffer += delimiter_str;
 				CryStringT<T> val;
-				bool bRes = it->GetValueWithConversion(val);
+				bool bRes = it->Data.GetValueWithConversion(val);
 				assert(bRes && "try to convert to char* string list but some of the values are unsupported wchar_t*");
 				buffer += val;
 			}
@@ -614,9 +661,15 @@ inline void SUIArguments::setStringBuffer( const wchar_t* str )
 }
 
 template <>
-inline const wchar_t* SUIArguments::StrStrTmpl( const wchar_t* str1, const wchar_t* str2 )
+inline wchar_t* SUIArguments::StrStrTmpl( wchar_t* str1, const wchar_t* str2 )
 {
 	return wcsstr(str1, str2);
+}
+
+template <>
+inline size_t SUIArguments::StrLenTmpl( const wchar_t* str )
+{
+	return wcslen(str);
 }
 
 template <>
@@ -630,6 +683,161 @@ inline bool SUIArguments::GetArg( int index, TUIData& val ) const
 	return false;
 }
 
+// should be replaced by SUIArguments&& on platforms with Cx11 support
+typedef SUIArguments SUIArgumentsRet;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////// Lookup Table ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+template<class T> struct SUIItemLookupIDD { static inline const char* GetId(const T* p) { assert(false); return ""; } }; // this type is not implemented!
+
+template <class Base>
+struct SUIItemLookupSet_Impl
+{
+	typedef DynArray< Base* > TITems;
+	typedef std::map< CCryName, int > TLookup;
+	typedef typename TITems::iterator iterator;
+	typedef typename TITems::const_iterator const_iterator;
+	typedef typename TITems::size_type size_type;
+	typedef typename TITems::value_type value_type;
+
+	inline Base* operator[](int __n)
+	{
+		return m_Items[__n];
+	}
+
+	inline Base* operator()(CCryName __name)
+	{
+		typename TLookup::iterator it = m_Lookup.find(__name);
+		return it != m_Lookup.end() ? m_Items[it->second] : NULL;
+	}
+
+	inline const Base* operator[](int __n) const
+	{
+		return m_Items[__n];
+	}
+
+	inline const Base* operator()(CCryName __name) const
+	{
+		typename TLookup::const_iterator it = m_Lookup.find(__name);
+		return it != m_Lookup.end() ? m_Items[it->second] : NULL;
+	}
+
+	void push_back(Base* item)
+	{
+		assert(m_Lookup[SUIItemLookupIDD<Base>::GetId(item)] == NULL);
+		m_Lookup[SUIItemLookupIDD<Base>::GetId(item)] = m_Items.size();
+		m_Items.push_back(item);
+	}
+
+	void remove(Base* item)
+	{
+		typename TLookup::iterator it =  m_Lookup.find(SUIItemLookupIDD<Base>::GetId(item));
+		if (it != m_Lookup.end())
+		{
+			for (typename TLookup::iterator nextIt = it; nextIt != m_Lookup.end(); ++nextIt)
+				nextIt->second--;
+			m_Lookup.erase(it);
+			for (typename TITems::iterator it = m_Items.begin(); it != m_Items.end(); ++it)
+			{
+				if (*it == item)
+				{
+					m_Items.erase(it);
+					return;
+				}
+			}
+		}
+		assert(false);
+	}
+
+	void clear()
+	{
+		m_Items.clear();
+		m_Lookup.clear();
+	}
+
+	inline size_type get_alloc_size() const
+	{
+		return m_Items.get_alloc_size() + stl::size_of_map(m_Lookup) + m_Items.size() * sizeof(Base);
+	}
+
+	inline size_type size() const { return m_Items.size(); }
+	inline iterator begin() { return m_Items.begin(); }
+	inline iterator end() { return m_Items.end(); }
+	inline const_iterator begin() const { return m_Items.begin(); }
+	inline const_iterator end() const { return m_Items.end(); }
+	inline size_type capacity() const { return m_Items.capacity(); }
+
+protected:
+	TITems m_Items;
+	TLookup m_Lookup;
+};
+
+struct IUIElement;
+struct IUIAction;
+struct SUIParameterDesc;
+struct SUIMovieClipDesc;
+struct SUIEventDesc;
+
+
+#ifdef _LIB
+template <class Base> struct SUIItemLookupSet : public SUIItemLookupSet_Impl<Base> {};
+#else
+struct SUIItemLookupSetFactory
+{
+	static inline SUIItemLookupSet_Impl<SUIParameterDesc>* CreateLookupParameter();
+	static inline SUIItemLookupSet_Impl<SUIMovieClipDesc>* CreateLookupMovieClip();
+	static inline SUIItemLookupSet_Impl<SUIEventDesc>* CreateLookupEvent();
+};
+
+template <class Base>
+struct SUIItemLookupSet_DllSafeImpl
+{
+	typedef DynArray< Base* > TITems;
+	typedef std::map< CCryName, int > TLookup;
+	typedef typename TITems::iterator iterator;
+	typedef typename TITems::const_iterator const_iterator;
+	typedef typename TITems::size_type size_type;
+	typedef typename TITems::value_type value_type;
+
+	SUIItemLookupSet_DllSafeImpl() { m_pImpl = CreateLookupImpl(); }
+	~SUIItemLookupSet_DllSafeImpl() { delete m_pImpl; }
+
+	inline Base* operator[](int __n) { return m_pImpl->operator[](__n); }
+	inline Base* operator()(CCryName __name) { return m_pImpl->operator()(__name); }
+	inline const Base* operator[](int __n) const { return m_pImpl->operator[](__n); }
+	inline const Base* operator()(CCryName __name) const { return m_pImpl->operator()(__name); }
+	void push_back(Base* item) {m_pImpl->push_back(item); }
+	void remove(Base* item) { m_pImpl->remove(item); }
+	void clear() { m_pImpl->clear(); }
+	inline size_type get_alloc_size() const { return m_pImpl->get_alloc_size();	}
+	inline size_type size() const { return m_pImpl->size(); }
+	inline iterator begin() { return m_pImpl->begin(); }
+	inline iterator end() { return m_pImpl->end(); }
+	inline const_iterator begin() const { return m_pImpl->begin(); }
+	inline const_iterator end() const { return m_pImpl->end(); }
+	inline size_type capacity() const { return m_pImpl->capacity(); }
+
+protected:
+	inline SUIItemLookupSet_Impl<Base>* CreateLookupImpl() { assert(false); return NULL; } 
+
+protected:
+	SUIItemLookupSet_Impl<Base>* m_pImpl;
+};
+template <> inline SUIItemLookupSet_Impl<SUIParameterDesc>* SUIItemLookupSet_DllSafeImpl<SUIParameterDesc>::CreateLookupImpl() { return SUIItemLookupSetFactory::CreateLookupParameter(); }
+template <> inline SUIItemLookupSet_Impl<SUIMovieClipDesc>* SUIItemLookupSet_DllSafeImpl<SUIMovieClipDesc>::CreateLookupImpl() { return SUIItemLookupSetFactory::CreateLookupMovieClip(); }
+template <> inline SUIItemLookupSet_Impl<SUIEventDesc>* SUIItemLookupSet_DllSafeImpl<SUIEventDesc>::CreateLookupImpl() { return SUIItemLookupSetFactory::CreateLookupEvent(); }
+
+template <class Base> struct SUIItemLookupSet : public SUIItemLookupSet_DllSafeImpl<Base> {};
+#endif
+
+
+typedef SUIItemLookupSet<SUIParameterDesc> TUIParamsLookup;
+typedef SUIItemLookupSet<SUIMovieClipDesc> TUIMovieClipLookup;
+typedef SUIItemLookupSet<SUIEventDesc> TUIEventsLookup;
+// since those are not shared between DLL boundaries we can use the impl directly
+typedef SUIItemLookupSet_Impl<IUIElement> TUIElementsLookup;
+typedef SUIItemLookupSet_Impl<IUIAction> TUIActionsLookup;
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////// UI Descriptions /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -643,14 +851,36 @@ struct SUIParameterDesc
 		eUIPT_Float,
 		eUIPT_Vec3,
 		eUIPT_String,
+		eUIPT_WString
 	};
 
-	SUIParameterDesc() : sName("undefined"), sDisplayName("undefined"), sDesc("undefined"), eType(eUIPT_Any) {} 
-	SUIParameterDesc( const char*  name, const char*  displ, const char*  desc, EUIParameterType type = eUIPT_Any) : sName(name), sDisplayName(displ), sDesc(desc), eType(type) {}
+	SUIParameterDesc() : sName("undefined"), sDisplayName("undefined"), sDesc("undefined"), eType(eUIPT_Any), pParent(NULL) {} 
+	SUIParameterDesc( const char*  name, const char*  displ, const char*  desc, EUIParameterType type = eUIPT_Any, const SUIParameterDesc* parent = NULL) : sName(name), sDisplayName(displ), sDesc(desc), eType(type), pParent(parent) { CRY_ASSERT_MESSAGE(strstr(sName, " ") == NULL, "Name with whitespaces not allowed! Use display name for descriptive names!"); }
 	const char* sName;
 	const char* sDisplayName;
 	const char* sDesc;
+	const SUIParameterDesc* pParent;
 	EUIParameterType eType;
+
+	inline void GetInstanceString(string& instanceStr, const SUIParameterDesc* pTempl = NULL) const
+	{
+		if (pParent)
+		{
+			pParent->GetInstanceString(instanceStr, pTempl);
+			instanceStr += ".";
+			instanceStr += sName;
+		}
+		else if (pTempl && pTempl != this)
+		{
+			pTempl->GetInstanceString(instanceStr);
+			instanceStr += ".";
+			instanceStr += sName;
+		}
+		else
+		{
+			instanceStr = sName;
+		}
+	}
 
 	inline bool operator==( const SUIParameterDesc& other ) const
 	{
@@ -661,38 +891,120 @@ typedef DynArray< SUIParameterDesc > TUIParams;
 
 struct SUIEventDesc : public SUIParameterDesc
 {
-	SUIEventDesc() : IsDynamic(false), sDynamicName("Array"), sDynamicDesc("") {}
-	SUIEventDesc( const char*  name, const char* desc ) : SUIParameterDesc( name, name, desc ), IsDynamic(false), sDynamicName(""), sDynamicDesc("") {}
-	SUIEventDesc( const char*  name, const char*  displ, const char*  desc, bool isDyn = false, const char* dynName="Array", const char* dynDesc="" ) : SUIParameterDesc( name, displ, desc ), IsDynamic(isDyn), sDynamicName(dynName), sDynamicDesc(dynDesc) {}
-	TUIParams Params;
-	bool IsDynamic;
-	const char* sDynamicName;
-	const char* sDynamicDesc;
-
-	inline bool operator==( const SUIEventDesc& other ) const
-	{		
-		bool res = strcmp(sName, other.sName) == 0 && IsDynamic == other.IsDynamic && Params.size() == other.Params.size();
-		for ( int i = 0; i < Params.size() && res; ++i)
+	struct SEvtParamsDesc
+	{
+		SEvtParamsDesc(bool isDyn = false, const char* dynName="Array", const char* dynDesc="") : IsDynamic(isDyn), sDynamicName(dynName), sDynamicDesc(dynDesc)
 		{
-			res &= Params[i] == other.Params[i];
+			CRY_ASSERT_MESSAGE(strstr(sDynamicName, " ") == NULL, "DynamicName with whitespaces not allowed!");
 		}
-		return res;
+
+		bool IsDynamic;
+		const char* sDynamicName;
+		const char* sDynamicDesc;
+	};
+
+	SUIEventDesc() {}
+	SUIEventDesc( const char*  name, const char* desc ) : SUIParameterDesc( name, name, desc ) {}
+	SUIEventDesc( const char*  name, const char* displ, const char* desc, SEvtParamsDesc inputs = SEvtParamsDesc(), SEvtParamsDesc outputs = SEvtParamsDesc(), const SUIParameterDesc* parent=NULL)
+		: SUIParameterDesc( name, displ, desc, eUIPT_Any, parent )
+		, InputParams(inputs)
+		, OutputParams(outputs)
+	{ 
 	}
+
+	struct SEvtParams : public SEvtParamsDesc
+	{
+		SEvtParams() {}
+		SEvtParams(const SEvtParamsDesc& desc) : SEvtParamsDesc(desc) {}
+		TUIParams Params;
+
+		inline bool operator==( const SEvtParams& other ) const
+		{		
+			bool res = IsDynamic == other.IsDynamic && Params.size() == other.Params.size();
+			for ( int i = 0; i < Params.size() && res; ++i)
+			{
+				res &= Params[i] == other.Params[i];
+			}
+			return res;
+		}
+
+		inline void SetDynamic( const char* name, const char* desc )
+		{
+			CRY_ASSERT_MESSAGE(strstr(name, " ") == NULL, "DynamicName with whitespaces not allowed!");
+			IsDynamic = true;
+			sDynamicName = name;
+			sDynamicDesc = desc;
+		}
+
+		template <EUIParameterType T>
+		inline void AddParam(const char* name, const char* desc)
+		{
+			Params.push_back( SUIParameterDesc(name, name, desc, T) );
+		}
+
+		template <EUIParameterType T>
+		inline void AddParam(const char* name, const char* displ, const char* desc)
+		{
+			Params.push_back( SUIParameterDesc(name, displ, desc, T) );
+		}	
+	};
 
 	inline void SetDynamic( const char* name, const char* desc )
 	{
-		IsDynamic = true;
-		sDynamicName = name;
-		sDynamicDesc = desc;
+		InputParams.SetDynamic(name, desc);
 	}
 
 	template <EUIParameterType T>
 	inline void AddParam(const char* name, const char* desc)
 	{
-		Params.push_back( SUIParameterDesc(name, name, desc, T) );
+		InputParams.AddParam<T>(name, desc);
 	}
+
+	template <EUIParameterType T>
+	inline void AddParam(const char* name, const char* displ, const char* desc)
+	{
+		InputParams.AddParam<T>(name, displ, desc);
+	}	
+
+	inline bool operator==( const SUIEventDesc& other ) const
+	{		
+		return strcmp(sName, other.sName) == 0 && InputParams == other.InputParams && OutputParams == other.OutputParams;
+	}
+
+	SEvtParams InputParams;
+	SEvtParams OutputParams;
 };
-typedef DynArray< SUIEventDesc > TUIEvents;
+
+struct SUIMovieClipDesc : public SUIParameterDesc
+{
+	SUIMovieClipDesc() {}
+	SUIMovieClipDesc( const char*  name, const char* displ, const char*  desc, EUIParameterType type = eUIPT_Any, const SUIParameterDesc* parent = NULL) : SUIParameterDesc(name, displ, desc, type, parent) {}
+
+	const SUIParameterDesc* GetVariableDesc( int index ) const { return index < m_variables.size() ? m_variables[index] : NULL; }
+	const SUIParameterDesc* GetVariableDesc( const char* sVarName ) const { return m_variables(sVarName); }
+	int GetVariableCount() const { return m_variables.size(); }
+
+	const SUIParameterDesc* GetArrayDesc( int index ) const { return index < m_arrays.size() ? m_arrays[index] : NULL; }
+	const SUIParameterDesc* GetArrayDesc( const char* sArrayName ) const { return  m_arrays(sArrayName); }
+	int GetArrayCount() const { return m_arrays.size(); }
+
+	const SUIMovieClipDesc* GetMovieClipDesc( int index ) const { return index < m_displayObjects.size() ? m_displayObjects[index] : NULL; }
+	const SUIMovieClipDesc* GetMovieClipDesc( const char* sMovieClipName ) const { return  m_displayObjects(sMovieClipName); }
+	int GetMovieClipCount() const { return m_displayObjects.size(); }
+
+	const SUIEventDesc* GetFunctionDesc( int index ) const { return index < m_functions.size() ? m_functions[index] : NULL; }
+	const SUIEventDesc* GetFunctionDesc( const char* sFunctionName ) const { return  m_functions(sFunctionName); }
+	int GetFunctionCount() const { return m_functions.size(); }
+
+	TUIParamsLookup m_variables;
+	TUIParamsLookup m_arrays;
+	TUIMovieClipLookup m_displayObjects;
+	TUIEventsLookup m_functions;
+};
+
+template<> inline const char* SUIItemLookupIDD<SUIParameterDesc>::GetId(const SUIParameterDesc* p) { return p->sDisplayName; }
+template<> inline const char* SUIItemLookupIDD<SUIMovieClipDesc>::GetId(const SUIMovieClipDesc* p) { return p->sDisplayName; }
+template<> inline const char* SUIItemLookupIDD<SUIEventDesc>::GetId(const SUIEventDesc* p) { return p->sDisplayName; }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////// UI Element ///////////////////////////////////////////
@@ -796,7 +1108,8 @@ UNIQUE_IFACE struct IUIElement
 		eFUI_EVENTS_EXCLUSIVE  = 0x00040,
 		eFUI_RENDER_LOCKLESS   = 0x00080,
 		eFUI_FIXED_PROJ_DEPTH  = 0x00100,
-		eFUI_LAZY_UPDATE       = 0x00200 | eFUI_NOT_CHANGEABLE,
+		eFUI_IS_HUD            = 0x00200,
+		eFUI_LAZY_UPDATE       = 0x00400 | eFUI_NOT_CHANGEABLE,
 
 		// flags per UIElement
 		eFUI_MASK_PER_ELEMENT  = 0xF0000,
@@ -854,7 +1167,7 @@ UNIQUE_IFACE struct IUIElement
 	virtual void Reload( bool bAllInstances = false ) = 0;
 	virtual bool IsInit() const = 0;
 
-	virtual bool IsDeleted() const = 0;
+	virtual bool IsValid() const = 0;
 
 	virtual void UnloadBootStrapper() = 0;
 	virtual void ReloadBootStrapper() = 0;
@@ -901,12 +1214,12 @@ UNIQUE_IFACE struct IUIElement
 	virtual const SUIParameterDesc* GetArrayDesc( const char* arrayName ) const = 0;
 	virtual int GetArrayCount() const = 0;
 
-	virtual const SUIParameterDesc* GetMovieClipDesc( int index ) const = 0;
-	virtual const SUIParameterDesc* GetMovieClipDesc( const char* movieClipName ) const = 0;
+	virtual const SUIMovieClipDesc* GetMovieClipDesc( int index ) const = 0;
+	virtual const SUIMovieClipDesc* GetMovieClipDesc( const char* movieClipName ) const = 0;
 	virtual int GetMovieClipCount() const = 0;
 
-	virtual const SUIParameterDesc* GetMovieClipTmplDesc( int index ) const = 0;
-	virtual const SUIParameterDesc* GetMovieClipTmplDesc( const char* movieClipTmplName ) const = 0;
+	virtual const SUIMovieClipDesc* GetMovieClipTmplDesc( int index ) const = 0;
+	virtual const SUIMovieClipDesc* GetMovieClipTmplDesc( const char* movieClipTmplName ) const = 0;
 	virtual int GetMovieClipTmplCount() const = 0;
 
 	virtual const SUIEventDesc* GetEventDesc( int index ) const = 0;
@@ -927,42 +1240,48 @@ UNIQUE_IFACE struct IUIElement
 	virtual void RemoveEventListener( IUIElementEventListener* pListener ) = 0;
 
 	// functions and objects
-	virtual bool CallFunction( const char* fctName, const SUIArguments& args = SUIArguments(), TUIData* pDataRes = NULL ) = 0;
-	virtual bool CallFunction( const SUIEventDesc* pFctDesc, const SUIArguments& args = SUIArguments(), TUIData* pDataRes = NULL ) = 0;
+	virtual bool CallFunction( const char* fctName, const SUIArguments& args = SUIArguments(), TUIData* pDataRes = NULL, const char* pTmplName = NULL ) = 0;
+	virtual bool CallFunction( const SUIEventDesc* pFctDesc, const SUIArguments& args = SUIArguments(), TUIData* pDataRes = NULL, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
 
-	virtual IFlashVariableObject* GetMovieClip( const char* movieClipName ) = 0;
-	virtual IFlashVariableObject* GetMovieClip( const SUIParameterDesc* pMovieClipDesc ) = 0;
+	virtual IFlashVariableObject* GetMovieClip( const char* movieClipName, const char* pTmplName = NULL ) = 0;
+	virtual IFlashVariableObject* GetMovieClip( const SUIMovieClipDesc* pMovieClipDesc, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
 
-	virtual IFlashVariableObject* CreateMovieClip( SUIParameterDesc& newInstanceDesc, const char* movieClipTemplate, const SUIArguments& args = SUIArguments(), const char* mcInstanceName = NULL ) = 0;
-	virtual IFlashVariableObject* CreateMovieClip( SUIParameterDesc& newInstanceDesc, const SUIParameterDesc* pMovieClipTemplateDesc, const SUIArguments& args = SUIArguments(), const char* mcInstanceName = NULL ) = 0;
+	virtual IFlashVariableObject* CreateMovieClip( const SUIMovieClipDesc*& pNewInstanceDesc, const char* movieClipTemplate, const char* mcParentName = NULL, const char* mcInstanceName = NULL ) = 0;
+	virtual IFlashVariableObject* CreateMovieClip( const SUIMovieClipDesc*& pNewInstanceDesc, const SUIMovieClipDesc* pMovieClipTemplateDesc, const SUIMovieClipDesc* pParentMC = NULL, const char* mcInstanceName = NULL ) = 0;
 
-	virtual bool SetVariable( const char* varName, const TUIData& value ) = 0;
-	virtual bool SetVariable( const SUIParameterDesc* pVarDesc, const TUIData& value ) = 0;
+	virtual void RemoveMovieClip( const char* movieClipName ) = 0;
+	virtual void RemoveMovieClip( const SUIParameterDesc* pMovieClipDesc ) = 0;
+	virtual void RemoveMovieClip( IFlashVariableObject* pVarObject ) = 0;
 
-	virtual bool GetVariable( const char* varName, TUIData& valueOut ) = 0;
-	virtual bool GetVariable( const SUIParameterDesc* pVarDesc, TUIData& valueOut ) = 0;
+	virtual bool SetVariable( const char* varName, const TUIData& value, const char* pTmplName = NULL ) = 0;
+	virtual bool SetVariable( const SUIParameterDesc* pVarDesc, const TUIData& value, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
 
-	virtual bool CreateVariable( const char* varName, const TUIData& value ) = 0;
+	virtual bool GetVariable( const char* varName, TUIData& valueOut, const char* pTmplName = NULL ) = 0;
+	virtual bool GetVariable( const SUIParameterDesc* pVarDesc, TUIData& valueOut, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
 
-	virtual bool SetArray( const char* arrayName, const SUIArguments& values ) = 0;
-	virtual bool SetArray( const SUIParameterDesc* pArrayDesc, const SUIArguments& values ) = 0;
+	virtual bool CreateVariable( const SUIParameterDesc*& pNewDesc, const char* varName, const TUIData& value, const char* pTmplName = NULL ) = 0;
+	virtual bool CreateVariable( const SUIParameterDesc*& pNewDesc, const char* varName, const TUIData& value, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
 
-	virtual bool GetArray( const char* arrayName, SUIArguments& valuesOut ) = 0;
-	virtual bool GetArray( const SUIParameterDesc* pArrayDesc, SUIArguments& valuesOut ) = 0;
+	virtual bool SetArray( const char* arrayName, const SUIArguments& values, const char* pTmplName = NULL ) = 0;
+	virtual bool SetArray( const SUIParameterDesc* pArrayDesc, const SUIArguments& values, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
 
-	virtual bool CreateArray( const char* arrayName, const SUIArguments& values ) = 0;
+	virtual bool GetArray( const char* arrayName, SUIArguments& valuesOut, const char* pTmplName = NULL ) = 0;
+	virtual bool GetArray( const SUIParameterDesc* pArrayDesc, SUIArguments& valuesOut, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
+
+	virtual bool CreateArray(  const SUIParameterDesc*& pNewDesc, const char* arrayName, const SUIArguments& values, const char* pTmplName = NULL ) = 0;
+	virtual bool CreateArray(  const SUIParameterDesc*& pNewDesc, const char* arrayName, const SUIArguments& values, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
 
 	template <class T>
-	inline bool SetVar( const char* varName, const T& value)
+	inline bool SetVar( const char* varName, const T& value, const char* pTmplName = NULL )
 	{
-		return SetVariable( varName, TUIData(value) );
+		return SetVariable( varName, TUIData(value), pTmplName );
 	}
 
 	template <class T>
-	inline T GetVar( const char* varName )
+	inline T GetVar( const char* varName, const char* pTmplName = NULL )
 	{
 		TUIData out;
-		if ( GetVariable( varName, out ) )
+		if ( GetVariable( varName, out, pTmplName ) )
 		{
 			T res;
 			if ( out.GetValueWithConversion( res ) )
@@ -973,8 +1292,15 @@ UNIQUE_IFACE struct IUIElement
 	}
 
 	// ITexture 
-	virtual void LoadTexIntoMc( const char* movieClip, ITexture* pTexture ) = 0;
-	virtual void LoadTexIntoMc( const SUIParameterDesc* pMovieClipDesc, ITexture* pTexture ) = 0;
+	virtual void LoadTexIntoMc( const char* movieClip, ITexture* pTexture, const char* pTmplName = NULL  ) = 0;
+	virtual void LoadTexIntoMc( const SUIParameterDesc* pMovieClipDesc, ITexture* pTexture, const SUIMovieClipDesc* pTmplDesc = NULL ) = 0;
+
+	// converts screenpos (0-1) to flash pos
+	virtual void ScreenToFlash(const float& px, const float& py, float& rx, float & ry, bool bStageScaleMode = false) const = 0;
+
+	// converts world position to flash position
+	virtual void WorldToFlash(const Matrix34& camMat, const Vec3& worldpos, Vec3& flashpos, Vec2& borders, float& scale, bool bStageScaleMode = false) const = 0;
+
 
 	// dynamic textures
 	virtual void AddTexture( IDynTextureSource* pDynTexture ) = 0;
@@ -990,28 +1316,41 @@ UNIQUE_IFACE struct IUIElement
 
 	virtual void GetMemoryUsage(ICrySizer * s) const = 0;
 };
-typedef std::vector< IUIElement* > TUIElements;
+template<> inline const char* SUIItemLookupIDD<IUIElement>::GetId(const IUIElement* p) { return p->GetName(); }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////// UI Action ///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UNIQUE_IFACE struct IUIAction
 {
+	enum EUIActionType
+	{
+		eUIAT_FlowGraph,
+		eUIAT_LuaScript,
+	};
+
 	virtual ~IUIAction() {}
+
+	virtual IUIAction::EUIActionType GetType() const = 0;
 
 	virtual const char* GetName() const = 0;
 	virtual void SetName( const char* name ) = 0;
 
 	virtual bool Init() = 0;
-	virtual bool IsDeleted() const = 0;
+	virtual bool IsValid() const = 0;
+
+	virtual void SetEnabled(bool bEnabled) = 0;
+	virtual bool IsEnabled() const = 0;
 
 	virtual IFlowGraphPtr GetFlowGraph() const = 0;
+	virtual SmartScriptTable GetScript() const = 0;
 
 	virtual bool Serialize( XmlNodeRef& xmlNode, bool bIsLoading ) = 0;
+	virtual bool Serialize( const char* scriptFile, bool bIsLoading ) = 0;
 
 	virtual void GetMemoryUsage(ICrySizer * s) const = 0;
 };
-typedef std::vector< IUIAction* > TUIActions;
+template<> inline const char* SUIItemLookupIDD<IUIAction>::GetId(const IUIAction* p) { return p->GetName(); }
 
 struct IUIActionListener
 {
@@ -1046,9 +1385,11 @@ struct SUIEvent
 	SUIArguments args;
 };
 
+struct IUIEventSystem;
 struct IUIEventListener
 {
-	virtual void OnEvent( const SUIEvent& event ) = 0;
+	virtual SUIArgumentsRet OnEvent( const SUIEvent& event ) = 0;
+	virtual void OnEventSystemDestroyed(IUIEventSystem* pEventSystem) = 0;
 protected:
   virtual ~IUIEventListener() {}
 };
@@ -1071,7 +1412,7 @@ UNIQUE_IFACE struct IUIEventSystem
 	virtual void RegisterListener( IUIEventListener* pListener, const char* name ) = 0;
 	virtual void UnregisterListener( IUIEventListener* pListener ) = 0;
 
-	virtual void SendEvent( const SUIEvent& event ) = 0;
+	virtual SUIArgumentsRet SendEvent( const SUIEvent& event ) = 0;
 
 	virtual const SUIEventDesc* GetEventDesc( int index ) const = 0;
 	virtual const SUIEventDesc* GetEventDesc( const char* eventName ) const = 0;
@@ -1116,6 +1457,16 @@ struct IUIModule
 	virtual void Reset() {};
 
 	virtual void Update(float fDelta) {};
+
+	//------------------------------------------------
+	// SANDBOX ONLY!!
+
+	// called before reloading is issued, if return false reloading will not happen
+	virtual bool EditorAllowReload() { return true; }
+
+	// called on reload all
+	virtual void EditorReload() {};
+	//------------------------------------------------
 };
 
 UNIQUE_IFACE struct IFlashUI : public ICryUnknown
@@ -1139,7 +1490,7 @@ public:
 	virtual void Shutdown() = 0;
 
 	virtual bool LoadElementsFromFile( const char* fileName ) = 0;
-	virtual bool LoadActionFromFile( const char* fileName ) = 0;
+	virtual bool LoadActionFromFile( const char* sFileName, IUIAction::EUIActionType type ) = 0;
 
 	// access for IUIElements
 	virtual IUIElement* GetUIElement( const char* name ) const = 0;
@@ -1162,6 +1513,7 @@ public:
 	virtual void RegisterModule( IUIModule* pModule, const char* name ) = 0;
 	virtual void UnregisterModule( IUIModule* pModule ) = 0;
 
+	virtual void SetHudElementsVisible(bool bVisible)  = 0;
 
 	// only valid in editor, also only used by UI Editor to prevent stack overflow while FG is not updated.
 	virtual void EnableEventStack( bool bEnable ) = 0;
@@ -1196,6 +1548,7 @@ public:
 		ePUI_PC = 0,
 		ePUI_X360,
 		ePUI_PS3,
+		ePUI_Gringo,
 	};
 	typedef Functor0wRet< EPlatformUI > TEditorPlatformCallback;
 	virtual void SetEditorPlatformCallback(TEditorPlatformCallback& cb) = 0;
@@ -1218,7 +1571,19 @@ public:
 	typedef Functor1< const SUILogEvent& > TEditorUILogEventCallback;
 	virtual void SetEditorUILogEventCallback(TEditorUILogEventCallback& cb) = 0;
 	virtual void RemoveEditorUILogEventCallback() = 0;
+
+#ifndef _LIB
+	virtual SUIItemLookupSet_Impl<SUIParameterDesc>* CreateLookupParameter() = 0;
+	virtual SUIItemLookupSet_Impl<SUIMovieClipDesc>* CreateLookupMovieClip() = 0;
+	virtual SUIItemLookupSet_Impl<SUIEventDesc>* CreateLookupEvent() = 0;
+#endif
 };
+
+#ifndef _LIB
+inline SUIItemLookupSet_Impl<SUIParameterDesc>* SUIItemLookupSetFactory::CreateLookupParameter() { assert(gEnv->pFlashUI); return gEnv->pFlashUI->CreateLookupParameter(); }
+inline SUIItemLookupSet_Impl<SUIMovieClipDesc>* SUIItemLookupSetFactory::CreateLookupMovieClip() { assert(gEnv->pFlashUI); return gEnv->pFlashUI->CreateLookupMovieClip(); }
+inline SUIItemLookupSet_Impl<SUIEventDesc>* SUIItemLookupSetFactory::CreateLookupEvent() { assert(gEnv->pFlashUI); return gEnv->pFlashUI->CreateLookupEvent(); }
+#endif
 
 DECLARE_BOOST_POINTERS( IFlashUI );
 
@@ -1231,34 +1596,72 @@ static IFlashUIPtr GetIFlashUIPtr()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// FOR LEGACY ONLY: 
-// Old UIEvent Dispatch helper
-// Consider using the new one which is easier to use and also does debug runtime checks!
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T>
-struct SUIEventHelper
+enum EUIObjectType
 {
-	typedef void (T::*TEventFct) ( const SUIEvent& event );
-	void RegisterEvent( IUIEventSystem* pEventSystem, const SUIEventDesc &event, TEventFct fct )
-	{
-		mFunctionMap[pEventSystem->RegisterEvent(event)] = fct;
-	}
-	void Dispatch( T* pThis, const SUIEvent& event )
-	{
-		TFunctionMapIter it = mFunctionMap.find( event.event );
-		if (it != mFunctionMap.end())
-			(pThis->*it->second)( event );
-	}
-
-private:
-	typedef std::map<uint, TEventFct> TFunctionMap;
-	typedef typename TFunctionMap::iterator TFunctionMapIter;
-	TFunctionMap mFunctionMap;
+	eUOT_Variable,
+	eUOT_Array,
+	eUOT_MovieClip,
+	eUOT_MovieClipTmpl,
+	eUOT_Functions,
+	eUOT_Events,
 };
+
+template <EUIObjectType type> struct SUIDescTypeOf   { typedef int TType; }; // dummy type
+template <> struct SUIDescTypeOf<eUOT_Variable>      { typedef SUIParameterDesc TType; };
+template <> struct SUIDescTypeOf<eUOT_Array>         { typedef SUIParameterDesc TType; };
+template <> struct SUIDescTypeOf<eUOT_MovieClip>     { typedef SUIMovieClipDesc TType; };
+template <> struct SUIDescTypeOf<eUOT_MovieClipTmpl> { typedef SUIMovieClipDesc TType; };
+template <> struct SUIDescTypeOf<eUOT_Functions>     { typedef SUIEventDesc TType; };
+template <> struct SUIDescTypeOf<eUOT_Events>        { typedef SUIEventDesc TType; };
+
+template <EUIObjectType type, class Item, class Idx> struct SUIGetDesc{ static const typename SUIDescTypeOf<type>::TType* GetDesc(Item* pItem, Idx i) {assert(false);return NULL;} static int GetCount(Item* pItem) {assert(false);return 0;}};
+template <EUIObjectType type, class Idx> struct SUIGetDesc<type, const SUIParameterDesc, Idx> { static const typename SUIDescTypeOf<type>::TType* GetDesc(const SUIParameterDesc* pItem, Idx idx) {return NULL;} static int GetCount(const SUIParameterDesc* pItem) {return 0;}};
+template <class Item, class Idx> struct SUIGetDesc<eUOT_Variable,      Item, Idx>  { static const typename SUIDescTypeOf<eUOT_Variable>::TType* GetDesc(Item* pItem, Idx idx) {return pItem->GetVariableDesc(idx);}  static int GetCount(Item* pItem) {return pItem->GetVariableCount();}};
+template <class Item, class Idx> struct SUIGetDesc<eUOT_Array,         Item, Idx>  { static const typename SUIDescTypeOf<eUOT_Array>::TType* GetDesc(Item* pItem, Idx idx) {return pItem->GetArrayDesc(idx);}  static int GetCount(Item* pItem) {return pItem->GetArrayCount();}};
+template <class Item, class Idx> struct SUIGetDesc<eUOT_MovieClip,     Item, Idx>  { static const typename SUIDescTypeOf<eUOT_MovieClip>::TType* GetDesc(Item* pItem, Idx idx) {return pItem->GetMovieClipDesc(idx);}  static int GetCount(Item* pItem) {return pItem->GetMovieClipCount();}};
+template <class Item, class Idx> struct SUIGetDesc<eUOT_Functions,     Item, Idx>  { static const typename SUIDescTypeOf<eUOT_Functions>::TType* GetDesc(Item* pItem, Idx idx) {return pItem->GetFunctionDesc(idx);}  static int GetCount(Item* pItem) {return pItem->GetFunctionCount();}};
+template <class Item, class Idx> struct SUIGetDesc<eUOT_Events,        Item, Idx>  { static const typename SUIDescTypeOf<eUOT_Events>::TType* GetDesc(Item* pItem, Idx idx) {return pItem->GetEventDesc(idx);}  static int GetCount(Item* pItem) {return pItem->GetEventCount();}};
+template <class Idx> struct SUIGetDesc<eUOT_MovieClipTmpl, const SUIMovieClipDesc, Idx>  { static const typename SUIDescTypeOf<eUOT_MovieClipTmpl>::TType* GetDesc(const SUIMovieClipDesc* pItem, Idx idx) {return NULL;}  static int GetCount(const SUIMovieClipDesc* pItem) {return 0;}};
+template <class Idx> struct SUIGetDesc<eUOT_MovieClipTmpl, IUIElement, Idx>  { static const typename SUIDescTypeOf<eUOT_MovieClipTmpl>::TType* GetDesc(IUIElement* pItem, Idx idx) {return pItem->GetMovieClipTmplDesc(idx);}  static int GetCount(IUIElement* pItem) {return pItem->GetMovieClipTmplCount();}};
+template <class Idx> struct SUIGetDesc<eUOT_MovieClipTmpl, const IUIElement, Idx>  { static const typename SUIDescTypeOf<eUOT_MovieClipTmpl>::TType* GetDesc(const IUIElement* pItem, Idx idx) {return pItem->GetMovieClipTmplDesc(idx);}  static int GetCount(const IUIElement* pItem) {return pItem->GetMovieClipTmplCount();}};
+
+template <EUIObjectType type> struct SUIGetTypeStr   { static const char* GetTypeName() {return "UNDEFINED";} };
+template <> struct SUIGetTypeStr<eUOT_Variable>      { static const char* GetTypeName() {return "variable";} };
+template <> struct SUIGetTypeStr<eUOT_Array>         { static const char* GetTypeName() {return "array";} };
+template <> struct SUIGetTypeStr<eUOT_MovieClip>     { static const char* GetTypeName() {return "movieclip";} };
+template <> struct SUIGetTypeStr<eUOT_MovieClipTmpl> { static const char* GetTypeName() {return "movieclip template";} };
+template <> struct SUIGetTypeStr<eUOT_Functions>     { static const char* GetTypeName() {return "function";} };
+template <> struct SUIGetTypeStr<eUOT_Events>        { static const char* GetTypeName() {return "event";} };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////// UIEvent Dispatch helper //////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+#if defined(_DEBUG) || !defined(NDEBUG)
+#define UIEVENT_CHECK_RETURN_VALUE(type) \
+		case SUIParameterDesc::eUIPT_##type: CRY_ASSERT_MESSAGE(r.GetArg(i).GetType() == eUIDT_##type, "Argument not compatible!"); break;
+
+#define UIEVENT_RETURN_DISPATCH_SAFE \
+	SUIArguments r = it->second->Dispatch( (void*) pThis, event ); \
+	const SUIEventDesc* pEventDesc = m_pEventSystem->GetEventDesc(it->first); \
+	CRY_ASSERT_MESSAGE(pEventDesc, "No matching event registered!"); \
+	CRY_ASSERT_MESSAGE(pEventDesc->OutputParams.IsDynamic || pEventDesc->OutputParams.Params.size() == r.GetArgCount(), "Wrong number of return values!"); \
+	if (!pEventDesc->OutputParams.IsDynamic) { \
+		for (int i = 0; i < r.GetArgCount(); ++i) { \
+			switch (pEventDesc->OutputParams.Params[i].eType) { \
+			UIEVENT_CHECK_RETURN_VALUE(Bool) \
+			UIEVENT_CHECK_RETURN_VALUE(Int) \
+			UIEVENT_CHECK_RETURN_VALUE(Float) \
+			UIEVENT_CHECK_RETURN_VALUE(Vec3) \
+			UIEVENT_CHECK_RETURN_VALUE(String) \
+			UIEVENT_CHECK_RETURN_VALUE(WString) \
+	} } } \
+	return r;
+
+#else
+#define UIEVENT_RETURN_DISPATCH_SAFE return it->second->Dispatch( (void*) pThis, event );
+#endif
+
 #define UIEVENT_GETARGSAVE(index) \
 	deref_t<T##index> arg##index; \
 	{ const bool ok = event.args.GetArg(index, arg##index.v); \
@@ -1268,10 +1671,10 @@ private:
 	CRY_ASSERT_MESSAGE(event.args.GetArgCount() == count, "Wrong argument count, expected " #count);
 
 #define UIEVENT_ASSERT_COUNT(count) \
-	CRY_ASSERT_MESSAGE(event.Params.size() == count, "Wrong argument count, expected " #count);
+	CRY_ASSERT_MESSAGE(event.InputParams.Params.size() == count, "Wrong argument count, expected " #count);
 
 #define UIEVENT_ASSERT_ARG(index) \
-	CRY_ASSERT_MESSAGE( SUIEventArgumentCheck<T##index>::Check(event.Params[index].eType), "Template argument not compatible! Index: " #index );
+	CRY_ASSERT_MESSAGE( SUIEventArgumentCheck<T##index>::Check(event.InputParams.Params[index].eType), "Template argument not compatible! Index: " #index );
 
 // deref for T&, const T& and special case for const char* and const wchar_t*
 template <class T> struct deref_t						{ typedef T type; type v; T g() {return v;}};
@@ -1291,170 +1694,185 @@ template <> inline bool SUIEventArgumentCheck<float>::Check(SUIParameterDesc::EU
 template <> inline bool SUIEventArgumentCheck<Vec3>::Check(SUIParameterDesc::EUIParameterType type) { return type==SUIParameterDesc::eUIPT_Vec3; }
 template <> inline bool SUIEventArgumentCheck<Ang3>::Check(SUIParameterDesc::EUIParameterType type) { return type==SUIParameterDesc::eUIPT_Vec3; }
 template <> inline bool SUIEventArgumentCheck<const char*>::Check(SUIParameterDesc::EUIParameterType type) { return type==SUIParameterDesc::eUIPT_String; }
-template <> inline bool SUIEventArgumentCheck<const wchar_t*>::Check(SUIParameterDesc::EUIParameterType type) { return type==SUIParameterDesc::eUIPT_String; }
+template <> inline bool SUIEventArgumentCheck<const wchar_t*>::Check(SUIParameterDesc::EUIParameterType type) { return type==SUIParameterDesc::eUIPT_WString; }
 template <> inline bool SUIEventArgumentCheck<string>::Check(SUIParameterDesc::EUIParameterType type) { return type==SUIParameterDesc::eUIPT_String; }
-template <> inline bool SUIEventArgumentCheck<wstring>:: Check(SUIParameterDesc::EUIParameterType type) { return type==SUIParameterDesc::eUIPT_String; }
+template <> inline bool SUIEventArgumentCheck<wstring>:: Check(SUIParameterDesc::EUIParameterType type) { return type==SUIParameterDesc::eUIPT_WString; }
 template <> inline bool SUIEventArgumentCheck<TUIData>:: Check(SUIParameterDesc::EUIParameterType type) { return true; }
 
 // dispatcher function interface
 struct IUIEventDispatchFct
 {
 	virtual ~IUIEventDispatchFct() {};
-	virtual void Dispatch( void* pThis, const SUIEvent& event ) = 0;
+	virtual SUIArgumentsRet Dispatch( void* pThis, const SUIEvent& event ) = 0;
+};
+
+template <class R, class C> 
+struct SUIEventDispatchFctReturn { static inline SUIArgumentsRet Dispatch( C& impl, void* pThis, const SUIEvent& event ) { return impl.Dispatch(pThis, event); } };
+
+template <class C> 
+struct SUIEventDispatchFctReturn<void, C> {	static inline SUIArgumentsRet Dispatch( C& impl, void* pThis, const SUIEvent& event ) { impl.Dispatch(pThis, event); return SUIArguments();	} };
+
+template <class R, class C>
+struct SUIEventDispatchFctImpl : public IUIEventDispatchFct
+{
+	SUIEventDispatchFctImpl(typename C::TFct fct) : Impl(fct) {}
+	virtual ~SUIEventDispatchFctImpl() {};
+	virtual SUIArgumentsRet Dispatch( void* pThis, const SUIEvent& event ) { return SUIEventDispatchFctReturn<R, C>::Dispatch(Impl, pThis, event); }
+	C Impl;
 };
 
 // dispatcher functions
-template <class C>
-struct SUIEventDispatchFct0 : public IUIEventDispatchFct
+template <class C, class R>
+struct SUIEventDispatchFct0
 {
-	typedef void (C::*TFct) ( void ); 
+	typedef R (C::*TFct) ( void ); 
 	SUIEventDispatchFct0(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event ) { (((C*)pThis)->*m_fct)(); }
+	R Dispatch( void* pThis, const SUIEvent& event ) { return (((C*)pThis)->*m_fct)(); }
 	TFct m_fct; 
 };
 
-template <class C, class T0>
-struct SUIEventDispatchFct1 : public IUIEventDispatchFct
+template <class C, class R, class T0>
+struct SUIEventDispatchFct1
 {
-	typedef void (C::*TFct) ( T0 ); 
+	typedef R (C::*TFct) ( T0 ); 
 	SUIEventDispatchFct1(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(1);
 		UIEVENT_GETARGSAVE(0);
-		(((C*)pThis)->*m_fct)(arg0.g());
+		return (((C*)pThis)->*m_fct)(arg0.g());
 	}
 	TFct m_fct; 
 };
 
-template <class C, class T0, class T1>
-struct SUIEventDispatchFct2 : public IUIEventDispatchFct
+template <class C, class R, class T0, class T1>
+struct SUIEventDispatchFct2
 {
-	typedef void (C::*TFct) ( T0, T1 ); 
+	typedef R (C::*TFct) ( T0, T1 ); 
 	SUIEventDispatchFct2(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(2);
 		UIEVENT_GETARGSAVE(0); UIEVENT_GETARGSAVE(1);
-		(((C*)pThis)->*m_fct)(arg0.g(), arg1.g());
+		return (((C*)pThis)->*m_fct)(arg0.g(), arg1.g());
 	}
 	TFct m_fct; 
 };
 
-template <class C, class T0, class T1, class T2>
-struct SUIEventDispatchFct3 : public IUIEventDispatchFct
+template <class C, class R, class T0, class T1, class T2>
+struct SUIEventDispatchFct3
 {
-	typedef void (C::*TFct) ( T0, T1, T2 ); 
+	typedef R (C::*TFct) ( T0, T1, T2 ); 
 	SUIEventDispatchFct3(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(3);
 		UIEVENT_GETARGSAVE(0); UIEVENT_GETARGSAVE(1); UIEVENT_GETARGSAVE(2);
-		(((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g());
+		return (((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g());
 	}
 	TFct m_fct; 
 };
 
-template <class C, class T0, class T1, class T2, class T3>
-struct SUIEventDispatchFct4 : public IUIEventDispatchFct
+template <class C, class R, class T0, class T1, class T2, class T3>
+struct SUIEventDispatchFct4
 {
-	typedef void (C::*TFct) ( T0, T1, T2, T3 ); 
+	typedef R (C::*TFct) ( T0, T1, T2, T3 ); 
 	SUIEventDispatchFct4(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(4);
 		UIEVENT_GETARGSAVE(0); UIEVENT_GETARGSAVE(1); UIEVENT_GETARGSAVE(2); UIEVENT_GETARGSAVE(3);
-		(((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g());
+		return (((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g());
 	}
 	TFct m_fct; 
 };
 
-template <class C, class T0, class T1, class T2, class T3, class T4>
-struct SUIEventDispatchFct5 : public IUIEventDispatchFct
+template <class C, class R, class T0, class T1, class T2, class T3, class T4>
+struct SUIEventDispatchFct5
 {
-	typedef void (C::*TFct) ( T0, T1, T2, T3, T4 ); 
+	typedef R (C::*TFct) ( T0, T1, T2, T3, T4 ); 
 	SUIEventDispatchFct5(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(5);
 		UIEVENT_GETARGSAVE(0); UIEVENT_GETARGSAVE(1); UIEVENT_GETARGSAVE(2); UIEVENT_GETARGSAVE(3); UIEVENT_GETARGSAVE(4);
-		(((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g());
+		return (((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g());
 	}
 	TFct m_fct; 
 };
 
-template <class C, class T0, class T1, class T2, class T3, class T4, class T5>
-struct SUIEventDispatchFct6 : public IUIEventDispatchFct
+template <class C, class R, class T0, class T1, class T2, class T3, class T4, class T5>
+struct SUIEventDispatchFct6
 {
-	typedef void (C::*TFct) ( T0, T1, T2, T3, T4, T5 ); 
+	typedef R (C::*TFct) ( T0, T1, T2, T3, T4, T5 ); 
 	SUIEventDispatchFct6(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(6);
 		UIEVENT_GETARGSAVE(0); UIEVENT_GETARGSAVE(1); UIEVENT_GETARGSAVE(2); UIEVENT_GETARGSAVE(3); UIEVENT_GETARGSAVE(4); UIEVENT_GETARGSAVE(5);
-		(((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g(), arg5.g());
+		return (((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g(), arg5.g());
 	}
 	TFct m_fct; 
 };
 
-template <class C, class T0, class T1, class T2, class T3, class T4, class T5, class T6>
-struct SUIEventDispatchFct7 : public IUIEventDispatchFct
+template <class C, class R, class T0, class T1, class T2, class T3, class T4, class T5, class T6>
+struct SUIEventDispatchFct7
 {
-	typedef void (C::*TFct) ( T0, T1, T2, T3, T4, T5, T6 ); 
+	typedef R (C::*TFct) ( T0, T1, T2, T3, T4, T5, T6 ); 
 	SUIEventDispatchFct7(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(7);
 		UIEVENT_GETARGSAVE(0); UIEVENT_GETARGSAVE(1); UIEVENT_GETARGSAVE(2); UIEVENT_GETARGSAVE(3); UIEVENT_GETARGSAVE(4); UIEVENT_GETARGSAVE(5); UIEVENT_GETARGSAVE(6);
-		(((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g(), arg5.g(), arg6.g());
+		return (((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g(), arg5.g(), arg6.g());
 	}
 	TFct m_fct; 
 };
 
-template <class C, class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7>
-struct SUIEventDispatchFct8 : public IUIEventDispatchFct
+template <class C, class R, class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7>
+struct SUIEventDispatchFct8
 {
-	typedef void (C::*TFct) ( T0, T1, T2, T3, T4, T5, T6, T7 ); 
+	typedef R (C::*TFct) ( T0, T1, T2, T3, T4, T5, T6, T7 ); 
 	SUIEventDispatchFct8(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(8);
 		UIEVENT_GETARGSAVE(0); UIEVENT_GETARGSAVE(1); UIEVENT_GETARGSAVE(2); UIEVENT_GETARGSAVE(3); UIEVENT_GETARGSAVE(4); UIEVENT_GETARGSAVE(5); UIEVENT_GETARGSAVE(6); UIEVENT_GETARGSAVE(7);
-		(((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g(), arg5.g(), arg6.g(), arg7.g());
+		return (((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g(), arg5.g(), arg6.g(), arg7.g());
 	}
 	TFct m_fct; 
 };
 
-template <class C, class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
-struct SUIEventDispatchFct9 : public IUIEventDispatchFct
+template <class C, class R, class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
+struct SUIEventDispatchFct9
 {
-	typedef void (C::*TFct) ( T0, T1, T2, T3, T4, T5, T6, T7, T8 ); 
+	typedef R (C::*TFct) ( T0, T1, T2, T3, T4, T5, T6, T7, T8 ); 
 	SUIEventDispatchFct9(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )
+	R Dispatch( void* pThis, const SUIEvent& event )
 	{
 		UIEVENT_CHECKARGCOUNT(9);
 		UIEVENT_GETARGSAVE(0); UIEVENT_GETARGSAVE(1); UIEVENT_GETARGSAVE(2); UIEVENT_GETARGSAVE(3); UIEVENT_GETARGSAVE(4); UIEVENT_GETARGSAVE(5); UIEVENT_GETARGSAVE(6); UIEVENT_GETARGSAVE(7); UIEVENT_GETARGSAVE(8);
-		(((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g(), arg5.g(), arg6.g(), arg7.g(), arg8.g());
+		return (((C*)pThis)->*m_fct)(arg0.g(), arg1.g(), arg2.g(), arg3.g(), arg4.g(), arg5.g(), arg6.g(), arg7.g(), arg8.g());
 	}
 	TFct m_fct; 
 };
 
 // Special cases for legacy and dynamic arg count
-template <class C>
-struct SUIEventDispatchFct1<C, const SUIEvent&> : public IUIEventDispatchFct
+template <class C, class R>
+struct SUIEventDispatchFct1<C, R, const SUIEvent&>
 {
-	typedef void (C::*TFct) ( const SUIEvent& ); 
+	typedef R (C::*TFct) ( const SUIEvent& ); 
 	SUIEventDispatchFct1(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event ) { (((C*)pThis)->*m_fct)(event); }
+	R Dispatch( void* pThis, const SUIEvent& event ) { return (((C*)pThis)->*m_fct)(event); }
 	TFct m_fct; 
 };
 
-template <class C>
-struct SUIEventDispatchFct1<C, const SUIArguments&> : public IUIEventDispatchFct
+template <class C, class R>
+struct SUIEventDispatchFct1<C, R, const SUIArguments&>
 {
-	typedef void (C::*TFct) ( const SUIArguments& ); 
+	typedef R (C::*TFct) ( const SUIArguments& ); 
 	SUIEventDispatchFct1(TFct fct) : m_fct(fct) {}
-	virtual void Dispatch( void* pThis, const SUIEvent& event )	{ (((C*)pThis)->*m_fct)(event.args); }
+	R Dispatch( void* pThis, const SUIEvent& event )	{ return (((C*)pThis)->*m_fct)(event.args); }
 	TFct m_fct; 
 };
 
@@ -1474,119 +1892,130 @@ struct SUIEventReceiverDispatcher : public IUIEventListener
 			m_pEventSystem->RegisterListener(this, listenerName);
 	}
 
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( void ) )
+	template <class R>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( void ) )
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(0);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct0<C>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct0<C, R> >( fct );
 	}
 
-	template <class T0>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0 ) )
+	template <class R, class T0>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0 ) )
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(1);
 		UIEVENT_ASSERT_ARG(0);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct1<C, T0>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct1<C, R, T0> >( fct );
 	}
 
-	template <class T0, class T1>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0, T1 ) ) 
+	template <class R, class T0, class T1>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0, T1 ) ) 
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(2);
 		UIEVENT_ASSERT_ARG(0); UIEVENT_ASSERT_ARG(1);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct2<C, T0, T1>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct2<C, R, T0, T1> >( fct );
 	}
 
-	template <class T0, class T1, class T2>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0, T1, T2 ) ) 
+	template <class R, class T0, class T1, class T2>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0, T1, T2 ) ) 
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(3);
 		UIEVENT_ASSERT_ARG(0); UIEVENT_ASSERT_ARG(1); UIEVENT_ASSERT_ARG(2);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct3<C, T0, T1, T2>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct3<C, R, T0, T1, T2> >( fct );
 	}
 
-	template <class T0, class T1, class T2, class T3>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0, T1, T2, T3 ) ) 
+	template <class R, class T0, class T1, class T2, class T3>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0, T1, T2, T3 ) ) 
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(4);
 		UIEVENT_ASSERT_ARG(0); UIEVENT_ASSERT_ARG(1); UIEVENT_ASSERT_ARG(2); UIEVENT_ASSERT_ARG(3);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct4<C, T0, T1, T2, T3>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct4<C, R, T0, T1, T2, T3> >( fct );
 	}
 
-	template <class T0, class T1, class T2, class T3, class T4>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0, T1, T2, T3, T4 ) ) 
+	template <class R, class T0, class T1, class T2, class T3, class T4>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0, T1, T2, T3, T4 ) ) 
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(5);
 		UIEVENT_ASSERT_ARG(0); UIEVENT_ASSERT_ARG(1); UIEVENT_ASSERT_ARG(2); UIEVENT_ASSERT_ARG(3); UIEVENT_ASSERT_ARG(4);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct5<C, T0, T1, T2, T3, T4>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct5<C, R, T0, T1, T2, T3, T4> >( fct );
 	}
 
-	template <class T0, class T1, class T2, class T3, class T4, class T5>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0, T1, T2, T3, T4, T5 ) ) 
+	template <class R, class T0, class T1, class T2, class T3, class T4, class T5>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0, T1, T2, T3, T4, T5 ) ) 
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(6);
 		UIEVENT_ASSERT_ARG(0); UIEVENT_ASSERT_ARG(1); UIEVENT_ASSERT_ARG(2); UIEVENT_ASSERT_ARG(3); UIEVENT_ASSERT_ARG(4); UIEVENT_ASSERT_ARG(5);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct6<C, T0, T1, T2, T3, T4, T5>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct6<C, R, T0, T1, T2, T3, T4, T5> >( fct );
 	}
 
-	template <class T0, class T1, class T2, class T3, class T4, class T5, class T6>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0, T1, T2, T3, T4, T5, T6 ) ) 
+	template <class R, class T0, class T1, class T2, class T3, class T4, class T5, class T6>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0, T1, T2, T3, T4, T5, T6 ) ) 
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(7);
 		UIEVENT_ASSERT_ARG(0); UIEVENT_ASSERT_ARG(1); UIEVENT_ASSERT_ARG(2); UIEVENT_ASSERT_ARG(3); UIEVENT_ASSERT_ARG(4); UIEVENT_ASSERT_ARG(5); UIEVENT_ASSERT_ARG(6);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct7<C, T0, T1, T2, T3, T4, T5, T6>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct7<C, R, T0, T1, T2, T3, T4, T5, T6> >( fct );
 	}
 
-	template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0, T1, T2, T3, T4, T5, T6, T7 ) ) 
+	template <class R, class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0, T1, T2, T3, T4, T5, T6, T7 ) ) 
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(8);
 		UIEVENT_ASSERT_ARG(0); UIEVENT_ASSERT_ARG(1); UIEVENT_ASSERT_ARG(2); UIEVENT_ASSERT_ARG(3); UIEVENT_ASSERT_ARG(4); UIEVENT_ASSERT_ARG(5); UIEVENT_ASSERT_ARG(6);UIEVENT_ASSERT_ARG(7);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct8<C, T0, T1, T2, T3, T4, T5, T6, T7>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct8<C, R, T0, T1, T2, T3, T4, T5, T6, T7> >( fct );
 	}
 
-	template <class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( T0, T1, T2, T3, T4, T5, T6, T7, T8 ) ) 
+	template <class R, class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( T0, T1, T2, T3, T4, T5, T6, T7, T8 ) ) 
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
 		UIEVENT_ASSERT_COUNT(9);
 		UIEVENT_ASSERT_ARG(0); UIEVENT_ASSERT_ARG(1); UIEVENT_ASSERT_ARG(2); UIEVENT_ASSERT_ARG(3); UIEVENT_ASSERT_ARG(4); UIEVENT_ASSERT_ARG(5); UIEVENT_ASSERT_ARG(6); UIEVENT_ASSERT_ARG(7); UIEVENT_ASSERT_ARG(8);
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct9<C, T0, T1, T2, T3, T4, T5, T6, T7, T8>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct9<C, R, T0, T1, T2, T3, T4, T5, T6, T7, T8> >( fct );
 	}
 
 	// Special cases for legacy and dyn arg count
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( const SUIEvent& ) )
+	template <class R>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( const SUIEvent& ) )
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct1<C, const SUIEvent&>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct1<C, R, const SUIEvent&> >( fct );
 	}
 
-	inline void RegisterEvent( const SUIEventDesc &event, void (C::*fct) ( const SUIArguments& ) )
+	template <class R>
+	inline void RegisterEvent( const SUIEventDesc &event, R (C::*fct) ( const SUIArguments& ) )
 	{
 		CRY_ASSERT_MESSAGE(m_pEventSystem, "EventReceiver not initialized!");
-		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFct1<C, const SUIArguments&>( fct );
+		mFunctionMap[m_pEventSystem->RegisterEvent(event)] = new SUIEventDispatchFctImpl<R, SUIEventDispatchFct1<C, R, const SUIArguments&> >( fct );
 	}
 
-	inline void Dispatch( C* pThis, const SUIEvent& event )
+	inline SUIArgumentsRet Dispatch( C* pThis, const SUIEvent& event )
 	{
 		CRY_ASSERT_MESSAGE(pThis, "pThis pointer not valid!");
 		TFunctionMapIter it = mFunctionMap.find( event.event );
 		if (it != mFunctionMap.end())
-			it->second->Dispatch( (void*) pThis, event );
+		{
+			UIEVENT_RETURN_DISPATCH_SAFE;
+		}
+		return SUIArguments();
 	}
 
 	// IUIEventListener
-	virtual void OnEvent( const SUIEvent& event )
+	virtual SUIArgumentsRet OnEvent( const SUIEvent& event )
 	{
-		Dispatch( m_pThis, event );
+		return Dispatch( m_pThis, event );
+	}
+
+	virtual void OnEventSystemDestroyed(IUIEventSystem* pEventSystem)
+	{
+		m_pEventSystem = NULL;
 	}
 
 	virtual ~SUIEventReceiverDispatcher()
@@ -1609,23 +2038,28 @@ private:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// UIEvent Send helper ////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-#ifdef _DEBUG
+#if defined(_DEBUG) || !defined(NDEBUG)
 #	define UIEVENT_GETINFO \
 	const SUIEventDesc* pEventDesc = m_pEventSystem->GetEventDesc(it->second); \
 	CRY_ASSERT_MESSAGE(pEventDesc, "No matching event registered!");
-#else
-#	define UIEVENT_GETINFO
-#endif
 
-#define UIEVENT_CHECKARGCOUNT_SEND(count) \
-	CRY_ASSERT_MESSAGE(pEventDesc->Params.size() == count, "Wrong number of arguments!");
+#	define UIEVENT_CHECKARGCOUNT_SEND(count) \
+	CRY_ASSERT_MESSAGE(pEventDesc->InputParams.Params.size() == count, "Wrong number of arguments!"); \
+	CRY_ASSERT_MESSAGE(pEventDesc->OutputParams.Params.size() == 0, "Output params not allowed!");
 
-#define UIEVENT_ADDARGSAFE(index) \
-	CRY_ASSERT_MESSAGE( SUIEventArgumentCheck<T##index>::Check(pEventDesc->Params[index].eType), "Argument not compatible! Index: " #index ); \
+#	define UIEVENT_ADDARGSAFE(index) \
+	CRY_ASSERT_MESSAGE( SUIEventArgumentCheck<T##index>::Check(pEventDesc->InputParams.Params[index].eType), "Argument not compatible! Index: " #index ); \
 	event.args.AddArgument(arg##index);
 
-#define UIEVENT_CHECKDYNARGS \
-	CRY_ASSERT_MESSAGE(pEventDesc->IsDynamic || pEventDesc->Params.size() == args.GetArgCount(), "Wrong number of arguments!");
+#	define UIEVENT_CHECKDYNARGS \
+	CRY_ASSERT_MESSAGE(pEventDesc->InputParams.IsDynamic || pEventDesc->InputParams.Params.size() == args.GetArgCount(), "Wrong number of arguments!");
+
+#else
+#	define UIEVENT_GETINFO
+#	define UIEVENT_CHECKARGCOUNT_SEND(count)
+#	define UIEVENT_ADDARGSAFE(index)	event.args.AddArgument(arg##index);
+#	define UIEVENT_CHECKDYNARGS 
+#endif
 
 #define UIEVENT_GETEVENT \
 	CRY_ASSERT_MESSAGE(m_pEventSystem, "EventSender not initialized!"); \
@@ -1766,117 +2200,6 @@ private:
 	TEventMap m_EventMap;
 	IUIEventSystem* m_pEventSystem;
 };
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////// Lookup Table ///////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-template <class Base, class IDD>
-struct SUIItemLookupSet
-{
-	typedef std::vector< Base > TITems;
-	typedef std::map< CCryName, int > TLookup;
-	typedef typename TITems::iterator iterator;
-	typedef typename TITems::const_iterator const_iterator;
-	typedef typename TITems::reverse_iterator reverse_iterator;
-	typedef typename TITems::const_reverse_iterator const_reverse_iterator;
-	typedef typename TITems::size_type size_type;
-	typedef typename TITems::value_type value_type;
-
-	inline Base& operator[](int __n)
-	{
-		return m_Items[__n];
-	}
-
-	inline Base* operator()(CCryName __name)
-	{
-		typename TLookup::iterator it = m_Lookup.find(__name);
-		return it != m_Lookup.end() ? &m_Items[it->second] : NULL;
-	}
-
-	inline const Base& operator[](int __n) const
-	{
-		return m_Items[__n];
-	}
-
-	inline const Base* operator()(CCryName __name) const
-	{
-		typename TLookup::const_iterator it = m_Lookup.find(__name);
-		return it != m_Lookup.end() ? &m_Items[it->second] : NULL;
-	}
-
-	void push_back(const Base& item)
-	{
-		IDD id(item);
-		assert(m_Lookup[id.Id()] == NULL);
-		m_Lookup[id.Id()] = m_Items.size();
-		m_Items.push_back(item);
-	}
-
-	void remove(const Base& item)
-	{
-		IDD id(item);
-		typename TLookup::iterator it =  m_Lookup.find(id.Id());
-		if (it != m_Lookup.end())
-		{
-			for (typename TLookup::iterator nextIt = it; nextIt != m_Lookup.end(); ++nextIt)
-				nextIt->second--;
-			m_Lookup.erase(it);
-			for (typename TITems::iterator it = m_Items.begin(); it != m_Items.end(); ++it)
-			{
-				if (*it == item)
-				{
-					m_Items.erase(it);
-					return;
-				}
-			}
-		}
-		assert(false);
-	}
-
-	void clear()
-	{
-		m_Items.clear();
-		m_Lookup.clear();
-	}
-
-	inline size_type size() const { return m_Items.size(); }
-
-	inline iterator begin() { return m_Items.begin(); }
-	inline iterator end() { return m_Items.end(); }
-	inline const_iterator begin() const { return m_Items.begin(); }
-	inline const_iterator end() const { return m_Items.end(); }
-	inline reverse_iterator rbegin() { return m_Items.rbegin(); }
-	inline reverse_iterator rend() { return m_Items.rend(); }
-	inline const_reverse_iterator rbegin() const { return m_Items.rbegin(); }
-	inline const_reverse_iterator rend() const { return m_Items.rend(); }
-	inline size_type capacity() const { return m_Items.capacity(); }
-
-private:
-	TITems m_Items;
-	TLookup m_Lookup;
-};
-
-#define LOOKUP_IDD_PTR(type, fct) struct IDD##type { \
-	IDD##type(type* p) : m_p(p) {} \
-	inline const char* Id() const{ return m_p->fct; } \
-	type* m_p; \
-};
-
-#define LOOKUP_IDD(type, fct) struct IDD##type { \
-	IDD##type(const type& p) : m_o(p) {} \
-	inline const char* Id() const{ return m_o.fct; } \
-	type m_o; \
-};
-
-LOOKUP_IDD_PTR(IUIElement, GetName());
-LOOKUP_IDD_PTR(IUIAction, GetName());
-LOOKUP_IDD(SUIParameterDesc, sDisplayName);
-LOOKUP_IDD(SUIEventDesc, sDisplayName);
-
-typedef SUIItemLookupSet<IUIElement*, IDDIUIElement> TUIElementsLookup;
-typedef SUIItemLookupSet<IUIAction*, IDDIUIAction> TUIActionsLookup;
-typedef SUIItemLookupSet<SUIParameterDesc, IDDSUIParameterDesc> TUIParamsLookup;
-typedef SUIItemLookupSet<SUIEventDesc, IDDSUIEventDesc> TUIEventsLookup;
 
 // ---------------------------------------------------------------
 // -------------------- per instance call ------------------------

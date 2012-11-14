@@ -363,6 +363,7 @@ UNIQUE_IFACE struct IActionMapManager
 
 	virtual void EnumerateActions( IActionMapPopulateCallBack* pCallBack ) const = 0; 
 	virtual int  GetActionsCount() const = 0;
+	virtual int  GetActionMapsCount() const = 0;
 
 	virtual bool AddInputDeviceMapping(const EActionInputDevice deviceType, const char* szDeviceTypeStr) = 0;
 	virtual bool RemoveInputDeviceMapping(const EActionInputDevice deviceType) = 0;
@@ -371,6 +372,8 @@ UNIQUE_IFACE struct IActionMapManager
 	virtual const SActionInputDeviceData* GetInputDeviceDataByIndex(const int iIndex) = 0;
 	virtual const SActionInputDeviceData* GetInputDeviceDataByType(const EActionInputDevice deviceType) = 0;
 	virtual const SActionInputDeviceData* GetInputDeviceDataByType(const char* szDeviceType) = 0;
+
+	virtual bool ActionFiltered(const ActionId& action) = 0;
 };
 
 template <class T>

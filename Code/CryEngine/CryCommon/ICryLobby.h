@@ -90,9 +90,9 @@ struct ICryDLCStore;
 
 #include "ICryTCPService.h"
 
-#if USE_CRYLOBBY_GAMESPY && (defined( WIN32 ) || defined( WIN64 )) && !defined(PS3) && !defined( XENON )
-#define USE_CRYLOBBY_GAMESPY			1
-#define USE_CRYLOBBY_GAMESPY_VOIP	1
+#if (defined( WIN32 ) || defined( WIN64 )) && !defined(PS3) && !defined( XENON ) && !defined( GRINGO )
+#define USE_CRYLOBBY_GAMESPY			0
+#define USE_CRYLOBBY_GAMESPY_VOIP	0
 #else
 #define USE_CRYLOBBY_GAMESPY			0
 #define USE_CRYLOBBY_GAMESPY_VOIP	0
@@ -340,6 +340,13 @@ struct SCryLobbyUserData
 	}
 };
 
+enum ELobbyFriendStatus
+{
+	eLFS_Offline,
+	eLFS_Online,
+	eLFS_OnlineSameTitle
+};
+
 struct SCryLobbyPartyMember
 {
 	CryUserID										m_userID;
@@ -435,6 +442,7 @@ struct SCryGameSpyVoiceCodecInfo
 #define CLCC_GAMESPY_PARTNERID			'GPrt'
 #define CLCC_GAMESPY_PASSWORD				'GPwd'
 #define CLCC_GAMESPY_REQUIREDNICK		'GRqn'
+#define CLCC_GAMESPY_TITLECDKEYSERVER	'GTcs'
 #define CLCC_GAMESPY_TITLE					'GTtl'
 #define CLCC_GAMESPY_UNIQUENICK			'GUnk'
 #define CLCC_GAMESPY_GAMEVERSION		'GVer'

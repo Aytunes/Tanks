@@ -76,7 +76,7 @@ namespace Detail {
 		static False_ helper(...);
 
 	public:
-# if defined(WIN32) || defined(WIN64) || defined(XENON) // use a compiler intrinsic if available
+# if defined(WIN32) || defined(WIN64) || defined(XENON) || defined(GRINGO) // use a compiler intrinsic if available
 		enum { value = __is_convertible_to(T1,T2) };			
 # else
 		enum { value = sizeof(True_) == sizeof(is_convertible::helper( *((T1*)(NULL)) )) };			
@@ -1055,7 +1055,7 @@ namespace JobManager {\
 namespace Detail { \
 \
 /* packet structure for the Producer/Consumer Queue */ \
-struct packet ## type\
+_MS_ALIGN(128) struct packet ## type\
 {\
 	public:\
 	/* non parameter dependent functions */ \
@@ -1064,7 +1064,7 @@ struct packet ## type\
 	const unsigned int GetPacketSize() const; \
 	SVEC4_UINT* const __restrict GetPacketCont() const; \
 	void RegisterJobState(JobManager::SJobState* __restrict pJobState); \
-	unsigned int GetJobStateAddess() const; \
+	SPU_DRIVER_INT_PTR GetJobStateAddress() const; \
 	void SetDedicatedThreadOnly(); \
 	bool IsDedicatedThreadOnly() const; \
 	template<typename C>\
@@ -1190,13 +1190,13 @@ struct packet ## type\
 	/* class members */ \
 	unsigned char m_ParameterStorage[JobManager::SInfoBlock::scAvailParamSize] _ALIGN(128); /* Storage for job parameter */ \
 	unsigned int paramSize;																												/* size of set parameters */ \
-	unsigned int eaExtJobStateAddress;																						/* address of per packet job address */ \
+	SPU_DRIVER_INT_PTR eaExtJobStateAddress;																			/* address of per packet job address */ \
 	bool m_bDedicatedThreadOnly;																									/* true in case these jobs can only be run on dedicated worker threads */ \
 	CCommonDMABase commonDMABase; \
 } _ALIGN(128); /* struct packet */ \
 \
 \
-	class SGenericJob ## type : public CJobBase\
+	_MS_ALIGN(128) class SGenericJob ## type : public CJobBase\
 	{\
 	public:\
 		typedef JobManager::Detail::packet ## type packet;\
@@ -1210,7 +1210,8 @@ struct packet ## type\
 		const char* GetJobName() const volatile; \
 		const uint32 GetJobAddress(); \
 		void SetParamDataSize(const unsigned int cParamSize); \
-		void SetHighPriority(); \
+		void SetPriorityLevel(unsigned int nPriorityLevel); \
+		void SetBlocking(); \
 		void SetDedicatedThreadOnly(); \
 		unsigned int GetParamDataSize(); \
 		void SetJobParamData( void *paramMem ); \
@@ -1258,6 +1259,10 @@ struct packet ## type\
 		\
 		template<typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9, typename T10> \
 		SGenericJob ## type(T0 t0, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6, T7 t7, T8 t8, T9 t9, T10 t10); \
+\
+	/* overloaded new/delete operator to ensure aligned memory when doing a heap allocation */\
+	void *operator new(size_t nSize)		{ return CryModuleMemalign(nSize, 128); } \
+	void operator delete( void *pPtr )	{ CryModuleMemalignFree(pPtr); }\
 \
 	private:\
 		/**********************************************************************/\
@@ -1416,7 +1421,7 @@ struct packet ## type\
 \
 		/***************************************************************************/\
 		/* class members */ \
-		unsigned char m_ParameterStorage[JobManager::SInfoBlock::scAvailParamSize] _ALIGN(128);		/* memory to store serialized parameters */ \
+		_MS_ALIGN(128) unsigned char m_ParameterStorage[JobManager::SInfoBlock::scAvailParamSize] _ALIGN(128);		/* memory to store serialized parameters */ \
 		JobManager::Invoker m_Invoker;																														/* Invoker function to de-serialize the parameters*/ \
 \
 	}  _ALIGN(128);\
@@ -1426,14 +1431,19 @@ struct packet ## type\
 	/* Implementation of SGenericJob functions */ \
 	inline const JobManager::TJobHandle SGenericJob ## type::GetProgramHandle() const volatile\
 	{\
-		static JobManager::TJobHandle sHandle = gEnv->GetJobManager()->GetJobHandle(name, sizeof(name) - 1,m_Invoker);\
-		return sHandle; \
+		if( gJobHandle ## type == NULL )\
+		{\
+			/*Safe, since GetJobHandle itself is thread safe and should always return the same result for a job */\
+			gJobHandle ## type = gEnv->GetJobManager()->GetJobHandle(name, sizeof(name) - 1, GenerateInvoker( &function ));\
+		}\
+		return gJobHandle ## type; \
 	}\
 \
 	inline void SGenericJob ## type::RegisterSPUJobHandle()\
 	{\
 		/*TODO calling this each time doesn't look like the best idea, but solve in client code or jobman code*/\
-		gJobHandle ## type = gEnv->GetJobManager()->GetJobHandle(name, sizeof(name) - 1, GenerateInvoker( &function ) );\
+		if(gJobHandle ## type == NULL ) \
+			gJobHandle ## type = gEnv->GetJobManager()->GetJobHandle(name, sizeof(name) - 1, GenerateInvoker( &function ) );\
 	}\
 \
 	inline uint32 SGenericJob ## type::GetJobID()\
@@ -1461,9 +1471,14 @@ struct packet ## type\
 		this->m_JobDelegator.SetParamDataSize( (cParamSize + 0xF) & ~0xF);\
 	}\
 \
-	inline void SGenericJob ## type::SetHighPriority()\
+	inline void SGenericJob ## type::SetPriorityLevel(unsigned int nPriorityLevel)\
 	{\
-		this->m_JobDelegator.SetHighPriority();\
+		this->m_JobDelegator.SetPriorityLevel(nPriorityLevel);\
+	}\
+\
+	inline void SGenericJob ## type::SetBlocking()\
+	{\
+		this->m_JobDelegator.SetBlocking();\
 	}\
 \
 	inline void SGenericJob ## type::SetDedicatedThreadOnly()\
@@ -1619,6 +1634,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType();\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1629,6 +1645,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1639,6 +1656,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1649,6 +1667,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1659,6 +1678,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1669,6 +1689,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1679,6 +1700,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1689,6 +1711,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1699,6 +1722,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1709,6 +1733,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1719,6 +1744,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1729,6 +1755,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -1740,6 +1767,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType();\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1750,6 +1778,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1760,6 +1789,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1770,6 +1800,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1780,6 +1811,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1790,6 +1822,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1800,6 +1833,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1810,6 +1844,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1820,6 +1855,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1830,6 +1866,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1840,6 +1877,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -1850,6 +1888,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2023,14 +2062,14 @@ struct packet ## type\
 			return (SVEC4_UINT*)m_ParameterStorage; \
 	}\
 \
-	inline unsigned int packet ## type::GetJobStateAddess() const\
+	inline SPU_DRIVER_INT_PTR packet ## type::GetJobStateAddress() const\
 	{\
 		return eaExtJobStateAddress; \
 	}\
 \
 	inline void packet ## type::RegisterJobState(JobManager::SJobState* __restrict pJobState)\
 	{\
-		eaExtJobStateAddress = reinterpret_cast<unsigned int>(pJobState);\
+		eaExtJobStateAddress = reinterpret_cast<SPU_DRIVER_INT_PTR>(pJobState);\
 		pJobState->InitProfilingData(); \
 	}\
 \
@@ -2155,6 +2194,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType();\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2165,6 +2205,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2175,6 +2216,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2185,6 +2227,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2195,6 +2238,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2205,6 +2249,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2215,6 +2260,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2225,6 +2271,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2235,6 +2282,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2245,6 +2293,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2255,6 +2304,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2265,6 +2315,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2276,6 +2327,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType();\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2286,6 +2338,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2296,6 +2349,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2306,6 +2360,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2316,6 +2371,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2326,6 +2382,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2336,6 +2393,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2346,6 +2404,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2356,6 +2415,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2366,6 +2426,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2376,6 +2437,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2386,6 +2448,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 } /* namespace Detail */ \
@@ -2400,7 +2463,7 @@ namespace JobManager {\
 namespace Detail { \
 \
 	/* packet structure for the Producer/Consumer Queue */ \
-struct packet ## type\
+_MS_ALIGN(128) struct packet ## type\
 {\
 	public:\
 	/* non parameter dependent functions */ \
@@ -2410,7 +2473,7 @@ struct packet ## type\
 	const unsigned int GetPacketSize() const; \
 	SVEC4_UINT* const __restrict GetPacketCont() const; \
 	void RegisterJobState(JobManager::SJobState* __restrict pJobState); \
-	unsigned int GetJobStateAddess() const; \
+	SPU_DRIVER_INT_PTR GetJobStateAddress() const; \
 	void SetDedicatedThreadOnly(); \
 	bool IsDedicatedThreadOnly() const; \
 	template<typename C>\
@@ -2534,15 +2597,15 @@ struct packet ## type\
 	\
 	/*****************/ \
 	/* class members */ \
-	unsigned char m_ParameterStorage[JobManager::SInfoBlock::scAvailParamSize] _ALIGN(128); /* Storage for job parameter */ \
+	_MS_ALIGN(128) unsigned char m_ParameterStorage[JobManager::SInfoBlock::scAvailParamSize] _ALIGN(128); /* Storage for job parameter */ \
 	unsigned int paramSize;																												/* size of set parameters */ \
-	unsigned int eaExtJobStateAddress;																						/* address of per packet job address */ \
+	SPU_DRIVER_INT_PTR eaExtJobStateAddress;																			/* address of per packet job address */ \
 	bool m_bDedicatedThreadOnly;																									/* true in case these jobs can only be run on dedicated worker threads */ \
 	CCommonDMABase commonDMABase; \
 	} _ALIGN(128); /* struct packet */ \
 \
 \
-	class SGenericJob ## type : public CJobBase\
+	_MS_ALIGN(128) class SGenericJob ## type : public CJobBase\
 	{\
 	public:\
 		typedef JobManager::Detail::packet ## type packet;\
@@ -2557,7 +2620,8 @@ struct packet ## type\
 		const char* GetJobName() const volatile; \
 		const uint32 GetJobAddress(); \
 		void SetParamDataSize(const unsigned int cParamSize); \
-		void SetHighPriority(); \
+		void SetPriorityLevel(unsigned int nPriorityLevel); \
+		void SetBlocking(); \
 		unsigned int GetParamDataSize(); \
 		void SetJobParamData( void *paramMem ); \
 		Invoker GetGenericDelegator() const; \
@@ -2686,7 +2750,7 @@ struct packet ## type\
 \
 		/***************************************************************************/\
 		/* class members */ \
-		unsigned char m_ParameterStorage[JobManager::SInfoBlock::scAvailParamSize] _ALIGN(128);		/* memory to store serialized parameters */ \
+		_MS_ALIGN(128) unsigned char m_ParameterStorage[JobManager::SInfoBlock::scAvailParamSize] _ALIGN(128);		/* memory to store serialized parameters */ \
 		JobManager::Invoker m_Invoker;																														/* Invoker function to de-serialize the parameters*/ \
 \
 	}  _ALIGN(128);\
@@ -2730,9 +2794,14 @@ struct packet ## type\
 		this->m_JobDelegator.SetParamDataSize( (cParamSize + 0xF) & ~0xF);\
 	}\
 \
-	inline void SGenericJob ## type::SetHighPriority()\
+	inline void SGenericJob ## type::SetPriorityLevel(unsigned int nPriorityLevel)\
 	{\
-		this->m_JobDelegator.SetHighPriority();\
+		this->m_JobDelegator.SetPriorityLevel(nPriorityLevel);\
+	}\
+\
+	inline void SGenericJob ## type::SetBlocking()\
+	{\
+		this->m_JobDelegator.SetBlocking();\
 	}\
 \
 	inline unsigned int SGenericJob ## type::GetParamDataSize()\
@@ -2859,6 +2928,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType();\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2869,6 +2939,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2879,6 +2950,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2889,6 +2961,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2899,6 +2972,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2909,6 +2983,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2919,6 +2994,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2929,6 +3005,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2939,6 +3016,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2949,6 +3027,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2959,6 +3038,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2969,6 +3049,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -2980,6 +3061,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType();\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -2990,6 +3072,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3000,6 +3083,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3010,6 +3094,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3020,6 +3105,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3030,6 +3116,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3040,6 +3127,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3050,6 +3138,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3060,6 +3149,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3070,6 +3160,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3080,6 +3171,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3090,6 +3182,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3118,14 +3211,14 @@ struct packet ## type\
 			return (SVEC4_UINT*)m_ParameterStorage; \
 	}\
 \
-	inline unsigned int packet ## type::GetJobStateAddess() const\
+	inline SPU_DRIVER_INT_PTR packet ## type::GetJobStateAddress() const\
 	{\
 		return eaExtJobStateAddress; \
 	}\
 \
 	inline void packet ## type::RegisterJobState(JobManager::SJobState* __restrict pJobState)\
 	{\
-		eaExtJobStateAddress = reinterpret_cast<unsigned int>(pJobState);\
+		eaExtJobStateAddress = reinterpret_cast<SPU_DRIVER_INT_PTR>(pJobState);\
 		pJobState->InitProfilingData(); \
 	}\
 \
@@ -3238,6 +3331,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType();\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3248,6 +3342,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3258,6 +3353,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3268,6 +3364,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3278,6 +3375,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3288,6 +3386,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3298,6 +3397,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3308,6 +3408,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3318,6 +3419,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3328,6 +3430,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3338,6 +3441,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3348,6 +3452,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 	\
@@ -3359,6 +3464,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType();\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3369,6 +3475,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3379,6 +3486,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3389,6 +3497,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3399,6 +3508,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3409,6 +3519,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3419,6 +3530,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3429,6 +3541,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3439,6 +3552,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3449,6 +3563,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3459,6 +3574,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 \
@@ -3469,6 +3585,7 @@ struct packet ## type\
 		STATIC_CHECK(sizeof(SParameterType) <= SInfoBlock::scAvailParamSize, JOB_PARAMETER_NEED_MORE_THAN_80_BYTES); \
 		STATIC_CHECK(sizeof(m_ParameterStorage) == SInfoBlock::scAvailParamSize, JOB_PARAMETER_STORAGE_DIFFERES_BETWEEN_SGENERICJOB_AND_JOBMANAGER_QUEUE); \
 		new (m_ParameterStorage) SParameterType(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10);\
+		MEMORY_RW_REORDERING_BARRIER;	\
 		SetParamDataSize(sizeof(SParameterType));\
 	}\
 } /* namespace Detail */ \

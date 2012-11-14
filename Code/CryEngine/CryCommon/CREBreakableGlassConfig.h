@@ -21,7 +21,8 @@
 // Common
 #define GLASSCFG_MIN_BULLET_SPEED					400.0f	/* Anything above this speed will be considered a bullet (Generally 450 to 1100)*/
 #define GLASSCFG_MIN_BULLET_HOLE_SCALE		1.1f		/* Minimum size for physical hole created by bullets */
-#define GLASSCFG_MIN_STABLE_FRAG_AREA			0.0075f /* Any fragment sized below this threshold will be forced loose */
+#define GLASSCFG_MIN_STABLE_FRAG_AREA			0.0095f /* Any fragment sized below this threshold will be forced loose */
+#define GLASSCFG_MIN_VALID_FRAG_AREA			0.0035f /* Any fragment sized below this threshold will not be created */
 
 // Drawing
 #define GLASSCFG_GLASS_PLANE_FLAG_LOD			255			/* Fixed number used to flag if render call is plane or fragment */

@@ -9,7 +9,7 @@ class ICrySizer;
 
 typedef union floatint_union {float f; uint32 i;} floatint_union;
 
-#	if defined(WIN32) || defined(WIN64) || defined(LINUX)
+#	if defined(WIN32) || defined(WIN64) || defined(LINUX) || defined(GRINGO)
 
 __forceinline CryHalf CryConvertFloatToHalf(const float Value)
 {

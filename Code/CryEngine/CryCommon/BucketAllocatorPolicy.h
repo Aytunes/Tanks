@@ -1,6 +1,17 @@
 #ifndef BUCKETALLOCATORPOLICY_H
 #define BUCKETALLOCATORPOLICY_H
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
+
+
+
+
+#define BUCKET_ALLOCATOR_DEFAULT_MAX_SEGMENTS 8
+
+
 namespace BucketAllocatorDetail
 {
 
@@ -15,16 +26,10 @@ namespace BucketAllocatorDetail
 
 	struct SyncPolicyLocked
 	{
+#if defined(XENON) || defined(_WIN32)
+		typedef SLIST_HEADER FreeListHeader;
 
 
-
-
-#if defined(_WIN32)
-		struct FreeListHeader
-		{
-			volatile int lock;
-			AllocHeader* header;
-		};
 #endif
 
 #if defined(XENON) || defined(_WIN32)
@@ -231,46 +236,58 @@ namespace BucketAllocatorDetail
 
 
 
-#if defined(_WIN32)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if defined(WIN32) || defined (GRINGO)
 
 		static void PushOnto(FreeListHeader& list, AllocHeader* ptr)
 		{
-			CrySpinLock(&list.lock, 0, 1);
-
-			ptr->next = list.header;
-			list.header = ptr;
-
-			CryReleaseSpinLock(&list.lock, 0);
+			InterlockedPushEntrySList(&list, reinterpret_cast<PSLIST_ENTRY>(ptr));
 		}
 
 		static void PushListOnto(FreeListHeader& list, AllocHeader* head, AllocHeader* tail)
 		{
-			CrySpinLock(&list.lock, 0, 1);
+			AllocHeader* item = head;
+			AllocHeader* next;
 
-			tail->next = list.header;
-			list.header = head;
+			while (item)
+			{
+				next = item->next;
+				item->next = NULL;
 
-			CryReleaseSpinLock(&list.lock, 0);
+				PushOnto(list, item);
+
+				item = next;
+			}
 		}
-		
+
 		static AllocHeader* PopOff(FreeListHeader& list)
 		{
-			CrySpinLock(&list.lock, 0, 1);
-
-			AllocHeader* ret = list.header;
-			if (ret)
-			{
-				list.header = ret->next;
-			}
-
-			CryReleaseSpinLock(&list.lock, 0);
-
-			return ret;
+			return reinterpret_cast<AllocHeader*>(InterlockedPopEntrySList(&list));
 		}
 
-		ILINE static AllocHeader*& GetFreeListHead(FreeListHeader& list)
+		static AllocHeader* PopListOff(FreeListHeader& list)
 		{
-			return list.header;
+			return reinterpret_cast<AllocHeader*>(InterlockedFlushSList(&list));
+		}
+
+		ILINE static bool IsFreeListEmpty(FreeListHeader& list)
+		{
+			return QueryDepthSList(&list) == 0;
 		}
 
 #endif
@@ -293,8 +310,8 @@ namespace BucketAllocatorDetail
 
 		ILINE static void PushListOnto(FreeListHeader& list, AllocHeader* head, AllocHeader* tail)
 		{
-			tail->next = GetFreeListHead(list);
-			GetFreeListHead(list) = head;
+			tail->next = list;
+			list = head;
 		}
 
 		ILINE static AllocHeader* PopOff(FreeListHeader& list)
@@ -305,25 +322,38 @@ namespace BucketAllocatorDetail
 			return top;
 		}
 
-		ILINE static AllocHeader*& GetFreeListHead(FreeListHeader& list)
+		ILINE static AllocHeader* PopListOff(FreeListHeader& list)
 		{
-			return list;
+			AllocHeader* pRet = list;
+			list = NULL;
+			return pRet;
+		}
+
+		ILINE static bool IsFreeListEmpty(FreeListHeader& list)
+		{
+			return list == NULL;
 		}
 	};
 
-	template <size_t Size, typename SyncingPolicy, bool FallbackOnCRT = true>
+	template <size_t Size, typename SyncingPolicy, bool FallbackOnCRT = true, size_t MaxSegments = BUCKET_ALLOCATOR_DEFAULT_MAX_SEGMENTS>
 	struct DefaultTraits
 	{
 		enum
 		{
 			MaxSize = 512,
+			
+#ifdef BUCKET_ALLOCATOR_PACK_SMALL_SIZES
 			NumBuckets = 32 / 4 + (512 - 32) / 8,
+#else
+			NumBuckets = 512 / MEMORY_ALLOCATION_ALIGNMENT,
+#endif
 
 			PageLength = 64 * 1024,
 			SmallBlockLength = 1024,
 			SmallBlocksPerPage = 64,
 
 			NumGenerations = 4,
+			MaxNumSegments = MaxSegments,
 
 			NumPages = Size / PageLength,
 
@@ -334,6 +364,7 @@ namespace BucketAllocatorDetail
 
 		static uint8 GetBucketForSize(size_t sz)
 		{
+#ifdef BUCKET_ALLOCATOR_PACK_SMALL_SIZES
 			if (sz <= 32)
 			{
 				const int alignment = 4;
@@ -347,16 +378,25 @@ namespace BucketAllocatorDetail
 				alignedSize -= 32;
 				return alignedSize / alignment + 7;
 			}
+#else
+			const int alignment = MEMORY_ALLOCATION_ALIGNMENT;
+			size_t alignedSize = (sz + (alignment - 1)) & ~(alignment - 1);
+			return alignedSize / alignment - 1;
+#endif
 		}
 
 		static size_t GetSizeForBucket(uint8 bucket)
 		{
 			size_t sz;
 
+#ifdef BUCKET_ALLOCATOR_PACK_SMALL_SIZES
 			if (bucket <= 7)
 				sz = (bucket + 1) * 4;
 			else
 				sz = (bucket - 7) * 8 + 32;
+#else
+			sz = (bucket + 1) * MEMORY_ALLOCATION_ALIGNMENT;
+#endif
 
 #ifdef BUCKET_ALLOCATOR_TRAP_DOUBLE_DELETES
 			return sz < sizeof(AllocHeader) ? sizeof(AllocHeader) : sz;

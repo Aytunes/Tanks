@@ -134,7 +134,7 @@ ILINE void SwapEndian(T* t, int nCount, bool bSwapEndian = eLittleEndian)
 		SwapEndianBase(t, nCount);
 }
 
-#if defined(WIN64) || defined(LINUX64)
+#if defined(PLATFORM_64BIT)
 template<class T>
 ILINE void SwapEndian(T* t, unsigned int nCount, bool bSwapEndian = eLittleEndian)
 {

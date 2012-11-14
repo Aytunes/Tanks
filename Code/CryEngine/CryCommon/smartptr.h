@@ -39,9 +39,9 @@ public:
 			p->Release();
 	}
   operator _I*() const { return p; } 
-  operator const _I*() const { return p; }
   _I& operator*() const { return *p; }
   _I* operator->() const { return p; }
+	_I* operator+() const { return p; }
 	_I* get() const { return p; }
   _smart_ptr&  operator=(_I* newp)
 	{
@@ -72,46 +72,11 @@ public:
 		p = newp.p;
 		return *this;
 	}
-  operator bool() const 
-	{
-		return p != NULL;
-	};
 	bool operator !() const 
 	{
 		return p == NULL;
 	};
- 	bool  operator ==(const _I* p2) const 
-	{
-		return p == p2;
-	};
- 	bool  operator ==(_I* p2) const 
-	{
-		return p == p2;
-	};
-	bool  operator ==(const _smart_ptr<_I>& rhs) const
-	{
-		return p == rhs.p;
-	}
-  bool  operator !=(const _I* p2) const 
-	{
-		return p != p2;
-	};
-	bool  operator !=(_I* p2) const 
-	{
-		return p != p2;
-	};
-	bool  operator !=(const _smart_ptr &p2) const 
-	{
-		return p != p2.p;
-	};
-  bool  operator <(const _I* p2) const 
-	{
-		return p < p2;
-	};
-  bool  operator >(const _I* p2) const 
-	{
-		return p > p2;
-	};
+
 	// set our contained pointer to null, but don't call Release()
 	// useful for when we want to do that ourselves, or when we know that
 	// the contained pointer is invalid
@@ -135,53 +100,6 @@ ILINE void swap(_smart_ptr<T>& a, _smart_ptr<T>& b)
 	a.swap(b);
 }
 
-template <class _I>
-inline bool operator ==(const _smart_ptr<_I> &p1, int null)	
-{
-	assert(!null);
-	return !(bool)p1;	
-}
-template <class _I>
-inline bool operator !=(const _smart_ptr<_I> &p1, int null)
-{
-	assert(!null);
-	return (bool)p1;	
-}
-template <class _I>
-inline bool operator ==(int null, const _smart_ptr<_I> &p1)
-{
-	assert(!null);
-	return !(bool)p1;	
-}
-template <class _I>
-inline bool operator !=(int null, const _smart_ptr<_I> &p1)
-{
-	assert(!null);
-	return (bool)p1;	
-}
-
-#if defined(LINUX64)
-template <class _I>
-inline bool operator ==(const _smart_ptr<_I> &p1, typeof(__null))	
-{
-	return !(bool)p1;	
-}
-template <class _I>
-inline bool operator !=(const _smart_ptr<_I> &p1, typeof(__null))
-{
-	return (bool)p1;	
-}
-template <class _I>
-inline bool operator ==(typeof(__null), const _smart_ptr<_I> &p1)
-{
-	return !(bool)p1;	
-}
-template <class _I>
-inline bool operator !=(typeof(__null), const _smart_ptr<_I> &p1)
-{
-	return (bool)p1;	
-}
-#endif //LINUX64
 
 // reference target for smart pointer
 // implements AddRef() and Release() strategy using reference counter of the specified type

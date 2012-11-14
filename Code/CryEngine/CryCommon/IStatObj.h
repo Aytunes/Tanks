@@ -448,12 +448,9 @@ UNIQUE_IFACE struct IStatObj : public IStreamable
 	// Summary:
 	//     Generate a random point in object.
 	// Arguments:
-	//		 geo - Query results and context
-	//     eType - Object geometry to use (physics or render geometry)
 	//     eForm - Object aspect to generate on (surface, volume, etc)
-	//		 tWorld - World transformation of render object.
-	virtual float ComputeExtent(GeomQuery& geo, EGeomForm eForm)=0;
-	virtual void GetRandomPos(RandomPos& ran, GeomQuery& geo, EGeomForm eForm)=0;
+	virtual float GetExtent(EGeomForm eForm)=0;
+	virtual void GetRandomPos(PosNorm& ran, EGeomForm eForm) const=0;
 
 	// Description:
 	//     Returns the LOD object, if present.

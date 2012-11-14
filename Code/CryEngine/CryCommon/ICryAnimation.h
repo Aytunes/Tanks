@@ -641,15 +641,14 @@ struct ICharacterInstance
 	// Summary:
 	//     Return the extent (length, volume, or area) of the object
 	// Arguments:
-	//     eType, eForm - See RandomPos
-	virtual f32 ComputeExtent(GeomQuery& geo, EGeomForm eForm)=0;
+	//     eForm - See RandomPos
+	virtual float GetExtent(EGeomForm eForm)=0;
 
 	// Summary:
 	//     Generate a random point in object.
 	// Arguments:
-	//     eType - Object geometry to use (physics or render geometry)
 	//     eForm - Object aspect to generate on (surface, volume, etc)
-	virtual void GetRandomPos(RandomPos& ran, GeomQuery& geo, EGeomForm eForm)=0;
+	virtual void GetRandomPos(PosNorm& ran, EGeomForm eForm)=0;
 
 
 	// Description:
@@ -1064,7 +1063,7 @@ UNIQUE_IFACE struct ISkeletonPose
 	// Ground Alignment
 	// OBSOLETE
 	virtual void EnableFootGroundAlignment(bool enable) = 0;
-	virtual void SetGroundAlignmentData(const bool bAlignSkeletonVertical, const f32 rootHeight, const Plane& planeLeft, const Plane& planeRight) = 0;
+	virtual void SetGroundAlignmentData(const bool bAlignSkeletonVertical, const f32 rootHeight, const Plane& planeLeft, const Plane& planeRight, int32 pelvisIDX) = 0;
 	// USE THIS INSTEAD:
 	virtual IAnimationGroundAlignment* GetGroundAlignment() = 0;
 

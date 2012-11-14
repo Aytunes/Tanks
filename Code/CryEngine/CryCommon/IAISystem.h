@@ -29,6 +29,7 @@ History:
 struct AgentPathfindingProperties;
 struct INavigation;
 struct IAIPathFinder;
+struct IMNMPathfinder;
 class ICrySizer;
 struct IEntity;
 struct IAIDebugRenderer;
@@ -743,6 +744,7 @@ UNIQUE_IFACE struct IAISystem
 	virtual ISelectionTreeManager* GetSelectionTreeManager() const = 0;
 	virtual ICoverSystem* GetCoverSystem() const = 0;
 	virtual INavigationSystem* GetNavigationSystem() const = 0;
+	virtual IMNMPathfinder* GetMNMPathfinder() const = 0;
 	virtual ICommunicationManager* GetCommunicationManager() const = 0;
 	virtual IAIGroupManager const* GetGroupManager() const = 0;
 	virtual IAIGroupManager* GetGroupManager() = 0;

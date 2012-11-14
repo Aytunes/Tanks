@@ -1,22 +1,16 @@
 #ifndef BUCKETALLOCATORIMPL_H
 #define BUCKETALLOCATORIMPL_H
 
+#include "BucketAllocator.h"
 #include "BitFiddling.h"
 
 #ifdef USE_GLOBAL_BUCKET_ALLOCATOR
 
-#define BUCKET_ASSERTS 0
 #define PROFILE_BUCKET_CLEANUP 0
 
 //#define BUCKET_ALLOCATOR_MAP_DOWN
 #if defined(_WIN32) && !defined(XENON)
 #define BUCKET_ALLOCATOR_4K
-#endif
-
-#if BUCKET_ASSERTS
-#define BucketAssert(expr) if (!(expr)) { __debugbreak(); }
-#else
-#define BucketAssert(expr)
 #endif
 
 namespace
@@ -95,43 +89,56 @@ namespace
 	}
 }
 
-#if defined(XENON) && BUCKET_ASSERTS
+#if BUCKET_ALLOCATOR_DEBUG
 #pragma optimize("",off)
 #endif
 
 template <typename TraitsT>
-BucketAllocator<TraitsT>::BucketAllocator(void* baseAddress, bool allowExpandCleanups)
-	: m_baseAddress(reinterpret_cast<UINT_PTR>(baseAddress))
-	, m_disableExpandCleanups(allowExpandCleanups == false)
+BucketAllocator<TraitsT>::BucketAllocator(void* baseAddress, bool allowExpandCleanups, bool cleanupOnDestruction)
+	: m_disableExpandCleanups(allowExpandCleanups == false)
+	, m_cleanupOnDestruction(cleanupOnDestruction)
 {
+	if (baseAddress)
+	{
+		memset(m_segmentsHot, 0, sizeof(m_segmentsHot));
+		memset(m_segmentsCold, 0, sizeof(m_segmentsCold));
+		m_segmentsHot[0].m_baseAddress = reinterpret_cast<UINT_PTR>(baseAddress);
+		m_numSegments = 1;
+	}
+	else
+	{
+		m_numSegments = 0;
+	}
 }
-
 
 template <typename TraitsT>
 BucketAllocator<TraitsT>::~BucketAllocator()
 {
-	if (m_baseAddress)
+	if (m_cleanupOnDestruction)
 	{
-		for (
-			uint32 mapCount = sizeof(m_pageMap) / sizeof(m_pageMap[0]), mapIdx = 0;
-			mapIdx != mapCount;
-			++ mapIdx)
+		SegmentHot* pHot = m_segmentsHot;
+		SegmentCold* pCold = m_segmentsCold;
+
+		for (int segIdx = 0, segCount = m_numSegments; segIdx != segCount; ++ segIdx, ++ pHot, ++ pCold)
 		{
-			while (m_pageMap[mapIdx])
+			for (uint32 mapCount = sizeof(pCold->m_pageMap) / sizeof(pCold->m_pageMap[0]), mapIdx = 0; mapIdx != mapCount; ++ mapIdx)
 			{
-				uint32 mapVal = m_pageMap[mapIdx];
+				while (pCold->m_pageMap[mapIdx])
+				{
+					uint32 mapVal = pCold->m_pageMap[mapIdx];
 
-				// Find index of 1 bit in mapVal - aka a live page
-				mapVal = mapVal & ((~mapVal) + 1);
-				mapVal = IntegerLog2(mapVal);
-				UINT_PTR mapAddress = m_baseAddress + PageLength * (mapIdx * 32 + mapVal);
-				m_pageMap[mapIdx] &= ~(1 << mapVal);
+					// Find index of 1 bit in mapVal - aka a live page
+					mapVal = mapVal & ((~mapVal) + 1);
+					mapVal = IntegerLog2(mapVal);
+					UINT_PTR mapAddress = pHot->m_baseAddress + PageLength * (mapIdx * 32 + mapVal);
+					pCold->m_pageMap[mapIdx] &= ~(1 << mapVal);
 
-				this->UnMap(mapAddress);
+					this->UnMap(mapAddress);
+				}
 			}
-		}
 
-		this->UnreserveAddressSpace(m_baseAddress);
+			this->UnreserveAddressSpace(pHot->m_baseAddress);
+		}
 	}
 }
 
@@ -200,14 +207,19 @@ bool BucketAllocator<TraitsT>::Refill(uint8 bucket)
 
 	for (size_t flIdx = bucket * NumGenerations, flIdxEnd = flIdx + NumGenerations; flIdx != flIdxEnd; ++ flIdx)
 	{
-		if (GetFreeListHead(m_freeLists[flIdx]))
+		if (!IsFreeListEmpty(m_freeLists[flIdx]))
 			return true;
 	}
 
 	size_t itemSize = TraitsT::GetSizeForBucket(bucket);
 
 	bool useForward;
+
+#ifdef BUCKET_ALLOCATOR_PACK_SMALL_SIZES
 	UINT_PTR alignmentMask = 0;
+#else
+	UINT_PTR alignmentMask = MEMORY_ALLOCATION_ALIGNMENT - 1;
+#endif
 
 	if ((SmallBlockLength % itemSize) == 0)
 	{
@@ -259,6 +271,9 @@ bool BucketAllocator<TraitsT>::Refill(uint8 bucket)
 		}
 	}
 
+	BucketAssert(IsInAddressRange((void*)fbh->start));
+	BucketAssert(IsInAddressRange((void*)(fbh->end - 1)));
+
 	UINT_PTR segments[4];
 
 	segments[0] = fbh->start;
@@ -288,8 +303,11 @@ bool BucketAllocator<TraitsT>::Refill(uint8 bucket)
 	BucketAssert(useForward || !(endAddress & SmallBlockOffsetMask));
 	BucketAssert(!useForward || !(baseAddress & 7));
 	BucketAssert(numSmallBlocks > 0);
+	BucketAssert(smallBlockIdx < SmallBlocksPerPage);
+	BucketAssert(smallBlockEnd <= SmallBlocksPerPage);
 	BucketAssert(baseAddress >= fbh->start);
 	BucketAssert(endAddress <= fbh->end);
+	BucketAssert(IsInAddressRange((void*)blockBase));
 	BucketAssert(IsInAddressRange((void*)baseAddress));
 	BucketAssert(IsInAddressRange((void*)(endAddress - 1)));
 
@@ -345,6 +363,8 @@ bool BucketAllocator<TraitsT>::Refill(uint8 bucket)
 #endif
 
 	typename SyncingPolicy::FreeListHeader& freeList = m_freeLists[bucket * NumGenerations + NumGenerations - 1];
+
+
 
 
 
@@ -442,16 +462,18 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 
 	typename SyncingPolicy::CleanupWriteLock cleanLock(*this);
 
-
-
-
+	MemoryBarrier();
 
 #if PROFILE_BUCKET_CLEANUP
 	LARGE_INTEGER start;
 	QueryPerformanceCounter(&start);
 #endif
 
-	UINT_PTR bucketHeapBase = this->GetBucketCommittedBase();
+	UINT_PTR segmentBases[MaxSegments];
+	int numSegments = m_numSegments;
+	for (int i = 0; i < numSegments; ++ i)
+		segmentBases[i] = m_segmentsHot[i].m_baseAddress;
+
 	size_t pageCapacity = this->GetBucketStorageCapacity() / PageLength;
 
 	if (pageCapacity == 0)
@@ -466,17 +488,9 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 	AllocHeader* freeLists[NumBuckets * NumGenerations];
 
 	for (size_t flIdx = 0; flIdx != NumBuckets * NumGenerations; ++ flIdx)
-	{
-		do 
-		{
-			freeLists[flIdx] = GetFreeListHead(m_freeLists[flIdx]);
-		}
-		while (CryInterlockedCompareExchangePointer((void * volatile *) &this->GetFreeListHead(m_freeLists[flIdx]), NULL, freeLists[flIdx]) != freeLists[flIdx]);
-	}
+		freeLists[flIdx] = PopListOff(m_freeLists[flIdx]);
 
-
-
-
+	MemoryBarrier();
 
 	// For each small block, count the number of items that are free
 
@@ -494,10 +508,16 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 			for (AllocHeader* hdr = freeLists[freeList]; hdr; hdr = hdr->next)
 			{
 				UINT_PTR allocPtr = reinterpret_cast<UINT_PTR>(hdr);
-				size_t pageId = (allocPtr - bucketHeapBase) / PageLength;
+
+				int segIdx = GetSegmentForAddress(hdr, segmentBases, numSegments);
+				BucketAssert(segIdx != numSegments);
+
+				UINT_PTR segBaseAddress = segmentBases[segIdx];
+
+				size_t cleanupPageId = segIdx * NumPages + (allocPtr - segBaseAddress) / PageLength;
 				size_t sbId = (allocPtr & PageOffsetMask) / SmallBlockLength;
 
-				SmallBlockCleanupInfo*& sbInfos = pageInfos[pageId];
+				SmallBlockCleanupInfo*& sbInfos = pageInfos[cleanupPageId];
 				if (!sbInfos)
 				{
 					sbInfos = (SmallBlockCleanupInfo*) alloc.Calloc(SmallBlocksPerPage, sizeof(SmallBlockCleanupInfo));
@@ -517,11 +537,16 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 
 	for (FreeBlockHeader* fbh = m_freeBlocks; fbh; fbh = fbh->next)
 	{
-		size_t pageId = (fbh->start - bucketHeapBase) / PageLength;
-		UINT_PTR pageBase = bucketHeapBase + pageId * PageLength;
+		int segIdx = GetSegmentForAddress(reinterpret_cast<void*>(fbh->start), segmentBases, numSegments);
+		BucketAssert(segIdx != numSegments);
+
+		UINT_PTR segBaseAddress = segmentBases[segIdx];
+
+		size_t cleanupPageId = segIdx * NumPages + (fbh->start - segBaseAddress) / PageLength;
+		UINT_PTR pageBase = fbh->start & PageAlignMask;
 		UINT_PTR startSbId = (fbh->start - pageBase) / SmallBlockLength;
 		UINT_PTR endSbId = (fbh->end - pageBase) / SmallBlockLength;
-		SmallBlockCleanupInfo*& cleanupInfos = pageInfos[pageId];
+		SmallBlockCleanupInfo*& cleanupInfos = pageInfos[cleanupPageId];
 
 		BucketAssert(startSbId != endSbId);
 
@@ -552,42 +577,50 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 
 	// Do a pass over the small block cleanup infos to mark up blocks that are going to be unbound
 
-	for (size_t pageId = 0; pageId != pageCapacity; ++ pageId)
+	for (int segId = 0; segId < numSegments; ++ segId)
 	{
-		SmallBlockCleanupInfo* sbInfos = pageInfos[pageId];
+		SegmentHot& segh = m_segmentsHot[segId];
+		SegmentCold& segc = m_segmentsCold[segId];
 
-		if (!sbInfos)
-			continue;
+		size_t basePageId = segId * NumPages;
 
-		Page* page = reinterpret_cast<Page*>(bucketHeapBase + PageLength * pageId);
-		PageHeader* pageHdr = &page->hdr;
-
-		for (size_t sbId = 0; sbId < SmallBlocksPerPage; ++ sbId)
+		for (size_t segPageId = 0; segPageId != NumPages; ++ segPageId)
 		{
-			SmallBlockCleanupInfo& sbInfo = sbInfos[sbId];
+			SmallBlockCleanupInfo* sbInfos = pageInfos[basePageId + segPageId];
 
-			if (sbInfo.cleaned)
+			if (!sbInfos)
 				continue;
 
-			size_t itemSize = TraitsT::GetSizeForBucket(page->hdr.GetBucketId(sbId));
-			sbInfo.SetItemSize(itemSize);
+			Page* page = reinterpret_cast<Page*>(segh.m_baseAddress + PageLength * segPageId);
+			PageHeader* pageHdr = &page->hdr;
 
-			if (sbInfo.freeItemCount == 0)
-				continue;
-
-			uint32 maximumFreeCount = pageHdr->GetItemCountForBlock(sbId);
-
-			BucketAssert(maximumFreeCount > 0);
-			BucketAssert(sbInfo.freeItemCount <= maximumFreeCount);
-
-			if (maximumFreeCount == sbInfo.freeItemCount)
+			for (size_t sbId = 0; sbId < SmallBlocksPerPage; ++ sbId)
 			{
-				sbInfo.cleaned = 1;
+				SmallBlockCleanupInfo& sbInfo = sbInfos[sbId];
+
+				if (sbInfo.cleaned)
+					continue;
+
+				size_t itemSize = TraitsT::GetSizeForBucket(page->hdr.GetBucketId(sbId));
+				sbInfo.SetItemSize(itemSize);
+
+				if (sbInfo.freeItemCount == 0)
+					continue;
+
+				uint32 maximumFreeCount = pageHdr->GetItemCountForBlock(sbId);
+
+				BucketAssert(maximumFreeCount > 0);
+				BucketAssert(sbInfo.freeItemCount <= maximumFreeCount);
+
+				if (maximumFreeCount == sbInfo.freeItemCount)
+				{
+					sbInfo.cleaned = 1;
 
 #if CAPTURE_REPLAY_LOG
-				UINT_PTR sbStart = reinterpret_cast<UINT_PTR>(&page->smallBlocks[sbId]) + page->hdr.GetBaseOffset(sbId);
-				CryGetIMemReplay()->UnMarkBucket(itemSize, (void*) sbStart);
+					UINT_PTR sbStart = reinterpret_cast<UINT_PTR>(&page->smallBlocks[sbId]) + page->hdr.GetBaseOffset(sbId);
+					CryGetIMemReplay()->UnMarkBucket(itemSize, (void*) sbStart);
 #endif
+				}
 			}
 		}
 	}
@@ -611,10 +644,13 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 			for (AllocHeader** hdr = &freeLists[freeList]; *hdr;)
 			{
 				UINT_PTR hdri = reinterpret_cast<UINT_PTR>(*hdr);
-				size_t pageId = (hdri - bucketHeapBase) / PageLength;
+				int segId = GetSegmentForAddress(*hdr, segmentBases, numSegments);
+				BucketAssert(segId != numSegments);
+
+				size_t cleanupPageId = segId * NumPages + (hdri - segmentBases[segId]) / PageLength;
 				size_t sbId = (hdri & PageOffsetMask) / SmallBlockLength;
 
-				SmallBlockCleanupInfo* cleanupInfos = pageInfos[pageId];
+				SmallBlockCleanupInfo* cleanupInfos = pageInfos[cleanupPageId];
 				SmallBlockCleanupInfo& pageInfo = cleanupInfos[sbId];
 
 				if (pageInfo.cleaned)
@@ -626,9 +662,9 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 				else
 				{
 					Page* page = reinterpret_cast<Page*>(hdri & PageAlignMask);
-					assert (page);
+					BucketAssert(page);
 
-					uint8 sbStability = std::min(page->hdr.GetStability(sbId) + 1, 255);
+					uint8 sbStability = min((uint8)(page->hdr.GetStability(sbId) + 1), (uint8)255);
 					size_t sbGen = TraitsT::GetGenerationForStability(sbStability);
 
 					if (sbGen != genId)
@@ -657,85 +693,90 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 
 	FreeBlockHeader* freeBlocks = NULL;
 
-	for (size_t pageId = 0; pageId != pageCapacity; ++ pageId)
+	for (int segId = 0; segId < numSegments; ++ segId)
 	{
-		SmallBlockCleanupInfo* sbInfos = pageInfos[pageId];
+		size_t basePageId = segId * NumPages;
 
-		if (!sbInfos)
-			continue;
-
-		Page* page = reinterpret_cast<Page*>(bucketHeapBase + sizeof(Page) * pageId);
-
-		for (size_t sbId = 0; sbId != SmallBlocksPerPage;)
+		for (size_t segPageId = 0; segPageId != NumPages; ++ segPageId)
 		{
-			if (!sbInfos[sbId].cleaned)
-			{
-				page->hdr.IncrementBlockStability(sbId);
-				++ sbId;
+			SmallBlockCleanupInfo* sbInfos = pageInfos[basePageId + segPageId];
+
+			if (!sbInfos)
 				continue;
-			}
 
-			size_t startSbId = sbId;
+			Page* page = reinterpret_cast<Page*>(segmentBases[segId] + sizeof(Page) * segPageId);
 
-			for (; sbId != SmallBlocksPerPage && sbInfos[sbId].cleaned; ++ sbId)
+			for (size_t sbId = 0; sbId != SmallBlocksPerPage;)
 			{
-				page->hdr.ResetBlockStability(sbId);
-			}
-
-			UINT_PTR fbhStart = 0;
-
-			if (startSbId > 0)
-			{
-				size_t baseOffset = 0;
-
-				if (page->hdr.DoesSmallBlockSpill(startSbId - 1))
+				if (!sbInfos[sbId].cleaned)
 				{
-					size_t sbOffset = page->hdr.GetBaseOffset(startSbId - 1);
-					size_t itemSize = TraitsT::GetSizeForBucket(page->hdr.GetBucketId(startSbId - 1));
-					size_t itemCount = (SmallBlockLength - sbOffset) / itemSize + 1;
-
-					baseOffset = sbOffset + itemSize * itemCount - SmallBlockLength;
-				}
-
-				// Need to make sure that the starting edge is 8 byte aligned for PS3
-				baseOffset = (baseOffset + 7) & ~7;
-
-				fbhStart = reinterpret_cast<UINT_PTR>(&page->smallBlocks[startSbId]) + baseOffset;
-			}
-			else
-			{
-				fbhStart = reinterpret_cast<UINT_PTR>(&page->hdr + 1);
-			}
-
-			UINT_PTR fbhEnd = (sbId != SmallBlocksPerPage)
-				? reinterpret_cast<UINT_PTR>(&page->smallBlocks[sbId]) + page->hdr.GetBaseOffset(sbId)
-				: reinterpret_cast<UINT_PTR>(page + 1);
-
-			if (((fbhStart & PageOffsetMask) == sizeof(PageHeader)) && ((fbhEnd & PageOffsetMask) == 0))
-			{
-				// Free block extends from the end of the page header to the end of the page - i.e. the page is empty
-				if (DestroyPage(reinterpret_cast<Page*>(fbhStart & PageAlignMask)))
-				{
-					// Don't add it to the free block list. For obvious reasons.
+					page->hdr.IncrementBlockStability(sbId);
+					++ sbId;
 					continue;
 				}
+
+				size_t startSbId = sbId;
+
+				for (; sbId != SmallBlocksPerPage && sbInfos[sbId].cleaned; ++ sbId)
+				{
+					page->hdr.ResetBlockStability(sbId);
+				}
+
+				UINT_PTR fbhStart = 0;
+
+				if (startSbId > 0)
+				{
+					size_t baseOffset = 0;
+
+					if (page->hdr.DoesSmallBlockSpill(startSbId - 1))
+					{
+						size_t sbOffset = page->hdr.GetBaseOffset(startSbId - 1);
+						size_t itemSize = TraitsT::GetSizeForBucket(page->hdr.GetBucketId(startSbId - 1));
+						size_t itemCount = (SmallBlockLength - sbOffset) / itemSize + 1;
+
+						baseOffset = sbOffset + itemSize * itemCount - SmallBlockLength;
+					}
+
+					// Need to make sure that the starting edge is 8 byte aligned for PS3
+					baseOffset = (baseOffset + 7) & ~7;
+
+					fbhStart = reinterpret_cast<UINT_PTR>(&page->smallBlocks[startSbId]) + baseOffset;
+				}
+				else
+				{
+					fbhStart = reinterpret_cast<UINT_PTR>(&page->hdr + 1);
+				}
+
+				UINT_PTR fbhEnd = (sbId != SmallBlocksPerPage)
+					? reinterpret_cast<UINT_PTR>(&page->smallBlocks[sbId]) + page->hdr.GetBaseOffset(sbId)
+					: reinterpret_cast<UINT_PTR>(page + 1);
+
+				if (((fbhStart & PageOffsetMask) == sizeof(PageHeader)) && ((fbhEnd & PageOffsetMask) == 0))
+				{
+					// Free block extends from the end of the page header to the end of the page - i.e. the page is empty
+					if (DestroyPage(reinterpret_cast<Page*>(fbhStart & PageAlignMask)))
+					{
+						// Don't add it to the free block list. For obvious reasons.
+						continue;
+					}
+				}
+
+				// Add the block to the free block list.
+				FreeBlockHeader* fbh = reinterpret_cast<FreeBlockHeader*>(fbhStart);
+				fbh->start = fbhStart;
+				fbh->end = fbhEnd;
+
+				BucketAssert(!(fbhStart & 7));
+				BucketAssert(fbhEnd > fbhStart);
+
+				fbh->next = NULL;
+				fbh->prev = freeBlocks;
+				if (freeBlocks)
+					freeBlocks->next = fbh;
+				else
+					m_freeBlocks = fbh;
+				freeBlocks = fbh;
 			}
-
-			// Add the block to the free block list.
-			FreeBlockHeader* fbh = reinterpret_cast<FreeBlockHeader*>(fbhStart);
-			fbh->start = fbhStart;
-			fbh->end = fbhEnd;
-
-			BucketAssert(!(fbhStart & 7));
-			BucketAssert(fbhEnd > fbhStart);
-
-			fbh->next = NULL;
-			fbh->prev = freeBlocks;
-			if (freeBlocks)
-				freeBlocks->next = fbh;
-			else
-				m_freeBlocks = fbh;
-			freeBlocks = fbh;
 		}
 	}
 
@@ -744,7 +785,7 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 		CryGetIMemReplay()->MarkBucket(-3, 4, fbh, fbh->end - fbh->start);
 #endif
 
-#if BUCKET_ASSERTS
+#if BUCKET_ALLOCATOR_DEBUG
 	for (FreeBlockHeader* fbh = m_freeBlocks; fbh; fbh = fbh->next)
 	{
 		BucketAssert(IsInAddressRange(fbh));
@@ -774,7 +815,7 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 	{
 		for (size_t fl = 0; fl < NumGenerations * NumBuckets; ++ fl)
 		{
-#if BUCKET_ASSERTS
+#if BUCKET_ALLOCATOR_DEBUG
 			int length = 0;
 			for (AllocHeader* ah = freeLists[fl]; ah; ah = ah->next)
 				++ length;
@@ -783,7 +824,7 @@ void BucketAllocator<TraitsT>::CleanupInternal(bool sortFreeLists)
 			AllocHeader** root = &freeLists[fl];
 			SortLL(*root);
 
-#if BUCKET_ASSERTS
+#if BUCKET_ALLOCATOR_DEBUG
 			int lengthPostSort = 0;
 			for (AllocHeader* ah = freeLists[fl]; ah; ah = ah->next)
 				++ lengthPostSort;
@@ -844,16 +885,50 @@ void BucketAllocator<TraitsT>::cleanup()
 template <typename TraitsT>
 void* BucketAllocator<TraitsT>::AllocatePageStorage()
 {
-	if (!m_baseAddress)
+	SegmentHot* pSegH = m_segmentsHot;
+	SegmentCold* pSegC = m_segmentsCold;
+
+	int segIdx = 0, segCount = m_numSegments;
+	for (; segIdx != segCount; ++ segIdx)
 	{
-		m_baseAddress = this->ReserveAddressSpace(NumPages, PageLength);
+		if (pSegC[segIdx].m_committed < PageLength * NumPages)
+			break;
 	}
+
+	if (segIdx == segCount)
+	{
+		if (segCount != MaxSegments)
+		{
+			UINT_PTR baseAddress = this->ReserveAddressSpace(NumPages, PageLength);
+
+			if (baseAddress)
+			{
+				memset(&pSegH[segCount], 0, sizeof(pSegH[segCount]));
+				memset(&pSegC[segCount], 0, sizeof(pSegC[segCount]));
+				pSegH[segCount].m_baseAddress = baseAddress;
+
+				++ segCount;
+				m_numSegments = segCount;
+			}
+			else
+			{
+				return NULL;
+			}
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+
+	SegmentHot& segh = pSegH[segIdx];
+	SegmentCold& segc = pSegC[segIdx];
 
 	void* result = NULL;
 
 	// Search from the last page mapped onwards, wrapping if necessary
 
-	uint32 pageMidIdx = m_lastPageMapped % NumPages;
+	uint32 pageMidIdx = segc.m_lastPageMapped % NumPages;
 
 	for (uint32 pageIdx = (pageMidIdx + 1) != NumPages ? (pageMidIdx + 1) : 0;
 		pageIdx != pageMidIdx;
@@ -862,16 +937,17 @@ void* BucketAllocator<TraitsT>::AllocatePageStorage()
 		uint32 pageCellIdx = pageIdx / 32;
 		uint32 pageBitMask = 1U << (pageIdx % 32);
 
-		assert( pageCellIdx < sizeof(m_pageMap)/sizeof(m_pageMap[0]) );
-		if ((m_pageMap[pageCellIdx] & pageBitMask) == 0)
+		BucketAssert(pageCellIdx < sizeof(segc.m_pageMap) / sizeof(segc.m_pageMap[0]));
+		uint32* pPageMap = segc.m_pageMap;
+		if ((pPageMap[pageCellIdx] & pageBitMask) == 0)
 		{
-			UINT_PTR mapAddress = m_baseAddress + PageLength * pageIdx;
+			UINT_PTR mapAddress = segh.m_baseAddress + PageLength * pageIdx;
 			result = reinterpret_cast<void*>(this->Map(mapAddress, PageLength));
 			if (!result)
 				return NULL;
 
-			m_pageMap[pageCellIdx] |= pageBitMask;
-			m_lastPageMapped = pageIdx;
+			pPageMap[pageCellIdx] |= pageBitMask;
+			segc.m_lastPageMapped = pageIdx;
 			break;
 		}
 	}
@@ -881,7 +957,7 @@ void* BucketAllocator<TraitsT>::AllocatePageStorage()
 		return NULL;
 	}
 
-	m_committed += PageLength;
+	segc.m_committed += PageLength;
 
 #if CAPTURE_REPLAY_LOG
 	CryGetIMemReplay()->MarkBucket(-2, 4, result, PageLength);
@@ -893,16 +969,33 @@ void* BucketAllocator<TraitsT>::AllocatePageStorage()
 template <typename TraitsT>
 bool BucketAllocator<TraitsT>::DeallocatePageStorage(void* ptr)
 {
-	this->UnMap(reinterpret_cast<UINT_PTR>(ptr));
+	SegmentHot* pSegH = m_segmentsHot;
+	SegmentCold* pSegC = m_segmentsCold;
 
-	UINT_PTR pageId = (reinterpret_cast<UINT_PTR>(ptr) - m_baseAddress) / PageLength;
-	m_pageMap[pageId / 32] &= ~(1 << (pageId % 32));
+	int segIdx = 0, segCount = m_numSegments;
+	for (; segIdx != segCount; ++ segIdx)
+	{
+		UINT_PTR ba = pSegH[segIdx].m_baseAddress;
+		if (ba <= reinterpret_cast<UINT_PTR>(ptr) && reinterpret_cast<UINT_PTR>(ptr) < (ba + NumPages * PageLength))
+			break;
+	}
 
-	m_committed -= PageLength;
+	if (segIdx != segCount)
+	{
+		SegmentHot& segh = pSegH[segIdx];
+		SegmentCold& segc = pSegC[segIdx];
+
+		this->UnMap(reinterpret_cast<UINT_PTR>(ptr));
+
+		UINT_PTR pageId = (reinterpret_cast<UINT_PTR>(ptr) - segh.m_baseAddress) / PageLength;
+		segc.m_pageMap[pageId / 32] &= ~(1 << (pageId % 32));
+
+		segc.m_committed -= PageLength;
 
 #if CAPTURE_REPLAY_LOG
-	CryGetIMemReplay()->UnMarkBucket(-2, ptr);
+		CryGetIMemReplay()->UnMarkBucket(-2, ptr);
 #endif
+	}
 
 	return true;
 }
@@ -910,15 +1003,18 @@ bool BucketAllocator<TraitsT>::DeallocatePageStorage(void* ptr)
 template <typename TraitsT>
 size_t BucketAllocator<TraitsT>::GetBucketStorageSize()
 {
-	return m_committed;
+	SegmentCold* pSegC = m_segmentsCold;
+
+	size_t sz = 0;
+	for (int i = 0, c = m_numSegments; i != c; ++ i)
+		sz += pSegC[i].m_committed;
+	return sz;
 }
 
 template <typename TraitsT>
 size_t BucketAllocator<TraitsT>::GetBucketStorageCapacity()
 {
-	if (m_baseAddress)
-		return NumPages * PageLength;
-	return 0;
+	return m_numSegments * NumPages * PageLength;
 }
 
 template <typename TraitsT>
@@ -931,20 +1027,30 @@ size_t BucketAllocator<TraitsT>::GetBucketConsumedSize()
 #endif
 }
 
-template <typename TraitsT>
-UINT_PTR BucketAllocator<TraitsT>::GetBucketCommittedBase()
-{
-	return m_baseAddress;
-}
-
 #if defined(XENON) || defined(_WIN32)
 
 inline UINT_PTR BucketAllocatorDetail::SystemAllocator::ReserveAddressSpace(size_t numPages, size_t pageLen)
 {
 	BucketAssert(pageLen == 64 * 1024);
 #ifdef BUCKET_ALLOCATOR_4K
-	UINT_PTR addr = reinterpret_cast<UINT_PTR>(VirtualAlloc(NULL, numPages * pageLen, MEM_RESERVE, PAGE_READWRITE));
-	addr = (addr + pageLen - 1) & ~(pageLen - 1);
+	UINT_PTR addr;
+
+	do
+	{
+		addr = reinterpret_cast<UINT_PTR>(VirtualAlloc(NULL, (numPages + 1) * pageLen, MEM_RESERVE, PAGE_READWRITE));
+		if (!addr)
+			break;
+
+		UINT_PTR alignedAddr = (addr + pageLen - 1) & ~(pageLen - 1);
+
+		if ((alignedAddr - addr) > 0)
+		{
+			VirtualFree(reinterpret_cast<LPVOID>(addr), 0, MEM_RELEASE);
+			addr = reinterpret_cast<UINT_PTR>(VirtualAlloc(reinterpret_cast<LPVOID>(alignedAddr), numPages * pageLen, MEM_RESERVE, PAGE_READWRITE));
+		}
+	}
+	while (!addr);
+
 	return addr;
 #else
 	return reinterpret_cast<UINT_PTR>(VirtualAlloc(NULL, numPages * pageLen, MEM_RESERVE | MEM_LARGE_PAGES, PAGE_READWRITE));
@@ -977,7 +1083,7 @@ inline void BucketAllocatorDetail::SystemAllocator::UnMap(UINT_PTR addr)
 
 inline BucketAllocatorDetail::SystemAllocator::CleanupAllocator::CleanupAllocator()
 {
-	m_base = VirtualAlloc(NULL, 1 * 1024 * 1024, MEM_RESERVE, PAGE_READWRITE);
+	m_base = VirtualAlloc(NULL, ReserveCapacity, MEM_RESERVE, PAGE_READWRITE);
 	if (!m_base)
 		__debugbreak();
 	m_end = m_base;
@@ -990,17 +1096,25 @@ inline BucketAllocatorDetail::SystemAllocator::CleanupAllocator::~CleanupAllocat
 
 inline void* BucketAllocatorDetail::SystemAllocator::CleanupAllocator::Calloc(size_t num, size_t sz)
 {
+	void* result = NULL;
 	size_t size = num * sz;
 
+	UINT_PTR base = reinterpret_cast<UINT_PTR>(m_base);
 	UINT_PTR end = reinterpret_cast<UINT_PTR>(m_end);
-	UINT_PTR endAligned = (end + 4095) & ~4095;
-	UINT_PTR sizeNeeded = ((end + size - endAligned) + 4095) & ~4095;
+	if (end + size <= (base + ReserveCapacity))
+	{
+		UINT_PTR endAligned = (end + 4095) & ~4095;
+		UINT_PTR sizeNeeded = ((end + size - endAligned) + 4095) & ~4095;
 
-	if (sizeNeeded)
-		VirtualAlloc(reinterpret_cast<void*>(endAligned), sizeNeeded, MEM_COMMIT, PAGE_READWRITE);
+		if (sizeNeeded)
+		{
+			if (!VirtualAlloc(reinterpret_cast<void*>(endAligned), sizeNeeded, MEM_COMMIT, PAGE_READWRITE))
+				return NULL;
+		}
 
-	void* result = m_end;
-	m_end = reinterpret_cast<void*>(end + size);
+		result = m_end;
+		m_end = reinterpret_cast<void*>(end + size);
+	}
 
 	return result;
 }

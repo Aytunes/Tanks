@@ -22,7 +22,7 @@ struct IGameSessionHandler
 public:
 	virtual ~IGameSessionHandler() {}
 
-	virtual void CreateSession(const SGameStartParams * pGameStartParams) = 0;
+	virtual bool ShouldCallMapCommand(const char *pLevelName, const char *pGameRules) = 0;
 	virtual void JoinSessionFromConsole(CrySessionID session) = 0;
 	virtual int EndSession() = 0;
 	
@@ -33,6 +33,7 @@ public:
 	virtual void OnGameShutdown() = 0;
 
 	virtual CrySessionHandle GetGameSessionHandle() const = 0;
+	virtual bool ShouldMigrateNub() const = 0;
 
 	virtual bool IsMultiplayer() const = 0;
 	

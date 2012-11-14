@@ -172,58 +172,6 @@ enum ECheatProtectionLevel
 	eCPL_High
 };
 
-enum EDisconnectionCause
-{
-	// This cause must be first! - timeout occurred.
-	eDC_Timeout = 0,
-	// Incompatible protocols.
-	eDC_ProtocolError,
-	// Failed to resolve an address.
-	eDC_ResolveFailed,
-	// Versions mismatch.
-	eDC_VersionMismatch,
-	// Server is full.
-	eDC_ServerFull,
-	// User initiated kick.
-	eDC_Kicked,
-	// Teamkill ban/ admin ban.
-	eDC_Banned,
-	// Context database mismatch.
-	eDC_ContextCorruption,
-	// Password mismatch, cdkey bad, etc.
-	eDC_AuthenticationFailed,
-	// Misc. game error.
-	eDC_GameError,
-	// DX11 not found.
-	eDC_NotDX11Capable,
-	// The nub has been destroyed.
-	eDC_NubDestroyed,
-	// Icmp reported error.
-	eDC_ICMPError,
-	// NAT negotiation error.
-	eDC_NatNegError,
-	// Punk buster detected something bad.
-	eDC_PunkDetected,
-	// Demo playback finished.
-	eDC_DemoPlaybackFinished,
-	// Demo playback file not found.
-	eDC_DemoPlaybackFileNotFound,
-	// User decided to stop playing.
-	eDC_UserRequested,
-	// User should have controller connected.
-	eDC_NoController,
-	// Unable to connect to server.
-	eDC_CantConnect,
-	// Arbitration failed in a live arbitrated session.
-	eDC_ArbitrationFailed,
-	// Failed to successfully join migrated game
-	eDC_FailedToMigrateToNewHost,
-	// The session has just been deleted
-	eDC_SessionDeleted,
-	// This cause must be last! - unknown cause.
-	eDC_Unknown
-};
-
 enum EAspectFlags
 {
 	// aspect is serialized without using compression manager (useful for data that is allready well quantised/compressed)
@@ -1569,6 +1517,7 @@ struct INetAtSyncItem
 {
 	virtual ~INetAtSyncItem(){}
 	virtual bool Sync() = 0;
+	virtual bool SyncWithError(EDisconnectionCause &disconnectCause, string &disconnectMessage) = 0;
 	virtual void DeleteThis() = 0;
 };
 

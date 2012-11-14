@@ -148,6 +148,12 @@ typedef struct _MEMORYSTATUS
 #define _O_SEQUENTIAL   0x0020  /* file access is primarily sequential */
 #define _O_RANDOM       0x0010  /* file access is primarily random */
 
+#define MemoryBarrier(x)
+typedef int64 __m128;
+
+#if defined(LINUX64)
+unsigned char _InterlockedCompareExchange128( int64 volatile *dst, int64 exchangehigh, int64 exchangelow, int64* comperand );
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // io.h stuff
@@ -290,17 +296,6 @@ static void LeaveCriticalSection(CRITICAL_SECTION *lpCriticalSection){pthread_mu
 static void DeleteCriticalSection(CRITICAL_SECTION *lpCriticalSection){}
 #endif
 */
-
-extern bool QueryPerformanceCounter(LARGE_INTEGER *counter);
-extern bool QueryPerformanceFrequency(LARGE_INTEGER *frequency);
-
-inline uint32 GetTickCount()
-{
-	LARGE_INTEGER count, freq;
-	QueryPerformanceCount(&count);
-	QueryPerformanceFrequency(&freq);
-	return uint32(count.QuadPart * 1000 / freq.QuadPart);
-}
 
 #define IGNORE              0       // Ignore signal
 #define INFINITE            0xFFFFFFFF  // Infinite timeout
@@ -726,7 +721,6 @@ extern char* _strdate(char* date);
 #define _MM_HINT_T1     (2)
 #define _MM_HINT_T2     (3)
 #define _MM_HINT_NTA    (0)
-inline void _mm_prefetch(const char *, int) { }
 
 #endif //__cplusplus
 

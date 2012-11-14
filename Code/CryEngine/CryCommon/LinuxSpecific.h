@@ -162,6 +162,10 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
+#define _A_RDONLY       (0x01)    /* Read only file */
+#define _A_HIDDEN (0x02)    /* Hidden file */
+#define _A_SUBDIR       (0x10)    /* Subdirectory */
+
 
 //-------------------------------------socket stuff------------------------------------------
 typedef int SOCKET;
@@ -345,6 +349,7 @@ typedef struct _SECURITY_ATTRIBUTES
 
 #ifdef __cplusplus
 	extern bool QueryPerformanceCounter(LARGE_INTEGER *);
+	extern bool QueryPerformanceFrequency(LARGE_INTEGER *frequency);
 
 	static pthread_mutex_t mutex_t;
 	template<typename T>
@@ -450,7 +455,10 @@ typedef struct _SECURITY_ATTRIBUTES
 
 	inline uint32 GetTickCount()
 	{
-		return uint32(CryGetTicks() * 1000 / CryGetTickFrequency());
+		LARGE_INTEGER count, freq;
+		QueryPerformanceCounter(&count);
+		QueryPerformanceFrequency(&freq);
+		return uint32(count.QuadPart * 1000 / freq.QuadPart);
 	}
 
 #endif //__cplusplus

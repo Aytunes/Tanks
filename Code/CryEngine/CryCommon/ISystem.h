@@ -26,6 +26,10 @@
 #include "IMemory.h"
 #include "ISystemScheduler.h"
 
+
+
+
+
 struct ISystem;
 struct ILog;
 struct IProfileLogSystem;
@@ -35,6 +39,7 @@ struct ICryPak;
 struct IKeyboard;
 struct IMouse;
 struct IConsole;
+struct IRemoteConsole;
 struct IInput;
 struct IRenderer;
 struct IConsole;
@@ -257,6 +262,11 @@ enum ESystemEvent
 	ESYSTEM_EVENT_LEVEL_LOAD_END,
 
 	// Description:
+	//	 Sent after trying to load a level failed.
+	//	 Used for resetting the front end.
+	ESYSTEM_EVENT_LEVEL_LOAD_ERROR,
+
+	// Description:
 	//	 Sent after precaching of the streaming system has been done
 	ESYSTEM_EVENT_LEVEL_PRECACHE_START,
 
@@ -335,6 +345,14 @@ enum ESystemEvent
 	//	 Sent if the game is resumed
 	ESYSTEM_EVENT_GAME_RESUMED,
 
+	// Description:
+	//		Sent once the Editor finished initialization.
+	ESYSTEM_EVENT_EDITOR_ON_INIT,
+
+	// Description:
+	//		Sent once the Editor switches between in-game and editing mode.
+	ESYSTEM_EVENT_EDITOR_GAME_MODE_CHANGED,
+
 	ESYSTEM_EVENT_USER = 0x1000,
 };
 
@@ -380,6 +398,12 @@ struct ISystemUserCallback
 	// Summary:
 	//	 Shutdown callback.
 	virtual void OnShutdown() { }
+
+	// Summary:
+	//	 Quit callback.
+	// See also:
+	//   CSystem::Quit()
+	virtual void OnQuit() { }
 
 	// Description:
 	//	 Notify user of an update iteration.  Called in the update loop.
@@ -625,6 +649,10 @@ struct SSystemGlobalEnvironment
 	IFlashUI*									 pFlashUI;
 	JobManager::IJobManager*   pJobManager;
 	ISoftCodeMgr*							 pSoftCodeMgr;
+
+
+
+
 #if defined(MAP_LOADING_SLICING)
 	ISystemScheduler*          pSystemScheduler;
 #endif
@@ -698,7 +726,7 @@ struct SSystemGlobalEnvironment
 #endif
 	}
 
-#if !defined(XENON) && !defined(PS3)
+#if !defined(XENON) && !defined(PS3) && !defined(GRINGO)
 	ILINE void SetIsEditor(bool isEditor)
 	{
 		bEditor = isEditor;
@@ -727,32 +755,32 @@ struct SSystemGlobalEnvironment
 	//this way the compiler can strip out code for consoles
 	ILINE const bool IsEditor() const
 	{
-
-
-
+#if defined(XENON) || defined(PS3) || defined(DRUANGO)
+		return false;
+#else
 		return bEditor;
-
+#endif
 	}
 
 	ILINE const bool IsEditorGameMode() const
 	{
-
-
-
+#if defined(XENON) || defined(PS3) || defined(DRUANGO)
+		return false;
+#else
 		return bEditorGameMode;
-
+#endif
 	}
 
 	ILINE const bool IsEditing() const
 	{
-
-
-
+#if defined(XENON) || defined(PS3) || defined(DRUANGO)
+		return false;
+#else
 		if (!pGame)
 			return bEditor;
 		else
 			return bEditor && !bEditorGameMode;
-
+#endif
 	}
 
 	ILINE const bool IsFMVPlaying() const
@@ -789,7 +817,7 @@ struct SSystemGlobalEnvironment
 		return pJobManager;
 	}
 
-#if !defined(XENON) && !defined(PS3)
+#if !defined(XENON) && !defined(PS3)  && !defined(DRUANGO)
 private:
 	bool bClient;
 	bool bEditor;          // Engine is running under editor.
@@ -802,7 +830,7 @@ private:
 public:
 	SSystemGlobalEnvironment() : szCmdLine("") {};
 
-	IMonoScriptSystem *pMonoScriptSystem;
+	struct IMonoScriptSystem *pMonoScriptSystem;
 };
 
 UNIQUE_IFACE struct IProfilingSystem
@@ -996,6 +1024,7 @@ UNIQUE_IFACE struct ISystem
 	virtual I3DEngine *GetI3DEngine() = 0;
 	virtual IScriptSystem *GetIScriptSystem() = 0;
 	virtual IConsole *GetIConsole() = 0;
+	virtual IRemoteConsole *GetIRemoteConsole() = 0;
 	// Returns:
 	//   Can be NULL, because it only exists when running through the editor, not in pure game mode. 
 	virtual IResourceManager *GetIResourceManager() = 0;
@@ -1021,14 +1050,16 @@ UNIQUE_IFACE struct ISystem
 
 	// Summary:
 	//	 Game is created after System init, so has to be set explicitly.
-	virtual void						SetIGame(IGame* pGame) = 0;
-	virtual void            SetIFlowSystem(IFlowSystem* pFlowSystem) = 0;
+	virtual void SetIGame(IGame* pGame) = 0;
+	virtual void SetIFlowSystem(IFlowSystem* pFlowSystem) = 0;
 	virtual void SetIAnimationGraphSystem(IAnimationGraphSystem* pAnimationGraphSystem) = 0;
 	virtual void SetIDialogSystem(IDialogSystem* pDialogSystem) = 0;
 	virtual void SetIMaterialEffects(IMaterialEffects* pMaterialEffects) = 0;
 	virtual void SetIParticleManager(IParticleManager* pParticleManager) = 0;
 	virtual void SetIFileChangeMonitor(IFileChangeMonitor* pFileChangeMonitor) = 0;
 	virtual void SetIVisualLog(IVisualLog* pVisualLog) = 0;
+	virtual void SetIFlashUI(IFlashUI* pFlashUI) = 0;
+
 	// Summary:
 	//	 Changes current user sub path, the path is always relative to the user documents folder. 
 	// Example: 
@@ -1205,6 +1236,7 @@ UNIQUE_IFACE struct ISystem
 	virtual IFlashPlayerBootStrapper* CreateFlashPlayerBootStrapper() const = 0;
 	virtual void SetFlashLoadMovieHandler(IFlashLoadMovieHandler* pHandler) const = 0;
 	virtual void GetFlashProfileResults(float& accumTime, bool reset) const = 0;
+	virtual void ResetFlashMeshCache() const = 0;
 
 	// Summary:
 	//	 Creates an instance of the AVI Reader class.
@@ -1291,20 +1323,6 @@ UNIQUE_IFACE struct ISystem
 	//		Retrieves the array of update times and the number of entries  
 	virtual const sUpdateTimes* GetUpdateTimeStats(uint32&, uint32&) = 0; 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	// Summary: 
 	//		Clear all currently logged and drawn on screen error messages
 	virtual void ClearErrorMessages() = 0;
@@ -1312,6 +1330,24 @@ UNIQUE_IFACE struct ISystem
 	// Summary:
 	//		Add a PlatformOS create flag
 	virtual void AddPlatformOSCreateFlag( const uint8 createFlag ) = 0;
+
+	// Summary:
+	//		Asynchronous memcpy 
+	// Note sync variable will be incremented (in calling thread) before job starts
+	// and decremented when job finishes. Multiple async copies can therefore be
+	// tied to the same sync variable, therefore it's advised to wait for completion with
+	// while(*sync) (yield());
+	virtual void AsyncMemcpy(void* dst, const void* src, size_t size, int nFlags, volatile int* sync) = 0;
+
+
+
+
+
+
+
+
+
+
 };
 
 struct DiskOperationInfo 
@@ -1486,13 +1522,13 @@ inline void CryWarning( EValidatorModule module,EValidatorSeverity severity,cons
 
 //Provide macros for fixing cvars for release mode on consoles to enums to allow for code stripping
 //Do not enable for PC, apply VF_CHEAT there if required
-#if (defined(XENON) || defined(PS3))
+#if (defined(XENON) || defined(PS3) || defined(GRINGO))
 	#define CONST_CVAR_FLAGS (VF_CHEAT)
 #else // #if (defined(XENON) || defined(PS3))
 	#define CONST_CVAR_FLAGS (VF_NULL)
 #endif // #if (defined(XENON) || defined(PS3))
 
-#if defined(_RELEASE) && (defined(XENON) || defined(PS3))
+#if defined(_RELEASE) && (defined(XENON) || defined(PS3) || defined(GRINGO))
 
 	# define CONSOLE_CONST_CVAR_MODE
 	# define DeclareConstIntCVar(name, defaultValue) enum { name = (defaultValue) }
@@ -1618,6 +1654,43 @@ inline void CryLogAlways( const char *format,... )
 }
 
 #endif // EXCLUDE_NORMAL_LOG
+
+/*****************************************************
+ASYNC MEMCPY FUNCTIONS
+*****************************************************/
+
+// Complex delegation required because it is not really easy to 
+// export a external standalone symbol like a memcpy function when 
+// building with modules. Dll pay an extra indirection cost for calling this 
+// function. 
+#ifndef _LIB
+# define CRY_ASYNC_MEMCPY_DELEGATE_TO_CRYSYSTEM
+#endif 
+#define CRY_ASYNC_MEMCPY_API extern "C" 
+
+// Note sync variable will be incremented (in calling thread) before job starts
+// and decremented when job finishes. Multiple async copies can therefore be
+// tied to the same sync variable, therefore wait for completion with
+// while(*sync) (yield());
+#if defined(CRY_ASYNC_MEMCPY_DELEGATE_TO_CRYSYSTEM)
+inline void cryAsyncMemcpy(
+	void* dst
+	, const void* src
+	, size_t size
+	, int nFlags
+	, volatile int* sync)
+{
+	GetISystem()->AsyncMemcpy(dst, src, size, nFlags, sync);
+}
+# else
+CRY_ASYNC_MEMCPY_API void cryAsyncMemcpy(
+	void* dst
+	, const void* src
+	, size_t size
+	, int nFlags
+	, volatile int* sync);
+#endif
+
 
 
 //////////////////////////////////////////////////////////////////////////

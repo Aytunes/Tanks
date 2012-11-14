@@ -22,7 +22,7 @@ public:
   UINT_PTR m_nOcclusionID; // this will carry a pointer LPDIRECT3DQUERY9, so it needs to be 64-bit on WIN64 
 
 
-	CRenderMesh2 * m_pRMBox;
+	CRenderMesh * m_pRMBox;
 	static uint32 m_nQueriesPerFrameCounter;
 	static uint32 m_nReadResultNowCounter;
 	static uint32 m_nReadResultTryCounter;

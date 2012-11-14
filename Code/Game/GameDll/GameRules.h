@@ -171,6 +171,7 @@ public:
 
 	virtual void OnVehicleDestroyed(EntityId id) {}
 	virtual void OnVehicleSubmerged(EntityId id, float ratio) {}
+	virtual void OnVehicleFlipped(EntityId id) {}
 
 	virtual void AddHitListener(IHitListener* pHitListener) {}
 	virtual void RemoveHitListener(IHitListener* pHitListener) {}

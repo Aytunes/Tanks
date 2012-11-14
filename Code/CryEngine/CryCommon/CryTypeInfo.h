@@ -38,7 +38,6 @@ struct FToString
 {
 	BIT_STRUCT(FToString,uint8)
 	BIT_OPT(SkipDefault)		// Omit default values on writing.
-	BIT_OPT(TruncateSub)		// Remove trailing empty sub-values.
 	BIT_OPT(Sub)						// Write sub-structures (internal usage).
 };
 
@@ -47,14 +46,6 @@ struct FFromString
 	BIT_STRUCT(FFromString,uint8)
 	BIT_OPT(SkipEmpty)			// Do not set values from empty strings (otherwise, set to zero).
 	BIT_OPT(Finalize)				// Optimize data after reading, allow no more write access.
-};
-
-struct FStringConversion: FToString, FFromString
-{
-	FStringConversion(FToString f)
-		: FToString(f) {}
-	FStringConversion(FFromString f)
-		: FFromString(f) {}
 };
 
 // Specify which limits a variable has
@@ -75,9 +66,10 @@ struct CTypeInfo
 {
 	cstr		Name;
 	size_t	Size;
+	size_t	Alignment;
 
-	CTypeInfo( cstr name, size_t size )
-		: Name(name), Size(size) {}
+	CTypeInfo( cstr name, size_t size, size_t align )
+		: Name(name), Size(size), Alignment(align) {}
 
 	virtual ~CTypeInfo()
 		{}
@@ -117,7 +109,7 @@ struct CTypeInfo
 		{ return FromValue(data, &value, TypeInfo(&value)); }
 
 	virtual bool ValueEqual(const void* data, const void* def_data = 0) const
-		{ return ToString(data, FToString().SkipDefault(1).TruncateSub(1), def_data).empty(); }
+		{ return ToString(data, FToString().SkipDefault(1), def_data).empty(); }
 
 	virtual bool GetLimit(ENumericLimit eLimit, float& fVal) const
 		{ return false; }
@@ -136,36 +128,31 @@ struct CTypeInfo
 	//
 	struct CVarInfo
 	{
-		uint32							Offset;							// Offset in bytes from struct start.
 		const CTypeInfo&		Type;								// Info for type of variable.
-		uint32							ArrayDim: 20,				// Number of array elements, or bits if bitfield.			
-												bBitfield: 1,				// Var is a bitfield, ArrayDim is number of bits.
-												BitOffset: 6,				// Additional offset in bits for bitfields.
-																						// Bit offset is computed in declaration order; on some platforms, it goes high to low.
-												BitWordWidth: 2,		// Width of bitfield = 1 byte << BitWordWidth
-												bBaseClass: 1,			// Sub-var is actually a base class.
-												bUnionAlias: 1;			// If 2nd or greater element of a union.
 		cstr								Name;								// Display name of variable.
 		cstr								Attrs;							// Var-specific attribute string, of form: 
 																						// "<name=value>" for each attr, concatenated.
 																						// Remaining text considered as comment.
+		uint32							Offset;							// Offset in bytes from struct start.
+		uint32							ArrayDim: 22,				// Number of array elements, or bits if bitfield.			
+												bBaseClass: 1,			// Sub-var is actually a base class.
+												bBitfield: 1,				// Var is a bitfield, ArrayDim is number of bits.
+												BitOffset: 6,				// Additional offset in bits for bitfields.
+																						// Bit offset is computed in declaration order; on some platforms, it goes high to low.
+												BitWordWidth: 2;		// Width of bitfield = 1 byte << BitWordWidth
+
 
 		// Accessors.
 		cstr GetName() const									{ return Name; }
 		size_t GetDim() const									{ return bBitfield ? 1 : ArrayDim; }
-		size_t GetSize() const								
-		{ 
-			if (bBitfield)
-				return (size_t)1 << BitWordWidth;
-			else if (bBaseClass && Type.Size > 0 && !Type.HasSubVars())
-				// Handle anomalous case of zero-size base class that compiler misreports as size 1.
-				return 0;
-			else
-				return Type.Size * ArrayDim; 
-		}
-		size_t GetElemSize() const						{ return bBitfield? (size_t)1 << BitWordWidth : Type.Size; }
+		size_t GetSize() const								{ return bBitfield ? (size_t)1 << BitWordWidth : Type.Size * ArrayDim; }
+		size_t GetElemSize() const						{ return bBitfield ? (size_t)1 << BitWordWidth : Type.Size; }
 		size_t GetBits() const								{ return bBitfield ? ArrayDim : ArrayDim * Type.Size * 8; }
 		bool IsBaseClass() const							{ return bBaseClass; }
+		bool IsInline() const
+		{
+			return bBaseClass && Offset == 0 && Type.HasSubVars() && Type.NextSubVar(0)->IsBaseClass();
+		}
 
 		bool GetLimit(ENumericLimit eLimit, float& fVal) const
 		{

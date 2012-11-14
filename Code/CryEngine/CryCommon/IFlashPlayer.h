@@ -77,7 +77,7 @@ struct IFlashPlayer
 	//##@}
 
 	// Initialization
-	virtual bool Load(const char* pFilePath, unsigned int options = DEFAULT) = 0;
+	virtual bool Load(const char* pFilePath, unsigned int options = DEFAULT, bool useTempMemArena = false) = 0;
 
 	// Rendering
 	virtual void SetBackgroundColor(const ColorB& color) = 0;
@@ -175,6 +175,10 @@ struct IFlashPlayer
 
 	// more to come...
 
+#if defined(ENABLE_DYNTEXSRC_PROFILING)
+	virtual void LinkDynTextureSource(const struct IDynTextureSource* pDynTexSrc) = 0;
+#endif
+
 protected:
 	IFlashPlayer() {}
 	virtual ~IFlashPlayer() {}
@@ -192,6 +196,7 @@ struct IFlashPlayer_RenderProxy
 
 	virtual void RenderCallback(EFrameType ft, bool releaseOnExit = true) = 0;
 	virtual void RenderPlaybackLocklessCallback(int cbIdx, EFrameType ft, bool finalPlayback = true, bool releaseOnExit = true) = 0;
+	virtual void DummyRenderCallback(EFrameType ft, bool releaseOnExit = true) = 0;
 
 protected:
 	IFlashPlayer_RenderProxy() {}
@@ -301,12 +306,13 @@ struct IFlashPlayerBootStrapper
 	virtual bool Load(const char* pFilePath) = 0;
 
 	// Bootstrapping
-	virtual IFlashPlayer* CreatePlayerInstance(unsigned int options = IFlashPlayer::DEFAULT) = 0;
+	virtual IFlashPlayer* CreatePlayerInstance(unsigned int options = IFlashPlayer::DEFAULT, bool useTempMemArena = false) = 0;
 
 	// Summary:
 	//	 General property queries
 	//##@{
 	virtual const char* GetFilePath() const = 0;
+	virtual size_t GetMetadata(char* pBuff, unsigned int buffSize) const = 0;
 	//##@}
 
 protected:

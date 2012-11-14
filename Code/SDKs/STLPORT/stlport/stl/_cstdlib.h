@@ -62,7 +62,7 @@ using _STLP_VENDOR_CSTD::size_t;
 // these functions just don't exist on Windows CE
 using _STLP_VENDOR_CSTD::abort;
 // PS3_STLPORT_FIX: These functions don't exist in the cell SDK
-#if !defined(PS3)
+#if !defined(PS3) && !defined(GRINGO)
 	using _STLP_VENDOR_CSTD::getenv;
 	using _STLP_VENDOR_CSTD::system;
 #endif

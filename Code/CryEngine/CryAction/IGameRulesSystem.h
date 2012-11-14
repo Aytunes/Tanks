@@ -649,6 +649,10 @@ struct IGameRules : public IGameObjectExtension
 	virtual void OnVehicleSubmerged(EntityId id, float ratio) = 0;
 
 	// Summary
+	//   Notifies that a vehicle got flipped
+	virtual void OnVehicleFlipped(EntityId id) = 0;
+
+	// Summary
 	//   Prepares an entity to be allowed to respawn
 	// Parameters
 	//   entityId - Id of the entity which needs to respawn

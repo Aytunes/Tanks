@@ -8,6 +8,8 @@
 
 class CREWaterVolume : public CRendElementBase
 {
+	IRenderMesh * m_pRenderMesh;
+
 public:
 	CREWaterVolume();
 

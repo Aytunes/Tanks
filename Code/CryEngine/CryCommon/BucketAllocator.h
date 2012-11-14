@@ -3,6 +3,10 @@
 
 #ifdef USE_GLOBAL_BUCKET_ALLOCATOR
 
+
+
+
+
 #ifndef _RELEASE
 #define BUCKET_ALLOCATOR_TRAP_DOUBLE_DELETES
 #define BUCKET_ALLOCATOR_TRAP_FREELIST_TRAMPLING
@@ -12,12 +16,20 @@
 #define BUCKET_ALLOCATOR_TRAP_BAD_SIZE_ALLOCS
 #endif
 
+#define BUCKET_ALLOCATOR_DEBUG 0
+
 // _ALIGN may not be defined yet, so create a local definition for it
 
 
 
 #define BUCKET_ALIGN(...)
 
+
+#if BUCKET_ALLOCATOR_DEBUG
+#define BucketAssert(expr) if (!(expr)) { __debugbreak(); }
+#else
+#define BucketAssert(expr)
+#endif
 
 #include "BucketAllocatorPolicy.h"
 
@@ -33,6 +45,16 @@ namespace BucketAllocatorDetail
 
 			void* Calloc(size_t num, size_t sz);
 			void Free(void* ptr);
+
+		private:
+			enum
+			{
+#ifdef _WIN64
+				ReserveCapacity = 4 * 1024 * 1024
+#else
+				ReserveCapacity = 1 * 1024 * 1024
+#endif
+			};
 
 		private:
 			CleanupAllocator(const CleanupAllocator&);
@@ -70,12 +92,10 @@ public:
 public:
 
 	BucketAllocator() {}
-	explicit BucketAllocator(void* baseAddress, bool allowExpandCleanups = true);
+	explicit BucketAllocator(void* baseAddress, bool allowExpandCleanups = true, bool cleanupOnDestruction = false);
 	~BucketAllocator();
 
 public:
-	bool HasStorage() const { return (m_baseAddress != 0); }
-
 	void* allocate(size_t sz)
 	{
 
@@ -83,9 +103,7 @@ public:
 
 		void* ptr = NULL;
 
-#if CAPTURE_REPLAY_LOG
-		int ms = CryGetIMemReplay()->EnterAlloc();
-#endif
+		MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
 
 		if (TraitsT::FallbackOnCRTAllowed && (sz > MaxSize))
 		{
@@ -100,10 +118,7 @@ public:
 			ptr = AllocateFromBucket(sz);
 		}
 
-#if CAPTURE_REPLAY_LOG
-		if (ms)
-			CryGetIMemReplay()->LeaveAlloc(ptr, sz);
-#endif
+		MEMREPLAY_SCOPE_ALLOC(ptr, sz, 0);
 
 		return ptr;
 
@@ -138,9 +153,7 @@ public:
 
 		void* ptr = NULL;
 
-#if CAPTURE_REPLAY_LOG
-		int ms = CryGetIMemReplay()->EnterAlloc();
-#endif
+		MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
 
 		if ((sz > MaxSize) || (SmallBlockLength % align))
 		{
@@ -154,11 +167,7 @@ public:
 			ptr = AllocateFromBucket(sz);
 		}
 
-#if CAPTURE_REPLAY_LOG
-		if (ms)
-			CryGetIMemReplay()->LeaveAlloc(ptr, sz);
-#endif
-
+		MEMREPLAY_SCOPE_ALLOC(ptr, sz, 0);
 		return ptr;
 
 	}
@@ -172,15 +181,13 @@ public:
 	{
 		using namespace BucketAllocatorDetail;
 
+		MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+
 
 
 
 
 		size_t sz = 0;
-
-#if CAPTURE_REPLAY_LOG
-		int ms = CryGetIMemReplay()->EnterFree();
-#endif
 
 		if (this->IsInAddressRange(ptr))
 		{
@@ -237,10 +244,7 @@ public:
 #endif
 		}
 
-#if CAPTURE_REPLAY_LOG
-		if (ms)
-			CryGetIMemReplay()->LeaveFree(ptr);
-#endif
+		MEMREPLAY_SCOPE_FREE(ptr);
 
 		return sz;
 
@@ -260,7 +264,16 @@ public:
 #ifndef __SPU__
 	ILINE bool IsInAddressRange(void* ptr)
 	{
-		return m_baseAddress <= reinterpret_cast<UINT_PTR>(ptr) && reinterpret_cast<UINT_PTR>(ptr) < (m_baseAddress + NumPages * PageLength);
+		UINT_PTR ptri = reinterpret_cast<UINT_PTR>(ptr);
+		SegmentHot* pSegments = m_segmentsHot;
+		
+		for (int i = 0, c = m_numSegments; i != c; ++ i)
+		{
+			UINT_PTR ba = pSegments[i].m_baseAddress;
+			if ((ptri - ba) < NumPages * PageLength)
+				return true;
+		}
+		return false;
 	}
 
 	size_t getSizeEx(void* ptr)
@@ -294,8 +307,6 @@ public:
 	size_t GetBucketStorageCapacity();
 	size_t GetBucketConsumedSize();
 
-	UINT_PTR GetBucketCommittedBase();
-
 	void cleanup();
 
 	void EnableExpandCleanups(bool enable)
@@ -303,7 +314,9 @@ public:
 		m_disableExpandCleanups = !enable;
 
 #if CAPTURE_REPLAY_LOG
-		CryGetIMemReplay()->BucketEnableCleanups(reinterpret_cast<void*>(GetBucketCommittedBase()), enable);
+		SegmentHot* pSegments = m_segmentsHot;
+		for (int i = 0, c = m_numSegments; i != c; ++ i)
+			CryGetIMemReplay()->BucketEnableCleanups(reinterpret_cast<void*>(pSegments[i].m_baseAddress), enable);
 #endif
 	}
 
@@ -316,7 +329,9 @@ public:
 #if CAPTURE_REPLAY_LOG
 	void ReplayRegisterAddressRange(const char* name)
 	{
-		CryGetIMemReplay()->RegisterFixedAddressRange(reinterpret_cast<void*>(m_baseAddress), NumPages * PageLength, name);
+		SegmentHot* pSegments = m_segmentsHot;
+		for (int i = 0, c = m_numSegments; i != c; ++ i)
+			CryGetIMemReplay()->RegisterFixedAddressRange(reinterpret_cast<void*>(pSegments[i].m_baseAddress), NumPages * PageLength, name);
 	}
 #endif
 
@@ -331,6 +346,7 @@ private:
 		SmallBlocksPerPage = TraitsT::SmallBlocksPerPage,
 
 		NumGenerations = TraitsT::NumGenerations,
+		MaxSegments = TraitsT::MaxNumSegments,
 
 		AllocFillMagic = 0xde,
 	};
@@ -369,9 +385,9 @@ private:
 
 		ILINE void SetBaseOffset(size_t sbId, size_t offs)
 		{
-			assert(sbId < sizeof(smallBlockBaseOffsets));
-			assert(offs < 1024);
-			assert((offs & 0x3) == 0);
+			BucketAssert(sbId < sizeof(smallBlockBaseOffsets));
+			BucketAssert(offs < 1024);
+			BucketAssert((offs & 0x3) == 0);
 			smallBlockBaseOffsets[sbId] = offs / 4;
 		}
 
@@ -433,6 +449,18 @@ private:
 
 		void SetItemSize(uint32 sz) { itemSize = sz; }
 		uint32 GetItemSize() const { return itemSize; }
+	};
+
+	struct SegmentHot
+	{
+		UINT_PTR m_baseAddress;
+	};
+
+	struct SegmentCold
+	{
+		UINT_PTR m_committed;
+		uint32 m_pageMap[(NumPages + 31) / 32];
+		uint32 m_lastPageMapped;
 	};
 
 private:
@@ -563,6 +591,20 @@ private:
 		return TraitsT::GetSizeForBucket(GetBucketInternal(ptr));
 	}
 	
+	static ILINE int GetSegmentForAddress(void* ptr, const UINT_PTR* segmentBases, int numSegments)
+	{
+		int segIdx = 0;
+		UINT_PTR segBaseAddress = 0;
+		for (; segIdx != numSegments; ++ segIdx)
+		{
+			segBaseAddress = segmentBases[segIdx];
+			if ((reinterpret_cast<UINT_PTR>(ptr) - segBaseAddress) < NumPages * PageLength)
+				break;
+		}
+
+		return segIdx;
+	}
+
 	static size_t GetRefillItemCountForBucket_Spill(UINT_PTR start, size_t itemSize)
 	{
 		size_t sbOffset = start & SmallBlockOffsetMask;
@@ -608,18 +650,18 @@ private:
 	typename SyncingPolicy::FreeListHeader m_freeLists[NumBuckets * NumGenerations];
 	volatile int m_bucketTouched[NumBuckets];
 
-	FreeBlockHeader* volatile m_freeBlocks;
+	volatile int m_numSegments;
+	SegmentHot m_segmentsHot[MaxSegments];
 
-	UINT_PTR m_baseAddress;
-	UINT_PTR m_committed;
-	uint32 m_pageMap[(NumPages + 31) / 32];
-	uint32 m_lastPageMapped;
+	FreeBlockHeader* volatile m_freeBlocks;
+	SegmentCold m_segmentsCold[MaxSegments];
 
 #ifdef BUCKET_ALLOCATOR_TRACK_CONSUMED
 	volatile int m_consumed;
 #endif
 
 	int m_disableExpandCleanups;
+	int m_cleanupOnDestruction;
 };
 
 #undef BUCKET_ALIGN

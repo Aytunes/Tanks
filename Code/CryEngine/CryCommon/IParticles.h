@@ -22,8 +22,6 @@
 #include <IEntityRenderState.h>
 #include <TimeValue.h>
 
-#define USE_JOB_SYSTEM_FOR_PARTICLES
-
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -35,6 +33,54 @@ enum EParticleEmitterFlags
 	ePEF_TemporaryEffect = BIT(2),	// Has temporary programatically created IParticleEffect.
 
 	ePEF_Custom = BIT(16),					// Any bits above and including this one can be used for game specific purposes
+};
+
+enum ECoordSpace
+{
+	eCoord_World,
+	eCoord_Local
+};
+
+//////////////////////////////////////////////////////////////////////////
+// Emitter location requires a pivot to attached object, for correct spherical inter-frame interpolation.
+struct PivotLocation: QuatTS
+{
+	Vec3		pivot;									// Offset to pivot location, in local space
+
+	PivotLocation()
+		: QuatTS(IDENTITY), pivot(ZERO) {}
+
+	PivotLocation(const QuatTS& qts)
+		: QuatTS(qts), pivot(ZERO) {}
+
+	PivotLocation(const QuatTS& qts, const Vec3& vPivot, ECoordSpace space)
+		: QuatTS(qts)
+	{
+		if (space == eCoord_Local)
+			pivot = vPivot;
+		else
+			SetWorldPivot(vPivot);
+	}
+
+	PivotLocation(const Matrix34& mx)
+		: QuatTS(mx), pivot(ZERO) {}
+
+	PivotLocation(const Matrix34& mx, const Vec3& vPivot, ECoordSpace space)
+		: QuatTS(mx)
+	{
+		if (space == eCoord_Local)
+			pivot = vPivot;
+		else
+			SetWorldPivot(vPivot);
+	}
+
+	operator Matrix34() const
+		{ return Matrix34( static_cast<const QuatTS&>(*this) ); }
+
+	Vec3 WorldPivot() const
+		{ return *this * pivot; }
+	void SetWorldPivot(const Vec3& v)
+		{ pivot = GetInverted() * v; }
 };
 
 // Summary:
@@ -105,10 +151,17 @@ struct ParticleTarget
 
 struct EmitParticleData
 {
-	IStatObj*					pStatObj;		// The displayable geometry object for the entity. If NULL, uses emitter settings for sprite or geometry.
-	IPhysicalEntity*	pPhysEnt;		// A physical entity which controls the particle. If NULL, uses emitter settings to physicalise or move particle.
-	QuatTS*						pLocation;	// Specified location for particle. If NULL, set from effect params.
-	Vec3*							pVel;				// Specified velocity for particle. If NULL, set from effect params.
+	IStatObj*					pStatObj;				// The displayable geometry object for the entity. If NULL, uses emitter settings for sprite or geometry.
+	IPhysicalEntity*	pPhysEnt;				// A physical entity which controls the particle. If NULL, uses emitter settings to physicalise or move particle.
+	QuatTS						Location;				// Specified location for particle.
+	Velocity3					Velocity;				// Specified linear and rotational velocity for particle.
+	bool							bHasLocation;		// Location is specified.
+	bool							bHasVel;				// Velocities are specified.
+
+	EmitParticleData()
+		: pStatObj(0), pPhysEnt(0), Location(IDENTITY), Velocity(ZERO), bHasLocation(false), bHasVel(false)
+	{
+	}
 };
 
 struct ParticleParams;
@@ -120,9 +173,9 @@ struct ParticleParams;
 // 	It is created by CreateParticleEffect method of 3d engine.
 UNIQUE_IFACE struct IParticleEffect : public _i_reference_target_t
 {
-	static Matrix34 ParticleLoc(const Vec3& pos, const Vec3& dir = Vec3(0,0,1), float scale = 1.f)
+	static PivotLocation ParticleLoc(const Vec3& pos, const Vec3& dir = Vec3(0,0,1), float scale = 1.f)
 	{
-		Quat q(IDENTITY);
+		QuatTS qts(IDENTITY, pos, scale);
 		if (!dir.IsZero())
 		{
 			// Rotate in 2 stages to avoid roll.
@@ -130,17 +183,14 @@ UNIQUE_IFACE struct IParticleEffect : public _i_reference_target_t
 			if (!dirxy.IsZero())
 			{
 				dirxy.Normalize();
-				q = Quat::CreateRotationV0V1(dirxy, dir.GetNormalized())
+				qts.q = Quat::CreateRotationV0V1(dirxy, dir.GetNormalized())
 					* Quat::CreateRotationV0V1(Vec3(0,1,0), dirxy);
 			}
 			else
-				q = Quat::CreateRotationV0V1(Vec3(0,1,0), dir.GetNormalized());
-			Vec3 check = q * Vec3(0,1,0);
+				qts.q = Quat::CreateRotationV0V1(Vec3(0,1,0), dir.GetNormalized());
 		}
 
-		// Todo: 
-		//	 Use QuatTS directly for all particle coords.
-		return Matrix34( QuatTS(q, pos, scale) );
+		return qts;
 	}
 
 	virtual void GetMemoryUsage( ICrySizer *pSizer ) const = 0;
@@ -155,20 +205,12 @@ UNIQUE_IFACE struct IParticleEffect : public _i_reference_target_t
 	//		uEmitterFlags - EParticleEmitterFlags
 	// Return Value:
 	//     The spawned emitter, or 0 if unable.
-	virtual struct IParticleEmitter* Spawn( const QuatTS& qLoc, uint uEmitterFlags = 0, const SpawnParams* pSpawnParams = NULL ) = 0;
+	virtual struct IParticleEmitter* Spawn( const PivotLocation& loc, uint uEmitterFlags = 0, const SpawnParams* pSpawnParams = NULL ) = 0;
 
-	// Compatibility versions.
-	IParticleEmitter* Spawn( const Matrix34& mLoc, uint uEmitterFlags = 0 )
+	// Compatibility version.
+	IParticleEmitter* Spawn( bool bIndependent, const PivotLocation& loc )
 	{
-		return Spawn(QuatTS(mLoc), uEmitterFlags);
-	}
-	IParticleEmitter* Spawn( bool bIndependent, const QuatTS& qLoc )
-	{
-		return Spawn(qLoc, ePEF_Independent * uint32(bIndependent));
-	}
-	IParticleEmitter* Spawn( bool bIndependent, const Matrix34& mLoc )
-	{
-		return Spawn(QuatTS(mLoc), ePEF_Independent * uint32(bIndependent));
+		return Spawn(loc, ePEF_Independent * uint32(bIndependent));
 	}
 
 	// Summary:
@@ -239,18 +281,6 @@ UNIQUE_IFACE struct IParticleEffect : public _i_reference_target_t
 	virtual IParticleEffect* GetChild( int index ) const = 0;
 
 	// Summary:
-	//   Adds a child particle effect.
-	// Arguments:
-	//   pEffect - A pointer the particle effect to add as child
-	virtual void AddChild( IParticleEffect *pEffect ) = 0;
-
-	// Summary:
-	//   Removes a sub particle effect.
-	// Arguments:
-	//   pEffect - A pointer to the child particle effect to be removed
-	virtual void RemoveChild( IParticleEffect *pEffect ) = 0;
-
-	// Summary:
 	//   Removes all child particles.
 	virtual void ClearChilds() = 0;
 
@@ -268,6 +298,12 @@ UNIQUE_IFACE struct IParticleEffect : public _i_reference_target_t
 	// Return Value:
 	//   An integer representing the slot number or -1 if the slot is not found.
 	virtual int FindChild( IParticleEffect *pEffect ) const = 0;
+
+	// Summary:
+	//   Remove effect from current parent, and set new parent
+	// Arguments:
+	//	 pParent: New parent, may be 0
+	virtual void SetParent( IParticleEffect* pParent ) = 0;
 
 	// Summary:
 	//	 Gets the particles effect parent, if any.
@@ -320,6 +356,10 @@ UNIQUE_IFACE struct IParticleEmitter : public CMultiThreadRefCount, public IRend
 	virtual void Activate( bool bActive ) = 0;
 
 	// Summary:
+	//		Removes emitter and all particles instantly.
+	virtual void Kill() = 0;
+
+	// Summary:
 	//		 Advances the emitter to its equilibrium state.
 	virtual void Prime() = 0;
 	// Summary: 
@@ -341,7 +381,7 @@ UNIQUE_IFACE struct IParticleEmitter : public CMultiThreadRefCount, public IRend
 
 	// Description:
 	//     Returns particle effect assigned on this emitter.
-	virtual IParticleEffect* GetParticleEffect() = 0;
+	virtual const IParticleEffect* GetEffect() const = 0;
 
 	// Summary:
 	//		 Specifies how particles are emitted from source.
@@ -357,6 +397,12 @@ UNIQUE_IFACE struct IParticleEmitter : public CMultiThreadRefCount, public IRend
 	//      Must be done when entity created or serialized, entity association is not serialized.
 	virtual void SetEntity( IEntity* pEntity, int nSlot ) = 0;
 
+	// Summary:
+	//			Sets location with quat-based PivotLocation.
+	// Notes:
+	//			IRenderNode.SetMatrix() is equivalent, but sets pivot to ZERO.
+	virtual void SetLocation( const PivotLocation& loc ) = 0;
+
 	// Attractors.
 	virtual void SetTarget( const ParticleTarget& target ) = 0;
 
@@ -365,27 +411,29 @@ UNIQUE_IFACE struct IParticleEmitter : public CMultiThreadRefCount, public IRend
 	virtual void Update() = 0;
 
 	// Summary:
-	//		 Programmatically adds particles to emitter for rendering.
+	//		 Programmatically adds particle to emitter for rendering.
 	//		 With no arguments, spawns particles according to emitter settings.
 	//		 Specific objects can be passed for programmatic control.
 	// Arguments:
-	//		 nCount - Number of particles to spawn
-	//		 pEmitParticleDataArray (Array of particle data for each particle)
-	//								.pLocation	- Specified location for particle. If 0, set from effect params.
-	//								.pVel		- Specified velocity for particle. If 0, set from effect params.
-	//								.pStatObj	- The displayable geometry object for the entity. If 0, uses emitter settings for sprite or geometry.
-	//								.pPhysEnt	- A physical entity which controls the particle. If 0, uses emitter settings to physicalise or move particle.
-	virtual void EmitParticles( uint nCount, const EmitParticleData* aEmitParticleData = NULL ) = 0;
+	//		 pData - Specific data for particle, or NULL for defaults.
+	virtual void EmitParticle( const EmitParticleData* pData = NULL ) = 0;
 
-	void EmitParticles( Array<const EmitParticleData> array )
+	void EmitParticle( IStatObj* pStatObj, IPhysicalEntity* pPhysEnt = NULL, QuatTS* pLocation = NULL, Velocity3* pVel = NULL )
 	{
-		EmitParticles( array.size(), array.begin() );
-	}
-
-	void EmitParticle( IStatObj* pStatObj = NULL, IPhysicalEntity* pPhysEnt = NULL, QuatTS* pLocation = NULL, Vec3* pVel = NULL )
-	{
-		EmitParticleData EmitData = { pStatObj, pPhysEnt, pLocation, pVel };
-		EmitParticles(1, &EmitData);
+		EmitParticleData data;
+		data.pStatObj = pStatObj;
+		data.pPhysEnt = pPhysEnt;
+		if (pLocation)
+		{
+			data.Location = *pLocation;
+			data.bHasLocation = true;
+		}
+		if (pVel)
+		{
+			data.Velocity = *pVel;
+			data.bHasVel = true;
+		}
+		EmitParticle(&data);
 	}
 
 	virtual bool UpdateStreamableComponents( float fImportance, Matrix34A& objMatrix, IRenderNode* pRenderNode, float fEntDistance, bool bFullUpdate, int nLod ) = 0;
@@ -431,7 +479,7 @@ struct IParticleEffectListener
 	//   bIndependent - 
 	//	 mLoc		      - The location of the emitter
 	//	 pEffect      - The particle effect
-	virtual void OnCreateEmitter(IParticleEmitter* pEmitter, QuatTS const& qLoc, const IParticleEffect* pEffect, uint32 uEmitterFlags ) = 0;
+	virtual void OnCreateEmitter(IParticleEmitter* pEmitter, const QuatTS& qLoc, const IParticleEffect* pEffect, uint32 uEmitterFlags ) = 0;
 
 	// Description:
 	//	 This callback is called when a particle emitter is deleted.
@@ -568,13 +616,7 @@ struct IParticleManager
 	//		 Params - Programmatic particle params.
 	// Return Value:
 	//     A pointer to an object derived from IParticleEmitter
-	virtual IParticleEmitter* CreateEmitter( Matrix34 const& mLoc, const ParticleParams& Params, uint uEmitterFlags = 0, const SpawnParams* pSpawnParams = NULL ) = 0;
-
-	// Summary:
-	//     Deletes a specified particle emitter.
-	// Arguments:
-	//     pPartEmitter - Specify the emitter to delete
-	virtual void DeleteEmitter( IParticleEmitter * pPartEmitter ) = 0;
+	virtual IParticleEmitter* CreateEmitter( const PivotLocation& loc, const ParticleParams& Params, uint uEmitterFlags = 0, const SpawnParams* pSpawnParams = NULL ) = 0;
 
 	// Summary:
 	//     Deletes all particle emitters which have any of the flags in mask set

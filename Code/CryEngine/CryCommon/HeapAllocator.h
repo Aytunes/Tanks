@@ -45,7 +45,7 @@ namespace stl
 		}
 	};
 
-	// Round up to next multiple of nAlign. Handles any postive integer.
+	// Round up to next multiple of nAlign. Handles any positive integer.
 	inline size_t RoundUpTo(size_t nSize, size_t nAlign)
 	{
 		assert(nAlign > 0);
@@ -102,234 +102,27 @@ namespace stl
 		}
 	};
 
-	template <typename L = PSyncMultiThread, bool bMULTI_PAGE = true, typename SysAl = HeapSysAllocator>
-	class HeapAllocator: public L, private SysAl
+	//////////////////////////////////////////////////////////////////////////
+	struct FHeap
+	{
+		OPT_STRUCT(FHeap)
+		VAR_OPT(bool, SinglePage)				// Only 1 page allowed (fixed alloc)
+		VAR_OPT(bool, FreeWhenEmpty)		// Release all memory when no longer used
+	};
+
+	template <typename L = PSyncMultiThread, typename SysAl = HeapSysAllocator>
+	class HeapAllocator: public FHeap, public L, private SysAl
 	{
 	public:
+
 		typedef AutoLock<L> Lock;
 
-		enum {DefaultAlignment = sizeof(void*)};
-		enum {DefaultPageSize = 0x1000};
+		enum { DefaultAlignment = sizeof(void*) };
+		enum { DefaultPageSize = 0x1000 };
 
-		HeapAllocator(size_t nPageSize = DefaultPageSize)
-		:	_nPageSize(nPageSize ? nPageSize : DefaultPageSize),
-			_pPageList(0)
-		{
-		}
+	private:
 
-		~HeapAllocator()
-		{
-			Clear();
-		}
-
-		//
-		// Raw memory allocation.
-		//
-		void* Allocate(size_t nSize, size_t nAlign = DefaultAlignment)
-		{
-			for (;;)
-			{
-				Lock lock(*this);
-
-				// Try allocating from head page first.
-				if (_pPageList)
-				{
-					if (void* ptr = _pPageList->Allocate(nSize, nAlign))
-					{
-						_TotalMem.nUsed += nSize;
-						return ptr;
-					}
-
-					if (_pPageList->pNext && _pPageList->pNext->GetMemoryFree() > _pPageList->GetMemoryFree())
-					{
-						SortPage(_pPageList, lock);
-						Validate(lock);
-
-						// Try allocating from new head, which has the most free memory.
-						// If this fails, we know no further pages will succeed.
-						if (void* ptr = _pPageList->Allocate(nSize, nAlign))
-						{
-							_TotalMem.nUsed += nSize;
-							return ptr;
-						}
-					}
-					if (!bMULTI_PAGE)
-						return 0;
-				}
-
-				// Allocate the new page of the required size.
-				int nAllocSize = sizeof(PageNode) + nAlign - 1 + RoundUpTo(nSize, _nPageSize);
-
-				void* pAlloc = this->SysAlloc(nAllocSize);
-				PageNode* pPageNode = new(pAlloc) PageNode(nAllocSize);
-
-				// Insert at head of list.
-				pPageNode->pNext = _pPageList;
-				_pPageList = pPageNode;
-
-				_TotalMem.nAlloc += nAllocSize;
-
-				Validate(lock);
-			}
-		}
-
-		void Deallocate(void* ptr, size_t nSize, const Lock& lock)
-		{
-			// Just to maintain counts, can't reuse memory.
-			assert(CheckPtr(ptr, lock));
-			assert(_TotalMem.nUsed >= nSize);
-			_TotalMem.nUsed -= nSize;
-		}
-
-		//
-		// Templated type allocation.
-		//
-		template<typename T>
-		T* New(size_t nAlign = 0)
-		{
-			return new(Allocate(sizeof(T), nAlign ? nAlign : alignof(T))) T;
-		}
-
-		template<typename T>
-		T* NewArray(size_t nCount, size_t nAlign = 0)
-		{
-			return new(Allocate(sizeof(T)*nCount, nAlign ? nAlign : alignof(T))) T[nCount];
-		}
-
-		//
-		// Maintenance.
-		//
-		SMemoryUsage GetTotalMemory() const
-		{
-			return _TotalMem;
-		}
-
-		struct PageNodeHandle
-		{
-		};
-
-		PageNodeHandle* RemovePagesAlreadyLocked(Lock& lock)
-		{
-			// Remove the pages from the object.
-			PageNodeHandle* pPageNode;
-			Validate(lock);
-			pPageNode = _pPageList;
-			_pPageList = 0;
-			_TotalMem.Clear();
-			return pPageNode;
-		}
-
-		void FreeMemory(PageNodeHandle* handle)
-		{
-			PageNode* pPageNode = static_cast<PageNode*>(handle);
-			// Loop through all the pages, freeing the memory.
-			while (pPageNode != 0)
-			{
-				// Read the "next" pointer before deleting.
-				PageNode* pNext = pPageNode->pNext;
-
-				// Delete the current page.
-				this->SysDealloc(pPageNode);
-
-				// Move to the next page in the list.
-				pPageNode = pNext;
-			}
-		}
-
-		void Clear()
-		{
-			PageNodeHandle* pPageNode;
-			{
-				// Remove the pages from the object.
-				Lock lock(*this);
-				Validate(lock);
-				pPageNode = RemovePagesAlreadyLocked(lock);
-			}
-
-			// Loop through all the pages, freeing the memory.
-			FreeMemory(pPageNode);
-		}
-
-		void Reset()
-		{
-			// Reset all pages, allowing memory re-use.
-			Lock lock(*this);
-			Validate(lock);
-			size_t nPrevSize = ~0;
-			for (PageNode** ppPage = &_pPageList; *ppPage; )
-			{
-				(*ppPage)->Reset();
-				if ((*ppPage)->GetMemoryAlloc() > nPrevSize)
-				{
-					// Move page to sorted location near beginning.
-					SortPage(*ppPage, lock);
-
-					// ppPage is now next page, so continue loop.
-					continue;
-				}
-				nPrevSize = (*ppPage)->GetMemoryAlloc();
-				ppPage = &(*ppPage)->pNext;
-			}
-			_TotalMem.nUsed = 0;
-			Validate(lock);
-		}
-
-		//
-		// Validation.
-		//
-		bool CheckPtr(void* ptr, const Lock&) const
-		{
-			if (!ptr)
-				return true;
-			for (PageNode* pNode = _pPageList; pNode; pNode = pNode->pNext)
-			{
-				if (pNode->CheckPtr(ptr))
-					return true;
-			}
-			return false;
-		}
-
-		void Validate(const Lock&) const
-		{
-		#ifdef _DEBUG
-			// Check page validity, and memory counts.
-			SMemoryUsage MemCheck;
-
-			for (PageNode* pPage = _pPageList; pPage; pPage = pPage->pNext)
-			{
-				pPage->Validate();
-				if (pPage != _pPageList && pPage->pNext)
-					assert(pPage->GetMemoryFree() >= pPage->pNext->GetMemoryFree());
-				MemCheck.nAlloc += pPage->GetMemoryAlloc();
-				MemCheck.nUsed += pPage->GetMemoryUsed();
-			}
-			assert(MemCheck.nAlloc == _TotalMem.nAlloc);
-			assert(MemCheck.nUsed >= _TotalMem.nUsed);
-		#endif
-
-		#if bMEM_HEAP_CHECK
-			static int nCount = 0, nInterval = 0;
-			if (nCount++ >= nInterval)
-			{
-				nInterval++;
-				nCount = 0;
-				assert(IsHeapValid());
-			}
-		#endif
-		}
-
-		void GetMemoryUsage( ICrySizer *pSizer ) const
-		{
-			Lock lock(non_const(*this));
-			for (PageNode *pNode = _pPageList; pNode; pNode = pNode->pNext)
-			{
-				pSizer->AddObject(pNode, pNode->GetMemoryAlloc());
-			}
-		}
-
-	protected:
-
-		struct PageNode : PageNodeHandle
+		struct PageNode
 		{
 			PageNode* pNext;
 			char*			pEndAlloc;
@@ -394,7 +187,229 @@ namespace stl
 			}
 		};
 
-		void SortPage(PageNode*& rpPage, const Lock&)
+	public:
+
+		HeapAllocator(size_t nPageSize = DefaultPageSize, FHeap opts = ZERO)
+			: FHeap(opts),
+			_nPageSize( std::max( Align(nPageSize, DefaultPageSize), (size_t)DefaultPageSize ) ),
+			_pPageList(0)
+		{
+		}
+
+		~HeapAllocator()
+		{
+			Clear();
+		}
+
+		//
+		// Raw memory allocation.
+		//
+		void* Allocate(const Lock& lock, size_t nSize, size_t nAlign = DefaultAlignment)
+		{
+			for (;;)
+			{
+				// Try allocating from head page first.
+				if (_pPageList)
+				{
+					if (void* ptr = _pPageList->Allocate(nSize, nAlign))
+					{
+						_TotalMem.nUsed += nSize;
+						return ptr;
+					}
+
+					if (_pPageList->pNext && _pPageList->pNext->GetMemoryFree() > _pPageList->GetMemoryFree())
+					{
+						SortPage(lock, _pPageList);
+						Validate(lock);
+
+						// Try allocating from new head, which has the most free memory.
+						// If this fails, we know no further pages will succeed.
+						if (void* ptr = _pPageList->Allocate(nSize, nAlign))
+						{
+							_TotalMem.nUsed += nSize;
+							return ptr;
+						}
+					}
+					if (_SinglePage)
+						return 0;
+				}
+
+				// Allocate the new page of the required size.
+				size_t nAllocSize = Align(sizeof(PageNode), nAlign) + nSize;
+				nAllocSize = RoundUpTo(nAllocSize, _nPageSize);
+
+				void* pAlloc = this->SysAlloc(nAllocSize);
+				PageNode* pPageNode = new(pAlloc) PageNode(nAllocSize);
+
+				// Insert at head of list.
+				pPageNode->pNext = _pPageList;
+				_pPageList = pPageNode;
+
+				_TotalMem.nAlloc += nAllocSize;
+
+				Validate(lock);
+			}
+		}
+
+		void Deallocate(const Lock& lock, void* ptr, size_t nSize)
+		{
+			// Just to maintain counts, can't reuse memory.
+			assert(CheckPtr(lock, ptr));
+			assert(_TotalMem.nUsed >= nSize);
+			_TotalMem.nUsed -= nSize;
+		}
+
+		//
+		// Templated type allocation.
+		//
+		template<typename T>
+		T* New(size_t nAlign = 0)
+		{
+			return new(Allocate(Lock(*this), sizeof(T), nAlign ? nAlign : alignof(T))) T;
+		}
+
+		template<typename T>
+		T* NewArray(size_t nCount, size_t nAlign = 0)
+		{
+			return new(Allocate(Lock(*this), sizeof(T)*nCount, nAlign ? nAlign : alignof(T))) T[nCount];
+		}
+
+		//
+		// Maintenance.
+		//
+		SMemoryUsage GetTotalMemory(const Lock&)
+		{
+			return _TotalMem;
+		}
+		SMemoryUsage GetTotalMemory()
+		{
+			Lock lock(*this);
+			return _TotalMem;
+		}
+
+		// Facility to defer freeing of dead pages during memory release calls.
+		struct FreeMemLock: Lock
+		{
+			struct PageNode* _pPageList;
+
+			FreeMemLock(L& lock)
+				: Lock(lock), _pPageList(0) {}
+
+			~FreeMemLock()
+			{
+				while (_pPageList != 0)
+				{
+					// Read the "next" pointer before deleting.
+					PageNode* pNext = _pPageList->pNext;
+
+					// Delete the current page.
+					SysDealloc(_pPageList);
+
+					// Move to the next page in the list.
+					_pPageList = pNext;
+				}
+			}
+		};
+
+		void Clear(FreeMemLock& lock)
+		{
+			// Remove the pages from the object.
+			Validate(lock);
+			lock._pPageList = _pPageList;
+			_pPageList = 0;
+			_TotalMem.Clear();
+		}
+
+		void Clear()
+		{
+			FreeMemLock lock(*this);
+			Clear(lock);
+		}
+
+		void Reset(const Lock& lock)
+		{
+			// Reset all pages, allowing memory re-use.
+			Validate(lock);
+			size_t nPrevSize = ~0;
+			for (PageNode** ppPage = &_pPageList; *ppPage; )
+			{
+				(*ppPage)->Reset();
+				if ((*ppPage)->GetMemoryAlloc() > nPrevSize)
+				{
+					// Move page to sorted location near beginning.
+					SortPage(lock, *ppPage);
+
+					// ppPage is now next page, so continue loop.
+					continue;
+				}
+				nPrevSize = (*ppPage)->GetMemoryAlloc();
+				ppPage = &(*ppPage)->pNext;
+			}
+			_TotalMem.nUsed = 0;
+			Validate(lock);
+		}
+
+		void Reset()
+		{
+			Reset(Lock(*this));
+		}
+
+		//
+		// Validation.
+		//
+		bool CheckPtr(const Lock&, void* ptr) const
+		{
+			if (!ptr)
+				return true;
+			for (PageNode* pNode = _pPageList; pNode; pNode = pNode->pNext)
+			{
+				if (pNode->CheckPtr(ptr))
+					return true;
+			}
+			return false;
+		}
+
+		void Validate(const Lock&) const
+		{
+		#ifdef _DEBUG
+			// Check page validity, and memory counts.
+			SMemoryUsage MemCheck;
+
+			for (PageNode* pPage = _pPageList; pPage; pPage = pPage->pNext)
+			{
+				pPage->Validate();
+				if (pPage != _pPageList && pPage->pNext)
+					assert(pPage->GetMemoryFree() >= pPage->pNext->GetMemoryFree());
+				MemCheck.nAlloc += pPage->GetMemoryAlloc();
+				MemCheck.nUsed += pPage->GetMemoryUsed();
+			}
+			assert(MemCheck.nAlloc == _TotalMem.nAlloc);
+			assert(MemCheck.nUsed >= _TotalMem.nUsed);
+		#endif
+
+		#if bMEM_HEAP_CHECK
+			static int nCount = 0, nInterval = 0;
+			if (nCount++ >= nInterval)
+			{
+				nInterval++;
+				nCount = 0;
+				assert(IsHeapValid());
+			}
+		#endif
+		}
+
+		void GetMemoryUsage(ICrySizer *pSizer) const
+		{
+			Lock lock(non_const(*this));
+			for (PageNode *pNode = _pPageList; pNode; pNode = pNode->pNext)
+			{
+				pSizer->AddObject(pNode, pNode->GetMemoryAlloc());
+			}
+		}
+
+	private:
+
+		void SortPage(const Lock&, PageNode*& rpPage)
 		{
 			// Unlink rpPage.
 			PageNode* pPage = rpPage;
@@ -410,7 +425,6 @@ namespace stl
 			*ppBefore = pPage;
 		}
 
-	private:
 		const size_t	_nPageSize;		// Pages allocated at this size, or multiple thereof if needed.
 		PageNode*			_pPageList;		// All allocated pages.
 		SMemoryUsage	_TotalMem;		// Track memory allocated and used.

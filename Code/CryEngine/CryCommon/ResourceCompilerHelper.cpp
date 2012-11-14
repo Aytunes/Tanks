@@ -13,7 +13,6 @@
 
 #pragma warning (disable:4312)
 
-
 #include <windows.h>		
 #include <shellapi.h> //ShellExecute()
 
@@ -152,7 +151,8 @@ CResourceCompilerHelper::ERcCallResult CResourceCompilerHelper::CallResourceComp
 	CResourceCompilerHelper::ERcExePath rcExePath, 
 	bool bSilent,
 	bool bNoUserDialog,
-	const wchar_t* szWorkingDirectory)
+	const wchar_t* szWorkingDirectory,
+	const wchar_t* szRootPath)
 {
 	// make command for execution
 	SettingsManagerHelpers::CFixedString<wchar_t, MAX_PATH*3> wRemoteCmdLine;
@@ -175,6 +175,9 @@ CResourceCompilerHelper::ERcCallResult CResourceCompilerHelper::CallResourceComp
 			break;
 		case eRcExePath_currentFolder:
 			wcscpy(pathBuffer, L".");
+			break;
+		case eRcExePath_customPath:
+			wcscpy(pathBuffer, szRootPath);
 			break;
 		default:
 			return eRcCallResult_notFound;
@@ -290,8 +293,8 @@ CResourceCompilerHelper::ERcCallResult CResourceCompilerHelper::CallResourceComp
 	WaitForSingleObject(pi.hProcess, INFINITE);
 
 	bool ok = true;
+	DWORD exitCode = 1;
 	{
-		DWORD exitCode = 1;
 		if ((GetExitCodeProcess(pi.hProcess, &exitCode) == 0) || (exitCode != 0))
 		{
 			ok = false;
@@ -301,6 +304,11 @@ CResourceCompilerHelper::ERcCallResult CResourceCompilerHelper::CallResourceComp
 	// Close process and thread handles. 
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
+
+	if (exitCode == eRcExitCode_Crash)
+	{
+		return eRcCallResult_crash;
+	}
 
 	if (lineBuffer.IsTruncated())
 	{
@@ -319,7 +327,8 @@ void* CResourceCompilerHelper::AsyncCallResourceCompiler(
 	CResourceCompilerHelper::ERcExePath rcExePath, 
 	bool bSilent,
 	bool bNoUserDialog,
-	const wchar_t* szWorkingDirectory)
+	const wchar_t* szWorkingDirectory,
+	const wchar_t* szRootPath)
 {
 	// make command for execution
 	SettingsManagerHelpers::CFixedString<wchar_t, MAX_PATH*3> wRemoteCmdLine;
@@ -342,6 +351,9 @@ void* CResourceCompilerHelper::AsyncCallResourceCompiler(
 			break;
 		case eRcExePath_currentFolder:
 			wcscpy(pathBuffer, L".");
+			break;
+		case eRcExePath_customPath:
+			wcscpy(pathBuffer, szRootPath);
 			break;
 		default:
 			return NULL;
@@ -678,40 +690,84 @@ void CResourceCompilerHelper::GetInputFilename(
 
 
 //////////////////////////////////////////////////////////////////////////
-void* CResourceCompilerHelper::CallEditor( void* pParent, const char* pWndName, const char* pFlag)
+bool CResourceCompilerHelper::CallEditor(void** pEditorWindow, void* hParent, const char* pWindowName, const char* pFlag)
 {
-	HWND hWnd = ::FindWindowA(NULL, pWndName);
-	if(hWnd)
-		return hWnd;
+	HWND window = ::FindWindowA(NULL, pWindowName);
+	if (window)
+	{
+		*pEditorWindow = window;
+		return true;
+	}
 	else
 	{
-		wchar_t buffer[512];
+		*pEditorWindow = 0;
+
+		wchar_t buffer[512] = { L'\0' };
 		GetEditorExecutable(SettingsManagerHelpers::CWCharBuffer(buffer, sizeof(buffer)));
 
 		SettingsManagerHelpers::CFixedString<wchar_t, 256> wFlags;
 		SettingsManagerHelpers::ConvertUtf8ToUtf16(pFlag, wFlags.getBuffer());
 		wFlags.setLength(wcslen(wFlags.c_str()));
 
-		if (buffer[0])		
+		if (buffer[0] != '\0')		
 		{
 			INT_PTR hIns = (INT_PTR)ShellExecuteW(NULL, L"open", buffer, wFlags.c_str(), NULL, SW_SHOWNORMAL);
-			if(hIns<=32)
+			if(hIns > 32)
+			{
+				return true;
+			}
+			else
 			{
 				MessageBoxA(0,"Editor.exe was not found.\n\nPlease verify CryENGINE root path.","Error",MB_ICONERROR|MB_OK);
-				ResourceCompilerUI(pParent);
+				ResourceCompilerUI(hParent);
 				GetEditorExecutable(SettingsManagerHelpers::CWCharBuffer(buffer, sizeof(buffer)));
 				ShellExecuteW(NULL, L"open", buffer, wFlags.c_str(), NULL, SW_SHOWNORMAL);
 			}
 		}
 	}
-	return 0;
+	return false;
 }
 
+//////////////////////////////////////////////////////////////////////////
+const char* CResourceCompilerHelper::GetCallResultDescription(ERcCallResult result)
+{
+	switch (result)
+	{
+	case eRcCallResult_success:
+		return "Success.";
+	case eRcCallResult_notFound:
+		return "ResourceCompiler executable was not found.";
+	case eRcCallResult_error:
+		return "ResourceCompiler exited with an error.";
+	case eRcCallResult_crash:
+		return "ResourceCompiler crashed! Please report this. Include source asset and this log in the report.";
+	default: 
+		return "Unexpected failure in ResultCompilerHelper.";
+	}
+}
 
 //////////////////////////////////////////////////////////////////////////
 CEngineSettingsManager* CResourceCompilerHelper::GetSettingsManager()
 {
 	return g_pSettingsManager;
+}
+
+bool CResourceCompilerHelper::GetInstalledBuildPathUtf16(const int index, SettingsManagerHelpers::CWCharBuffer name, SettingsManagerHelpers::CWCharBuffer path)
+{
+	return g_pSettingsManager->GetInstalledBuildRootPathUtf16(index, name, path);
+}
+
+bool CResourceCompilerHelper::GetInstalledBuildPathAscii(const int index, SettingsManagerHelpers::CCharBuffer name, SettingsManagerHelpers::CCharBuffer path)
+{
+	wchar_t wName[MAX_PATH];
+	wchar_t wPath[MAX_PATH];
+	if( GetInstalledBuildPathUtf16(index, SettingsManagerHelpers::CWCharBuffer(wName, sizeof(wName)), SettingsManagerHelpers::CWCharBuffer(wPath, sizeof(wPath))) )
+	{
+		SettingsManagerHelpers::GetAsciiFilename(wName, name);
+		SettingsManagerHelpers::GetAsciiFilename(wPath, path);
+		return true;
+	}
+	return false;
 }
 
 #endif //(CRY_ENABLE_RC_HELPER)

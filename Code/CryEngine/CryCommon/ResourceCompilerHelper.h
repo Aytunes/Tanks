@@ -24,7 +24,6 @@
 #include "SettingsManagerHelpers.h"
 #include <stdio.h>     // strlen()
 
-
 class IResourceCompilerListener
 {
 public:
@@ -47,6 +46,7 @@ enum ERcExitCode
 	eRcExitCode_Success = 0,   // must be 0
 	eRcExitCode_Error = 1,
 	eRcExitCode_FatalError = 100,
+	eRcExitCode_Crash = 101,
 	eRcExitCode_UserFixing = 200,
 };
 
@@ -59,14 +59,16 @@ public:
 	{
 		eRcCallResult_success,
 		eRcCallResult_notFound,
-		eRcCallResult_error
+		eRcCallResult_error,
+		eRcCallResult_crash
 	};
 
 	enum ERcExePath
 	{
 		eRcExePath_currentFolder,
 		eRcExePath_registry,
-		eRcExePath_settingsManager
+		eRcExePath_settingsManager,
+		eRcExePath_customPath
 	};
 
 #if (CRY_ENABLE_RC_HELPER)				// run compiler only on developer platform
@@ -112,7 +114,8 @@ public:
 		ERcExePath rcExePath=eRcExePath_registry, 
 		bool bSilent=false,
 		bool bNoUserDialog=false,
-		const wchar_t* szWorkingDirectory=0);
+		const wchar_t* szWorkingDirectory=0,
+		const wchar_t* szRootPath=0);
 
 	void* AsyncCallResourceCompiler(
 		const char* szFileName=0, 
@@ -121,12 +124,19 @@ public:
 		ERcExePath rcExePath=eRcExePath_registry, 
 		bool bSilent=false,
 		bool bNoUserDialog=false,
-		const wchar_t* szWorkingDirectory=0);
+		const wchar_t* szWorkingDirectory=0,
+		const wchar_t* szRootPath=0);
 
-	void* CallEditor(
+	bool CallEditor(
+		void** pEditorWindow,
 		void* hParent,
 		const char* pWndName,
 		const char* pFlag);
+
+	static const char* GetCallResultDescription(ERcCallResult result);
+
+	bool GetInstalledBuildPathUtf16(const int index, SettingsManagerHelpers::CWCharBuffer name, SettingsManagerHelpers::CWCharBuffer path);
+	bool GetInstalledBuildPathAscii(const int index, SettingsManagerHelpers::CCharBuffer name, SettingsManagerHelpers::CCharBuffer path);
 
 private:
 	bool m_bErrorFlag;

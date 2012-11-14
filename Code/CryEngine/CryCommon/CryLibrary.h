@@ -37,15 +37,19 @@
 
 #include <stdio.h>
 
-#if defined(WIN32) || defined(XENON)
+#if defined(WIN32) || defined(XENON)  || defined(GRINGO)
 #ifdef WIN32
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 	#define CryLoadLibrary(libName) ::LoadLibrary(libName)
-#else //WIN32
-	// For Xenon.
-	extern HMODULE XenonLoadLibrary( const char *libName );
-	#define CryLoadLibrary(libName) XenonLoadLibrary(libName)
+
+
+
+
+
+
+
+
 #endif //WIN32
 	#define CrySharedLibraySupported true
 	#define CrySharedLibrayExtension ".dll"

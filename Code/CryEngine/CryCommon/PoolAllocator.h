@@ -38,6 +38,8 @@
 // The class is implemented using a HeapAllocator.
 //---------------------------------------------------------------------------
 
+#pragma warning(disable: 4355)	// 'this' : used in base member initializer list
+
 #include "HeapAllocator.h"
 
 namespace stl
@@ -48,7 +50,6 @@ namespace stl
 	class SharedSizePoolAllocator
 	{
 		template <typename T> friend struct PoolCommonAllocator;
-	protected:
 
 		using_type(THeap, Lock);
 
@@ -56,6 +57,8 @@ namespace stl
 		{
 			ObjectNode* pNext;
 		};
+
+	protected:
 
 		static size_t AllocSize(size_t nSize)
 		{
@@ -68,12 +71,11 @@ namespace stl
 
 	public:
 
-		SharedSizePoolAllocator(THeap& heap, size_t nSize, size_t nAlign = 0, bool freePagesWhenEmpty = false)
+		SharedSizePoolAllocator(THeap& heap, size_t nSize, size_t nAlign = 0)
 		: _pHeap(&heap),
 			_nAllocSize(AllocSize(nSize)),
 			_nAllocAlign(AllocAlign(nSize, nAlign)),
-			_pFreeList(0),
-			_freePagesWhenEmpty(freePagesWhenEmpty)
+			_pFreeList(0)
 		{
 		}
 
@@ -85,7 +87,7 @@ namespace stl
 			for (ObjectNode* pFree = _pFreeList; pFree; )
 			{
 				ObjectNode* pNext = pFree->pNext;
-				_pHeap->Deallocate(pFree, _nAllocSize, lock);
+				_pHeap->Deallocate(lock, pFree, _nAllocSize);
 				pFree = pNext;
 			}
 		}
@@ -93,35 +95,49 @@ namespace stl
 		// Raw allocation.
 		void* Allocate()
 		{
+			Lock lock(*_pHeap);
+			if (_pFreeList)
 			{
-				Lock lock(*_pHeap);
-				if (_pFreeList)
-				{
-					ObjectNode* pFree = _pFreeList;
-					_pFreeList = _pFreeList->pNext;
-					Validate(lock);
-					_Counts.nUsed++;
-					return pFree;
-				}
+				ObjectNode* pFree = _pFreeList;
+				_pFreeList = _pFreeList->pNext;
+				Validate(lock);
+				_Counts.nUsed++;
+				return pFree;
 			}
 
 			// No free pointer, allocate a new one.
-			void* pNewMemory = _pHeap->Allocate(_nAllocSize, _nAllocAlign);
+			void* pNewMemory = _pHeap->Allocate(lock, _nAllocSize, _nAllocAlign);
 			if (pNewMemory)
 			{
 				_Counts.nUsed++;
 				_Counts.nAlloc++;
+				Validate(lock);
 			}
 			return pNewMemory;
 		}
 
 		void Deallocate(void* pObject)
 		{
-			typename THeap::PageNodeHandle* pPageNode = NULL;
+			Deallocate(Lock(*_pHeap), pObject);
+		}
+
+		SMemoryUsage GetCounts() const
+		{
+			Lock lock(*_pHeap);
+			return _Counts;
+		}
+		SMemoryUsage GetTotalMemory(const Lock&) const
+		{
+			return SMemoryUsage(_Counts.nAlloc * _nAllocSize, _Counts.nUsed * _nAllocSize);
+		}
+
+	protected:
+
+		void Deallocate(const Lock& lock, void* pObject)
+		{
 			if (pObject)
 			{
-				Lock lock(*_pHeap);
-				assert(_pHeap->CheckPtr(pObject, lock));
+				assert(_pHeap->CheckPtr(lock, pObject));
 
 				ObjectNode* pNode = static_cast<ObjectNode*>(pObject);
 
@@ -129,75 +145,22 @@ namespace stl
 				pNode->pNext = _pFreeList;
 				_pFreeList = pNode;
 				_Counts.nUsed--;
-
-				if (_freePagesWhenEmpty && _Counts.nUsed == 0)
-				{
-					pPageNode = _pHeap->RemovePagesAlreadyLocked( lock );
-					_pFreeList = NULL;
-				}
-
 				Validate(lock);
 			}
-			if (pPageNode)
-			{
-				_pHeap->FreeMemory(pPageNode);
-			}
 		}
-
-		void FreeMemoryIfEmpty()
-		{
-			typename THeap::PageNodeHandle* pPageNode = NULL;
-			{
-				Lock lock(*_pHeap);
-
-				if (_Counts.nUsed == 0)
-				{
-					pPageNode = _pHeap->RemovePagesAlreadyLocked( lock );
-					_pFreeList = NULL;
-				}
-
-				Validate(lock);
-			}
-			if (pPageNode)
-			{
-				_pHeap->FreeMemory(pPageNode);
-			}
-		}
-
-		size_t GetMemSize(const void* pObject) const
-		{
-			return Align(_nAllocSize, _nAllocAlign);
-		}
-
-		SMemoryUsage GetCounts() const
-		{
-			return _Counts;
-		}
-		SMemoryUsage GetTotalMemory() const
-		{
-			return SMemoryUsage(_Counts.nAlloc * _nAllocSize, _Counts.nUsed * _nAllocSize);
-		}
-
-		void GetMemoryUsage( ICrySizer *pSizer ) const
-		{
-			pSizer->AddObject(this, _Counts.nAlloc * _nAllocSize);
-		}
-
-	protected:
 
 		void Validate(const Lock& lock) const
 		{
 			_pHeap->Validate(lock);
 			_Counts.Validate();
-			//assert(GetTotalMemory().nAlloc <= _pHeap->GetTotalMemory().nUsed);
+			assert(_Counts.nAlloc * _nAllocSize <= _pHeap->GetTotalMemory(lock).nUsed);
 		}
 
-		void Reset()
+		void Reset(const Lock&, bool bForce = false)
 		{
-			Lock lock(*_pHeap);
-			//assert(_Counts.nUsed == 0);
-			_pFreeList = 0;
+			assert(bForce || _Counts.nUsed == 0);
 			_Counts.Clear();
+			_pFreeList = 0;
 		}
 		
 	protected:
@@ -206,7 +169,6 @@ namespace stl
 
 		THeap*						_pHeap;
 		ObjectNode*				_pFreeList;
-		bool							_freePagesWhenEmpty;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -249,50 +211,75 @@ namespace stl
 	//////////////////////////////////////////////////////////////////////////
 	// SizePoolAllocator with owned heap
 	template <typename THeap>
-	class SizePoolAllocator: public SharedSizePoolAllocator<THeap>
+	class SizePoolAllocator: protected THeap, public SharedSizePoolAllocator<THeap>
 	{
-		typedef SharedSizePoolAllocator<THeap> super;
+		typedef SharedSizePoolAllocator<THeap> TPool;
+
 		using_type(THeap, Lock);
-		using super::AllocSize;
-		using super::Reset;
+		using_type(THeap, FreeMemLock);
+		using TPool::AllocSize;
+		using TPool::_Counts;
+		using TPool::_nAllocSize;
 
 	public:
 
-		SizePoolAllocator(size_t nSize, size_t nAlign = 0, size_t nBucketSize = 0, bool freePagesWhenEmpty = false)
-		: _Heap(nBucketSize * AllocSize(nSize)), super(_Heap, nSize, nAlign, freePagesWhenEmpty)
+		SizePoolAllocator(size_t nSize, size_t nAlign = 0, size_t nBucketSize = 0, FHeap opts = ZERO)
+			: THeap(nBucketSize * AllocSize(nSize), opts), 
+				TPool(*this, nSize, nAlign)
 		{
 		}
 
-		~SizePoolAllocator()
+		using TPool::Allocate;
+		using THeap::GetMemoryUsage;
+
+		void Deallocate(void* pObject)
 		{
-			// Ignore the free list, as owned heap freed all at once.
-			Reset();
+			FreeMemLock lock(*this);
+			TPool::Deallocate(lock, pObject);
+			if (THeap::_FreeWhenEmpty && _Counts.nUsed == 0)
+			{
+				TPool::Reset(lock);
+				THeap::Clear(lock);
+			}
 		}
 
-		void FreeMemory( bool bDeallocate = true)
+		void FreeMemoryIfEmpty()
 		{
-			Reset();
-			if (bDeallocate)
-				_Heap.Clear();
-			else
-				_Heap.Reset();
+			FreeMemLock lock(*this);
+			if (_Counts.nUsed == 0)
+			{
+				TPool::Reset(lock);
+				THeap::Clear(lock);
+			}
 		}
 
-		SPoolMemoryUsage GetTotalMemory() const
+		void ResetMemory()
 		{
-			return SPoolMemoryUsage (_Heap.GetTotalMemory().nAlloc, super::GetTotalMemory().nAlloc, super::GetTotalMemory().nUsed);
-		}
-		size_t GetTotalAllocatedMemory() const
-		{
-			return _Heap.GetTotalMemory().nAlloc;
-		}
-		size_t GetTotalAllocatedNodeSize() const
-		{
-			return super::GetTotalMemory().nUsed;
+			FreeMemLock lock(*this);
+			TPool::Reset(lock);
+			THeap::Reset(lock);
 		}
 
-	protected:
-		THeap				_Heap;
+		void FreeMemory()
+		{
+			FreeMemLock lock(*this);
+			TPool::Reset(lock);
+			THeap::Clear(lock);
+		}
+
+
+		void FreeMemoryForce()
+		{
+			FreeMemLock lock(*this);
+			TPool::Reset(lock, true);
+			THeap::Clear(lock);
+		}
+
+		SPoolMemoryUsage GetTotalMemory()
+		{
+			Lock lock(*this);
+			return SPoolMemoryUsage(THeap::GetTotalMemory(lock).nAlloc, _Counts.nAlloc * _nAllocSize, _Counts.nUsed * _nAllocSize);
+		}
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -301,8 +288,8 @@ namespace stl
 	class PoolAllocator: public SizePoolAllocator< HeapAllocator<L> >
 	{
 	public:
-		PoolAllocator(size_t nBucketSize = 0, bool freePagesWhenEmpty = false)
-		:	SizePoolAllocator< HeapAllocator<L> >(S, A, nBucketSize, freePagesWhenEmpty)
+		PoolAllocator(size_t nBucketSize = 0, FHeap opts = ZERO)
+		:	SizePoolAllocator< HeapAllocator<L> >(S, A, nBucketSize, opts)
 		{
 		}
 	};
@@ -312,8 +299,8 @@ namespace stl
 	class PoolAllocatorNoMT : public SizePoolAllocator< HeapAllocator<PSyncNone> >
 	{
 	public:
-		PoolAllocatorNoMT(size_t nBucketSize = 0, bool freePagesWhenEmpty = false)
-		:	SizePoolAllocator< HeapAllocator<PSyncNone> >(S, A, nBucketSize, freePagesWhenEmpty)
+		PoolAllocatorNoMT(size_t nBucketSize = 0, FHeap opts = ZERO)
+		:	SizePoolAllocator< HeapAllocator<PSyncNone> >(S, A, nBucketSize, opts)
 		{
 		}
 	};
@@ -322,10 +309,36 @@ namespace stl
 	template<typename T, typename L = PSyncMultiThread, size_t A = 0>
 	class TPoolAllocator: public SizePoolAllocator< HeapAllocator<L> >
 	{
+		typedef SizePoolAllocator< HeapAllocator<L> > TSizePool;
+
 	public:
-		TPoolAllocator(size_t nBucketSize = 0)
-			: SizePoolAllocator< HeapAllocator<L> >(sizeof(T), max(alignof(T), A), nBucketSize)
+
+		using TSizePool::Allocate;
+		using TSizePool::Deallocate;
+
+		TPoolAllocator(size_t nBucketSize = 0, FHeap opts = ZERO)
+			: TSizePool(sizeof(T), max(alignof(T), A), nBucketSize, opts)
 		{}
+
+		T* New()
+		{
+			return new(Allocate()) T();
+		}
+
+		template<class I>
+		T* New(const I& init)
+		{
+			return new(Allocate()) T(init);
+		}
+
+		void Delete(T* ptr)
+		{
+			if (ptr)
+			{
+				ptr->~T();
+				Deallocate(ptr);
+			}
+		}
 	};
 
 	// Legacy verbose typedefs.
@@ -335,11 +348,13 @@ namespace stl
 	//////////////////////////////////////////////////////////////////////////
 	// Allocator maintaining multiple type-specific pools, sharing a common heap source.
 	template<typename THeap>
-	struct PoolCommonAllocator
+	struct PoolCommonAllocator: protected THeap
 	{
 		typedef SharedSizePoolAllocator<THeap> TPool;
 
-	protected:
+		using_type(THeap, Lock);
+		using_type(THeap, FreeMemLock);
+
 		struct TPoolNode: SharedSizePoolAllocator<THeap>
 		{
 			TPoolNode* pNext;
@@ -371,35 +386,36 @@ namespace stl
 
 		TPool* CreatePool(size_t nSize, size_t nAlign = 0)
 		{
-			return new TPoolNode(_Heap, _pPoolList, nSize, nAlign);
+			return new TPoolNode(*this, _pPoolList, nSize, nAlign);
 		}
 
 		SPoolMemoryUsage GetTotalMemory()
 		{
+			Lock lock(*this);
 			SMemoryUsage mem;
 			for (TPoolNode* pPool = _pPoolList; pPool; pPool = pPool->pNext)
-				mem += pPool->GetTotalMemory();
-			return SPoolMemoryUsage(_Heap.GetTotalMemory().nAlloc, mem.nAlloc, mem.nUsed);
+				mem += pPool->GetTotalMemory(lock);
+			return SPoolMemoryUsage(THeap::GetTotalMemory(lock).nAlloc, mem.nAlloc, mem.nUsed);
 		}
 
-		bool FreeMemory( bool bDeallocate = true)
+		bool FreeMemory(bool bDeallocate = true)
 		{
-			SPoolMemoryUsage mem = GetTotalMemory();
-			if (mem.nUsed != 0)
-				return false;
+			FreeMemLock lock(*this);
+			for (TPoolNode* pPool = _pPoolList; pPool; pPool = pPool->pNext)
+				if (pPool->GetTotalMemory(lock).nUsed)
+					return false;
 
 			for (TPoolNode* pPool = _pPoolList; pPool; pPool = pPool->pNext)
-				pPool->Reset();
+				pPool->Reset(lock);
 
 			if (bDeallocate)
-				_Heap.Clear();
+				THeap::Clear(lock);
 			else
-				_Heap.Reset();
+				THeap::Reset(lock);
 			return true;
 		}
 
 	protected:
-		THeap				_Heap;
 		TPoolNode*	_pPoolList;
 	};
 
@@ -433,13 +449,28 @@ namespace stl
 				{ return TypeAllocator<T>().Deallocate(p); }
 
 		template<class T>
-			ILINE static size_t GetMemSize(const T* p)
-				{ return TypeAllocator<T>().GetMemSize(p); }
+			static T* New()
+				{ return new(TypeAllocator<T>().Allocate()) T(); }
+
+		template<class T, class I>
+			static T* New(const I& init)
+				{ return new(TypeAllocator<T>().Allocate()) T(init); }
+
+		template<class T>
+			static void Delete(T* ptr)
+			{
+				if (ptr)
+				{
+					ptr->~T();
+					TypeAllocator<T>().Deallocate(ptr);
+				}
+			}
 
 		static SPoolMemoryUsage GetTotalMemory()
 			{ return StaticAllocator().GetTotalMemory(); }
 
 	private:
+
 		ILINE static TPool* CreatePoolOnGlobalHeap(size_t nSize, size_t nAlign = 0)
 		{
 			ScopedSwitchToGlobalHeap globalHeap;

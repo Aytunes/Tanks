@@ -102,7 +102,7 @@ UNIQUE_IFACE struct IAnimationGroundAlignment :
 {
 	CRYINTERFACE_DECLARE(IAnimationGroundAlignment, 0xb8bf63b98d304d7b,	0xaaa5fbdf665715b2)
 
-	virtual void SetData(const bool bAlignSkeletonVertical, const f32 rootHeight, const Plane& planeLeft, const Plane& planeRight) = 0;
+	virtual void SetData(const bool bAlignSkeletonVertical, const f32 rootHeight, const Plane& planeLeft, const Plane& planeRight, int32 pelvisIDX) = 0;
 };
 
 DECLARE_BOOST_POINTERS(IAnimationGroundAlignment);

@@ -26,6 +26,7 @@ struct IAIPathAgent;
 
 #include "IMemory.h"
 #include <INavigationSystem.h>
+#include "functor.h"
 
 /* WARNING: These interfaces and structures are soon to be deprecated.
 						Use at your own risk of having to change your code later!
@@ -520,6 +521,68 @@ public:
 
 	// Sets whether or not the pathfollower is allowed to cut corners if there is space to do so. (default: true)
 	virtual void SetAllowCuttingCorners(const bool allowCuttingCorners) = 0;
+};
+
+typedef unsigned int	MNMQueuedPathID;
+
+struct MNMPathRequest
+{
+	typedef Functor2<const MNMQueuedPathID&, SAIEVENT&> Callback;
+
+	MNMPathRequest()
+		: startLocation(ZERO)
+		, endLocation(ZERO)
+		, endDirection(FORWARD_DIRECTION)
+		, forceTargetBuildingId(0)
+		, endTolerance(0.0f)
+		, endDistance(0.0f)
+		, allowDangerousDestination(false)
+		, resultCallback(0)
+		, agentTypeID(NavigationAgentTypeID())
+	{
+
+	}
+
+	MNMPathRequest(const Vec3& start, const Vec3& end, const Vec3& _endDirection, int _forceTargetBuildingId, float _endTolerance, float _endDistance, bool _allowDangerousDestination, const Callback& callback, const NavigationAgentTypeID& _agentTypeID)
+		: startLocation(start)
+		, endLocation(end)
+		, endDirection(_endDirection)
+		, forceTargetBuildingId(_forceTargetBuildingId)
+		, endTolerance(_endTolerance)
+		, endDistance(_endDistance)
+		, allowDangerousDestination(_allowDangerousDestination)
+		, resultCallback(callback)
+		, agentTypeID(_agentTypeID)
+	{
+
+	}
+
+	Callback resultCallback;
+
+	Vec3	startLocation;
+	Vec3	endLocation;
+	Vec3	endDirection;
+
+	NavigationAgentTypeID agentTypeID;
+
+	int		forceTargetBuildingId;
+	float	endTolerance;
+	float	endDistance;
+	bool	allowDangerousDestination;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+UNIQUE_IFACE struct IMNMPathfinder 
+{
+	virtual ~IMNMPathfinder() {};
+
+	virtual MNMQueuedPathID RequestPathTo(IAIPathAgent* pRequester, const MNMPathRequest& request) = 0;
+	virtual void CancelPathRequest(MNMQueuedPathID requestId) = 0;
+
+	virtual const INavPath &GetNavPath() const = 0;
+
 };
 
 

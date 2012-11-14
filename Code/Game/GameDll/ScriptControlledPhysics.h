@@ -64,8 +64,8 @@ public:
 	int GetAngularAcceleration(IFunctionHandler *pH);
 
 	int MoveTo(IFunctionHandler *pH, Vec3 point, float initialSpeed, float speed, float acceleration, float stopTime);
-	int RotateTo(IFunctionHandler *pH, Vec3 dir, float roll, float initialSpeed, float speed, float acceleration, float stopSpeed);
-	int RotateToAngles(IFunctionHandler *pH, Vec3 angles, float initialSpeed, float speed, float acceleration, float stopSpeed);
+	int RotateTo(IFunctionHandler *pH, Vec3 dir, float roll, float initialSpeed, float speed, float acceleration, float stopSpeed, bool usePivot);
+	int RotateToAngles(IFunctionHandler *pH, Vec3 angles, float initialSpeed, float speed, float acceleration, float stopSpeed, bool usePivot);
 
 	void OnPostStep(EventPhysPostStep *pPostStep);
 private:
@@ -78,6 +78,7 @@ private:
 	float m_maxSpeed;
 	float m_acceleration;
 	float m_stopTime;
+	bool m_usePivot;
 
 	bool m_rotating;
 	Quat m_rotationTarget;

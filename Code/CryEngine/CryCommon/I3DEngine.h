@@ -80,6 +80,10 @@ enum E3DEngineParameter
 	E3DPARAM_VOLFOG_GLOBAL_DENSITY,
 	E3DPARAM_VOLFOG_RAMP,
 
+	E3DPARAM_VOLFOG_SHADOW_RANGE,
+	E3DPARAM_VOLFOG_SHADOW_DARKENING,
+	E3DPARAM_VOLFOG_SHADOW_ENABLE,
+
 	E3DPARAM_SKYLIGHT_SUN_INTENSITY,
 	E3DPARAM_SKYLIGHT_SUN_INTENSITY_MULTIPLIER,
 
@@ -147,8 +151,14 @@ enum E3DEngineParameter
   E3DPARAM_COLORGRADING_FILTERS_PHOTOFILTER_COLOR,
   E3DPARAM_COLORGRADING_FILTERS_PHOTOFILTER_DENSITY,
   E3DPARAM_COLORGRADING_FILTERS_GRAIN
-
 };
+
+enum EShadowMode
+{
+	ESM_NORMAL = 0,
+	ESM_HIGHQUALITY
+};
+
 
 //////////////////////////////////////////////////////////////////////////
 // Description:
@@ -887,6 +897,11 @@ UNIQUE_IFACE struct ITimeOfDay
 		PARAM_VOLFOG_RAMP_END,
 		PARAM_VOLFOG_RAMP_INFLUENCE,
 
+		PARAM_VOLFOG_SHADOW_DARKENING,
+		PARAM_VOLFOG_SHADOW_DARKENING_SUN,
+		PARAM_VOLFOG_SHADOW_DARKENING_AMBIENT,
+		PARAM_VOLFOG_SHADOW_RANGE,
+
 		PARAM_SKYLIGHT_SUN_INTENSITY,
 		PARAM_SKYLIGHT_SUN_INTENSITY_MULTIPLIER,
 
@@ -979,6 +994,14 @@ UNIQUE_IFACE struct ITimeOfDay
     PARAM_SHADOWSC2_SLOPE_BIAS,
 		PARAM_SHADOWSC3_BIAS,
 		PARAM_SHADOWSC3_SLOPE_BIAS,
+    PARAM_SHADOWSC4_BIAS,
+    PARAM_SHADOWSC4_SLOPE_BIAS,
+    PARAM_SHADOWSC5_BIAS,
+    PARAM_SHADOWSC5_SLOPE_BIAS,
+    PARAM_SHADOWSC6_BIAS,
+    PARAM_SHADOWSC6_SLOPE_BIAS,
+    PARAM_SHADOWSC7_BIAS,
+    PARAM_SHADOWSC7_SLOPE_BIAS,
 
 		PARAM_TOTAL
 	};
@@ -2358,6 +2381,9 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	virtual void GetGlobalParameter( E3DEngineParameter param,Vec3 &v ) = 0;
 	float GetGlobalParameter( E3DEngineParameter param ) { Vec3 v(0,0,0); GetGlobalParameter(param,v); return v.x; };
 
+	virtual void SetShadowMode( EShadowMode shadowMode ) = 0;
+	virtual EShadowMode GetShadowMode() const = 0;
+
 	// Description:
 	//		Saves pStatObj to a stream. 
 	// Notes:
@@ -2452,9 +2478,9 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 
 	virtual const char * GetVoxelEditOperationName(EVoxelEditOperation eOperation) = 0;
 
-  // Summary:
-  //   Gives 3dengine access to original and most precise heighmap data in the editor
-  virtual void SetGetLayerIdAtCallback(IGetLayerIdAtCallback * pCallBack) = 0;
+	// Summary:
+	//   Gives 3dengine access to original and most precise heighmap data in the editor
+	virtual void SetGetLayerIdAtCallback(IGetLayerIdAtCallback * pCallBack) = 0;
 
 	virtual PodArray<CDLight*>* GetDynamicLightSources() = 0;
 
@@ -2467,11 +2493,14 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	// Set Callback for Editor to store additional information in Minimap tool
 	virtual void SetScreenshotCallback(IScreenshotCallback* pCallback) = 0;
 
-  // Show/Hide objects by layer (useful for streaming and performance)
-  virtual void ActivateObjectsLayer(uint16 nLayerId, bool bActivate, bool bPhys, const char * pLayerName) = 0;
+	// Show/Hide objects by layer (useful for streaming and performance)
+	virtual void ActivateObjectsLayer(uint16 nLayerId, bool bActivate, bool bPhys, const char * pLayerName) = 0;
 
-  // Activate streaming of character and all sub-components
-  virtual void PrecacheCharacter(IRenderNode * pObj, const float fImportance,  ICharacterInstance * pCharacter, IMaterial* pSlotMat, const Matrix34& matParent, const float fEntDistance, const float fScale, int nMaxDepth, bool bForceStreamingSystemUpdate ) = 0;
+	// Get object layer memory usage
+	virtual void GetLayerMemoryUsage(uint16 nLayerId, ICrySizer* pSizer, int* pNumBrushes, int* pNumDecals) const = 0;
+
+	// Activate streaming of character and all sub-components
+	virtual void PrecacheCharacter(IRenderNode * pObj, const float fImportance,  ICharacterInstance * pCharacter, IMaterial* pSlotMat, const Matrix34& matParent, const float fEntDistance, const float fScale, int nMaxDepth, bool bForceStreamingSystemUpdate ) = 0;
 
 	// Activate streaming of render node and all sub-components
 	virtual void PrecacheRenderNode(IRenderNode * pObj, float fEntDistanceReal) = 0;

@@ -39,7 +39,6 @@ struct IPhysRenderer;
 class ICrySizer;
 struct IDeferredPhysicsEvent;
 struct ILog;
-struct GeomQuery;
 IPhysicalEntity *const WORLD_ENTITY = (IPhysicalEntity*)-10;
 
 #if !defined(PS3) && !defined(XENON)
@@ -54,7 +53,9 @@ IPhysicalEntity *const WORLD_ENTITY = (IPhysicalEntity*)-10;
 
 #endif
 
+#ifndef STANDALONE_PHYSICS
 #define USE_IMPROVED_RIGID_ENTITY_SYNCHRONISATION 1
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// IPhysicsStreamer Interface /////////////////////////////
@@ -1014,7 +1015,7 @@ struct pe_action_add_constraint : pe_action {
 
 struct pe_action_update_constraint : pe_action {
 	enum entype { type_id=6 };
-	pe_action_update_constraint() { type=type_id; MARK_UNUSED idConstraint,pt[0],pt[1],qframe[0],qframe[1],maxPullForce,maxBendTorque; 
+	pe_action_update_constraint() { type=type_id; MARK_UNUSED idConstraint,pt[0],pt[1],qframe[0],qframe[1],maxPullForce,maxBendTorque,damping; 
 		flagsOR=0;flagsAND=(unsigned int)-1;bRemove=0; flags=world_frames; }
 	int idConstraint;	// doesn't have to be unique - can update several constraints with one id; if not set, updates all constraints
 	unsigned int flagsOR;
@@ -1023,6 +1024,7 @@ struct pe_action_update_constraint : pe_action {
 	Vec3 pt[2];	// local_frames_part is not supported currently
 	quaternionf qframe[2]; // update to constraint frames
 	float maxPullForce,maxBendTorque; 
+	float damping;
 	int flags; // generally it's better to use flagsOR and/or flagsAND
 };
 
@@ -1208,16 +1210,16 @@ struct pe_status_pos : pe_status {
 
 struct pe_status_extent : pe_status {	// Caches eForm extent of entity in pGeo
 	enum entype { type_id=24 };
-	pe_status_extent() { type=type_id; eForm=EGeomForm(-1); pGeo=0; }
+	pe_status_extent() { type=type_id; eForm=EGeomForm(-1); extent=0; }
 
 	EGeomForm eForm;
-	GeomQuery* pGeo;
+	float extent;
 };
 
 struct pe_status_random : pe_status_extent {	// Generates random pos on entity, also caches extent
 	enum entype { type_id=25 };
 	pe_status_random() { type=type_id; ran.vPos.zero(); ran.vNorm.zero(); }
-	RandomPos ran;
+	PosNorm ran;
 };
 
 struct pe_status_sensors : pe_status { // Requests status of attached to the entity sensors
@@ -1943,8 +1945,8 @@ struct IGeometry {
 	virtual void DestroyAuxilaryMeshData(int idata) = 0; // see meshAuxData enum
 	virtual void RemapForeignIdx(int *pCurForeignIdx, int *pNewForeignIdx, int nTris) = 0; // used in rendermesh-physics sync after boolean ops
 	virtual void AppendVertices(Vec3 *pVtx,int *pVtxMap, int nVtx) = 0;	// used in rendermesh-physics sync after boolean ops
-	virtual float ComputeExtent(GeomQuery& geo, EGeomForm eForm) = 0;
-	virtual void GetRandomPos(RandomPos& ran, GeomQuery& geo, EGeomForm eForm) = 0;
+	virtual float GetExtent(EGeomForm eForm) const = 0;
+	virtual void GetRandomPos(PosNorm& ran, EGeomForm eForm) const = 0;
 	virtual void SpuUnfriendly(char* reason, size_t& len) = 0; // returns the reason the geometry will be excluded in spu computations
 	virtual void CompactMemory() = 0; // used only by non-breakable meshes to compact non-shared vertices into same contingous block of memory
 };
@@ -2590,8 +2592,9 @@ UNIQUE_IFACE struct IPhysicalWorld {
 	// SetupEntityGrid: initializes entity hash grid for broad-phase collision detection and raytracing
 	// entity grid partitions the space along x and axes; grid's axisz can be aligned with any world axis (0-x,1-y,2-
 	// log2PODscale sets how many grid cells comprise one on-demand physicalization sector (on_demand_sector = 1<<log2PODscale)
-	// entities that are outside the grid are all registered in one "exterior" cell
-	virtual void SetupEntityGrid(int axisz, Vec3 org, int nx,int ny, float stepx,float stepy, int log2PODscale=0) = 0;
+	// bCyclic==0 : entities that are outside the grid are all registered in one "exterior" cell
+	// bCyclic==1 : the grid is infinitely repeated, projected world coordinates only use lower bits to access grid cells
+	virtual void SetupEntityGrid(int axisz, Vec3 org, int nx,int ny, float stepx,float stepy, int log2PODscale=0, int bCyclic=0) = 0;
 
 	// Clean up memory pools after level was unloaded.
 	// should only be called when all outside references to physics where deleted.

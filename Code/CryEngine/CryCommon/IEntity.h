@@ -309,6 +309,10 @@ enum EEntityEvent
 	ENTITY_EVENT_MOVENEARAREA,
 
 	// Description:
+	// Sent when triggering entity enters or leaves an area so all active areas of same group get notified. This event is sent to all target entities of the area.
+	ENTITY_EVENT_CROSS_AREA,
+
+	// Description:
 	// Sent when an entity with pef_monitor_poststep receives a poststep notification (the hamdler should be thread safe!)
 	// fParam[0] = time interval
 	ENTITY_EVENT_PHYS_POSTSTEP,
@@ -420,6 +424,10 @@ enum EEntityEvent
 	// nParam[1] = Type of the output value from IEntityClass::EventValueType.
 	// nParam[2] = Pointer to the event value depending on the type.
 	ENTITY_EVENT_ACTIVE_FLOW_NODE_OUTPUT,
+
+	// Description:
+	// Called when a script reloading is requested and done in the editor
+	ENTITY_EVENT_RELOAD_SCRIPT,
 
 	// Description:
 	// Last entity event in list.
@@ -738,14 +746,14 @@ UNIQUE_IFACE struct IEntity
 	//	   GetLocalBounds
 	// Arguments:
 	//     bbox - Output parameter for the bounding box.
-	virtual void GetWorldBounds( AABB &bbox ) = 0;
+	virtual void GetWorldBounds( AABB &bbox ) const = 0;
 	// Description:
 	//     Retrieves the entity axis aligned bounding box in the local entity space.
 	// See Also: 
 	//	   GetLocalBounds
 	// Arguments:
 	//     bbox - Output parameter for the bounding box.
-	virtual void GetLocalBounds( AABB &bbox ) = 0;
+	virtual void GetLocalBounds( AABB &bbox ) const = 0;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Description:

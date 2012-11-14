@@ -75,6 +75,7 @@ struct SProcessImpactIn
 
 	typedef void(*AddChunkFunc )(int);
 	AddChunkFunc addChunkFunc;
+	unsigned int *entIds;
 
 	bool bDelay;
 	bool bLoading;
@@ -85,6 +86,7 @@ struct SProcessImpactOut
 {
 	float hitradius;
 	int eventSeed;
+	int nIdsUsed;
 
 	SExtractMeshIslandIn islandIn;
 

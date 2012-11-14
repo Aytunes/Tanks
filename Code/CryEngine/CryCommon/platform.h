@@ -176,6 +176,15 @@ enum ETunerIDs
 
 
 
+// Gringo target.
+
+
+
+
+
+
+
+
 //render thread settings, as this is accessed inside 3dengine and renderer and needs to be compile time defined, we need to do it here
 //enable this macro to strip out the overhead for render thread
 //	#define STRIP_RENDER_THREAD
@@ -188,10 +197,10 @@ enum ETunerIDs
 
 
 // We use WIN macros without _.
-#if defined(_WIN32) && !defined(XENON) && !defined(LINUX32) && !defined(LINUX64) && !defined(WIN32)
+#if defined(_WIN32) && !defined(XENON) && !defined(GRINGO) && !defined(LINUX32) && !defined(LINUX64) && !defined(WIN32)
 	#define WIN32
 #endif
-#if defined(_WIN64) && !defined(WIN64)
+#if defined(_WIN64) && !defined(WIN64) && !defined(GRINGO)
 	#define WIN64
 #endif
 
@@ -405,16 +414,38 @@ enum ETunerIDs
 
 
 
+
+
+
+
 #if !defined(TARGET_DEFAULT_ALIGN)
 # error "No default alignment specified for target architecture"
 #endif 
+
+#if !defined(PS3)
+//dummy definitions to avoid ifdef's
+ILINE void SPUAddCacheWriteRangeAsync(const unsigned int, const unsigned int){}
+#define __cache_range_write_async(a,b)
+#define __spu_flush_cache_line(a)
+#define __flush_cache_range(a,b)
+#define __flush_cache()
+
+#undef IF
+#undef WHILE
+#undef IF_UNLIKELY	
+#undef IF_LIKELY
+#define IF(a, b) if((a))
+#define WHILE(a, b) while((a))
+#define IF_UNLIKELY(a) if((a))
+#define IF_LIKELY(a) if((a))
+#endif //!defined(PS3)
 
 #include <stdio.h>
 
 // Includes core CryEngine modules definitions.
 #include "CryModuleDefs.h"
 
-#ifdef SNTUNER
+#if defined(SNTUNER ) && !defined(__SPU__)
 # include <sn/libsntuner.h>
 struct SNTunerAutoMarker
 {
@@ -479,47 +510,58 @@ inline int IsHeapValid()
 	#define snPause()
 #endif
 
-//defines necessary stuff for SPU Software Cache
-//needs to be included for all platforms (mostly empty decls. there)
-#if !defined __CRYCG__
+
+
+
+
+
+
 #define __CRYCG_NOINLINE__
 #define __CRYCG_IGNORE_PARAM_MISMATCH__
+
 #if defined __cplusplus
-#if !defined SPU_MAIN_PTR
-#define SPU_MAIN_PTR(PTR) (PTR)
-#endif
-#if !defined SPU_MAIN_REF
-#define SPU_MAIN_REF(REF) (REF)
-#endif
-#if !defined SPU_LOCAL_PTR
-#define SPU_LOCAL_PTR(PTR) (PTR)
-#endif
-#if !defined SPU_LOCAL_REF
-#define SPU_LOCAL_REF(REF) (REF)
-#endif
-#if !defined SPU_LINK_PTR
-#define SPU_LINK_PTR(PTR, LINK) (PTR)
-#endif
-#if !defined SPU_LINK_REF
-#define SPU_LINK_REF(REF, LINK) (PTR)
-#endif
+	#if !defined SPU_MAIN_PTR
+		#define SPU_MAIN_PTR(PTR) (PTR)
+	#endif
+	#if !defined SPU_MAIN_REF
+		#define SPU_MAIN_REF(REF) (REF)
+	#endif
+	#if !defined SPU_LOCAL_PTR
+		#define SPU_LOCAL_PTR(PTR) (PTR)
+	#endif
+	#if !defined SPU_LOCAL_REF
+		#define SPU_LOCAL_REF(REF) (REF)
+	#endif
+	#if !defined SPU_LINK_PTR
+		#define SPU_LINK_PTR(PTR, LINK) (PTR)
+	#endif
+	#if !defined SPU_LINK_REF
+		#define SPU_LINK_REF(REF, LINK) (PTR)
+	#endif
 #endif /* __cplusplus */
+
 #if !defined SPU_DOMAIN_MAIN
-#define SPU_DOMAIN_MAIN
+	#define SPU_DOMAIN_MAIN
 #endif
 #if !defined SPU_DOMAIN_LOCAL
-#define SPU_DOMAIN_LOCAL
+	#define SPU_DOMAIN_LOCAL
 #endif
 #if !defined SPU_DOMAIN_LINK
-#define SPU_DOMAIN_LINK(ID)
+	#define SPU_DOMAIN_LINK(ID)
 #endif
 #if !defined SPU_VERBATIM_BLOCK
-#define SPU_VERBATIM_BLOCK(X) ((void)0)
+	#define SPU_VERBATIM_BLOCK(X) ((void)0)
 #endif 
 #if !defined SPU_FRAME_PROFILER
-#define SPU_FRAME_PROFILER(X){}
+	#define SPU_FRAME_PROFILER(X){}
 #endif
-#endif /* __CRYCG__ */
+
+#define DECL_GLOB_VAR(a)
+#define RESOLVE_GLOB_VAR_ADDR(a)
+
+#define DECL_SPU_JOB_VAR(a)
+#define SPU_JOB_VAR(a)
+
 
 //////////////////////////////////////////////////////////////////////////
 #ifndef DEPRICATED
@@ -544,7 +586,7 @@ template<> struct CompileTimeError<true> {};
 #define assert CRY_ASSERT
 #endif
 
-#define COMPILE_TIME_ASSERT(pred) PREFAST_SUPPRESS_WARNING(6326) switch(0) { case 0: case (pred): ; }
+#include "CompileTimeAssert.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Platform dependent functions that emulate Win32 API.
@@ -575,7 +617,7 @@ unsigned int CryGetFileAttributes( const char *lpFileName );
 
 inline void CryHeapCheck()
 {
-#if !defined(LINUX) && !defined (PS3)
+#if !defined(LINUX) && !defined (PS3) && !defined (GRINGO) // todo: this might be readded with later xdks?
   int Result = _heapchk();
   assert(Result!=_HEAPBADBEGIN);
   assert(Result!=_HEAPBADNODE);
@@ -585,27 +627,42 @@ inline void CryHeapCheck()
 #endif
 }
 
+//---------------------------------------------------------------------------
+// Pointer classification functions 
+// 
+// Note: Do not use the result of these functions to enable or disable conditional codepaths 
+// because they are not available on all platforms. Only use these to verify assumptions on more 
+// just one platform (e.g To ensure not to stack pointers into code paths that could be affected by 
+// spu jobs because they would cause mfc segment exceptions on their first access)
+#if !defined(RELEASE)
+#ifndef PLATFORM_HAS_SEGMENT_POINTER_CHECK
+# define PLATFORM_HAS_SEGMENT_POINTER_CHECK 0
+#endif 
+#ifndef PLATFORM_HAS_STACK_POINTER_CHECK
+# define PLATFORM_HAS_STACK_POINTER_CHECK 0
+#endif 
+
 // Returns not null 0 if the passed pointer comes from the heap.
-// Note: currently only available on ps3
+// Note: currently only available on ps3.
 inline unsigned IsPointerFromHeap(void* __ptr)
 {
-
-
-
+#if PLATFORM_HAS_SEGMENT_POINTER_CHECK && PLATFORM_HAS_STACK_POINTER_CHECK
+  return _IsPointerFromSegment(__ptr) && !_IsPointerFromStack(__ptr);
+#else
   return 1; 
-
+#endif 
 }
 
 // Returns not null if the passed pointer resides on the stack of the
-// current object 
+// current thread 
 // Note: currently only available on ps3
 inline unsigned IsPointerFromStack(void* __ptr)
 {
-
-
-
+#if PLATFORM_HAS_STACK_POINTER_CHECK
+  return _IsPointerFromStack(__ptr);
+#else
   return 0; 
-
+#endif 
 }
 
 // Returns not null if the passed pointer resides in the code, data or
@@ -613,12 +670,14 @@ inline unsigned IsPointerFromStack(void* __ptr)
 // Note: currently only available on ps3
 inline unsigned IsPointerFromSegment(void* __ptr)
 {
-
-
-
+#if PLATFORM_HAS_SEGMENT_POINTER_CHECK
+  return _IsPointerFromSegment(__ptr);
+#else
   return 0; 
-
+#endif 
 }
+#endif 
+
 
 // Useful function to clean the structure.
 template <class T>
@@ -807,6 +866,9 @@ enum type_identity { IDENTITY };
 
 
 
+
+
+
 #if !defined(NOT_USE_CRY_STRING) && (!defined(__SPU__) || defined(__CRYCG__))
 	// Fixed-Sized (stack based string)
 	// put after the platform wrappers because of missing wcsicmp/wcsnicmp functions
@@ -919,26 +981,6 @@ enum ETriState
 		#define _MS_ALIGN(num) 
 #endif
 
-#if !defined(PS3)
-	//dummy definitions to avoid ifdef's
-	ILINE void SPUAddCacheWriteRangeAsync(const unsigned int, const unsigned int){}
-	#define __cache_range_write_async(a,b)
-	#define __spu_flush_cache_line(a)
-	#define __flush_cache_range(a,b)
-	#define __flush_cache()
-	
-	#undef IF
-	#undef WHILE
-  #undef IF_UNLIKELY	
-  #undef IF_LIKELY
-  #define IF(a, b) if((a))
-	#define WHILE(a, b) while((a))
-	#define IF_UNLIKELY(a) if((a))
-	#define IF_LIKELY(a) if((a))
-
-#endif //!defined(PS3)
-
-
 #if defined(WIN32) || defined(WIN64) || defined(XENON)
 #ifndef XENON
 	extern "C" {
@@ -955,17 +997,25 @@ enum ETriState
 		Init##var() { var##idx = TlsAlloc(); } \
 	}; \
 	Init##var g_init##var;
+	#define TLS_DEFINE_DEFAULT_VALUE(type,var,value) \
+	int var##idx; \
+	struct Init##var { \
+		Init##var() { var##idx = TlsAlloc(); TlsSetValue(var##idx,(void*)(value));} \
+	}; \
+	Init##var g_init##var;
 	#define TLS_GET(type,var) (type)TlsGetValue(var##idx)
 	#define TLS_SET(var,val) TlsSetValue(var##idx,(void*)(val))
 #else
 #if defined(LINUX)
 	#define TLS_DECLARE(type,var) extern __thread type var;
 	#define TLS_DEFINE(type,var) __thread type var = 0;
+	#define TLS_DEFINE_DEFAULT_VALUE(type,var,value) __thread type var = value;
 	#define TLS_GET(type,var) (var)
 	#define TLS_SET(var,val) (var=(val))
 #else
 	#define TLS_DECLARE(type,var) extern THREADLOCAL type var;
 	#define TLS_DEFINE(type,var) THREADLOCAL type var;
+	#define TLS_DEFINE_DEFAULT_VALUE(type,var,value) THREADLOCAL type var = value;
 	#define TLS_GET(type,var) (var)
 	#define TLS_SET(var,val) (var=(val))
 #endif // defined(LINUX)

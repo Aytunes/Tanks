@@ -223,10 +223,12 @@ UNIQUE_IFACE struct IMaterial
 	// [Alexey] EF_LoadShaderItem return value with RefCount = 1, so if you'll use SetShaderItem after EF_LoadShaderItem use Assign function	
 	virtual void AssignShaderItem( const SShaderItem & _ShaderItem) = 0;
 	virtual SShaderItem& GetShaderItem() = 0;
+	virtual const SShaderItem& GetShaderItem() const = 0;
     
 	// Returns shader item for correct sub material or for single material.
 	// Even if this is not sub material or nSubMtlSlot is invalid it will return valid renderable shader item.
 	virtual SShaderItem& GetShaderItem( int nSubMtlSlot ) = 0;
+	virtual const SShaderItem& GetShaderItem( int nSubMtlSlot ) const = 0;
 
 	// shader params - merged with layers params also
 	virtual void SetShaderParams(TArray<SShaderParam> * _pShaderParams) = 0;

@@ -49,6 +49,9 @@
     <Filter Include="CooperativeAnimationManager">
       <UniqueIdentifier>{ea94339c-8fef-44df-98a1-0416a2f48480}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PlayerProfiles">
+      <UniqueIdentifier>{8d9c42c7-b565-4efd-ad31-0182636b75ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IActionManager.h">
@@ -222,5 +225,11 @@
     <ClInclude Include="CryAction.h" />
     <ClInclude Include="GameObjects\GameObject.h" />
     <ClInclude Include="IGameSessionHandler.h" />
+    <ClInclude Include="PlayerProfiles\PlayerProfile.h">
+      <Filter>PlayerProfiles</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerProfiles\PlayerProfileManager.h">
+      <Filter>PlayerProfiles</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

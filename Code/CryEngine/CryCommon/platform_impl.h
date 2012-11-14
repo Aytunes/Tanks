@@ -144,7 +144,7 @@ extern "C" DLL_EXPORT void ModuleInitISystem( ISystem *pSystem,const char *modul
 	if (pSystem) // DONT REMOVE THIS. ITS FOR RESOURCE COMPILER!!!!
 	gEnv = pSystem->GetGlobalEnvironment();
 #endif
-#if !defined(PS3) && !(defined(XENON) && defined(_LIB))
+#if !defined(PS3) && !(defined(XENON) && defined(_LIB)) && !(defined(GRINGO) && defined(_LIB))
 	if (pSystem)
 	{
 		ICryFactoryRegistryImpl* pCryFactoryImpl = static_cast<ICryFactoryRegistryImpl*>(pSystem->GetCryFactoryRegistry());
@@ -245,14 +245,19 @@ void __stl_debug_message(const char * format_str, ...)
 	#include <CryMemoryManager_impl.h>
 #endif
 
-#if defined (_WIN32) || defined (XENON)
+#if defined (WIN32) || defined (XENON) || defined(GRINGO)
 
 #include "CryAssert_impl.h"
 
 //////////////////////////////////////////////////////////////////////////
 void CryDebugBreak()
 {
-	DebugBreak();
+#if defined(WIN32) && !defined(RELEASE)
+	if (IsDebuggerPresent())
+#endif
+	{
+		DebugBreak();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -275,7 +280,7 @@ int CryMessageBox( const char *lpText,const char *lpCaption,unsigned int uType)
 int CryCreateDirectory( const char *lpPathName,void *lpSecurityAttributes )
 {
 	// Convert from UTF-8 to UNICODE
-#if defined(WIN32) || defined(WIN64)
+#if defined(WIN32) || defined(WIN64)  || defined(GRINGO)
 	return CreateDirectoryW( CryStringUtils::UTF8ToWStr(lpPathName),(LPSECURITY_ATTRIBUTES)lpSecurityAttributes );
 #else
 	return CreateDirectory( lpPathName,(LPSECURITY_ATTRIBUTES)lpSecurityAttributes );
@@ -383,13 +388,25 @@ void  CryLeaveCriticalSection( void *cs )
 //////////////////////////////////////////////////////////////////////////
 uint32 CryGetFileAttributes( const char *lpFileName )
 {
-	return GetFileAttributes( lpFileName );
+	// Normal GetFileAttributes not available anymore in non desktop applications (eg Gringo)
+	WIN32_FILE_ATTRIBUTE_DATA data;
+	BOOL res;
+
+
+
+	res = GetFileAttributesEx( lpFileName, GetFileExInfoStandard, &data);
+
+	return res ? data.dwFileAttributes : -1;
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CrySetFileAttributes( const char *lpFileName,uint32 dwFileAttributes )
 {
+
+
+
 	return SetFileAttributes( lpFileName,dwFileAttributes ) != 0;
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -473,9 +490,14 @@ unsigned int CryGetCurrentThreadId()
 
 
 
+
+
+
+
+
 #endif
 
-#if defined(WIN32) || defined(WIN64)
+#if defined(WIN32) || defined(WIN64) || defined(GRINGO)
 #if !defined(_LIB) || defined(_LAUNCHER)
 
 int64 CryGetTicks()

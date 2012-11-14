@@ -353,13 +353,13 @@ struct StaticArray: Array< T, I, NArray::StaticArrayStorage<T,nSIZE,I> >
 namespace NAlloc
 {
 	// Adds prefix bytes to allocation, preserving alignment
-	template<class A>
+	template<class A, int nPrefixSize>
 	struct AllocPrefix
 	{
-		static void* alloc( size_t& nNewBytes, bool bSlack, int nAlign, int nPrefixBytes )
+		static void* alloc( size_t& nNewBytes, bool bSlack, int nAlign )
 		{
 			assert(nNewBytes);
-			nPrefixBytes = Align(nPrefixBytes, nAlign);
+			size_t nPrefixBytes = Align(nPrefixSize, nAlign);
 			nNewBytes += nPrefixBytes;
 			void* pNew = A::alloc( nNewBytes, bSlack, nAlign );
 			if (nNewBytes)
@@ -369,19 +369,19 @@ namespace NAlloc
 			return pNew;
 		}
 
-		static void dealloc( void* pMem, int nAlign, int nPrefixBytes )
+		static void dealloc( void* pMem, int nAlign )
 		{
 			assert(pMem);
-			nPrefixBytes = Align(nPrefixBytes, nAlign);
+			size_t nPrefixBytes = Align(nPrefixSize, nAlign);
 			pMem = (char*)pMem - nPrefixBytes;
 			A::dealloc( pMem, nAlign );
 		}
 
-		static size_t alloc_size( void* pMem, size_t nMemBytes, int nAlign = 1, int nPrefixBytes = 0 )
+		static size_t alloc_size( void* pMem, size_t nMemBytes, int nAlign = 1 )
 		{
 			if (!pMem)
 				return 0;
-			nPrefixBytes = Align(nPrefixBytes, nAlign);
+			size_t nPrefixBytes = Align(nPrefixSize, nAlign);
 			nMemBytes += nPrefixBytes;
 			pMem = (char*)pMem - nPrefixBytes;
 			return A::alloc_size(pMem, nMemBytes, nAlign);
@@ -389,6 +389,31 @@ namespace NAlloc
 	};
 
 	struct StandardAlloc;
+
+	template<class T, class I, class A>
+	T* reallocate( T* old_elems, I old_size, I new_size, I& new_cap, bool allow_slack = false, I alignment = 1 )
+	{
+		assert(new_size <= new_cap);
+		size_t new_bytes = new_cap * sizeof(T);
+
+		T* new_elems = (T*) SPU_MAIN_PTR( new_cap ? A::alloc( new_bytes, allow_slack, alignment ) : 0 );
+		assert(IsAligned(new_elems, alignment));
+
+		assert(new_bytes >= new_cap*sizeof(T));
+		new_cap = I(new_bytes / sizeof(T));
+
+		if (old_elems)
+		{
+			if (new_elems)
+				// Move elements.
+				NArray::move_init(new_elems, old_elems, NArray::min(old_size, new_size));
+
+			// Dealloc old.
+			A::dealloc( old_elems, alignment );
+		}
+
+		return new_elems;
+	}
 };
 
 namespace NArray
@@ -401,8 +426,8 @@ namespace NArray
 	{
 		size_type capacity();
 		size_type max_size();
-		void set_size( size_type new_size );
-		void resize_raw( size_type new_size, size_type new_cap, bool allow_slack = false );
+		void resize_raw( size_type new_size );
+		void resize_raw( size_type new_size, size_type new_cap );
 		void destroy( T* );
 		void init( T* );
 		void init( T*, const T& val );
@@ -653,7 +678,7 @@ struct DynArray: DynArrayRef<T,I,S>
 		assert(count <= size());
 		size_type new_size = size()-count;
 		destroy((*this)(new_size));
-		S::set_size(new_size);
+		S::resize_raw(new_size);
 	}
 
 	SPU_NO_INLINE iterator erase(iterator start, iterator finish)
@@ -693,16 +718,9 @@ protected:
 	SPU_NO_INLINE iterator expand_raw(iterator pos, size_type count)
 	{
 		assert(pos >= begin() && pos <= end());
-		size_type new_size = size()+count;
-		if (new_size > capacity())
-		{
-			T* old = begin();
-			S::resize_raw(new_size, new_size, new_size > count);
-			pos = begin() + (pos - old);
-		}
-		else
-			S::set_size(new_size);
-		return pos;
+		T* old = begin();
+		S::resize_raw(size() + count);
+		return begin() + (pos - old);
 	}
 
 	//
@@ -797,17 +815,13 @@ namespace NArray
 		size_type max_size() const
 			{ return m_Array.size(); }
 
-		void set_size( size_type new_size )
-		{
-			assert(new_size >= 0 && new_size <= capacity());
-			m_nCount = new_size;
-			MEMSTAT_USAGE(m_Array.begin(), new_size * sizeof(T));
-		}
-		void resize_raw( size_type new_size, size_type new_cap, bool allow_slack = false)
+		void resize_raw( size_type new_size, size_type new_cap = 0 )
 		{
 			// capacity unchangeable, just assert new_cap within range.
 			assert(new_cap <= max_size());
-			set_size(new_size);
+			assert(new_size >= 0 && new_size <= max_size());
+			m_nCount = new_size;
+			MEMSTAT_USAGE(m_Array.begin(), new_size * sizeof(T));
 		}
 
 	protected:
@@ -819,10 +833,10 @@ namespace NArray
 template<class T, class I = int>
 struct FixedDynArray: DynArray< T, I, NArray::FixedDynStorage< NArray::ArrayStorage<T,I> > >
 {
-	void set( Array<T,I> array )
+	void set( Array<T,I> array, I count = 0 )
 	{
 		this->m_Array = array; 
-		this->m_nCount = 0;
+		this->m_nCount = count;
 	}
 };
 
@@ -836,9 +850,9 @@ struct StaticDynArray: DynArray< T, I, NArray::FixedDynStorage< NArray::StaticAr
 
 struct Alloc
 {
-	static void* alloc( size_t& nNewBytes, bool bSlack = false, int nAlign = 1, int nPrefixBytes = 0 );
-	static void dealloc( void* pMem, int nAlign = 1, int nPrefixBytes = 0 );
-	static size_t alloc_size( void* pMem, size_t nUsedBytes, int nAlign = 1, int nPrefixBytes = 0 );
+	static void* alloc( size_t& nNewBytes, bool bSlack = false, int nAlign = 1 );
+	static void dealloc( void* pMem, int nAlign = 1 );
+	static size_t alloc_size( void* pMem, size_t nUsedBytes, int nAlign = 1 );
 };
 
 ---------------------------------------------------------------------------*/
@@ -890,47 +904,35 @@ namespace NArray
 		inline size_type get_alloc_size() const
 			{ return A::alloc_size(m_aElems, capacity() * sizeof(T), alignment()); }
 
+		SPU_NO_INLINE void resize_raw( size_type new_size, size_type new_cap, bool allow_slack = false )
+		{
+			assert(new_cap >= new_size);
+			if (new_cap != capacity())
+			{
+				m_aElems = NAlloc::reallocate<T,I,A>( m_aElems, m_nCount, new_size, new_cap, allow_slack, alignment() );
+				m_nCapacity = new_cap;
+				MEMSTAT_BIND_TO_CONTAINER(this, m_aElems);
+			}
+			set_size(new_size);
+		}
+
+		void resize_raw( size_type new_size )
+		{
+			if (new_size <= capacity())
+				set_size(new_size);
+			else
+				resize_raw(new_size, new_size, capacity() != 0);
+		}
+
+	protected:
+		uint32		m_nCapacity;
+
 		void set_size( size_type new_size )
 		{
 			assert(new_size <= capacity());
 			m_nCount = new_size;
 			MEMSTAT_USAGE(m_aElems, new_size * sizeof(T));
 		}
-
-		SPU_NO_INLINE void resize_raw( size_type new_size, size_type new_cap, bool allow_slack = false )
-		{
-			assert(new_cap >= new_size);
-			if (new_cap != capacity())
-			{
-				if (new_cap == 0)
-				{
-					// Free memory.
-					A::dealloc( m_aElems, alignment() );
-					m_aElems = 0;
-					m_nCount = m_nCapacity = 0;
-					return;
-				}
-
-				T* old_elems = m_aElems;
-				size_t nNewBytes = new_cap * sizeof(T);
-				m_aElems = (T*) A::alloc( nNewBytes, allow_slack, alignment() );
-				m_nCapacity = size_type(nNewBytes / sizeof(T));
-				assert((int)m_nCapacity >= new_cap);				// Check for overflow or bad alloc.
-
-				MEMSTAT_BIND_TO_CONTAINER(this, m_aElems);
-				assert(IsAligned(m_aElems, alignment()));
-
-				if (old_elems)
-				{
-					NArray::move_init(m_aElems, old_elems, NArray::min(m_nCount, new_size));
-					A::dealloc(old_elems, alignment());
-				}
-			}
-			set_size(new_size);
-		}
-
-	protected:
-		uint32		m_nCapacity;
 	};
 
 	//---------------------------------------------------------------------------
@@ -941,87 +943,11 @@ namespace NArray
 	template<class T, class I, class A> 
 	struct SmallDynStorage: RawStorage<T>
 	{
-		typedef SmallDynStorage<T,I,A> self_type;
-		typedef NAlloc::AllocPrefix<A> AP;
 		typedef I size_type;
-
-		// Construction.
-		SmallDynStorage()
-		{
-			set_null(); 
-
-			MEMSTAT_REGISTER_CONTAINER(this, EMemStatContainerType::MSC_Vector, T);
-		}
-
-		~SmallDynStorage()
-		{
-			if (!is_null())
-				AP::dealloc( m_aElems, alignment(), sizeof(Header) );
-
-			MEMSTAT_UNREGISTER_CONTAINER(this);
-		}
-
-		void swap(self_type& a)
-		{
-			T* pTemp = m_aElems;
-			m_aElems = a.m_aElems;
-			a.m_aElems = pTemp;
-			MEMSTAT_SWAP_CONTAINERS(this, &a);
-		}
-
-		// Basic storage.
-		CONST_VAR_FUNCTION( T* begin(),
-			{ return m_aElems; } )
-		inline size_type size() const
-			{ return header()->size(); }
-		inline size_type capacity() const
-			{ return header()->capacity(); }
-		inline size_type get_alloc_size() const
-			{ return is_null() ? 0 : AP::alloc_size( m_aElems, capacity() * sizeof(T), alignment(), sizeof(Header) ); }
-
-		void set_size( size_type new_size )
-		{
-			assert(new_size <= capacity());
-			header()->set_sizes(new_size, capacity());
-			MEMSTAT_USAGE(m_aElems, new_size * sizeof(T));
-		}
-
-		SPU_NO_INLINE void resize_raw( size_type new_size, size_type new_cap, bool allow_slack = false )
-		{
-			assert(new_cap >= new_size);
-			if (new_cap != capacity())
-			{
-				if (new_cap == 0)
-				{
-					// Free memory.
-					AP::dealloc( m_aElems, alignment(), sizeof(Header) );
-					set_null();
-					return;
-				}
-
-				T* old_elems = m_aElems;
-				Header* old_header = header();
-				size_t nNewBytes = new_cap * sizeof(T);
-				m_aElems = (T*) SPU_MAIN_PTR( AP::alloc( nNewBytes, allow_slack, alignment(), sizeof(Header) ));
-				MEMSTAT_BIND_TO_CONTAINER(this, m_aElems);
-
-				// Store actual allocated capacity.
-				assert(nNewBytes >= new_cap*sizeof(T));
-				new_cap = size_type(nNewBytes / sizeof(T));
-
-				if (!old_header->is_null())
-				{
-					// Move elements.
-					NArray::move_init(m_aElems, old_elems, NArray::min(old_header->size(), new_size));
-					AP::dealloc( old_elems, alignment(), sizeof(Header) );
-				}
-			}
-			header()->set_sizes(new_size, new_cap);
-		}
 
 	protected:
 
-		T*				m_aElems;
+		typedef SmallDynStorage<T,I,A> self_type;
 
 		struct Header
 		{
@@ -1085,6 +1011,78 @@ namespace NArray
 		protected:
 			size_type		m_nSizeCap;				// Store allocation size, with last bit indicating extra capacity.
 		};
+
+		typedef NAlloc::AllocPrefix<A, sizeof(Header)> AP;
+
+	public:
+
+		// Construction.
+		SmallDynStorage()
+		{
+			set_null(); 
+
+			MEMSTAT_REGISTER_CONTAINER(this, EMemStatContainerType::MSC_Vector, T);
+		}
+
+		~SmallDynStorage()
+		{
+			if (!is_null())
+				AP::dealloc( m_aElems, alignment() );
+
+			MEMSTAT_UNREGISTER_CONTAINER(this);
+		}
+
+		void swap(self_type& a)
+		{
+			T* pTemp = m_aElems;
+			m_aElems = a.m_aElems;
+			a.m_aElems = pTemp;
+			MEMSTAT_SWAP_CONTAINERS(this, &a);
+		}
+
+		// Basic storage.
+		CONST_VAR_FUNCTION( T* begin(),
+			{ return m_aElems; } )
+		inline size_type size() const
+			{ return header()->size(); }
+		inline size_type capacity() const
+			{ return header()->capacity(); }
+		inline size_type get_alloc_size() const
+			{ return is_null() ? 0 : AP::alloc_size( m_aElems, capacity() * sizeof(T), alignment() ); }
+
+		SPU_NO_INLINE void resize_raw( size_type new_size, size_type new_cap, bool allow_slack = false )
+		{
+			assert(new_cap >= new_size);
+			if (new_cap != capacity())
+			{
+				m_aElems = NAlloc::reallocate<T,I,AP>( header()->is_null() ? 0 : m_aElems, size(), new_size, new_cap, allow_slack, alignment() );
+				MEMSTAT_BIND_TO_CONTAINER(this, m_aElems);
+
+				if (!m_aElems)
+				{
+					set_null();
+					return;
+				}
+			}
+			header()->set_sizes(new_size, new_cap);
+			MEMSTAT_USAGE(begin(), new_size * sizeof(T));
+		}
+
+		void resize_raw( size_type new_size )
+		{
+			size_type cap = capacity();
+			if (new_size <= cap)
+			{
+				header()->set_sizes(new_size, cap);
+				MEMSTAT_USAGE(begin(), new_size * sizeof(T));
+			}
+			else
+				resize_raw(new_size, new_size, cap != 0);
+		}
+
+	protected:
+
+		T*				m_aElems;
 
 		static int alignment()
 		{

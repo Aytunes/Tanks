@@ -86,6 +86,33 @@ struct SWaveForm2;
 #define FRF_HEAT       4
 #define MAX_HEATSCALE  4
 
+
+//====================================================================================
+
+// EFSLIST_ lists
+// The order of the numbers has no meaning.
+
+#define EFSLIST_INVALID              0   // Don't use, internally used.
+#define EFSLIST_PREPROCESS           1   // Pre-process items.
+#define EFSLIST_GENERAL              2   // Opaque ambient_light+shadow passes.
+#define EFSLIST_TERRAINLAYER         3   // Unsorted terrain layers.
+#define EFSLIST_SHADOW_GEN           4   // Shadow map generation.
+#define EFSLIST_DECAL                5   // Opaque or transparent decals.
+#define EFSLIST_WATER_VOLUMES        6   // After decals.
+#define EFSLIST_TRANSP               7   // Sorted by distance under-water render items.
+#define EFSLIST_WATER                8   // Water-ocean render items.
+#define EFSLIST_HDRPOSTPROCESS       9   // Hdr post-processing screen effects.
+#define EFSLIST_AFTER_HDRPOSTPROCESS 10   // After hdr post-processing screen effects.
+#define EFSLIST_POSTPROCESS          11  // Post-processing screen effects.
+#define EFSLIST_AFTER_POSTPROCESS    12  // After post-processing screen effects.
+#define EFSLIST_SHADOW_PASS          13  // Shadow mask generation (usually from from shadow maps).
+#define EFSLIST_DEFERRED_PREPROCESS  14  // Pre-process before deferred passes.
+#define EFSLIST_SKIN		             15  // Skin rendering pre-process 
+#define EFSLIST_HALFRES_PARTICLES    16  // Half resolution particles
+
+#define EFSLIST_NUM                  17  // One higher than the last EFSLIST_...
+
+
 //=========================================================================
 
 enum EParamType
@@ -173,7 +200,7 @@ struct SShaderParam
       strcpy(m_Value.m_String, src.m_Value.m_String);
 		}
 		else
-			m_Value = src.m_Value;
+	    memcpy(&m_Value, &src.m_Value, sizeof(m_Value));
   }
   inline SShaderParam& operator = (const SShaderParam& src)
   {
@@ -589,7 +616,9 @@ struct SDetailDecalInfo
 //#define FOB_AMBIENT_OCCLUSION (1<<17)		// 0x20000
 #define FOB_AFTER_WATER (1<<17)		// 0x20000
 #define FOB_BENDED          (1<<18)			// 0x40000
-#define FOB_MOTION_BLUR_PARTICLE  (1<<19)     // 0x80000
+
+// If PARTICLE_MOTION_BLUR not enabled (in ProjectDefines.h), this flag becomes 0
+#define FOB_MOTION_BLUR_PARTICLE  (PARTICLE_MOTION_BLUR<<19)     // 0x80000
 
 #define FOB_INSHADOW        (1<<20)			// 0x100000
 #define FOB_DISSOLVE        (1<<21)				// 0x200000
@@ -607,7 +636,7 @@ struct SDetailDecalInfo
 //#define FOB_CAMERA_SPACE    (1<<27)			// 0x8000000
 #define FOB_ALLOW_TESSELLATION  (1<<27)			// 0x8000000
 #define FOB_DECAL_TEXGEN_2D (1<<28)			// 0x10000000
-
+#define FOB_IN_DOORS (1<<29)			// 0x20000000
 
 #define FOB_VEGETATION      (1<<30)			// 0x40000000
 #define FOB_HAS_PREVMATRIX        (1<<31)			// 0x80000000
@@ -620,17 +649,6 @@ struct SDetailDecalInfo
 #define FOB_MASK_AFFECTS_MERGING_GEOM  (FOB_VEGETATION | FOB_CHARACTER | FOB_BENDED | FOB_NO_STATIC_DECALS | FOB_BLEND_WITH_TERRAIN_COLOR | FOB_ALLOW_TESSELLATION)
 #define FOB_MASK_AFFECTS_MERGING  (FOB_HAS_PREVSKINXFORM | FOB_HAS_PREVMATRIX | FOB_VEGETATION | FOB_CHARACTER | FOB_BENDED | FOB_INSHADOW/* | FOB_AMBIENT_OCCLUSION*/| FOB_AFTER_WATER | FOB_DISSOLVE | FOB_DISSOLVE_OUT  | FOB_NEAREST | FOB_NO_STATIC_DECALS | FOB_ALLOW_TESSELLATION)
 #define FOB_PERSISTENT  (FOB_PERMANENT | FOB_REMOVED)
-
-//////////////////////////////////////////////////////////////////////
-// CRenderObject::m_customFlags: Custom Flags used by shader pipeline
-// (Union with CRenderObject::m_nTextureID, which is only used with the terrain)
-#define COB_FADE_CLOAK_BY_DISTANCE    (1<<0)			// 1
-#define COB_CUSTOM_POST_EFFECT				(1<<1)			// 2
-#define COB_IGNORE_HUD_INTERFERENCE_FILTER    (1<<2)			// 4
-#define COB_IGNORE_HEAT_AMOUNT				(1<<3)			// 8
-#define COB_POST_3D_RENDER					(1<<4)			// 0x10
-#define COB_IGNORE_CLOAK_REFRACTION_COLOR		(1<<5)			// 0x20
-#define COB_HUD_REQUIRE_DEPTHTEST		(1<<6)			// 0x40
 
 struct SInstanceInfo
 {
@@ -654,13 +672,6 @@ struct SSkyInfo
 	}
 };
 
-// Custom data used for objects without custom textures
-struct SCustomObjData
-{
-	uint8	m_nData;
-	uint8	m_nFlags;
-};
-
 struct SBending
 {
   SWaveForm2 m_Waves[2];
@@ -680,11 +691,10 @@ struct SRenderObjData
   union
   {
     CDLight *m_pLight;
-		CCamera *m_pCustomCamera;	 //
-  };
-	uint8	m_nObjID;
-	uint8	m_nVisionScale;
-
+		CCamera *m_pCustomCamera;
+		const struct ParticleParams* m_pParticleParams;	
+	};
+	
 	uint32	m_nVisionParams;							
 	uint32	m_nHUDSilhouetteParams;	
 
@@ -695,6 +705,12 @@ struct SRenderObjData
 		uint32	m_pLayerEffectParams;				// only used for layer effects
 	};
 
+	uint64 m_nSubObjHideMask;
+
+	uint64 m_ShadowCasters;          // Mask of shadow casters.
+
+	SBending* m_pBending;
+
 	uint16	m_FogVolumeContribIdx[2];
 
 	uint16	m_scissorX;
@@ -704,15 +720,12 @@ struct SRenderObjData
 	uint16	m_scissorHeight;
 
 	uint8 m_screenBounds[4];
+
+	uint16	m_nCustomFlags;
+	uint8		m_nCustomData;
 	
-	SCustomObjData m_nCustomData;    // Custom data used for objects without custom textures
-
-	uint64 m_nSubObjHideMask;
-
-	uint64 m_ShadowCasters;          // Mask of shadow casters.
-
-  SBending* m_pBending;
-
+	uint8	m_nObjID;
+	uint8	m_nVisionScale;
 
   SRenderObjData()
   {
@@ -733,7 +746,8 @@ struct SRenderObjData
 		m_scissorX = m_scissorY = m_scissorWidth = m_scissorHeight = 0;
 		m_screenBounds[0] = m_screenBounds[1] = m_screenBounds[2] = m_screenBounds[3] = 0;
 		m_nObjID = 0;
-		m_nCustomData.m_nData = m_nCustomData.m_nFlags = 0;
+		m_nCustomData = 0;
+		m_nCustomFlags = 0;
 		m_pLayerEffectParams = m_nHUDSilhouetteParams = m_nVisionParams = 0;
 		m_ShadowCasters = 0;
 		m_pBending = NULL;
@@ -1036,6 +1050,7 @@ struct SRenderObjectModifier
 	, nMatricesInUse(1)
 	, nStatesInUse(pROM?pROM->nStatesInUse:0)
 	, fDistance(pROM?pROM->fDistance:0.0f)
+	, nRenderList(pROM?pROM->nRenderList:0)
 	{}
 
 	SRenderObjectModifier(const SRenderObjectModifier* pROM, const Matrix34& newMat, 
@@ -1047,9 +1062,10 @@ struct SRenderObjectModifier
 		, nMatricesInUse(1)
 		, nStatesInUse(pROM?pROM->nStatesInUse:0)
 		, fDistance(pROM?pROM->fDistance:0.0f)
+		, nRenderList(pROM?pROM->nRenderList:0)
 	{}
 
-  const bool InUse() const { return nStatesInUse || nMatricesInUse; }
+  const bool InUse() const { return nStatesInUse || nMatricesInUse || nRenderList!=0; }
 
   Matrix34 mat;
   Matrix34 prev_mat;
@@ -1058,6 +1074,7 @@ struct SRenderObjectModifier
   byte nMatricesInUse;
   byte nStatesInUse;
   float fDistance;
+	int nRenderList;
 };
 
 enum EResClassName
@@ -2249,31 +2266,6 @@ enum EShaderTechniqueID
 	TTYPE_MAX
 };
 
-//====================================================================================
-
-// EFSLIST_ lists
-// The order of the numbers has no meaning.
-
-#define EFSLIST_INVALID              0   // Don't use, internally used.
-#define EFSLIST_PREPROCESS           1   // Pre-process items.
-#define EFSLIST_GENERAL              2   // Opaque ambient_light+shadow passes.
-#define EFSLIST_TERRAINLAYER         3   // Unsorted terrain layers.
-#define EFSLIST_SHADOW_GEN           4   // Shadow map generation.
-#define EFSLIST_DECAL                5   // Opaque or transparent decals.
-#define EFSLIST_WATER_VOLUMES        6   // After decals.
-#define EFSLIST_TRANSP               7   // Sorted by distance under-water render items.
-#define EFSLIST_WATER                8   // Water-ocean render items.
-#define EFSLIST_HDRPOSTPROCESS       9   // Hdr post-processing screen effects.
-#define EFSLIST_AFTER_HDRPOSTPROCESS 10   // After hdr post-processing screen effects.
-#define EFSLIST_POSTPROCESS          11  // Post-processing screen effects.
-#define EFSLIST_AFTER_POSTPROCESS    12  // After post-processing screen effects.
-#define EFSLIST_SHADOW_PASS          13  // Shadow mask generation (usually from from shadow maps).
-#define EFSLIST_DEFERRED_PREPROCESS  14  // Pre-process before deferred passes.
-#define EFSLIST_SKIN		             15  // Skin rendering pre-process 
-#define EFSLIST_HALFRES_PARTICLES    16  // Half resolution particles
-
-#define EFSLIST_NUM                  17  // One higher than the last EFSLIST_...
-
 //================================================================
 // Different preprocess flags for shaders that require preprocessing (like recursive render to texture, screen effects, visibility check, ...)
 // SShader->m_nPreprocess flags in priority order
@@ -2502,22 +2494,21 @@ struct SShaderItem
 //////////////////////////////////////////////////////////////////////
 // DLights
 
-//#define DLF_DETAIL          1
+//0x1
 #define DLF_DIRECTIONAL     2
-//#define DLF_DYNAMIC         4						// Dynamic lights.
-//#define DLF_ACTIVE          8						// Light is active/inactive.
+//0x4
+//0x8
 #define DLF_POST_3D_RENDERER	8							// Light only used in post 3D render pass
 #define DLF_CASTSHADOW_MAPS 0x10					// Light casting shadows.
 #define DLF_POINT           0x20
 #define DLF_PROJECT         0x40
 #define DLF_HAS_CBUFFER			0x80
 #define DLF_REFLECTIVE_SHADOWMAP  0x100
-//#define DLF_POSITIONCHANGED 0x100
 #define DLF_IGNORES_VISAREAS 0x200
 #define DLF_DEFERRED_CUBEMAPS 0x400
-#define DLF_DEFERRED_INDIRECT_LIGHT    0x800
+#define DLF_DISABLE_X360_MSAA 0x800
 #define DLF_DISABLED            0x1000
-//#define DLF_STATIC_ADDED    0x2000				// This static light has been already added to the list.
+//0x2000
 #define DLF_HASCLIPBOUND    0x4000
 #define DLF_HASCLIPGEOM			0x8000					// Use stat geom for clip geom
 #define DLF_LIGHTSOURCE     0x10000
@@ -2528,14 +2519,13 @@ struct SShaderItem
 #define DLF_LM              0x200000
 #define DLF_THIS_AREA_ONLY  0x400000				// Affects only current area/sector.
 #define DLF_AMBIENT_LIGHT   0x800000				// Affected by ambient occlusion factor.
-#define DLF_NEGATIVE        0x1000000				// Make ambient darker.
-#define DLF_INDOOR_ONLY     0x2000000				// Do not affect heightmap.
-#define DLF_ONLY_FOR_HIGHSPEC 0x4000000				// This light is active as dynamic light only for high spec machines.
-#define DLF_SPECULAR_ONLY_FOR_HIGHSPEC  0x8000000	// This light have specular component enabled only for high spec machines.
-#define DLF_DEFERRED_LIGHT    0x10000000
-#define DLF_ALLOW_LPV         0x20000000			// Add only to  Light Propagation Volume if it's possible.
-#define DLF_SPECULAROCCLUSION 0x40000000			// Use occlusion map for specular part of the light.
-#define DLF_DIFFUSEOCCLUSION 0x80000000				// Use occlusion map for diffuse part of the light.
+#define DLF_INDOOR_ONLY     0x1000000				// Do not affect heightmap.                            
+#define DLF_ONLY_FOR_HIGHSPEC 0x2000000				// This light is active as dynamic light only for high spec machines.
+#define DLF_SPECULAR_ONLY_FOR_HIGHSPEC  0x4000000	// This light have specular component enabled only for high spec machines.
+#define DLF_DEFERRED_LIGHT    0x8000000
+#define DLF_ALLOW_LPV         0x10000000			// Add only to  Light Propagation Volume if it's possible.
+#define DLF_SPECULAROCCLUSION 0x20000000			// Use occlusion map for specular part of the light.
+#define DLF_DIFFUSEOCCLUSION 0x40000000				// Use occlusion map for diffuse part of the light.
 
 #define DLF_LIGHTTYPE_MASK (DLF_DIRECTIONAL | DLF_POINT | DLF_PROJECT)
 
@@ -2557,6 +2547,7 @@ struct SRenderLight
     memset(this, 0, sizeof(SRenderLight));
     m_fLightFrustumAngle = 45.0f;
     m_fRadius = 4.0f;
+		m_fBaseRadius = 4.0f;
     m_SpecMult = m_BaseSpecMult = 1.0f;
     m_Flags = DLF_LIGHTSOURCE;
     m_n3DEngineLightId = -1;
@@ -2573,11 +2564,16 @@ struct SRenderLight
 		m_pLightAnimationNode = NULL;
 		m_lightAnimationName[0] = '\0';
 		m_bTimeScrubbingInTrackView = false;
+		m_bBoxProjectedCM = false;
+		m_fBoxWidth = 1.0f;
+		m_fBoxHeight = 1.0f;
+		m_fBoxLength = 1.0f;
 		m_fTimeScrubbed = 0.0f;
     m_fShadowBias = 1.0f;
     m_fShadowSlopeBias = 1.0f;
 		m_fShadowUpdateMinRadius = m_fRadius;
 		m_nShadowUpdateRatio = 1<<DL_SHADOW_UPDATE_SHIFT;
+		m_nEntityId = (uint32)-1;
   }
 
   const Vec3 &GetPosition() const
@@ -2615,6 +2611,10 @@ struct SRenderLight
     return m_pDeferredRenderMesh;
   }
 
+  ITexture* GetLightTexture() const
+  {
+    return m_pLightImage ? m_pLightImage : m_pLightDynTexSource ? m_pLightDynTexSource->GetTexture() : NULL;
+  }
 
   void GetMemoryUsage(ICrySizer *pSizer ) const {/*LATER*/}
 
@@ -2653,6 +2653,9 @@ struct SRenderLight
   float                           m_fShadowSlopeBias;
 
   float														m_fRadius;
+  // A original (before animation) radius value for a proper visibility check when animated
+  // This is needed because the animation happens after the visibility check.
+  float                           m_fBaseRadius;
   float														m_SpecMult;
   float														m_BaseSpecMult;
 
@@ -2684,6 +2687,8 @@ struct SRenderLight
   int32														m_n3DEngineLightId;
   uint32													m_n3DEngineUpdateFrameID;
 
+	uint32													m_nEntityId;
+
   // Scissor parameters (2d extent).
   int16														m_sX;
   int16														m_sY;
@@ -2701,6 +2706,10 @@ struct SRenderLight
 	
 	uint16													m_nShadowUpdateRatio;
 
+	bool							m_bBoxProjectedCM;
+	float							m_fBoxWidth;
+	float							m_fBoxHeight;
+	float							m_fBoxLength;
   uint8														m_nLightStyle;
   uint8														m_nLightPhase;
   uint8														m_nPostEffect : 4;    // limited to 16 effects - should be enough
@@ -2778,6 +2787,7 @@ public:
 		m_Origin=dl.m_Origin;
 		m_BaseOrigin=dl.m_BaseOrigin;
 		m_fRadius=dl.m_fRadius;
+		m_fBaseRadius=dl.m_fBaseRadius;
 		m_SpecMult=dl.m_SpecMult;
 		m_BaseSpecMult=dl.m_BaseSpecMult;
     m_fShadowBias=dl.m_fShadowBias;
@@ -2812,6 +2822,10 @@ public:
 		m_ShadowChanMask=dl.m_ShadowChanMask;
 		m_pLightAnimationNode=dl.m_pLightAnimationNode;
 		strcpy_s(m_lightAnimationName, dl.m_lightAnimationName);
+		m_bBoxProjectedCM = dl.m_bBoxProjectedCM;
+		m_fBoxWidth = dl.m_fBoxWidth;
+		m_fBoxHeight = dl.m_fBoxHeight;
+		m_fBoxLength = dl.m_fBoxLength;
 		m_bTimeScrubbingInTrackView=dl.m_bTimeScrubbingInTrackView;
 		m_fTimeScrubbed=dl.m_fTimeScrubbed;
 		m_fShadowUpdateMinRadius =dl.m_fShadowUpdateMinRadius;

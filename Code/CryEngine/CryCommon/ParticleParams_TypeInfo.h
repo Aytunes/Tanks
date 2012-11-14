@@ -35,7 +35,7 @@
 	template<class S>
 	struct SplineElem
 	{
-		UnitFloat8	time;
+		UnitFloat8e	time;
 		S						value;
 		int					flags;
 
@@ -59,7 +59,7 @@
 			if (i > 0)
 				str += ";";
 			key_type k = key(i);
-			SplineElem<S> elem = { k.time, k.value, k.flags };
+			SplineElem<TMod> elem = { k.time, k.value, k.flags };
 			str += ::TypeInfo(&elem).ToString(&elem, flags);
 		}
 		return str;
@@ -89,8 +89,8 @@
 				str = "";
 
 			// Parse element.
-			SplineElem<S> elem = { 0, S(0), 0 };
-			if (!::TypeInfo(&elem).FromString(&elem, strElem))
+			SplineElem<TMod> elem = { 0, TMod(0), 0 };
+			if (!::TypeInfo(&elem).FromString(&elem, strElem, FFromString().SkipEmpty(1)))
 				return false;
 
 			spline::SplineKey<T> key;
@@ -112,7 +112,7 @@
 		typedef spline::FinalizingSpline< typename TCurve<S>::source_spline, TCurve<S> > TIndirectSpline;
 
 		CCustomInfo()
-			: CStructInfo("TCurve<>", sizeof(TThis), ZERO, TypeInfoArray1((S*)0))
+			: CStructInfo("TCurve<>", sizeof(TThis), alignof(TThis), ZERO, TypeInfoArray1((S*)0))
 		{}
 		virtual string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const
 		{
@@ -180,7 +180,7 @@ const CTypeInfo& CSurfaceTypeIndex::TypeInfo() const
 	struct CCustomInfo: SurfaceEnums, CEnumInfo
 	{
 		CCustomInfo()
-			: CEnumInfo("CSurfaceTypeIndex", sizeof(CSurfaceTypeIndex), size(), begin())
+			: CEnumInfo("CSurfaceTypeIndex", sizeof(CSurfaceTypeIndex), alignof(CSurfaceTypeIndex), size(), begin())
 		{}
 	};
 	static CCustomInfo Info;

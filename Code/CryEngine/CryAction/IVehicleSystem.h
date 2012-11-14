@@ -82,6 +82,7 @@ enum EVehicleActionIds
   eVAI_RotateRoll,
   eVAI_XIRotatePitch,
   eVAI_XIRotateYaw,
+	eVAI_XIRotateRoll,
   eVAI_MoveForward,
   eVAI_MoveBack,
   eVAI_XIMoveY,
@@ -97,6 +98,7 @@ enum EVehicleActionIds
   eVAI_MoveUp,
   eVAI_MoveDown,
   eVAI_ChangeView,
+	eVAI_RearView,
   eVAI_ViewOption,
   eVAI_FireMode,
   eVAI_Attack1,
@@ -646,6 +648,10 @@ struct IVehicle : public IGameObjectExtension
 	virtual void OnAction(const TVehicleActionId actionId, int activationMode, float value, EntityId callerId) = 0;
 	virtual void OnHit(EntityId targetId, EntityId shooterId, float damage, Vec3 position, float radius, int hitTypeId, bool explosion, IVehicleComponent *pHitComponent = NULL) = 0;
 
+	// set & get cameraAdjustment Value
+	virtual void SetCameraAdjustment(float adjustmentValue=0.f) = 0;
+	virtual float GetCameraAdjustment() = 0;
+	
 	virtual float GetDamageRatio(bool onlyMajorComponents = false) const = 0;
 
 	virtual void SetAmmoCount(IEntityClass* pAmmoType, int amount) = 0;
@@ -1146,7 +1152,8 @@ struct IVehicleMovement
   virtual void SetSoundMasterVolume(float vol) = 0;
 
 	virtual void GetMemoryUsage(ICrySizer * s) const = 0;
-	
+	virtual void AllowBoosting(const bool allowBoosting) = 0;
+
 };
 
 // Summary
@@ -1165,7 +1172,7 @@ struct IVehicleView
 
 	// Summary
 	//		Returns the name of the camera view
-	virtual const char* GetName() = 0;
+	virtual const string& GetName() const = 0;
 
 	// Summary
 	//		Indicates if the view implements a third person camera

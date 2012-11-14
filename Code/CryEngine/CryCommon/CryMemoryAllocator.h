@@ -8,7 +8,7 @@
 
 
 
-#define TRACK_NODE_ALLOC_WITH_MEMREPLAY 0 
+#define TRACK_NODE_ALLOC_WITH_MEMREPLAY 1 
 
 //#if ( defined(WIN32) || defined(WIN64) ) && ( defined(_DEBUG) || defined(DEBUG) )
 //#undef CRY_MEMORY_ALLOCATOR
@@ -29,7 +29,7 @@
 #if defined (__OS400__) || defined (_WIN64) /*|| defined (XENON)*/ 
 enum {_ALIGNMENT = 16, _ALIGN_SHIFT = 4, __MAX_BYTES = 512, NFREELISTS=32, ADDRESSSPACE = 2 * 1024 * 1024, ADDRESS_SHIFT = 40};
 #elif defined(LINUX64)
-enum {_ALIGNMENT = 16, _ALIGN_SHIFT = 4, __MAX_BYTES = 512, NFREELISTS=32, ADDRESSSPACE = 2 * 1024 * 1024, ADDRESS_SHIFT = 40};
+enum {_ALIGNMENT = 16, _ALIGN_SHIFT = 4, __MAX_BYTES = 512, NFREELISTS=32, ADDRESSSPACE = 2 * 1024 * 1024, ADDRESS_SHIFT = 20};
 #else
 enum {_ALIGNMENT = 8, _ALIGN_SHIFT = 3, __MAX_BYTES = 512, NFREELISTS = 64, ADDRESSSPACE = 2 * 1024 * 1024, ADDRESS_SHIFT = 20};
 #endif /* __OS400__ */
@@ -295,9 +295,9 @@ struct Node_Allocator<eCryLinuxMalloc>
 //#define USE_WRITELOCKS
 //#endif
 
-//#ifdef LINUX
-//#define USE_WRITELOCKS
-//#endif
+#ifdef LINUX
+#define USE_WRITELOCKS
+#endif
 
 #if !defined(__SPU__)
 struct InternalCriticalSectionDummy {
@@ -680,25 +680,28 @@ public:
 	// this one is needed for proper simple_alloc wrapping
 	static long volatile _S_allocations;
 	typedef char value_type;
-
+#if !defined(PS3)
 	static void *allocate(size_t __n, size_t nAlignment)
 	{
 		// forward to the core function (alignment is checked in calling function)
 		return allocate(__n);
 	}
+#endif
 	/* __n must be > 0      */
 	static void *  allocate(size_t __n) 
-	{ 
-#if CAPTURE_REPLAY_LOG
-		int ms = CryGetIMemReplay()->EnterAlloc();
-#endif
-		
+	{
+		MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+
 		void* ret;
 
 #if !defined(__SPU__)
 		if (__n > (size_t)__MAX_BYTES) 
 		{
+#ifndef LINUX64
 			Node_Allocator<_alloc> all;
+#else
+			Node_Allocator<eCryLinuxMalloc> all;
+#endif
 			ret = all.pool_alloc(__n);
 		}
 		else
@@ -707,11 +710,8 @@ public:
 
 #endif 
 
-#if CAPTURE_REPLAY_LOG
-		if (ms)
-			CryGetIMemReplay()->LeaveAlloc(ret, __n);
-#endif
-
+		MEMREPLAY_SCOPE_ALLOC(ret, __n, _ALIGNMENT);
+		
 		return ret;
 	}
 
@@ -719,11 +719,6 @@ public:
 	{ 
 		return allocate(__n);
 	}
-
-
-
-
-
 
 
 
@@ -834,9 +829,7 @@ public:
 	/* __p may not be 0 */
 	static size_t  deallocate(void *__p)//, size_t __n) 
 	{
-#if CAPTURE_REPLAY_LOG
-		int ms = CryGetIMemReplay()->EnterFree();
-#endif
+		MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
 
 		size_t ret;
 
@@ -844,7 +837,11 @@ public:
 		size_t __n = _Find_right_size(__p);
 		if (__n > (size_t)__MAX_BYTES) 
 		{
+#ifndef LINUX64
 			Node_Allocator<_alloc> all;
+#else
+			Node_Allocator<eCryLinuxMalloc> all;
+#endif
 			__n = all.pool_free(__p);
 		}
 		else 
@@ -856,26 +853,25 @@ public:
 
 #endif 
 
-#if CAPTURE_REPLAY_LOG
-		if (ms)
-			CryGetIMemReplay()->LeaveFree(__p);
-#endif
-
+		MEMREPLAY_SCOPE_FREE(__p);
+		
 		return ret;
 	}
 
 	static size_t  deallocate(void *__p, size_t __n) 
 	{
-#if CAPTURE_REPLAY_LOG
-		int ms = CryGetIMemReplay()->EnterFree();
-#endif
+		MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
 
 		size_t ret;
 
 #if !defined(__SPU__)
 		if (__n > (size_t)__MAX_BYTES) 
 		{
+#ifndef LINUX64
 			Node_Allocator<_alloc> all;
+#else
+			Node_Allocator<eCryLinuxMalloc> all;
+#endif
 			__n = all.pool_free(__p);
 		}
 		else 
@@ -885,12 +881,9 @@ public:
 
 
 
-#endif 
-
-#if CAPTURE_REPLAY_LOG
-		if (ms)
-			CryGetIMemReplay()->LeaveFree(__p);
 #endif
+	
+		MEMREPLAY_SCOPE_FREE(__p);
 
 		return ret;
 	}
@@ -924,7 +917,11 @@ public:
 		size_t __n = _Find_right_size(__p);
 		if (__n > (size_t)__MAX_BYTES) 
 		{
+#ifndef LINUX64
 			Node_Allocator<_alloc> all;
+#else
+			Node_Allocator<eCryLinuxMalloc> all;
+#endif
 			__n = all.getSize(__p);
 		}
 		return __n;
@@ -965,8 +962,6 @@ public:
 #endif
 	static void cleanup();
 };
-
-#include "BucketAllocator.h"
 
 //#  if defined(_WIN64) || defined(WIN64)
 //#define ATOMIC_CAS(__dst, __val, __old_val) (_InterlockedCompareExchange((long volatile*)__dst, (long)__val, (long)__old_val) == (long)__old_val)
@@ -1182,7 +1177,11 @@ char* node_alloc<_alloc,__threads, _Size>::_S_chunk_alloc(size_t _p_size,
 	char* __result = 0;
 	size_t __total_bytes = _p_size * __nobjs;
 
+#ifndef LINUX64
 	Node_Allocator<_alloc> allocator;
+#else
+	Node_Allocator<eCryLinuxMalloc> allocator;
+#endif
 
 	//We get the first available free block:
 	_Mem_block *__pblock;	
@@ -1190,9 +1189,8 @@ char* node_alloc<_alloc,__threads, _Size>::_S_chunk_alloc(size_t _p_size,
 	
 	do {
 		__pblock = _S_free_mem_blocks;
-		if (__pblock == 0) break;
 	}
-	while (!Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS(pMemBlock, (long)__pblock->_M_next, (long)__pblock));
+	while (__pblock != 0 && !Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS(pMemBlock, (long)__pblock->_M_next, (long)__pblock));
 
 	if (__pblock != 0) 
 	{

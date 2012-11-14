@@ -87,12 +87,13 @@ protected:
 
 enum EFacialSequenceLayer
 {
-	eFacialSequenceLayer_Preview,								// Used in facial editor.
+	eFacialSequenceLayer_Preview,				// Used in facial editor.
 	eFacialSequenceLayer_Dialogue,              // One shot with sound, requested together with wave file.
-	eFacialSequenceLayer_Trackview,							// Triggered via trackview sequence
+	eFacialSequenceLayer_Trackview,				// Triggered via trackview sequence
 	eFacialSequenceLayer_AGStateAndAIAlertness, // Per animation-state and per ai-alertness (looping, requested/cleared by AG state node enter/leave).
 	eFacialSequenceLayer_AIExpression,          // Looping, requested/cleared by goalpipe/goalop.
-	eFacialSequenceLayer_FlowGraph,             // Just in case we will need it later =).
+	eFacialSequenceLayer_FlowGraph,             // Used in FlowGraph node
+	eFacialSequenceLayer_Script,				// For Entity Script Bind
 
 	eFacialSequenceLayer_COUNT,
 };

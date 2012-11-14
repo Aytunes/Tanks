@@ -120,6 +120,7 @@ public:
 	iterator erase(iterator where);                 // See documentation above
 	iterator erase(iterator first, iterator last);  // See documentation above
 	void erase(const key_type& key);
+	template <typename Predicate> void erase_if(const Predicate &predicate);
 	iterator find(const key_type& key);
 	const_iterator find(const key_type& key) const;
 	allocator_type get_allocator() const;
@@ -291,6 +292,14 @@ template <typename K, typename V, typename T, typename A>
 typename VectorMap<K, V, T, A>::iterator VectorMap<K, V, T, A>::erase(iterator where)
 {
 	return m_entries.erase(where);
+}
+
+template <typename K, typename V, typename T, typename A>
+template <typename Predicate>
+void VectorMap<K, V, T, A>::erase_if(const Predicate &predicate)
+{
+	m_entries.erase(std::remove_if(m_entries.begin(), m_entries.end(), predicate), m_entries.end());
+	std::sort(m_entries.begin(), m_entries.end(), FirstLess(static_cast<key_compare>(*this)));
 }
 
 template <typename K, typename V, typename T, typename A>

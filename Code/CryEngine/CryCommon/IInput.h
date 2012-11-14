@@ -295,7 +295,7 @@ enum EKeyId
 	eKI_PS3_R1,
 	eKI_PS3_Triangle,
 	eKI_PS3_Circle,
-	eKI_PS3_Cross,
+	eKI_PS3_Cross, 
 	eKI_PS3_Square,
 	eKI_PS3_StickLX,
 	eKI_PS3_StickLY,
@@ -331,7 +331,6 @@ struct SInputEvent
 	wchar_t			inputChar;	// If event is UI (Contains translated input char)
 	TKeyName		keyName;		// Human readable name of the event.
 	EKeyId			keyId;			// Device-specific id corresponding to the event.
-	uint32			timestamp;		// Timestamp of the event, (GetTickCount compatible).
 	int					modifiers;	// Key modifiers enabled at the time of this event.
 	float				value;		// Value associated with the event.
 	SInputSymbol*	pSymbol;		// Input symbol the event originated from.
@@ -343,7 +342,6 @@ struct SInputEvent
 		state			= eIS_Unknown;
 		keyId			= eKI_Unknown;
 		modifiers	= eMM_None;
-		timestamp	= 0;
 		value			= 0;
 		keyName   = "";
 		pSymbol		= 0;
@@ -1038,6 +1036,11 @@ struct IInput
 	virtual void EnableEventPosting ( bool bEnable ) = 0;
 	virtual bool IsEventPostingEnabled () const = 0;
 	virtual void PostInputEvent( const SInputEvent &event, bool bForce=false ) = 0;
+
+	// Description:
+	//	 For direct key processing (e.g. win proc functions)
+	//   currently only used by gringo metro launcher
+	virtual void ProcessKey(uint32 key, bool pressed, wchar_t unicode, bool repeat) = 0;
 
 	// Description:
 	//	 Posts a force feedback / rumble output event.

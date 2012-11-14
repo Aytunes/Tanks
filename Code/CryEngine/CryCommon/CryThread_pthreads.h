@@ -268,35 +268,130 @@ public:
 #endif // LINUX
 #endif // !defined _CRYTHREAD_HAVE_LOCK
 
-#if !defined(__SPU__)
+//////////////////////////////////////////////////////////////////////////
+// Platform independet wrapper for a counting semaphore
 class CrySemaphore
 {
 public:
-	ILINE CrySemaphore(int nMaximumCount)
-	{
-		sem_init(&m_Semaphore,0,0);
-	}
+	CrySemaphore(int nMaximumCount);	
+	~CrySemaphore();	
 
-	ILINE ~CrySemaphore()
-	{
-		sem_destroy(&m_Semaphore);			
-	}
+	void Acquire();
+	void Release();
+	
+private:
+	void* m_Semaphore;
+};
 
-	ILINE void Acquire()
-	{
-		sem_wait(&m_Semaphore);
-	}
+//////////////////////////////////////////////////////////////////////////
+inline CrySemaphore::CrySemaphore(int nMaximumCount)
+{
 
-	ILINE void Release()
-	{
-		sem_post(&m_Semaphore);
-	}
+
+
+	sem_init(alias_cast<sem_t*>(&m_Semaphore),0,0);
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+inline CrySemaphore::~CrySemaphore()
+{
+
+
+
+	sem_destroy(alias_cast<sem_t*>(&m_Semaphore));
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+inline void CrySemaphore::Acquire()
+{
+
+
+
+	sem_wait(alias_cast<sem_t*>(&m_Semaphore));
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+inline void CrySemaphore::Release()
+{
+
+
+
+	sem_post(alias_cast<sem_t*>(&m_Semaphore));
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Platform independet wrapper for a counting semaphore
+// except that this version uses C-A-S only until a blocking call is needed
+// -> No kernel call if there are object in the semaphore
+
+// forward declarations needed for friend function
+namespace JobManager {
+	class CJobDelegator;
+	struct SJobStringHandle;
+	typedef SJobStringHandle* TJobHandle;
+}
+
+class CryFastSemaphore
+{
+public:
+	CryFastSemaphore(int nMaximumCount);	
+	~CryFastSemaphore();
+	void Acquire();	
+	void Release();	
 
 private:
-	sem_t m_Semaphore;
-};
-#endif
+	// allow SPU job submission function access to internal functions to not need to expose then for all clients
+	friend void AddJobtoJobQueueJobs(JobManager::CJobDelegator& crJob, const unsigned int cOpMode, const JobManager::TJobHandle cJobHandle);
 
+	CrySemaphore m_Semaphore;
+	volatile int32 m_nCounter;	
+};
+
+//////////////////////////////////////////////////////////////////////////
+inline CryFastSemaphore::CryFastSemaphore(int nMaximumCount) :
+	m_Semaphore(nMaximumCount),
+	m_nCounter(0)
+{
+}
+	
+//////////////////////////////////////////////////////////////////////////
+inline CryFastSemaphore::~CryFastSemaphore()
+{
+}
+	
+/////////////////////////////////////////////////////////////////////////
+inline void CryFastSemaphore::Acquire()
+{
+	int nCount = ~0;
+	do
+	{
+		nCount = *const_cast<volatile int*>(&m_nCounter);
+	}while( CryInterlockedCompareExchange( alias_cast<volatile long*>(&m_nCounter), nCount - 1, nCount) != nCount );
+	
+	// if the count would have been 0 or below, go to kernel semaphore
+	if( (nCount - 1)  < 0 )
+		m_Semaphore.Acquire();
+}
+	
+//////////////////////////////////////////////////////////////////////////
+inline void CryFastSemaphore::Release()
+{
+	int nCount = ~0;
+	do
+	{
+		nCount = *const_cast<volatile int*>(&m_nCounter);
+	}while( CryInterlockedCompareExchange( alias_cast<volatile long*>(&m_nCounter), nCount + 1, nCount) != nCount );
+	
+	// wake up kernel semaphore if we have waiter
+	if( nCount < 0 )
+		m_Semaphore.Release();
+}
+
+//////////////////////////////////////////////////////////////////////////
 #if !defined _CRYTHREAD_HAVE_RWLOCK && !defined __SPU__
 class CryRWLock
 {

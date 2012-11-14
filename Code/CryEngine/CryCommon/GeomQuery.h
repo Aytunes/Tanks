@@ -16,137 +16,129 @@
 #include "Cry_Geo.h"
 #include "CryArray.h"
 
-// Implementation for efficient repeated queries.
-struct GeomQuery
+//////////////////////////////////////////////////////////////////////
+// Extents cache
+
+class CGeomExtent
 {
-	GeomQuery()
-		: m_pOwner(0), m_nParts(0), m_fExtent(0.f)
-	{}
-
-	ILINE ~GeomQuery()
+public:
+	ILINE operator bool() const
 	{
+		return !m_afCumExtents.empty();
+	}
+	ILINE int NumParts() const
+	{ 
+		return m_afCumExtents.size(); 
+	}
+	ILINE float TotalExtent() const
+	{ 
+		return !m_afCumExtents.empty() ? m_afCumExtents.back() : 0.f; 
 	}
 
-	// Set owner context, return whether it's updated.
-	bool SetOwner(void const* pOwner, EGeomForm eForm)
+	void Clear() 
 	{
-		if (m_pOwner != pOwner || m_eForm != eForm)
+		m_afCumExtents.resize(0);
+	}
+	void AddPart(float fExtent)
+	{
+		m_afCumExtents.push_back(TotalExtent()+fExtent);
+	}
+	void ReserveParts(int nCount)
+	{ 
+		m_afCumExtents.reserve(m_afCumExtents.size() + nCount);
+	}
+	void TrimParts()
+	{
+		int n = m_afCumExtents.size();
+		for (; n > 1; n--)
+			if (m_afCumExtents[n-1] > m_afCumExtents[n-2])
+				break;
+		if (n == 1 && m_afCumExtents[0] == 0.f)
+			n--;
+		m_afCumExtents.resize(n);
+	}
+
+	// Find element in sorted array <= index (normalized 0 to 1)
+	int GetPart(float fIndex) const
+	{
+		if (m_afCumExtents.size() <= 1)
+			return m_afCumExtents.size()-1;
+
+		fIndex *= m_afCumExtents.back();
+
+		// Binary search thru array.
+		int lo = 0, hi = m_afCumExtents.size()-1;
+		while (lo < hi)
 		{
-			m_pOwner = pOwner;
-			m_eForm = eForm;
-			m_fExtent = 0.f;
-			m_aCumExtents.clear();
-			m_aParts.clear();
-			return true;
+			int i = (lo+hi) >> 1;
+			if (fIndex < m_afCumExtents[i])
+				hi = i;
+			else
+				lo = i+1;
 		}
-		return false;
+
+		assert(lo == 0 || m_afCumExtents[lo] > m_afCumExtents[lo-1]);
+		return lo;
 	}
 
-	float GetExtent() const
+	// Find element in sorted array, and return fractional remainder
+	int GetPart(float fIndex, float* pfFraction) const
 	{
-		return m_fExtent;
+		int i = GetPart(fIndex);
+		*pfFraction = i+1 < m_afCumExtents.size() ? (fIndex - m_afCumExtents[i]) / (m_afCumExtents[i+1] - m_afCumExtents[i]) : fIndex;
+		return i;
 	}
 
-	template<class T>
-	float GetExtent(T* pOwner, EGeomForm eForm)
+	int RandomPart() const
 	{
-#if !defined(__SPU__) // don't assing new extends on spu, this lead to some memory allocations
-		if (SetOwner(pOwner, eForm))
-			m_fExtent = pOwner->ComputeExtent(*this, eForm);
-#endif
-		return m_fExtent;
+		return GetPart(Random());
 	}
-
-	float SetExtent(float fExtent)
+	int RandomPart(float* pfFraction) const
 	{
-		return m_fExtent = fExtent;
+		return GetPart(Random(), pfFraction);
 	}
-	void SetNumParts(int nParts)
+
+protected:
+	DynArray<float>	m_afCumExtents;
+};
+
+class CGeomExtents
+{
+public:
+
+	ILINE CGeomExtents()
+		: m_aExtents(0) {}
+	~CGeomExtents()
+		{ delete[] m_aExtents; }
+
+	void Clear()
+	{ 
+		delete[] m_aExtents;
+		m_aExtents = 0;
+	}
+
+	ILINE CGeomExtent const& operator [](EGeomForm eForm) const
 	{
-		m_nParts = nParts;
-		m_aCumExtents.resize(m_nParts);
-		m_fExtent = 0.f;
+		assert(eForm >= 0 && eForm < 4);
+		if (m_aExtents)
+			return m_aExtents[eForm];
+
+		static CGeomExtent s_empty;
+		return s_empty;
 	}
-	void SetPartExtent(int iPart, float fExt)
+
+	ILINE CGeomExtent& Make(EGeomForm eForm)
 	{
-		if (iPart >= m_nParts)
-		{
-
-
-
-			m_nParts = iPart+1;
-			m_aCumExtents.resize(m_nParts);
-
-		}
-		m_fExtent += fExt;
-		m_aCumExtents[iPart] = m_fExtent;
+		assert(eForm >= 0 && eForm < 4);
+		if (!m_aExtents)
+			m_aExtents = new CGeomExtent[4];
+		return m_aExtents[eForm];
 	}
 
-	// Basic part extent caching.
-	int GetNumParts() const
-	{
-		return m_nParts;
-	}
+protected:
+	CGeomExtent* m_aExtents;
+};
 
-	// Detailed part extent caching.
-	void AllocParts(int nParts)
-	{
-		m_nParts = nParts;
-		m_aParts.resize(m_nParts);
-	}
-
-	GeomQuery& GetPart(int nPart)
-	{
-		return m_aParts[nPart];
-	}
-
-	int GetRandomPart() const
-	{
-		if (m_aCumExtents.size())
-		{
-			// Binary search thru CumExtents.
-			float f = Random(m_fExtent);
-			int lo = 0, hi = m_aCumExtents.size()-1;
-			while (lo < hi)
-			{
-				int i = (lo+hi)/2;
-				if (f <= m_aCumExtents[i])
-					hi = i;
-				else
-					lo = i+1;
-			}
-			return lo;
-		}
-		else if (m_aParts.size())
-		{
-			float fRan = Random(m_fExtent);
-			for (uint32 i = 0, end = m_aParts.size()-1; i < end; i++)
-			{
-				fRan -= m_aParts[i].m_fExtent;
-				if (fRan <= 0.f)
-					return i;
-			}
-		}
-		else if (m_nParts > 1)
-			return Random(m_nParts);
-
-		return m_nParts-1;
-	}
-
-	template<class T>
-	int GetRandomPart(T* pOwner, EGeomForm eForm) const
-	{
-		return GetRandomPart();
-	}
-
-private:
-	void const*					m_pOwner;
-	EGeomForm						m_eForm;
-	float								m_fExtent;						// Cached total extent.
-	int									m_nParts;							// Number of parts.
-	DynArray<float>			m_aCumExtents;				// Per-part extent (optional).
-	DynArray<GeomQuery>	m_aParts;							// Per-part full info (optional).
-} /*_ALIGN(8)*/;
 
 // Other random/extent functions
 
@@ -191,18 +183,6 @@ const typename T::value_type& RandomElem(const T& array)
 	return array[n];
 }
 
-inline void Transform(RandomPos& ran, Matrix34 const& mx)
-{
-	ran.vPos = mx * ran.vPos;
-	ran.vNorm = Matrix33(mx) * ran.vNorm;
-}
-
-inline void Transform(RandomPos& ran, QuatTS const& qts)
-{
-	ran.vPos = qts * ran.vPos;
-	ran.vNorm = qts.q * ran.vNorm;
-}
-
 // Geometric primitive randomizing functions.
 
 
@@ -210,7 +190,7 @@ inline void Transform(RandomPos& ran, QuatTS const& qts)
 
 inline
 
-void BoxRandomPos(RandomPos& ran, EGeomForm eForm, Vec3 const& vSize)
+void BoxRandomPos(PosNorm& ran, EGeomForm eForm, Vec3 const& vSize)
 {
 	ran.vPos = ran.vNorm = BiRandom(vSize);
 
@@ -283,7 +263,7 @@ inline float CircleExtent(EGeomForm eForm, float fRadius)
 		case GeomForm_Surface:
 			return gf_PI*square(fRadius);
 		default:
-			return 0.f;
+			return 1.f;
 	}
 }
 
@@ -348,55 +328,106 @@ inline Vec3 SphereRandomPoint(EGeomForm eForm, float fRadius)
 	}
 }
 
-inline float TriExtent(EGeomForm eForm, Vec3 const& v0, Vec3 const& v1, Vec3 const& v2)
+// Triangle randomisation functions
+
+inline float TriExtent(EGeomForm eForm, Vec3 const aPos[3])
 {
 	switch (eForm)
 	{
 		default:
 			assert(0);
 		case GeomForm_Edges:
-			return (v1-v0).GetLength() + (v2-v1).GetLength() + (v0-v2).GetLength();
+			return (aPos[1]-aPos[0]).GetLengthFast();
 		case GeomForm_Surface:
-			return ((v1-v0) % (v2-v0)).GetLength() * 0.5f;
+			return ((aPos[1]-aPos[0]) % (aPos[2]-aPos[0])).GetLengthFast() * 0.5f;
 		case GeomForm_Volume:
-			return ((vector2df(v1)-vector2df(v0)) ^ ((vector2df(v2)-vector2df(v0))))
-					* (v0.z+v1.z+v2.z) * 1.f/6.f;
+			// Generate signed volume of triangle by computing triple product of vertices.
+			return ((aPos[0] ^ aPos[1]) | aPos[2]) / 6.0f;
 	}
 }
 
-inline void TriRandomPoint(float t[3], EGeomForm eForm)
+inline void TriRandomPos(PosNorm& ran, EGeomForm eForm, PosNorm const aRan[3], bool bDoNormals)
 {
 	// Generate interpolators for verts.
 	switch (eForm)
 	{
+		default:
+			assert(0);
 		case GeomForm_Vertices:
-		{
-			int e = Random(3);
-			t[e] = 1.f;
-			t[(e+1)%3] = t[(e+2)%3] = 0.f;
-			break;
-		}
+			ran = aRan[0];
+			return;
 		case GeomForm_Edges:
 		{
-			// Approx: give each edge equal chance.
-			int e = Random(3);
-			t[e] = Random(1.f);
-			t[(e+1)%3] = 1.f - t[e];
-			t[(e+2)%3] = 0.f;
+			float t = Random();
+			ran.vPos = aRan[0].vPos * (1.f-t) + aRan[1].vPos * t;
+			if (bDoNormals)
+				ran.vNorm = aRan[0].vNorm * (1.f-t) + aRan[1].vNorm * t;
 			break;
 		}
 		case GeomForm_Surface:
-		case GeomForm_Volume:			// Volume generation currently not supported.
 		{
-			float r0 = Random(1.f), r1 = Random(1.f);
-			if (r0 > r1)
-				std::swap(r0, r1);
-			t[0] = r0;
-			t[1] = r1-r0;
-			t[2] = 1.f-r1;
+			float t0 = Random(), t1 = Random(), t2 = Random();
+			float fSum = t0 + t1 + t2;
+			ran.vPos = (aRan[0].vPos * t0 + aRan[1].vPos * t1 + aRan[2].vPos * t2) * (1.f / fSum);
+			if (bDoNormals)
+				ran.vNorm = aRan[0].vNorm * t0 + aRan[1].vNorm * t1 + aRan[2].vNorm * t2;
+			break;
+		}
+		case GeomForm_Volume:
+		{
+			float t0 = Random(), t1 = Random(), t2 = Random(), t3 = Random();
+			float fSum = t0 + t1 + t2 + t3;
+			ran.vPos = (aRan[0].vPos * t0 + aRan[1].vPos * t1 + aRan[2].vPos * t2) * (1.f / fSum);
+			if (bDoNormals)
+				ran.vNorm = (aRan[0].vNorm * t0 + aRan[1].vNorm * t1 + aRan[2].vNorm * t2) * (1.f - t3) + ran.vPos.GetNormalizedFast() * t3;
 			break;
 		}
 	}
+	if (bDoNormals)
+		ran.vNorm.Normalize();
 }
+
+// Mesh random pos functions
+
+inline int TriMeshPartCount(EGeomForm eForm, int nIndices)
+{
+	switch (eForm)
+	{
+		default:
+			assert(0);
+		case GeomForm_Vertices:
+		case GeomForm_Edges:
+			// Number of edges = verts.
+			return nIndices;
+		case GeomForm_Surface:
+		case GeomForm_Volume:
+			// Number of tris.
+			assert(nIndices%3 == 0);
+			return nIndices / 3;
+	}
+}
+
+inline int TriIndices(int aIndices[3], int nPart, EGeomForm eForm)
+{
+	switch (eForm)
+	{
+		default:
+			assert(0);
+		case GeomForm_Vertices:			// Part is vert index
+			aIndices[0] = nPart;
+			return 1;
+		case GeomForm_Edges:				// Part is vert index
+			aIndices[0] = nPart;
+			aIndices[1] = nPart%3 < 2 ? nPart+1 : nPart-2;
+			return 2;
+		case GeomForm_Surface:			// Part is tri index
+		case GeomForm_Volume:
+			aIndices[0] = nPart*3;
+			aIndices[1] = aIndices[0]+1;
+			aIndices[2] = aIndices[0]+2;
+			return 3;
+	}
+}
+
 
 #endif // GEOM_QUERY_H

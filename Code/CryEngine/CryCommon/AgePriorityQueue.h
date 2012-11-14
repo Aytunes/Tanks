@@ -169,7 +169,7 @@ public:
 	inline bool has(const id_type& id) const
 	{
 		size_t slot = _slot(id);
-		return ((slot < m_slots.size()) && (m_slots[slot].user == _user(id)));
+		return ((slot < m_slots.size()) && !m_slots[slot].free && (m_slots[slot].user == _user(id)));
 	}
 
 	struct DefaultUpdate

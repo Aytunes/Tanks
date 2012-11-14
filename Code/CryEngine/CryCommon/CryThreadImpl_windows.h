@@ -4,7 +4,9 @@
 
 //#include <IThreadTask.h>
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #ifndef XENON
 #include <windows.h>
 #endif
@@ -242,6 +244,52 @@ void CrySemaphore::Release()
 		ReleaseSemaphore((HANDLE)m_Semaphore,1,NULL);
 }
 
+//////////////////////////////////////////////////////////////////////////
+CryFastSemaphore::CryFastSemaphore(int nMaximumCount) :
+	m_Semaphore(nMaximumCount),
+	m_nCounter(0)
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+CryFastSemaphore::~CryFastSemaphore()
+{	
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CryFastSemaphore::Acquire()
+{
+	int nCount = ~0;
+	do
+	{
+		nCount = *const_cast<volatile int*>(&m_nCounter);
+	}while( CryInterlockedCompareExchange( alias_cast<volatile long*>(&m_nCounter), nCount - 1, nCount) != nCount );
+	
+	// if the count would have been 0 or below, go to kernel semaphore
+	if( (nCount - 1)  < 0 )
+		m_Semaphore.Acquire();
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CryFastSemaphore::Release()
+{
+	int nCount = ~0;
+	do
+	{
+		nCount = *const_cast<volatile int*>(&m_nCounter);
+	}while( CryInterlockedCompareExchange( alias_cast<volatile long*>(&m_nCounter), nCount + 1, nCount) != nCount );
+	
+	// wake up kernel semaphore if we have waiter
+	if( nCount < 0 )
+		m_Semaphore.Release();
+}
+
+//////////////////////////////////////////////////////////////////////////
+CrySimpleThreadSelf::CrySimpleThreadSelf()
+	: m_thread(NULL)
+	, m_threadId(0)
+{
+}
 
 //////////////////////////////////////////////////////////////////////////
 void CrySimpleThreadSelf::WaitForThread()
@@ -253,17 +301,71 @@ void CrySimpleThreadSelf::WaitForThread()
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
 CrySimpleThreadSelf::~CrySimpleThreadSelf()
 {
 	if(m_thread)
 		CloseHandle(m_thread);
 }
 
+//////////////////////////////////////////////////////////////////////////
 void CrySimpleThreadSelf::StartThread(unsigned (__stdcall *func)(void*), void* argList)
 {
+
+
+
 	m_thread = (void*)_beginthreadex( NULL, 0, func, argList, CREATE_SUSPENDED, &m_threadId );
+
 	assert(m_thread);
 	ResumeThread((HANDLE)m_thread);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+void CryInterlockedPushEntrySList( SLockFreeSingleLinkedListHeader& list,  SLockFreeSingleLinkedListEntry &element )
+{
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLIST_HEADER), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListEntry) == sizeof(SLIST_ENTRY), CRY_INTERLOCKED_SLIST_ENTRY_HAS_WRONG_SIZE);		
+
+
+
+	assert( ((int)&element) & (MEMORY_ALLOCATION_ALIGNMENT-1) && "LockFree SingleLink List Entry has wrong Alignment" );
+	assert( ((int)&list) & (MEMORY_ALLOCATION_ALIGNMENT-1) && "LockFree SingleLink List Header has wrong Alignment" );
+	InterlockedPushEntrySList( alias_cast<PSLIST_HEADER>(&list), alias_cast<PSLIST_ENTRY>(&element) );
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+void* CryInterlockedPopEntrySList(  SLockFreeSingleLinkedListHeader& list )
+{	
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLIST_HEADER), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+
+
+
+	assert( ((int)&list) & (MEMORY_ALLOCATION_ALIGNMENT-1) && "LockFree SingleLink List Header has wrong Alignment" );
+	return reinterpret_cast<void*>(InterlockedPopEntrySList(alias_cast<PSLIST_HEADER>(&list)));	
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CryInitializeSListHead(SLockFreeSingleLinkedListHeader& list)
+{
+#if !defined(XENON)
+	assert( ((int)&list) & (MEMORY_ALLOCATION_ALIGNMENT-1) && "LockFree SingleLink List Header has wrong Alignment" );
+#endif
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLIST_HEADER), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+	InitializeSListHead(alias_cast<PSLIST_HEADER>(&list));
+}
+
+//////////////////////////////////////////////////////////////////////////
+void* CryInterlockedFlushSList(SLockFreeSingleLinkedListHeader& list)
+{
+#if !defined(XENON)
+	assert( ((int)&list) & (MEMORY_ALLOCATION_ALIGNMENT-1) && "LockFree SingleLink List Header has wrong Alignment" );
+#endif
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLIST_HEADER), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+	return InterlockedFlushSList(alias_cast<PSLIST_HEADER>(&list));	
 }
 
 #endif //__CRYTHREADIMPL_WINDOWS_H__

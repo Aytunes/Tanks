@@ -233,6 +233,8 @@ public:
   // copy texture back into system memory (used for decals baked into terrain texture)
 	virtual uint8 ** GetSystemCopy() = 0;
 
+	virtual void SetRenderTargetTile(uint8 nTile = 0) = 0;
+
 	void GetMemoryUsage( ICrySizer *pSizer ) const {
 		COMPILE_TIME_ASSERT(eTT_MaxTexType <= 255);
 		COMPILE_TIME_ASSERT(eTF_MaxFormat <= 255);
@@ -252,7 +254,6 @@ struct IDynTextureSource
 		DTS_UNKNOWN,
 
 		DTS_I_FLASHPLAYER,
-		DTS_I_VIDEOPLAYER,
 		DTS_I_UIELEMENT
 	};
 	virtual void* GetSource(EDynTextureSource type) const = 0;

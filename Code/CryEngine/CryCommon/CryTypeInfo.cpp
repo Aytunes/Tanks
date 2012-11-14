@@ -149,7 +149,7 @@ void SwapEndian(const CTypeInfo& Info, size_t nSizeCheck, void* data, size_t nCo
 
 // Basic type infos.
 
-DEFINE_TYPE_INFO(void, CTypeInfo, ("void", 0))
+DEFINE_TYPE_INFO(void, CTypeInfo, ("void", 0, 0))
 
 TYPE_INFO_BASIC(bool)
 TYPE_INFO_BASIC(char)
@@ -175,7 +175,7 @@ TYPE_INFO_BASIC(string)
 
 const CTypeInfo& PtrTypeInfo()
 {
-	static CTypeInfo Info(TYPE_INFO_NAME(void*), sizeof(void*));
+	static CTypeInfo Info(TYPE_INFO_NAME(void*), sizeof(void*), alignof(void*));
 	return Info;
 }
 
@@ -248,14 +248,13 @@ bool ClampedIntFromString(T& val, const char* s)
 	{
 		// Negative number on unsigned.
 		val = T(0);
-		return false;
+		return true;
 	}
 
   uint digit = (uint8)*s - '0';
   if (digit > 9)
 	{
 		// No digits.
-		val = T(0);
 		return false;
 	}
 
@@ -271,8 +270,7 @@ bool ClampedIntFromString(T& val, const char* s)
 				val = TIntTraits<T>::nMIN;
 			else
 				val = TIntTraits<T>::nMAX;
-
-			return false;
+			return true;
 		}
 		v = vnew;
 	}
@@ -522,8 +520,8 @@ inline cstr DisplayName(cstr name)
 		return name;
 }
 
-CStructInfo::CStructInfo( cstr name, size_t size, Array<CVarInfo> vars, Array<CTypeInfo const*> templates )
-: CTypeInfo(name, size), Vars(vars), TemplateTypes(templates), HasBitfields(false)
+CStructInfo::CStructInfo( cstr name, size_t size, size_t align, Array<CVarInfo> vars, Array<CTypeInfo const*> templates )
+: CTypeInfo(name, size, align), Vars(vars), TemplateTypes(templates), HasBitfields(false)
 {
 	// Process and validate offsets and sizes.
 	if (Vars.size() > 0)
@@ -546,7 +544,6 @@ CStructInfo::CStructInfo( cstr name, size_t size, Array<CVarInfo> vars, Array<CT
 					// Continuing bitfield.
 					var.Offset = Vars[i-1].Offset;
 					var.BitWordWidth = Vars[i-1].BitWordWidth;
-					var.bUnionAlias = 1;
 
 					if (bitoffset + var.ArrayDim > var.GetSize()*8)
 					{
@@ -559,7 +556,6 @@ CStructInfo::CStructInfo( cstr name, size_t size, Array<CVarInfo> vars, Array<CT
 				if (bitoffset == 0)
 				{
 					var.Offset = check_cast<uint32>(size);
-					var.bUnionAlias = 0;
 
 					// Detect real word size of bitfield, from offset of next field.
 					size_t next_offset = Size;
@@ -591,13 +587,11 @@ CStructInfo::CStructInfo( cstr name, size_t size, Array<CVarInfo> vars, Array<CT
 			else
 			{
 				bitoffset = 0;
-				if (var.Offset < size)
-					var.bUnionAlias = 1;
-				else
+				if (var.Offset >= size)
 					size = var.Offset + var.GetSize();
 			}
 		}
-		assert(size <= Size && Align(size, 8) >= Size);
+		assert(Align(size, Alignment) == Align(Size, Alignment));
 	}
 }
 
@@ -735,7 +729,7 @@ string CStructInfo::ToString(const void* data, FToString flags, const void* def_
 		if (i > 0)
 			str += ",";
 
-		if (!var.bBaseClass)
+		if (!var.IsInline())
 		{
 			// Nested named struct.
 			string substr = var.ToString(data, FToString(flags).Sub(0), def_data);
@@ -756,7 +750,7 @@ string CStructInfo::ToString(const void* data, FToString flags, const void* def_
 		}
 	}
 
-	if (flags._TruncateSub && !flags._Sub)
+	if (flags._SkipDefault && !flags._Sub)
 		StripCommas(str);
 	return str;
 }
@@ -810,12 +804,12 @@ cstr ParseElement(cstr& src, CTempStr& tempstr)
 		return substr;
 }
 
-static int VarFromString(const CTypeInfo::CVarInfo& Var, void* data, cstr& str, FFromString flags, CTempStr &tempstr)
+static int VarFromString(const CTypeInfo::CVarInfo& var, void* data, cstr& str, FFromString flags, CTempStr &tempstr)
 {
-	if (Var.bBaseClass && Var.Offset == 0 && Var.Type.HasSubVars())
+	if (var.IsInline())
 	{
 		int nErrors = 0;
-		for AllSubVars(pVar, Var.Type)
+		for AllSubVars(pVar, var.Type)
 		{
 			if (!*str && flags._SkipEmpty)
 				break;
@@ -833,7 +827,7 @@ static int VarFromString(const CTypeInfo::CVarInfo& Var, void* data, cstr& str, 
 				return 0;
 			substr = "";
 		}
-		return !Var.FromString(data, substr, flags);
+		return !var.FromString(data, substr, flags);
 	}
 }
 
@@ -937,7 +931,7 @@ void CStructInfo::SwapEndian(void* data, size_t nCount, bool bWriting) const
 		// Then bitfields if needed.
 		if (HasBitfields)
 		{
-			uint64 uOrigBits=0, uNewBits=0;
+			uint64 uOrigBits = 0, uNewBits = 0;
 			for (int i = 0; i < Vars.size(); i++)
 			{
 				CVarInfo const& var = Vars[i];
@@ -975,7 +969,8 @@ void CStructInfo::MakeEndianDesc()
 	for (int i = 0; i < Vars.size(); i++)
 	{
 		CVarInfo const& var = Vars[i];
-		if (!var.bUnionAlias)
+		bool bUnionAlias = var.bBitfield ? var.BitOffset > 0 : var.Offset < last_offset;
+		if (!bUnionAlias)
 		{
 			// Add endian desc for member.
 			cstr subdesc;
@@ -1070,8 +1065,8 @@ bool CStructInfo::IsType( CTypeInfo const& Info ) const
 //////////////////////////////////////////////////////////////////////
 // CEnumInfo implementation
 
-CEnumInfo::CEnumInfo( cstr name, size_t size, size_t num_elems, CEnumElem* elems)
-	: CTypeInfo(name, size), Elems(elems, check_cast<int>(num_elems)),
+CEnumInfo::CEnumInfo( cstr name, size_t size, size_t align, size_t num_elems, CEnumElem* elems)
+	: CTypeInfo(name, size, align), Elems(elems, check_cast<int>(num_elems)),
 		MinValue(0), MaxValue(0), bRegular(true)
 {
 	// Analyse names and values.
@@ -1207,5 +1202,12 @@ bool CEnumInfo::FromString(void* data, cstr str, FFromString flags) const
 
 	// No match, attempt numeric conversion.
 	int val;
-	return ::FromString(val, str) && WriteInt(data, Size, val);
+	if (::FromString(val, str))
+		return WriteInt(data, Size, val);
+
+	bool b;
+	if (::FromString(b, str))
+		return WriteInt(data, Size, b);
+
+	return false;
 }

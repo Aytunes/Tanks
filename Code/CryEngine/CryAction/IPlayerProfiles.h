@@ -8,7 +8,6 @@
 #endif
 
 #include <IFlowSystem.h>
-#include "CheatProtection.h"
 
 struct IPlayerProfile;
 struct IActionMap;

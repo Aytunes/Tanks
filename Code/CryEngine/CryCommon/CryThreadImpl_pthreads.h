@@ -97,3 +97,105 @@ void* CryCreateCriticalSection()
 {
 	return (void*) new TCritSecType;
 }
+
+#if !defined(__SPU__)
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+void CryInterlockedPushEntrySList( SLockFreeSingleLinkedListHeader& list,  SLockFreeSingleLinkedListEntry &element )
+{
+	assert( ((int)&element) & (MEMORY_ALLOCATION_ALIGNMENT-1) && "LockFree SingleLink List Entry has wrong Alignment" );
+
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLockFreeSingleLinkedListEntry*), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListEntry) == sizeof(SLockFreeSingleLinkedListEntry*), CRY_INTERLOCKED_SLIST_ENTRY_HAS_WRONG_SIZE);		
+
+	SLockFreeSingleLinkedListEntry *pCurrentTop = NULL;
+	volatile void *pHeader = alias_cast<volatile void*>(&list);
+
+
+
+
+
+
+
+
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+void* CryInterlockedPopEntrySList(  SLockFreeSingleLinkedListHeader& list )
+{
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLockFreeSingleLinkedListEntry*), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+
+	struct SFreeList{ SFreeList *pNext; };
+	SLockFreeSingleLinkedListEntry *pCurrentTop = NULL;
+	SLockFreeSingleLinkedListEntry *pNext = NULL;
+	volatile void *pHeader = alias_cast<volatile void*>(&list);
+
+
+
+
+
+
+
+
+
+
+
+
+	return pCurrentTop;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void CryInitializeSListHead(SLockFreeSingleLinkedListHeader& list)
+{
+#if !defined(__SPU__)
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLockFreeSingleLinkedListEntry*), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+	list.pNext = NULL;
+#endif 
+}
+
+//////////////////////////////////////////////////////////////////////////
+void* CryInterlockedFlushSList(SLockFreeSingleLinkedListHeader& list)
+{
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLockFreeSingleLinkedListEntry*), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+	STATIC_CHECK(sizeof(SLockFreeSingleLinkedListHeader) == sizeof(SLockFreeSingleLinkedListEntry*), CRY_INTERLOCKED_SLIST_HEADER_HAS_WRONG_SIZE);
+
+	struct SFreeList{ SFreeList *pNext; };
+	SLockFreeSingleLinkedListEntry *pCurrentTop = NULL;
+	SLockFreeSingleLinkedListEntry *pNext = NULL;
+	volatile void *pHeader = alias_cast<volatile void*>(&list);
+
+
+
+
+
+
+
+
+
+
+	return pCurrentTop;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif

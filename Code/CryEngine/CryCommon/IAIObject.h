@@ -97,6 +97,7 @@ public:
 
 	virtual void SetPos(const Vec3& pos, const Vec3& dirForw = Vec3Constants<float>::fVec3_OneX) = 0;
 	virtual const Vec3& GetPos() const = 0;
+	virtual const Vec3 GetPosInNavigationMesh(const uint32 agentTypeID) const = 0;
 
 	virtual void SetRadius(float fRadius) = 0;
 	virtual float GetRadius() const = 0;

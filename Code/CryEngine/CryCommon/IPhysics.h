@@ -33,6 +33,7 @@ enum EPhysicsForeignIds
 	PHYS_FOREIGN_ID_WATERVOLUME = 8,
 	PHYS_FOREIGN_ID_BREAKABLE_GLASS = 9,
 	PHYS_FOREIGN_ID_BREAKABLE_GLASS_FRAGMENT = 10,
+	PHYS_FOREIGN_ID_RIGID_PARTICLE = 11,
 
 	PHYS_FOREIGN_ID_USER = 100, // All user defined foreign ids should start from this enum.
 };

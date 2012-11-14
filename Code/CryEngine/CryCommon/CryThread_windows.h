@@ -26,6 +26,10 @@ public:
 	bool Wait( const uint32 timeoutMillis ) const;
 
 private:
+	CryEvent(const CryEvent&);
+	CryEvent& operator = (const CryEvent&);
+
+private:
 	void *m_handle;
 };
 
@@ -76,6 +80,10 @@ public:
 	void* _get_win32_handle() { return m_hdl; }
 
 private:
+	CryLock_WinMutex(const CryLock_WinMutex&);
+	CryLock_WinMutex& operator = (const CryLock_WinMutex&);
+
+private:
 	void* m_hdl;
 };
 
@@ -94,6 +102,10 @@ public:
 	{
 		return m_cs.RecursionCount > 0 && (DWORD)m_cs.OwningThread == CryGetCurrentThreadId();
 	}
+
+private:
+	CryLock_CritSection(const CryLock_CritSection&);
+	CryLock_CritSection& operator = (const CryLock_CritSection&);
 
 private:
 	CRY_CRITICAL_SECTION m_cs;
@@ -118,6 +130,10 @@ public:
 	void Notify();
 
 private:
+	CryConditionVariable(const CryConditionVariable&);
+	CryConditionVariable& operator = (const CryConditionVariable&);
+
+private:
 	int m_waitersCount;
 	CRY_CRITICAL_SECTION m_waitersCountLock;
 	void* m_sema;
@@ -125,6 +141,8 @@ private:
 	size_t m_wasBroadcast;
 };
 
+//////////////////////////////////////////////////////////////////////////
+// Platform independet wrapper for a counting semaphore
 class CrySemaphore
 {
 public:
@@ -137,14 +155,36 @@ private:
 	void* m_Semaphore; 
 };
 
+//////////////////////////////////////////////////////////////////////////
+// Platform independet wrapper for a counting semaphore
+// except that this version uses C-A-S only until a blocking call is needed
+// -> No kernel call if there are object in the semaphore
+class CryFastSemaphore
+{
+public:
+	CryFastSemaphore(int nMaximumCount);	
+	~CryFastSemaphore();
+	void Acquire();	
+	void Release();	
+
+private:
+	CrySemaphore m_Semaphore;
+	volatile int32 m_nCounter;	
+};
+
+//////////////////////////////////////////////////////////////////////////
 class CrySimpleThreadSelf
 {
 public:
+	CrySimpleThreadSelf();
 	void WaitForThread();
 	virtual ~CrySimpleThreadSelf();
 protected:
 	void StartThread(unsigned (__stdcall *func)(void*), void* argList);
 	static THREADLOCAL CrySimpleThreadSelf *m_Self;
+private:
+	CrySimpleThreadSelf(const CrySimpleThreadSelf&);
+	CrySimpleThreadSelf& operator = (const CrySimpleThreadSelf&);
 protected:
 	void* m_thread;
 	uint32 m_threadId;
@@ -191,13 +231,20 @@ private:
 #if CRY_XENON_CRASH_HANDLING
 		SetUnhandledExceptionFilter( handleException );
 #endif
+
+
+
 		CrySimpleThread<Runnable> *const self = (CrySimpleThread<Runnable> *)thisPtr;
 		self->m_bIsStarted = true;
 		self->m_bIsRunning = true;
 		self->m_Runnable->Run();
 		self->m_bIsRunning = false;
 		self->Terminate();
+
+
+
 		_endthreadex(0);
+
 		return 0;
 	}
 
@@ -206,13 +253,20 @@ private:
 #if CRY_XENON_CRASH_HANDLING
 		SetUnhandledExceptionFilter( handleException );
 #endif
+
+
+
 		CrySimpleThread<Runnable> *const self = (CrySimpleThread<Runnable> *)thisPtr;
     self->m_bIsRunning = true;
 		self->m_bIsStarted = true;
 		self->Run();
 		self->m_bIsRunning = false;
 		self->Terminate();
+
+
+
 		_endthreadex(0);
+
 		return 0;
 	}
 

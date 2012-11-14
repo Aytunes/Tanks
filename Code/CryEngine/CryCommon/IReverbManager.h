@@ -248,7 +248,7 @@ struct IReverbManager
 
 	// Note:
 	//	 Needs to be called regularly.
-	virtual bool Update(bool bInside, bool const bUpdateEchoDSP = true) = 0;
+	virtual void Update(bool const bInside) = 0;
 
 	virtual bool SetListenerReverb(SOUND_REVERB_PRESETS nPreset, CRYSOUND_REVERB_PROPERTIES *tpProps=NULL, uint32 nFlags=0) = 0;
 	
@@ -283,7 +283,7 @@ struct IReverbManager
 	// Dependency with loading a sound
 	//////////////////////////////////////////////////////////////////////////
 
-	virtual float GetEnvironment(ISound *pSound) = 0;
+	virtual float GetEnvironment(Vec3 const& rPosition) = 0;
 
 	//virtual bool RegisterSound(ISound *pSound) = 0;
 	//virtual int  GetReverbInstance(ISound *pSound) const = 0;

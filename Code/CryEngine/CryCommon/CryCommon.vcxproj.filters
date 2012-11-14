@@ -72,6 +72,9 @@
     <ClInclude Include="IAnimationPoseModifier.h">
       <Filter>Interfaces_h</Filter>
     </ClInclude>
+    <ClInclude Include="IAntiCheatManager.h">
+      <Filter>Interfaces_h</Filter>
+    </ClInclude>
     <ClInclude Include="IAttachment.h">
       <Filter>Interfaces_h</Filter>
     </ClInclude>
@@ -528,6 +531,9 @@
     <ClInclude Include="Common_TypeInfo.h">
       <Filter>Common_h</Filter>
     </ClInclude>
+    <ClInclude Include="CompileTimeAssert.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
     <ClInclude Include="CompileTimeUtils.h">
       <Filter>Common_h</Filter>
     </ClInclude>
@@ -672,9 +678,6 @@
     <ClInclude Include="IAVI_Reader.h">
       <Filter>Common_h</Filter>
     </ClInclude>
-    <ClInclude Include="IDirectBee.h">
-      <Filter>Common_h</Filter>
-    </ClInclude>
     <ClInclude Include="IDiskProfiler.h">
       <Filter>Common_h</Filter>
     </ClInclude>
@@ -748,9 +751,6 @@
       <Filter>Common_h</Filter>
     </ClInclude>
     <ClInclude Include="Range.h">
-      <Filter>Common_h</Filter>
-    </ClInclude>
-    <ClInclude Include="RangeIter.h">
       <Filter>Common_h</Filter>
     </ClInclude>
     <ClInclude Include="RayCastQueue.h">
@@ -1032,9 +1032,6 @@
     <ClInclude Include="Win64specific.h">
       <Filter>Platform_h</Filter>
     </ClInclude>
-    <ClInclude Include="CheatProtection.h">
-      <Filter>CheatProtection</Filter>
-    </ClInclude>
     <ClInclude Include="CryExtension\CryCreateClassInstance.h">
       <Filter>CryExtension</Filter>
     </ClInclude>
@@ -1162,6 +1159,9 @@
     <ClInclude Include="CryCustomTypes.h">
       <Filter>Common_h</Filter>
     </ClInclude>
+    <ClInclude Include="JobManager_SPUDriver.h">
+      <Filter>Platform_h</Filter>
+    </ClInclude>
     <ClInclude Include="LCGRandom.h" />
     <ClInclude Include="Random.h" />
     <ClInclude Include="ICharacterPartsManager.h">
@@ -1197,7 +1197,6 @@
     <ClInclude Include="IScaleformGFx.h">
       <Filter>Interfaces_h</Filter>
     </ClInclude>
-    <ClInclude Include="CopyProtection.h" />
     <ClInclude Include="CryFixedArray.h">
       <Filter>Common_h</Filter>
     </ClInclude>
@@ -1218,7 +1217,6 @@
     <ClInclude Include="CREBreakableGlassHelpers.h">
       <Filter>Common_h\RenderElements</Filter>
     </ClInclude>
-    <ClInclude Include="IVideoPlayer.h" />
     <ClInclude Include="CREBreakableGlassConfig.h">
       <Filter>Common_h\RenderElements</Filter>
     </ClInclude>
@@ -1227,6 +1225,37 @@
     </ClInclude>
     <ClInclude Include="IBreakableManager.h">
       <Filter>Interfaces_h</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderObjectDefines.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugHelper.h">
+      <Filter>Common_h</Filter>
+    </ClInclude>
+    <ClInclude Include="IIKTargetSystem.h">
+      <Filter>Interfaces_h</Filter>
+    </ClInclude>
+    <ClInclude Include="RangeIter.h" />
+    <ClInclude Include="console\Cry_Xenon_HWMatrix3.h">
+      <Filter>MathLib\Consoles</Filter>
+    </ClInclude>
+    <ClInclude Include="console\Cry_Xenon_Vector3.h">
+      <Filter>MathLib\Consoles</Filter>
+    </ClInclude>
+    <ClInclude Include="console\Cry_Xenon_HWVector3.h">
+      <Filter>MathLib\Consoles</Filter>
+    </ClInclude>
+    <ClInclude Include="console\Cry_Xenon_Math.h">
+      <Filter>MathLib\Consoles</Filter>
+    </ClInclude>
+    <ClInclude Include="console\Cry_Xenon_Matrix3.h">
+      <Filter>MathLib\Consoles</Filter>
+    </ClInclude>
+    <ClInclude Include="console\Cry_Xenon_Optimize.h">
+      <Filter>MathLib\Consoles</Filter>
+    </ClInclude>
+    <ClInclude Include="SpuUtils.h">
+      <Filter>Platform_h</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1251,7 +1280,6 @@
     <ClCompile Include="CryPool\PAUnitTest.cpp">
       <Filter>CryPool</Filter>
     </ClCompile>
-    <ClCompile Include="LCGRandom.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CryHalf_branchfree.inl">
@@ -1260,5 +1288,13 @@
     <None Include="CryHalf.inl">
       <Filter>MathLib</Filter>
     </None>
+    <None Include="cpuid64\cpuid64.asm">
+      <Filter>Misc</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="cpuid64\cpuid64.obj">
+      <Filter>Misc</Filter>
+    </Object>
   </ItemGroup>
 </Project>

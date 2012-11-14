@@ -102,6 +102,11 @@ struct _CryMemoryManagerPoolHelper
 		int iter;
 #ifdef LINUX
 		for(iter=0,hMod=::dlopen(NULL, RTLD_LAZY); hMod; iter++)
+
+
+
+
+
 	#else //LINUX
 		for(iter=0,hMod=GetModuleHandle(0); hMod; iter++)
 	#endif //LINUX
@@ -128,10 +133,18 @@ struct _CryMemoryManagerPoolHelper
 			#ifdef WIN32
 				MessageBox(NULL, "Could not access CrySystem.dll (check working directory)", "Memory Manager", MB_OK);
       #else
-      if (!hMod)
-        OutputDebugString("Could not access CrySystem.dll (check working directory)");
-      else
-        OutputDebugString("Could not get Memory Functions in CrySystem.dll");
+			if (!hMod)
+
+
+
+				OutputDebugString("Could not access CrySystem.dll (check working directory)");
+
+			else
+
+
+
+				OutputDebugString("Could not get Memory Functions in CrySystem.dll");
+
 			#endif
 			exit(1);
 		};
@@ -166,7 +179,8 @@ struct _CryMemoryManagerPoolHelper
 		#ifdef _LIB
 			CryGetIMemoryManagerInterface((void**)&ptr);
 		#else
-			_CryGetIMemoryManagerInterface((void**)&ptr);
+		if (_CryGetIMemoryManagerInterface)
+				_CryGetIMemoryManagerInterface((void**)&ptr);
 		#endif
 		return (IMemoryManager*)ptr;
 	}
@@ -268,19 +282,27 @@ int _CryMemoryManagerPoolHelper::m_bInitialized = 0;
 //////////////////////////////////////////////////////////////////////////
 void* CryModuleMalloc( size_t size ) throw()
 {
-		return _CryMemoryManagerPoolHelper::Malloc(size,0);
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+	void* ret = _CryMemoryManagerPoolHelper::Malloc(size,0);
+	MEMREPLAY_SCOPE_ALLOC(ret, size, 0);
+	return ret;
 };
 
 //////////////////////////////////////////////////////////////////////////
 void* CryModuleRealloc( void *ptr,size_t size )  throw()
 {
-		return _CryMemoryManagerPoolHelper::Realloc(ptr,size, 0);
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+	void* ret = _CryMemoryManagerPoolHelper::Realloc(ptr,size, 0);
+	MEMREPLAY_SCOPE_REALLOC(ptr, ret, size, 0);
+	return ret;
 };
 
 //////////////////////////////////////////////////////////////////////////
 	void  CryModuleFree( void *ptr ) throw()
 {
-		_CryMemoryManagerPoolHelper::Free(ptr,0);
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+	_CryMemoryManagerPoolHelper::Free(ptr,0);
+	MEMREPLAY_SCOPE_FREE(ptr);
 };
 
 size_t CryModuleMemSize( void* ptr, size_t sz) throw()
@@ -291,19 +313,33 @@ size_t CryModuleMemSize( void* ptr, size_t sz) throw()
 //////////////////////////////////////////////////////////////////////////
 void* CryModuleMemalign( size_t size, size_t alignment ) throw()
 {
-		return _CryMemoryManagerPoolHelper::Malloc(size, alignment);
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+	void* ret = _CryMemoryManagerPoolHelper::Malloc(size, alignment);
+	MEMREPLAY_SCOPE_ALLOC(ret, size, alignment);
+	return ret;
 };
 
-	void  CryModuleMemalignFree( void *ptr ) throw()
+void  CryModuleMemalignFree( void *ptr ) throw()
 {
-		_CryMemoryManagerPoolHelper::Free(ptr,1000); // Free with alignment
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+	_CryMemoryManagerPoolHelper::Free(ptr,1000); // Free with alignment
+	MEMREPLAY_SCOPE_FREE(ptr);
 };
 
-	//////////////////////////////////////////////////////////////////////////
-	void* CryModuleReallocAlign( void *ptr, size_t size, size_t alignment )  throw()
-	{
-		return _CryMemoryManagerPoolHelper::Realloc(ptr,size, alignment);
-	};
+void* CryModuleCalloc(size_t a, size_t b) throw()
+{ 
+	void* p = CryModuleMalloc(a*b);memset(p, 0, a*b);
+	return p;
+}
+
+//////////////////////////////////////////////////////////////////////////
+void* CryModuleReallocAlign( void *ptr, size_t size, size_t alignment )  throw()
+{
+	MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CryMalloc);
+	void* ret = _CryMemoryManagerPoolHelper::Realloc(ptr,size, alignment);
+	MEMREPLAY_SCOPE_REALLOC(ptr, ret, size, alignment);
+	return ret;
+};
 #endif //!defined(NOT_USE_CRY_MEMORY_MANAGER)
 
 //////////////////////////////////////////////////////////////////////////
@@ -336,33 +372,45 @@ size_t CryCrtSize(void *p)
 // Redefine new & delete for entire module.
 #if !defined(NOT_USE_CRY_MEMORY_MANAGER)
 	#if !defined(_LIB) && !defined(NEW_OVERRIDEN) && !defined(__SPU__)
-			void * __cdecl operator new   (size_t size) { return CryModuleMalloc(size); } 
-			void * __cdecl operator new[] (size_t size) { return CryModuleMalloc(size); }; 
-			void __cdecl operator delete  (void *p) { CryModuleFree(p); };
-			void __cdecl operator delete[](void *p) { CryModuleFree(p); };
+			void * __cdecl operator new   (size_t size)
+			{
+				MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtNew);
+				void* ret = CryModuleMalloc(size);
+				MEMREPLAY_SCOPE_ALLOC(ret, size, 0);
+				return ret;
+			}
+			void * __cdecl operator new[] (size_t size)
+			{
+				MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtNewArray);
+				void* ret = CryModuleMalloc(size);
+				MEMREPLAY_SCOPE_ALLOC(ret, size, 0);
+				return ret;
+			}; 
+			void __cdecl operator delete  (void *p)
+			{
+				MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtNew);
+				CryModuleFree(p);
+				MEMREPLAY_SCOPE_FREE(p);
+			};
+			void __cdecl operator delete[](void *p)
+			{
+				MEMREPLAY_SCOPE(EMemReplayAllocClass::C_UserPointer, EMemReplayUserPointerClass::C_CrtNewArray);
+				CryModuleFree(p);
+				MEMREPLAY_SCOPE_FREE(p);
+			};
 	#endif //!defined(_LIB) && !defined(NEW_OVERRIDEN) && !defined(__SPU__)
 #endif // !defined(NOT_USE_CRY_MEMORY_MANAGER)
 
 //////////////////////////////////////////////////////////////////////////
-#if !defined(_LIB) && !defined(PS3)
+#ifndef MEMMAN_STATIC
 IMemoryManager *CryGetIMemoryManager()
 {
-	static IMemoryManager* memMan = _CryMemoryManagerPoolHelper::GetIMemoryManager();
+	static IMemoryManager* memMan = 0;
+	if (!memMan)
+		memMan = _CryMemoryManagerPoolHelper::GetIMemoryManager();
 	return memMan;
 }
 #endif //!defined(_LIB) && !defined(PS3)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

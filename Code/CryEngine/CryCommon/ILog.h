@@ -123,6 +123,9 @@ UNIQUE_IFACE struct ILog: public IMiniLog
 	virtual void PushAssetScopeName( const char *sAssetType,const char *sName ) {};
 	virtual void PopAssetScopeName() {};
 	virtual const char* GetAssetScopeString() { return ""; };
+#if !defined(RESOURCE_COMPILER)
+	virtual void FlushAndClose() = 0;
+#endif
 
 	DEVIRTUALIZATION_VTABLE_FIX
 };
