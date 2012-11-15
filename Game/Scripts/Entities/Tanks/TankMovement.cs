@@ -5,7 +5,8 @@ namespace CryGameCode.Tanks
 {
 	public partial class Tank
 	{
-		private const float movementDamping = 350;
+		private const float movementDamping = 750;
+
 		private const float rotationDamping = 350;
 
 		protected override void OnPrePhysicsUpdate()
@@ -20,26 +21,27 @@ namespace CryGameCode.Tanks
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
 
-			// dampen the movement. 
+            Vec3 velocity = Velocity;
+
+			// dampen the movement.
 			MathHelpers.Interpolate(ref m_rotation, 0, rotationDamping * Time.DeltaTime);
-			MathHelpers.Interpolate(ref m_acceleration, 0, movementDamping * Time.DeltaTime);
+            MathHelpers.Interpolate(ref velocity, Vec3.Zero, movementDamping * Time.DeltaTime);
+            if (!Physics.LivingStatus.IsFlying)
+            {
+                var acceleration = LocalRotation.Column1 * m_acceleration * speedMult;
+                if(velocity != Vec3.Zero)
+                    velocity *= LocalRotation.Column1.Dot(velocity.Normalized);
 
-			RotationRequest = new Vec3(0, 0, m_rotation);
+                moveRequest.velocity = velocity + acceleration;
+            }
 
-			VelocityRequest = LocalRotation.Column1 * m_acceleration * speedMult;
-
-			if(!Physics.LivingStatus.IsFlying)
-				moveRequest.velocity = VelocityRequest;
+            m_acceleration = 0;
 
 			moveRequest.rotation = LocalRotation;
-			moveRequest.rotation.SetRotationXYZ(RotationRequest * Time.DeltaTime);
+			moveRequest.rotation.SetRotationXYZ(new Vec3(0, 0, m_rotation) * Time.DeltaTime);
 			moveRequest.rotation = moveRequest.rotation.Normalized;
 
 			AddMovement(ref moveRequest);
-
-			// reset movement vectors
-			VelocityRequest = Vec3.Zero;
-			RotationRequest = Vec3.Zero;
 
 			var mat = Material.Find(moveRequest.velocity.Length > 0.3f ? "objects/tanks/tracksmoving" : "objects/tanks/tracks");
 			if(mat != null && !m_leftTrack.IsDestroyed && !m_rightTrack.IsDestroyed)
@@ -62,12 +64,13 @@ namespace CryGameCode.Tanks
 
 		private void OnMoveForward(ActionMapEventArgs e)
 		{
-			m_acceleration = MathHelpers.Clamp(m_acceleration + TankSpeed * Time.DeltaTime, -m_maxSpeed, m_maxSpeed);
+            m_acceleration = e.Value;//MathHelpers.Clamp(m_acceleration + TankSpeed, -m_maxSpeed, m_maxSpeed);
 		}
 
 		private void OnMoveBack(ActionMapEventArgs e)
 		{
-			m_acceleration = MathHelpers.Clamp(m_acceleration - TankSpeed * Time.DeltaTime, -m_maxSpeed, m_maxSpeed);
+
+            m_acceleration = -e.Value;//MathHelpers.Clamp(m_acceleration - TankSpeed, -m_maxSpeed, m_maxSpeed);
 		}
 
 		private void OnSprint(ActionMapEventArgs e)
@@ -87,11 +90,8 @@ namespace CryGameCode.Tanks
 		public bool IsBoosting { get; set; }
 		public float BoostTime { get; set; }
 
-		protected Vec3 VelocityRequest;
-		protected Vec3 RotationRequest;
-
 		public float SpeedMultiplier { get; set; }
-		public virtual float TankSpeed { get { return 24f; } }
+        public float BackwardsSpeedMultiplier { get; set; }
 		public virtual float RotationSpeed { get { return 10f; } }
 	}
 }
