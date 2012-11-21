@@ -100,7 +100,7 @@ bool CGameRules::Init( IGameObject * pGameObject )
 	m_pGameFramework->GetIGameRulesSystem()->SetCurrentGameRules(this);
 
 	SAFE_RELEASE(m_pScript);
-	m_pScript = gEnv->pMonoScriptSystem->InstantiateScript(GetEntity()->GetClass()->GetName(), eScriptFlag_GameRules);
+	m_pScript = GetMonoScriptSystem()->InstantiateScript(GetEntity()->GetClass()->GetName(), eScriptFlag_GameRules);
 
 	// setup animation time scaling (until we have assets that cover the speeds we need timescaling).
 	if (gEnv->pCharacterManager)
