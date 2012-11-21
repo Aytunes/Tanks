@@ -1351,6 +1351,8 @@ void CGame::CmdRestart(IConsoleCmdArgs *pArgs)
 		g_pGame->GetGameRules()->Restart();
 }
 
+#undef GetCommandLine
+
 //------------------------------------------------------------------------
 void CGame::CmdSay(IConsoleCmdArgs *pArgs)
 {

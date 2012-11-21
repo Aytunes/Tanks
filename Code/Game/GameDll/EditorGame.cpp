@@ -12,7 +12,6 @@
 *************************************************************************/
 #include "StdAfx.h"
 #include "EditorGame.h"
-#include "GameStartup.h"
 #include "IActionMapManager.h"
 #include "IActorSystem.h"
 #include "IGameRulesSystem.h"
