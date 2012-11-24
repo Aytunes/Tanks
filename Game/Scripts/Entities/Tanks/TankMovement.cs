@@ -5,8 +5,7 @@ namespace CryGameCode.Tanks
 {
 	public partial class Tank
 	{
-		private const float movementDamping = 750;
-
+		private const float movementDamping = 350;
 		private const float rotationDamping = 350;
 
 		protected override void OnPrePhysicsUpdate()
