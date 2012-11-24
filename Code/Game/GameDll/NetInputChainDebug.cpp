@@ -67,7 +67,8 @@ static void Put( const char * name, const TNetInputValue& value )
 		gEnv->pRenderer->Draw2dLabel(10.f, (float)(ypos+=20), 2.f, white, false, "%s", buf);
 		if (pTMC)
 			pTMC->PutText( 0, ypos/20, buf );
-		if (fout) fprintf(fout, "%I64d %s %s %f %f %f\n", tstamp, GetEntityName(), name, pVec->x, pVec->y, pVec->z);
+		if (fout)
+			fprintf(fout, "%I64d %s %s %f %f %f\n", tstamp, GetEntityName(), name, pVec->x, pVec->y, pVec->z);
 	}
 	else if (const float * pFloat = value.GetPtr<float>())
 	{
@@ -75,7 +76,8 @@ static void Put( const char * name, const TNetInputValue& value )
 		gEnv->pRenderer->Draw2dLabel(10.f, (float)(ypos+=20), 2, white, false, "%s", buf);
 		if (pTMC)
 			pTMC->PutText( 0, ypos/20, buf );
-		if (fout) fprintf(fout, "%I64d %s %s %f\n", tstamp, GetEntityName(), name, *pFloat);
+		if (fout)
+			fprintf(fout, "%I64d %s %s %f\n", tstamp, GetEntityName(), name, *pFloat);
 	}
 	if (fout)
 		fclose(fout);

@@ -7,6 +7,7 @@
 
 #include <IActionMapManager.h>
 
+#undef small
 #define DECL_ACTION(name) ActionId name;
 class CGameActions
 {

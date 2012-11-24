@@ -63,6 +63,7 @@ DECL_ACTION(zoom_out)
 DECL_ACTION(invert_mouse)
 
 DECL_ACTION(thirdperson)
+DECL_ACTION(debug_next_actor)
 DECL_ACTION(use)
 DECL_ACTION(xi_use)
 
@@ -105,6 +106,7 @@ DECL_ACTION(v_changeseat4)
 DECL_ACTION(v_changeseat5)
 
 DECL_ACTION(v_changeview)
+DECL_ACTION(v_rearview)
 DECL_ACTION(v_viewoption)
 DECL_ACTION(v_zoom_in)
 DECL_ACTION(v_zoom_out)

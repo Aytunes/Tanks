@@ -63,6 +63,17 @@
 #define GAME_API
 #endif
 
+
+
+
+#define MAX_PLAYER_LIMIT 16
+
+
+#define MAX_LOCAL_USERS 4
+
+#include <ICryLobby.h>
+#include <ICryMatchMaking.h>
+
 #pragma warning(disable: 4018)	// conditional expression is constant
 
 //////////////////////////////////////////////////////////////////////////

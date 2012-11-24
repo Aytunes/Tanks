@@ -33,6 +33,7 @@
 #include <IntersectionTestQueue.h>
 #include "ILevelSystem.h"
 
+#include "Network/GameNetworkDefines.h"
 
 
 
@@ -44,6 +45,9 @@
 
 struct ISystem;
 struct IConsole;
+
+
+class CGameMechanismManager;
 
 struct IActionMap;
 struct IActionFilter;
@@ -57,6 +61,15 @@ class CServerGameTokenSynch;
 struct SCVars;
 class CSPAnalyst;
 class CGameAudio;
+class CBitmapUi;
+
+class CGameBrowser;
+class CGameLobby;
+class CGameLobbyManager;
+class CSquadManager;
+class CCryLobbySessionHandler;
+class CGameFriendsManager;
+class CGameServerLists;
 
 // when you add stuff here, also update in CGame::RegisterGameObjectEvents
 enum ECryGameEvent
@@ -93,9 +106,38 @@ enum ECryGameEvent
 	eCGE_ReactionEnd
 };
 
+enum EInviteAcceptedState
+{
+	eIAS_None = 0,
+	eIAS_Init,										// initialisation
+	eIAS_StartAcceptInvite,				// begin the process
+	eIAS_InitProfile,							// progress to profile loading screen, user might not have created profile yet
+	eIAS_WaitForInitProfile,			// wait for profile creation to be finished
+	eIAS_WaitForLoadToFinish,			// waiting for loading to finish
+	eIAS_DisconnectGame,					// disconnect user from game
+	eIAS_DisconnectLobby,					// disconnect user from lobby session
+	eIAS_WaitForSessionDelete,		// waiting for game session to be deleted
+	eIAS_ConfirmInvite,
+	eIAS_WaitForInviteConfirmation,
+	eIAS_InitSinglePlayer,
+	eIAS_WaitForInitSinglePlayer,
+	eIAS_WaitForSplashScreen,			// return user to splash screen
+	eIAS_WaitForValidUser,				// PS3 - need user to select controller
+	eIAS_InitMultiplayer,					// init the multiplayer gamemode
+	eIAS_WaitForInitMultiplayer,	// wait for multiplayer game mode to be initialised
+	eIAS_InitOnline,							// init online functionality
+	eIAS_WaitForInitOnline,				// wait for online mode to be initialised
+	eIAS_WaitForSquadManagerEnabled,
+	eIAS_Accept,									// accept the invite
+	eIAS_Error,										// we recieved an invite that had an error attached to it
+};
+
 static const int GLOBAL_SERVER_IP_KEY						=	1000;
 static const int GLOBAL_SERVER_PUBLIC_PORT_KEY	= 1001;
 static const int GLOBAL_SERVER_NAME_KEY					=	1002;
+
+#define CryInviteID CrySessionID
+#define CryInvalidInvite CrySessionInvalidID
 
 class CGame :
   public IGame, public IGameFrameworkListener, public ISystemEventListener
@@ -104,6 +146,21 @@ public:
   typedef bool (*BlockingConditionFunction)();
   typedef RayCastQueue<41> GlobalRayCaster;
 	typedef IntersectionTestQueue<43> GlobalIntersectionTester;
+
+	enum EHostMigrationState
+	{
+		eHMS_NotMigrating,
+		eHMS_WaitingForPlayers,
+		eHMS_Resuming,
+	};
+
+	enum ERichPresenceType
+	{
+		eRPT_String = 0,
+		eRPT_Param1,
+		eRPT_Param2,
+		eRPT_Max,
+	};
 
 public:
 	CGame();
@@ -153,9 +210,16 @@ public:
   void BlockingProcess(BlockingConditionFunction f);
   void GameChannelDestroyed(bool isServer);  
 
-	VIRTUAL uint32 AddGameWarning(const char* stringId, const char* paramMessage, IGameWarningsListener* pListener = NULL) { return 1; }
-	VIRTUAL void RenderGameWarnings() {}
-	VIRTUAL void RemoveGameWarning(const char* stringId) {}
+	void SetExclusiveControllerFromPreviousInput();
+	void SetPreviousExclusiveControllerDeviceIndex(unsigned int idx) { m_previousInputControllerDeviceIndex = idx; }
+	void RemoveExclusiveController();
+	bool HasExclusiveControllerIndex() const { return m_hasExclusiveController; }
+	bool IsExclusiveControllerConnected() const { return m_bExclusiveControllerConnected; }
+
+	VIRTUAL uint32 AddGameWarning(const char* stringId, const char* paramMessage, IGameWarningsListener* pListener = NULL);
+	VIRTUAL void RenderGameWarnings() {};
+	VIRTUAL void RemoveGameWarning(const char* stringId);
+
 	VIRTUAL bool GameEndLevel(const char* stringId) { return false; }
 	VIRTUAL void OnRenderScene() {}
 
@@ -199,6 +263,46 @@ public:
 
 	void ResetServerGameTokenSynch(void);
 
+#if IMPLEMENT_PC_BLADES
+	CGameFriendsManager* GetGameFriendsManager() { return m_gameFriendMgr; }
+	CGameServerLists*	GetGameServerLists() { return m_pGameServerLists; }
+#endif //IMPLEMENT_PC_BLADES
+
+	CGameLobby* GetGameLobby();
+	CGameLobbyManager *GetGameLobbyManager() { return m_pGameLobbyManager; }
+	IPlayerProfileManager* GetPlayerProfileManager() { return m_pPlayerProfileManager; }
+	CGameBrowser* GetGameBrowser() { return m_pGameBrowser; }
+	CSquadManager* GetSquadManager() { return m_pSquadManager; }
+
+	bool IsGameActive() const;
+	void ClearGameSessionHandler();
+
+	float GetTimeSinceHostMigrationStateChanged() const;
+	float GetRemainingHostMigrationTimeoutTime() const;
+	float GetHostMigrationTimeTillResume() const;
+
+	EHostMigrationState GetHostMigrationState() const { return m_hostMigrationState; }
+	ILINE bool IsGameSessionHostMigrating() const { return m_hostMigrationState != eHMS_NotMigrating; }
+
+	void SetHostMigrationState(EHostMigrationState newState);
+	void SetHostMigrationStateAndTime(EHostMigrationState newState, float timeOfChange);
+
+	void AbortHostMigration();
+
+	void SetUserRegion(int region) { m_cachedUserRegion = region; }
+	int GetUserRegion(void) const { return m_cachedUserRegion; }
+
+	uint32 GetRandomNumber();
+	
+	void SetInviteAcceptedState(EInviteAcceptedState state);
+	EInviteAcceptedState GetInviteAcceptedState() { return m_inviteAcceptedState; }
+	void SetInviteData(ECryLobbyService service, uint32 user, CryInviteID id, ECryLobbyError error);
+	void InvalidateInviteData();
+	void UpdateInviteAcceptedState();
+	void SetInviteUserFromPreviousControllerIndex();
+	const int GetInviteUser() const { return m_inviteAcceptedData.m_user; }
+	const bool IsInviteInProgress() const { return m_inviteAcceptedState != eIAS_None; }
+
 	CSPAnalyst* GetSPAnalyst() const { return m_pSPAnalyst; }
 
 	const string& GetLastSaveGame(string &levelName);
@@ -211,6 +315,11 @@ public:
 
 	VIRTUAL void LoadActionMaps(const char* filename);
 
+	EntityId GetClientActorId() const { return m_clientActorId; }
+
+	CBitmapUi* GetBitmapUI() { return m_pBitmapUi; }
+
+	static void VerifyMaxPlayers(ICVar * pVar);
 protected:
 	VIRTUAL void CheckReloadLevel();
 
@@ -241,7 +350,12 @@ protected:
 	static void CmdLoginProfile(IConsoleCmdArgs* pArgs);
   static void CmdCryNetConnect(IConsoleCmdArgs* pArgs);
 	static void CmdTestPathfinder(IConsoleCmdArgs* pArgs);
+
+	static void CmdNetSetOnlineMode(IConsoleCmdArgs *pArgs);
 	
+	static void OnHostMigrationNetTimeoutChanged(ICVar *pVar);
+	static void InviteAcceptedCallback(UCryLobbyEventData eventData, void *arg);
+	static void OnlineStateCallback(UCryLobbyEventData eventData, void *arg);
 
 
 
@@ -257,6 +371,7 @@ protected:
 
 
 
+	CRndGen m_randomGenerator;
 	IGameFramework			*m_pFramework;
 	IConsole						*m_pConsole;
 
@@ -277,7 +392,7 @@ protected:
 	CSPAnalyst          *m_pSPAnalyst;
 	bool								m_inDevMode;
 
-	EntityId m_uiPlayerID;
+	EntityId						m_clientActorId;
 
 	SCVars*	m_pCVars;
 	string                 m_lastSaveGame;
@@ -289,6 +404,49 @@ protected:
 	TLevelMapMap m_mapNames;
 
 	CGameAudio			*m_pGameAudio;
+
+	CGameMechanismManager* m_pGameMechanismManager;
+
+	CBitmapUi* m_pBitmapUi;
+
+	// Game side browser - searching for games
+	CGameBrowser* m_pGameBrowser;
+	// Game side Lobby handler
+	CGameLobbyManager* m_pGameLobbyManager;
+	// Game side session handler implementation
+	CCryLobbySessionHandler* m_pLobbySessionHandler;
+	//squad session handler
+	CSquadManager* m_pSquadManager;
+
+	int m_cachedUserRegion;
+
+#if IMPLEMENT_PC_BLADES
+	// Game side friends manager
+	CGameFriendsManager* m_gameFriendMgr;
+	CGameServerLists* m_pGameServerLists;
+#endif
+
+	float m_hostMigrationTimeStateChanged;			// Time when the host migration started (from timer->GetAsyncCurTime())
+	float m_hostMigrationNetTimeoutLength;
+	EHostMigrationState m_hostMigrationState;
+
+	struct SInviteAcceptedData
+	{
+		ECryLobbyService	m_service;
+		uint32						m_user;
+		CryInviteID				m_id;
+		ECryLobbyError		m_error;
+		bool							m_bannedFromSession;
+	} m_inviteAcceptedData;
+
+	EInviteAcceptedState m_inviteAcceptedState;
+	bool m_bLoggedInFromInvite;
+
+	bool				 m_hasExclusiveController;
+	bool				 m_bExclusiveControllerConnected;
+	bool				 m_previousPausedGameState;
+
+	unsigned int m_previousInputControllerDeviceIndex;
 };
 
 extern CGame *g_pGame;

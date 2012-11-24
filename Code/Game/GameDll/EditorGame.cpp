@@ -52,8 +52,7 @@ void CEditorGame::ResetClient(IConsoleCmdArgs*)
 	if (value)
 	{
 		s_pEditorGame->ConfigureNetContext(true);
-		const char *pGameRulesName = GetGameRulesName();
-		s_pEditorGame->m_pGame->GetIGameFramework()->GetIGameRulesSystem()->CreateGameRules(pGameRulesName);
+		SetGameRules();
 	}
 	s_pEditorGame->EnablePlayer(value);
 	s_pEditorGame->HidePlayer(true);
@@ -75,8 +74,7 @@ void CEditorGame::ToggleMultiplayerGameRules()
 		pClass->LoadScript(true);
 	}
 
-	const char *pGameRulesName = GetGameRulesName();
-	s_pEditorGame->m_pGame->GetIGameFramework()->GetIGameRulesSystem()->CreateGameRules(pGameRulesName);
+	SetGameRules();
 
 	s_pEditorGame->EnablePlayer(value);
 	s_pEditorGame->HidePlayer(true);
@@ -138,7 +136,7 @@ bool CEditorGame::Init(ISystem *pSystem,IGameToEditorInterface *pGameToEditorInt
 	gEnv->bServer = true;
 	gEnv->bMultiplayer = false;
 
-#if !defined(XENON) && !defined(PS3)
+#if !defined(XENON) && !defined(PS3) && !defined(GRINGO)
 	gEnv->SetIsClient(true);
 #endif
 
@@ -331,8 +329,7 @@ void CEditorGame::OnBeforeLevelLoad()
 {
 	EnablePlayer(false);
 	ConfigureNetContext(true);
-	const char *pGameRulesName = GetGameRulesName();
-	m_pGame->GetIGameFramework()->GetIGameRulesSystem()->CreateGameRules(pGameRulesName);
+	SetGameRules();
 	m_pGame->GetIGameFramework()->GetILevelSystem()->OnLoadingStart(0);
 }
 
@@ -445,7 +442,27 @@ void CEditorGame::InitActionEnums(IGameToEditorInterface* pGTE)
 	}
 }
 
-const char * CEditorGame::GetGameRulesName()
+
+void CEditorGame::SetGameRules()
 {
-	return gEnv->pConsole->GetCVar("sv_gamerules")->GetString();
+	IGameFramework* pGameFramework = g_pGame->GetIGameFramework();
+	IConsole* pConsole = gEnv->pConsole;
+
+	const char* szGameRules = NULL;
+
+	const char* szLevelName = pConsole->GetCVar("sv_map")->GetString();
+	ILevelInfo* pLevelInfo = pGameFramework->GetILevelSystem()->GetLevelInfo(szLevelName);
+	if (pLevelInfo)
+	{
+		szGameRules = pLevelInfo->GetDefaultGameRules();
+	}
+
+	if (!szGameRules)
+	{
+		szGameRules = s_pEditorGame->m_bUsingMultiplayerGameRules ? "DeathMatch" : pConsole->GetCVar("sv_gamerulesdefault")->GetString();
+	}
+
+	pGameFramework->GetIGameRulesSystem()->CreateGameRules(szGameRules);
+	
+	pConsole->GetCVar("sv_gamerules")->Set(szGameRules);
 }

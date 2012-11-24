@@ -152,6 +152,36 @@ struct SCVars
 	float cl_frozenKeyMult;
 	float cl_frozenSoundDelta;
 
+	int		g_ProcessOnlineCallbacks;
+	int		g_maxGameBrowserResults;
+	int		g_MatchmakingVersion;
+	int		g_MatchmakingBlock;
+	
+	int		g_autoAssignTeams;
+
+	float g_hostMigrationResumeTime;
+	int   g_hostMigrationUseAutoLobbyMigrateInPrivateGames;
+
+	ICVar *g_messageOfTheDay;
+	ICVar *g_serverImageUrl;
+
+#if !defined(_RELEASE)
+	ICVar* net_onlyListGameServersContainingText;
+	ICVar* net_nat_type;
+	int    net_initLobbyServiceToLan;
+#endif
+
+	int		gl_skip;
+	float gl_votingCloseTimeBeforeStart;
+	int		gl_experimentalPlaylistRotationAdvance;
+	int		gl_enablePlaylistVoting;
+	int		gl_minPlaylistSizeToEnableVoting;
+	int		gl_enableOfflinePlaylistVoting;
+	int		gl_enableOfflineCountdown;
+	float gl_time;
+	float gl_checkDLCBeforeStartTime;
+	float gl_maxSessionNameTimeWithoutConnection;
+
 	//bitmap ui overlays
 	int		g_showBitmapUi;
 	int		g_show_fullscreen_info;
@@ -165,6 +195,32 @@ struct SCVars
 
 	int g_showHud;
 
+
+#if USE_CRYLOBBY_GAMESPY
+	// GameSpy credentials
+	int g_gamespy_loginUI;
+	ICVar*g_gamespy_email;
+	ICVar*g_gamespy_accountnumber;
+	ICVar*g_gamespy_unique_nick;
+	ICVar*g_gamespy_password;
+	ICVar*g_gamespy_cdkey;
+	ICVar*g_gamespy_catalog_version;
+	ICVar*g_gamespy_server_region;
+
+#if !defined(_RELEASE)
+#define g_gamespy_catalog_token  g_gamespy_catalog_tokenCVar->GetString()
+	ICVar *g_gamespy_catalog_tokenCVar;
+#define g_gamespy_catalog_region  g_gamespy_catalog_regionCVar->GetString()
+	ICVar*g_gamespy_catalog_regionCVar;
+#else
+#define g_gamespy_catalog_token  g_gamespy_catalog_tokenStr
+	const char *g_gamespy_catalog_tokenStr;
+#define g_gamespy_catalog_region  g_gamespy_catalog_regionStr
+	const char *g_gamespy_catalog_regionStr;
+#endif
+
+	int g_officialServer;
+#endif
 	int		dt_enable;
 	float dt_time;
 	float dt_meleeTime;
@@ -219,6 +275,9 @@ struct SCVars
 	int		g_punishFriendlyDeaths;
 	int		g_enableMPStealthOMeter;
 	int   g_meleeWhileSprinting;
+
+	float g_forceItemRespawnTimer;
+	float g_defaultItemRespawnTimer;
 
 	// animation triggered footsteps
 	int   g_footstepSoundsDebug;
@@ -520,6 +579,8 @@ struct SCVars
 	int			g_hitDeathReactions_debug;
 	int			g_hitDeathReactions_disableRagdoll;
 	int		  g_animatorDebug;
+
+	int	g_useOnlineLobbyService;
 
 	enum EHitDeathReactionsLogReactionAnimsType
 	{

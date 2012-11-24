@@ -25,6 +25,9 @@
 #include <IPathfinder.h>
 
 #include <IVehicleSystem.h>
+#include "Network/Lobby/GameLobby.h"
+
+#define DEFAULT_CATALOG_TOKEN									"5A0D4D94-A35A-422A-9CA4-B14D9E7C47CA"
 
 static void BroadcastChangeSafeMode( ICVar * )
 {
@@ -129,6 +132,40 @@ void SCVars::InitAIPerceptionCVars(IConsole *pConsole)
 // no other types of cvars are allowed to be defined here!
 void SCVars::InitCVars(IConsole *pConsole)
 {
+	g_messageOfTheDay=REGISTER_STRING("g_messageOfTheDay","",VF_INVISIBLE, " message of the day");
+	g_serverImageUrl=REGISTER_STRING("g_serverImageUrl","",VF_INVISIBLE, "server image");
+
+	REGISTER_CVAR(g_useOnlineLobbyService, 0, 0, "Use Online Lobby Service (rather than LAN)");
+
+	REGISTER_CVAR(g_ProcessOnlineCallbacks,1,VF_CHEAT|VF_READONLY,"Process online callbacks in the gamelobbymanager.");
+	REGISTER_CVAR(gl_maxSessionNameTimeWithoutConnection, 5.f, 0, "Time a session name is allowed to persist before being removed");
+	REGISTER_CVAR(g_maxGameBrowserResults, 32767, VF_NULL, "Maximum number of servers returned in game browser");
+
+	REGISTER_CVAR(g_MatchmakingVersion, 0, VF_REQUIRE_APP_RESTART, "Defines your matchmaking version (Only join games over the same version)");
+	REGISTER_CVAR(g_MatchmakingBlock, 0, VF_REQUIRE_APP_RESTART, "Used to shift matchmaking version for QA and EA builds - please leave as zero");
+
+#if !defined(_RELEASE)
+	net_onlyListGameServersContainingText = REGISTER_STRING("net_onlyListGameServersContainingText", "", 0, "Server list will only display host names containing this text");
+	net_nat_type = REGISTER_STRING("net_nat_type", "Uninitialized", VF_READONLY, "The current NAT Type set.");
+	REGISTER_CVAR(net_initLobbyServiceToLan, 0, VF_CHEAT, "Always initialize lobby in LAN mode (NB: mode can still be changed afterwards!)");
+#endif
+
+	REGISTER_CVAR(gl_skip, 0, 0, "Skips the game lobby");
+	REGISTER_CVAR(gl_votingCloseTimeBeforeStart, 5.0f, 0, "Playlist voting will close this many secs before game start countdown finishes");
+	REGISTER_CVAR(gl_experimentalPlaylistRotationAdvance, 1, 0, "Testing code that gets the first level from the playlist and advances it when the server enters the lobby. Here so can be easily disabled! Currently needed for gl_enablePlaylistVoting");
+	REGISTER_CVAR(gl_enablePlaylistVoting, 1, 0, "Enabled voting on which level to play next within playlists that support it. Currently also needs gl_experimentalPlaylistRotationAdvance");
+	REGISTER_CVAR(gl_minPlaylistSizeToEnableVoting, 2, 0, "A playlist must contain at least this many levels for voting to be enabled, even when gl_enablePlaylistVoting is set. Note that setting it to 1 and having a playlist with 1 level in it will still work, but it'll present a vote with the same level as both voting candidates");
+	REGISTER_CVAR(gl_enableOfflinePlaylistVoting, 0, VF_CHEAT, "Enabled voting on offline games, just to make testing easier. Requires gl_enablePlaylistVoting to also be set");
+	REGISTER_CVAR(gl_enableOfflineCountdown, 0, VF_CHEAT, "Enabled the 'Game starts in X secs...' countdown in offline games, just to make testing of voting easier");
+	REGISTER_CVAR(gl_time, 45, 0, "Time in lobby between games");
+	REGISTER_CVAR(gl_checkDLCBeforeStartTime, 20, 0, "When the server game start countdown gets to this time between games it will do DLC checks to make sure it has the DLC needed for both the levels being voted on");
+	REGISTER_CVAR(gl_maxSessionNameTimeWithoutConnection, 5.f, 0, "Time a session name is allowed to persist before being removed");
+
+	REGISTER_CVAR(g_autoAssignTeams, 1, 0, "1 = auto assign teams, 0 = players choose teams");
+
+	REGISTER_CVAR(g_hostMigrationResumeTime, 3.0f, VF_CHEAT, "Time after players have rejoined before the game resumes");
+	REGISTER_CVAR(g_hostMigrationUseAutoLobbyMigrateInPrivateGames, 0, VF_CHEAT, "1=Make calls to EnsureBestHost when in private games");
+
 	//client cvars
 	REGISTER_CVAR(cl_fov, 60.0f, VF_NULL, "field of view.");
 	REGISTER_CVAR(cl_bob, 1.0f, VF_NULL, "view/weapon bobbing multiplier");
@@ -390,6 +427,30 @@ void SCVars::InitCVars(IConsole *pConsole)
 	REGISTER_CVAR(g_dof_ironsight, 1, VF_CHEAT, "Enable ironsight dof. Default = 1");
 	REGISTER_CVAR(g_ColorGradingBlendTime, 3.0f, VF_NULL, "Time to blend from the last color grading chart to the next.");
 	
+#if USE_CRYLOBBY_GAMESPY
+	// GameSpy credentials
+	REGISTER_CVAR(g_gamespy_loginUI, 1, 0, "Whether to use the gamespy login UI, if set to 0 cfg file values are used.");
+	g_gamespy_email = REGISTER_STRING( "g_gamespy_email", "", VF_INVISIBLE, "GameSpy email address" );
+	g_gamespy_unique_nick = REGISTER_STRING( "g_gamespy_unique_nick", "", VF_INVISIBLE, "GameSpy unique nick" );
+	g_gamespy_password = REGISTER_STRING( "g_gamespy_password", "", VF_INVISIBLE, "GameSpy password" );
+	g_gamespy_cdkey = REGISTER_STRING( "g_gamespy_cdkey", "", VF_INVISIBLE, "GameSpy CD key" );
+	g_gamespy_accountnumber = REGISTER_STRING( "g_gamespy_accountnumber", "", VF_INVISIBLE, "Account number for testing" );
+
+	g_gamespy_catalog_version = REGISTER_INT( "g_gamespy_catalog_version", 1, VF_CHEAT, "GameSpy catalog version" );
+#if !defined (_RELEASE)
+	g_gamespy_catalog_tokenCVar = REGISTER_STRING( "g_gamespy_catalog_token", DEFAULT_CATALOG_TOKEN, VF_CHEAT, "GameSpy catalog token" );
+	g_gamespy_catalog_regionCVar = REGISTER_STRING( "g_gamespy_catalog_region", "en", VF_CHEAT, "GameSpy catalog region" );
+#else
+	g_gamespy_catalog_tokenStr = DEFAULT_CATALOG_TOKEN;
+	g_gamespy_catalog_regionStr = "en";
+#endif
+	g_gamespy_server_region = REGISTER_INT( "g_gamespy_server_region", 1, VF_NULL, "GameSpy server region" );
+
+	REGISTER_CVAR(g_officialServer, 0, VF_NULL, "If a server is shown as official or not");
+	REGISTER_CVAR(g_maxGameBrowserResults, 32767, VF_NULL, "Maximum number of servers returned in game browser");
+#else
+	REGISTER_CVAR(g_maxGameBrowserResults, 50, VF_NULL, "Maximum number of servers returned in game browser");
+#endif
 
 	// explosion culling
 	REGISTER_CVAR(g_ec_enable, 1, VF_CHEAT, "Enable/Disable explosion culling of small objects. Default = 1");
@@ -682,6 +743,9 @@ void SCVars::InitCVars(IConsole *pConsole)
 	REGISTER_CVAR(g_hitDeathReactions_streaming, gEnv->bMultiplayer ? eHDRSP_EntityLifespanBased : eHDRSP_ActorsAliveAndNotInPool, 0, "Enables/Disables reactionAnims streaming. 0: Disabled, 1: DBA Registering-based, 2: Entity lifespan-based");
 	REGISTER_CVAR(g_animatorDebug, false, 0, "Animator Debug Info");
 
+	REGISTER_CVAR(g_forceItemRespawnTimer, 0.f, 0, "Override the amount of time it takes to respawn an item (0=disable override)");
+	REGISTER_CVAR(g_defaultItemRespawnTimer, 5.f, 0, "Default amount of time to respawn an item - used if the actual timer length is lost in a host migration");
+
   NetInputChainInitCVars();
 
 	InitAIPerceptionCVars(pConsole);
@@ -702,6 +766,35 @@ void SCVars::ReleaseAIPerceptionCVars(IConsole* pConsole)
 void SCVars::ReleaseCVars()
 {
 	IConsole* pConsole = gEnv->pConsole;
+
+	pConsole->UnregisterVariable("g_messageOfTheDay", true);
+	pConsole->UnregisterVariable("g_serverImageUrl", true);
+	pConsole->UnregisterVariable("g_useOnlineServiceForDedicated", true);
+	pConsole->UnregisterVariable("g_ProcessOnlineCallbacks", true);
+	pConsole->UnregisterVariable("gl_maxSessionNameTimeWithoutConnection", true);
+	pConsole->UnregisterVariable("g_maxGameBrowserResults", true);
+	pConsole->UnregisterVariable("g_MatchmakingVersion", true);
+	pConsole->UnregisterVariable("g_MatchmakingBlock", true);
+
+	pConsole->UnregisterVariable("gl_skip", true);
+	pConsole->UnregisterVariable("gl_votingCloseTimeBeforeStart", true);
+	pConsole->UnregisterVariable("gl_experimentalPlaylistRotationAdvance", true);
+	pConsole->UnregisterVariable("gl_enablePlaylistVoting", true);
+	pConsole->UnregisterVariable("gl_minPlaylistSizeToEnableVoting", true);
+	pConsole->UnregisterVariable("gl_enableOfflinePlaylistVoting", true);
+	pConsole->UnregisterVariable("gl_enableOfflineCountdown", true);
+	pConsole->UnregisterVariable("gl_time", true);
+	pConsole->UnregisterVariable("gl_checkDLCBeforeStartTime", true);
+	pConsole->UnregisterVariable("gl_maxSessionNameTimeWithoutConnection", true);
+	pConsole->UnregisterVariable("g_autoAssignTeams", true);
+	pConsole->UnregisterVariable("g_hostMigrationResumeTime", true);
+	pConsole->UnregisterVariable("g_hostMigrationUseAutoLobbyMigrateInPrivateGames", true);
+
+#if !defined(_RELEASE)
+	pConsole->UnregisterVariable("net_onlyListGameServersContainingText", true);
+	pConsole->UnregisterVariable("net_nat_type", true);
+	pConsole->UnregisterVariable("net_initLobbyServiceToLan", true);
+#endif
 
 	pConsole->UnregisterVariable("cl_fov", true);
 	pConsole->UnregisterVariable("cl_bob", true);
@@ -1363,6 +1456,34 @@ void CGame::CmdSay(IConsoleCmdArgs *pArgs)
 
 		if (!gEnv->IsClient())
 			CryLogAlways("** Server: %s **", msg);
+	}
+}
+
+//------------------------------------------------------------------------
+void CGame::CmdNetSetOnlineMode(IConsoleCmdArgs *pArgs)
+{
+	if (g_pGame->GetIGameFramework()->StartedGameContext()==false && g_pGame->GetIGameFramework()->GetClientChannel()==NULL) // Not in a game.
+	{
+		if (pArgs->GetArgCount()>1)
+		{
+			const char *arg = pArgs->GetArg(1);
+			if (arg && strcmpi(arg,"online")==0)
+			{
+				CGameLobby::SetLobbyService(eCLS_Online);
+			}
+			else if (arg && strcmpi(arg,"lan")==0)
+			{
+				CGameLobby::SetLobbyService(eCLS_LAN);
+			}
+			else
+			{
+				CryLogAlways("%s unknown type. Options are lan or online.", pArgs->GetArg(0));
+			}
+		}
+	}
+	else
+	{
+		CryLogAlways("%s cannot be used while in a game.", pArgs->GetArg(0));
 	}
 }
 

@@ -84,14 +84,27 @@ struct IActorSystem;
 	} \
 } \
 
+class IGameRulesClientConnectionListener
+{
+public:
+	virtual ~IGameRulesClientConnectionListener() {}
+
+	virtual void OnClientConnect(int channelId, bool isReset, EntityId playerId) = 0;
+	virtual void OnClientDisconnect(int channelId, EntityId playerId) = 0;
+	virtual void OnClientEnteredGame(int channelId, bool isReset, EntityId playerId) = 0;
+	virtual void OnOwnClientEnteredGame() = 0;
+};
 
 class CGameRules 
 	:	public CGameObjectExtensionHelper<CGameRules, IGameRules, 64>
 	,   public IViewSystemListener
+	,	public IHostMigrationEventListener
 {
 public:
 
 	typedef std::vector<EntityId>								TPlayers;
+	typedef std::vector<EntityId>								TEntityIdVec;
+	typedef std::set<CryUserID>									TCryUserIdSet;
 
 	struct SGameRulesListener
 	{
@@ -99,10 +112,162 @@ public:
 		virtual void GameOver(int localWinner) = 0;
 		virtual void EnteredGame() = 0;
 		virtual void EndGameNear(EntityId id) = 0;
+		virtual void ClientEnteredGame( EntityId clientId ) {}
+		virtual void ClientDisconnect( EntityId clientId ) {}
 	};
 	typedef std::vector<SGameRulesListener*> TGameRulesListenerVec;
 
 	typedef std::map<IEntity *, float> TExplosionAffectedEntities;
+
+	// This structure contains the necessary information to create a new player
+	// actor from a migrating one (a new player actor is created for each
+	// reconnecting client and needs to be identical to the original actor on
+	// the original server, or at least as close as possible)
+	struct SMigratingPlayerInfo 
+	{
+		CryFixedStringT<HOST_MIGRATION_MAX_PLAYER_NAME_SIZE>	m_originalName;
+		Vec3					m_pos;
+		Ang3					m_ori;
+		EntityId			m_originalEntityId;
+		int						m_team;
+		float					m_health;
+		TNetChannelID	m_channelID;
+		bool					m_inUse;
+
+		SMigratingPlayerInfo() : m_inUse(false), m_channelID(0) {}
+
+		void SetChannelID(uint16 id) { assert(id > 0); m_channelID = id; }
+
+		void SetData(const char* inOriginalName, EntityId inOriginalEntityId, int inTeam, const Vec3& inPos, const Ang3& inOri, float inHealth)
+		{
+			m_originalName = inOriginalName;
+			m_originalEntityId = inOriginalEntityId;
+			m_team = inTeam;
+			m_pos = inPos;
+			m_ori = inOri;
+			m_health = inHealth;
+
+			m_inUse = true;
+		}
+
+		void Reset() { m_inUse = false; m_channelID = 0; }
+
+		bool InUse() { return m_inUse; }
+	};
+
+	struct SHostMigrationItemInfo
+	{
+		SHostMigrationItemInfo()
+		{
+			Reset();
+		}
+
+		void Reset()
+		{
+			m_inUse = false;
+		}
+
+		void Set(EntityId itemId, EntityId ownerId, bool isUsed, bool isSelected)
+		{
+			m_itemId = itemId;
+			m_ownerId = ownerId;
+			m_isUsed = isUsed;
+			m_isSelected = isSelected;
+
+			m_inUse = true;
+		}
+
+		EntityId m_itemId;
+		EntityId m_ownerId;
+		bool m_isUsed;
+		bool m_isSelected;
+
+		bool m_inUse;
+	};
+
+	struct SHostMigrationClientRequestParams
+	{
+		SHostMigrationClientRequestParams()
+		{
+			m_hasSentLoadout = false;
+			m_timeToAutoRevive = 0.f;
+		}
+
+		void SerializeWith(TSerialize ser)
+		{
+			//m_loadoutParams.SerializeWith(ser);
+
+			ser.Value("hasSentLoadout", m_hasSentLoadout, 'bool');
+			ser.Value("timeToAutoRevive", m_timeToAutoRevive, 'fsec');
+		}
+
+		//CGameRules::EquipmentLoadoutParams m_loadoutParams;
+		float m_timeToAutoRevive;
+		bool m_hasSentLoadout;
+	};
+
+	struct SHostMigrationClientControlledParams
+	{
+		SHostMigrationClientControlledParams()
+		{
+			m_pAmmoParams = NULL;
+			m_doneEnteredGame = false;
+			m_doneSetAmmo = false;
+			m_pHolsteredItemClass = NULL;
+			m_pSelectedItemClass = NULL;
+			m_hasValidVelocity = false;
+			m_bInVisorMode = false;
+		}
+
+		~SHostMigrationClientControlledParams()
+		{
+			SAFE_DELETE_ARRAY(m_pAmmoParams);
+		}
+
+		bool IsDone()
+		{
+			return (m_doneEnteredGame && m_doneSetAmmo);
+		}
+
+		struct SAmmoParams
+		{
+			IEntityClass *m_pAmmoClass;
+			int m_count;
+		};
+
+		Quat m_viewQuat;
+		Vec3 m_position;		// Save this since the new server may not have it stored correctly (lag dependent)
+		Vec3 m_velocity;
+		Vec3 m_aimDirection;
+
+		SAmmoParams *m_pAmmoParams;
+		IEntityClass *m_pHolsteredItemClass;
+		IEntityClass *m_pSelectedItemClass;
+
+		int m_numAmmoParams;
+		int m_numExpectedItems;
+
+		bool m_hasValidVelocity;
+		bool m_bInVisorMode;
+
+		bool m_doneEnteredGame;
+		bool m_doneSetAmmo;
+	};
+
+	struct SMidMigrationJoinParams
+	{
+		SMidMigrationJoinParams() : m_state(0), m_timeSinceStateChanged(0.f) {}
+		SMidMigrationJoinParams(int state, float timeSinceStateChanged) : m_state(state), m_timeSinceStateChanged(timeSinceStateChanged) {}
+
+		void SerializeWith(TSerialize ser)
+		{
+			ser.Value("state", m_state, 'ui2');
+			ser.Value("timeSinceStateChanged", m_timeSinceStateChanged, 'fsec');
+		}
+
+		int m_state;
+		float m_timeSinceStateChanged;
+	};
 
 	CGameRules();
 	virtual ~CGameRules();
@@ -137,6 +302,17 @@ public:
 	virtual bool OnCameraChange(const SCameraParams& cameraParams){ return true; };
 	// ~IViewSystemListener
 
+	// IHostMigrationEventListener
+	virtual bool OnInitiate(SHostMigrationInfo& hostMigrationInfo, uint32& state);
+	virtual bool OnDisconnectClient(SHostMigrationInfo& hostMigrationInfo, uint32& state) { return true; }
+	virtual bool OnDemoteToClient(SHostMigrationInfo& hostMigrationInfo, uint32& state);
+	virtual bool OnPromoteToServer(SHostMigrationInfo& hostMigrationInfo, uint32& state);
+	virtual bool OnReconnectClient(SHostMigrationInfo& hostMigrationInfo, uint32& state);
+	virtual bool OnFinalise(SHostMigrationInfo& hostMigrationInfo, uint32& state);
+	virtual bool OnTerminate(SHostMigrationInfo& hostMigrationInfo, uint32& state) { return true; }
+	virtual bool OnReset(SHostMigrationInfo& hostMigrationInfo, uint32& state) { return true; }
+	// ~IHostMigrationEventListener
+
 	//IGameRules
 	virtual bool ShouldKeepClient(int channelId, EDisconnectionCause cause, const char *desc) const;
 	virtual void PrecacheLevel();
@@ -153,8 +329,8 @@ public:
 	virtual void OnEntitySpawn(IEntity *pEntity);
 	virtual void OnEntityRemoved(IEntity *pEntity);
 	
-	virtual void OnItemDropped(EntityId itemId, EntityId actorId);
-	virtual void OnItemPickedUp(EntityId itemId, EntityId actorId);
+	virtual void OnItemDropped(EntityId itemId, EntityId actorId) {}
+	virtual void OnItemPickedUp(EntityId itemId, EntityId actorId) {}
 
 	virtual void SendTextMessage(ETextMessageType type, const char *msg, uint32 to=eRMI_ToAllClients, int channelId=-1,
 		const char *p0=0, const char *p1=0, const char *p2=0, const char *p3=0);
@@ -223,6 +399,7 @@ public:
 	virtual void OnKillMessage(EntityId targetId, EntityId shooterId, const char *weaponClassName, float damage, int material, int hit_type);
 
 	IActor *GetActorByChannelId(int channelId) const;
+	bool IsRealActor(EntityId actorId) const;
 	IActor *GetActorByEntityId(EntityId entityId) const;
 	ILINE const char *GetActorNameByEntityId(EntityId entityId) const
 	{
@@ -280,6 +457,8 @@ public:
 	virtual void EnteredGame();
 	virtual void GameOver(int localWinner);
 	virtual void EndGameNear(EntityId id);
+	void ClientDisconnect_NotifyListeners( EntityId clientId );
+	void ClientEnteredGame_NotifyListeners( EntityId clientId );
 
 	virtual void CreateEntityRespawnData(EntityId entityId);
 	virtual bool HasEntityRespawnData(EntityId entityId) const;
@@ -348,6 +527,7 @@ public:
 	void ForceSynchedStorageSynch(int channel);
 
 
+	void PlayerPosForRespawn(IActor *pPlayer, bool save);
 	void SPNotifyPlayerKill(EntityId targetId, EntityId weaponId, bool bHeadShot);
 
 	string GetPlayerName(int channelId, bool bVerifyName = false);
@@ -568,8 +748,27 @@ public:
 	DECLARE_CLIENT_RMI_NOATTACH(ClPlayerJoined, RenameEntityParams, eNRT_ReliableUnordered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClPlayerLeft, RenameEntityParams, eNRT_ReliableUnordered);
 
+	DECLARE_SERVER_RMI_NOATTACH(SvHostMigrationRequestSetup, SHostMigrationClientRequestParams, eNRT_ReliableUnordered);
+	DECLARE_CLIENT_RMI_NOATTACH(ClHostMigrationFinished, NoParams, eNRT_ReliableOrdered);
+	DECLARE_CLIENT_RMI_NOATTACH(ClMidMigrationJoin, SMidMigrationJoinParams, eNRT_ReliableOrdered);
+	DECLARE_CLIENT_RMI_NOATTACH(ClHostMigrationPlayerJoined, EntityParams, eNRT_ReliableOrdered);
+
 	virtual void AddGameRulesListener(SGameRulesListener* pRulesListener);
 	virtual void RemoveGameRulesListener(SGameRulesListener* pRulesListener);
+
+	void OnHostMigrationGotLocalPlayer(IActor *pPlayer);
+	void OnHostMigrationStateChanged();
+	int GetMigratingPlayerIndex(TNetChannelID channelID);
+	void FinishMigrationForPlayer(int migratingIndex);
+	void FakeDisconnectPlayer(EntityId playerId);
+
+	void HostMigrationFindDynamicEntities(TEntityIdVec &results);
+	void HostMigrationRemoveDuplicateDynamicEntities();
+
+	ILINE void	HostMigrationStopAddingPlayers()		{ m_bBlockPlayerAddition = true;	}
+	void	HostMigrationResumeAddingPlayers() { m_bBlockPlayerAddition  = false; }
+
+	void OnUserLeftLobby( int channelId );
 
 	typedef std::map<int, EntityId>				TTeamIdEntityIdMap;
 	typedef std::map<EntityId, int>				TEntityTeamIdMap;
@@ -588,6 +787,9 @@ public:
 		Vec3							scale;
 		int								flags;
 		IEntityClass			*pClass;
+
+		EntityId					m_currentEntityId;
+		bool							m_bHasRespawned;
 
 #ifdef _DEBUG
 		string						name;
@@ -643,11 +845,17 @@ protected:
 	TEntityRespawnMap			m_respawns;
 	TEntityRemovalMap			m_removals;
 
+	bool	m_bBlockPlayerAddition;
+
 	CTimeValue					m_endTime;	// time the game will end. 0 for unlimited
 	CTimeValue					m_roundEndTime;	// time the round will end. 0 for unlimited
 	CTimeValue					m_preRoundEndTime;	// time the pre round will end. 0 for no preround
 	CTimeValue					m_reviveCycleEndTime; // time for reinforcements.
 	CTimeValue					m_gameStartTime; // time for game start, <= 0 means game started already
+	CTimeValue					m_gameStartedTime;	// time the game started at.
+	CTimeValue					m_cachedServerTime; // server time as of the last call to CGameRules::Update(...)
+	CTimeValue					m_hostMigrationTimeSinceGameStarted;
+	float						m_timeLimit;
 
 	TGameRulesListenerVec	m_rulesListeners;
 	static int					s_invulnID;
@@ -660,6 +868,29 @@ protected:
 	bool                m_explosionScreenFX;
 
 	IMonoObject *m_pScript;
+	typedef std::vector<IGameRulesClientConnectionListener*> TClientConnectionListenersVec;
+	TClientConnectionListenersVec m_clientConnectionListeners;
+
+	// Used to store the pertinent details of migrating player entities so they
+	// can be reconstructed as close as possible to their state prior to migration
+	SMigratingPlayerInfo* m_pMigratingPlayerInfo;
+	uint32 m_migratingPlayerMaxCount;
+
+	static const int MAX_PLAYERS = MAX_PLAYER_LIMIT;
+	TNetChannelID m_migratedPlayerChannels[MAX_PLAYERS];
+
+	SHostMigrationClientRequestParams* m_pHostMigrationParams;
+	SHostMigrationClientControlledParams* m_pHostMigrationClientParams;
+
+	SHostMigrationItemInfo *m_pHostMigrationItemInfo;
+	uint32 m_hostMigrationItemMaxCount;
+
+	bool m_hostMigrationClientHasRejoined;
+
+	TEntityIdVec m_hostMigrationCachedEntities;
+	TEntityIdVec m_entityEventDoneListeners;
+
+	TCryUserIdSet m_participatingUsers;
 };
 
 #endif //__GAMERULES_H__

@@ -61,12 +61,18 @@ void CSynchedStorage::Dump()
 	CryLogAlways("Globals:");
 
 	for (TStorage::const_iterator it=m_globalStorage.begin(); it!=m_globalStorage.end(); ++it)
+	{
+		// cppcheck-suppress unusedScopedObject
 		ValueDumper(it->first, it->second);
+	}
 
 	CryLogAlways("---------------------------\n");
 	CryLogAlways("Local Channel:");
 	for (TStorage::const_iterator it=m_channelStorage.begin(); it!=m_channelStorage.end(); ++it)
+	{
+		// cppcheck-suppress unusedScopedObject
 		ValueDumper(it->first, it->second);
+	}
 
 	if (gEnv->bServer)
 	{
@@ -76,7 +82,10 @@ void CSynchedStorage::Dump()
 			INetChannel *pNetChannel=m_pGameFramework->GetNetChannel(cit->first);
 			CryLogAlways("Channel %d (%s)", cit->first, pNetChannel?pNetChannel->GetName():"null");
 			for (TStorage::const_iterator it=cit->second.begin(); it!=cit->second.end(); ++it)
+			{
+				// cppcheck-suppress unusedScopedObject
 				ValueDumper(it->first, it->second);
+			}
 		}
 	}
 
@@ -86,7 +95,10 @@ void CSynchedStorage::Dump()
 		IEntity *pEntity=gEnv->pEntitySystem->GetEntity(eit->first);
 		CryLogAlways("Entity %.08d(%s)", eit->first, pEntity?pEntity->GetName():"null");
 		for (TStorage::const_iterator it=eit->second.begin(); it!=eit->second.end(); ++it)
+		{
+			// cppcheck-suppress unusedScopedObject
 			ValueDumper(it->first, it->second);
+		}
 	}
 }
 

@@ -61,7 +61,7 @@ private:
 	static void OnChangeEditorMode( ICVar * );
 	void EnablePlayer(bool bPlayer);
 	static void ResetClient(IConsoleCmdArgs*);
-	static const char *GetGameRulesName();
+	static void SetGameRules();
 
 	IGameRef			m_pGame;
 	IGameStartup	*m_pGameStartup;

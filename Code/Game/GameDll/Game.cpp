@@ -31,7 +31,15 @@
 #include <IScaleformGFx.h>
 #include <IPlatformOS.h>
 
+
+#include "Network/Squad/SquadManager.h"
+#include "Network/Lobby/GameBrowser.h"
+#include "Network/Lobby/GameUserPackets.h"
+#include "Network/Lobby/GameLobbyManager.h"
+
 #include "GameFactory.h"
+
+#include "Nodes/G2FlowBaseNode.h"
 
 #include "ServerSynchedStorage.h"
 #include "ClientSynchedStorage.h"
@@ -43,14 +51,19 @@
 #include "CryPath.h"
 #include <IPathfinder.h>
 
+#include "HUD/BitmapUi.h"
+#include "HUD/UIManager.h"
+// #include "HUD/UIWarnings.h"
 #include "IMaterialEffects.h"
 
+
+#include "GameMechanismManager/GameMechanismManager.h"
 #include "ICheckPointSystem.h"
 
 #define GAME_DEBUG_MEM  // debug memory usage
 #undef  GAME_DEBUG_MEM
 
-#define CRYSIS_GUID "{CDC82B4A-7540-45A5-B92E-9A7C7033DBF2}"
+#define SDK_GUID "{CDCB9B7A-7390-45AA-BF2F-3A7C7933DCF3}"
 
 //FIXME: really horrible. Remove ASAP
 int OnImpulse( const EventPhys *pEvent ) 
@@ -59,8 +72,15 @@ int OnImpulse( const EventPhys *pEvent )
 	return 0;
 }
 
+#include "Network/Lobby/CryLobbySessionHandler.h"
+#include "ICryLobbyUI.h"
+
 #define GAME_DEBUG_MEM  // debug memory usage
 #undef  GAME_DEBUG_MEM
+
+// Needed for the Game02 specific flow node
+CG2AutoRegFlowNodeBase *CG2AutoRegFlowNodeBase::m_pFirst=0;
+CG2AutoRegFlowNodeBase *CG2AutoRegFlowNodeBase::m_pLast=0;
 
 CGame *g_pGame = 0;
 SCVars *g_pGameCVars = 0;
@@ -75,10 +95,15 @@ CGame::CGame()
 	m_pClientSynchedStorage(0),
 	m_pServerGameTokenSynch(0),
 	m_pClientGameTokenSynch(0),
-	m_uiPlayerID(~0),
+	m_pLobbySessionHandler(0),
+	m_clientActorId(-1),
 	m_pSPAnalyst(0),
 	m_pRayCaster(0),
-	m_pIntersectionTester(NULL)
+	m_pIntersectionTester(NULL),
+	m_cachedUserRegion(-1),
+	m_hostMigrationState(eHMS_NotMigrating),
+	m_hostMigrationTimeStateChanged(0.f),
+	m_randomGenerator(gEnv->bNoRandomSeed?0:(uint32)gEnv->pTimer->GetAsyncTime().GetValue())
 {
 	m_pCVars = new SCVars();
 	g_pGameCVars = m_pCVars;
@@ -87,6 +112,8 @@ CGame::CGame()
 	g_pGame = this;
 	m_bReload = false;
 	m_inDevMode = false;
+
+	m_pGameMechanismManager = new CGameMechanismManager();
 
 	m_pDefaultAM = 0;
 	m_pMultiplayerAM = 0;
@@ -103,111 +130,15 @@ CGame::~CGame()
 	//SAFE_DELETE(m_pCameraManager);
 	SAFE_DELETE(m_pSPAnalyst);
 	SAFE_DELETE(m_pCVars);
+	ClearGameSessionHandler(); // make sure this is cleared before the gamePointer is gone
 	g_pGame = 0;
 	g_pGameCVars = 0;
 	g_pGameActions = 0;
+	SAFE_DELETE(m_pBitmapUi);
 	SAFE_DELETE(m_pRayCaster);
 	SAFE_DELETE(m_pGameActions);
 	SAFE_DELETE(m_pIntersectionTester);
 	gEnv->pGame = 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//A callback used to return game specific information to the Networking system via the lobby
-//These specify several essential bits of information necessary for trophies on PS3 and matchmaking
-void LobbyConfigurationCallback( ECryLobbyService service, SConfigurationParams *requestedParams, uint32 paramCount )
-{
-	uint32 a;
-	for (a=0;a<paramCount;a++)
-	{
-		switch (requestedParams[a].m_fourCCID)
-		{
-		case CLCC_LAN_USER_NAME:
-			break;	
-
-
-
-
-
-
-
-
-
-
-
-		default:
-			CRY_ASSERT_MESSAGE(0,"Unknown Configuration Parameter Requested!");
-			break;
-		}
-	}
-}
-
-void LobbyInitialiseCallback(ECryLobbyService service, ECryLobbyError error, void* arg)
-{
-	assert( error == eCLE_Success );
 }
 
 bool CGame::Init(IGameFramework *pFramework)
@@ -258,7 +189,8 @@ bool CGame::Init(IGameFramework *pFramework)
 	//gEnv->pCharacterManager->LoadCharacterConversionFile("Objects/CrysisCharacterConversion.ccc");
 
 	// set game GUID
-	m_pFramework->SetGameGUID(CRYSIS_GUID);
+	m_pFramework->SetGameGUID(SDK_GUID);
+	gEnv->pSystem->GetPlatformOS()->UserDoSignIn(0); // sign in the default user
 
 	gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
 
@@ -368,18 +300,88 @@ bool CGame::Init(IGameFramework *pFramework)
 
   m_pFramework->RegisterListener(this,"Game", eFLPriority_Game);
 
+	if ( gEnv->pScaleformGFx && gEnv->pScaleformGFx->IsScaleformSupported() )
+	{
+		CUIManager::Init();
+	}
+	else
+	{
+		if ( m_pBitmapUi == NULL )
+		{
+			m_pBitmapUi = new CBitmapUi();
+		}
+	}
+
 	//Even if there's no online multiplayer, we're still required to initialize the lobby as it hosts the PS3 trophies.
 	//As info from the trophies must be considered when enumerating disk space on PS3, we can't finish the PlatformOS_PS3 init process
 	//without the lobby having been created.
-	gEnv->pNetwork->SetMultithreadingMode(INetwork::NETWORK_MT_PRIORITY_NORMAL);
-	ECryLobbyServiceFeatures	features = ECryLobbyServiceFeatures( eCLSO_Base | eCLSO_Reward | eCLSO_LobbyUI );
-	ECryLobbyError						error;
-	error = gEnv->pNetwork->GetLobby()->Initialise(eCLS_Online, features, LobbyConfigurationCallback, LobbyInitialiseCallback, this);
-	if( error != eCLE_Success )
+
+	if (gEnv->pNetwork)
 	{
-		CryWarning( VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Failed to initialise CryLobby in Game. Return value is 0x%X", error );
+		gEnv->pNetwork->SetMultithreadingMode(INetwork::NETWORK_MT_PRIORITY_NORMAL);
+		gEnv->pNetwork->GetLobby()->SetUserPacketEnd(eGUPD_End);
+
+		ECryLobbyServiceFeatures	features = ECryLobbyServiceFeatures( eCLSO_Friends | eCLSO_Base | eCLSO_Stats | eCLSO_Reward | eCLSO_LobbyUI | eCLSO_Matchmaking );
+		ECryLobbyError						error = eCLE_Success;
+		ECryLobbyService					lobbyService = eCLS_Online;
+
+#if !defined(_RELEASE)
+		bool bLAN = !(g_pGameCVars && g_pGameCVars->g_useOnlineLobbyService);
+		if (bLAN)
+		{
+			error = gEnv->pNetwork->GetLobby()->Initialise(eCLS_LAN, features, CGameBrowser::ConfigurationCallback, CGameBrowser::InitialiseCallback, this);
+			if (error == eCLE_Success)
+				lobbyService = eCLS_LAN;
+			else
+				CRY_ASSERT_MESSAGE( error == eCLE_Success, "Failed to initialize LAN lobby service" );
+		}
+#endif
+		
+		error = gEnv->pNetwork->GetLobby()->Initialise(eCLS_Online, features, CGameBrowser::ConfigurationCallback, CGameBrowser::InitialiseCallback, this);
+		
+		if( error != eCLE_Success )
+		{
+			CryWarning( VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Failed to initialise CryLobby in Game. Return value is 0x%X", error );
+			AddGameWarning("LobbyStartFailed", NULL);
+		}
+
+		gEnv->pNetwork->GetLobby()->SetLobbyService(lobbyService);
+
+		m_pSquadManager = new CSquadManager();		// MUST be done before game browser is constructed
+
+		m_pGameBrowser = new CGameBrowser();
+
+		//PS3 TRC R154: Initialise the gamebrowser here to initialise the various components required for connection to PSN and to allow telemetry
+		//The PSN trophy system needs to be initialised as close to boot as possible to allow for total game data size checking
+		CGameBrowser::InitLobbyServiceType();
+
+		m_pGameLobbyManager = new CGameLobbyManager();
+
+		ICVar* pMaxPlayers = gEnv->pConsole->GetCVar("sv_maxplayers");
+		if(pMaxPlayers)
+		{
+			pMaxPlayers->SetOnChangeCallback(VerifyMaxPlayers);
+			pMaxPlayers->Set(MAX_PLAYER_LIMIT);
+		}
+
+
+		ICryLobby *pLobby = gEnv->pNetwork->GetLobby();
+		ICryLobbyService *pLobbyService = pLobby ? pLobby->GetLobbyService(eCLS_Online) : NULL;
+		ICryLobbyUI *pLobbyUI = pLobbyService ? pLobbyService->GetLobbyUI() : NULL;
+
+		//register callbacks
+		if(pLobby)
+		{
+			pLobby->RegisterEventInterest(eCLSE_InviteAccepted, CGame::InviteAcceptedCallback, this);
+			pLobby->RegisterEventInterest(eCLSE_OnlineState, CGame::OnlineStateCallback, this);
+		}
+
+		// we need this to setup the xmb buttons, todo: call this on language change to have correct XMB buttons
+		if(pLobbyUI)
+		{
+			pLobbyUI->PostLocalizationChecks();
+		}
 	}
-	gEnv->pNetwork->GetLobby()->SetLobbyService(eCLS_Online);
 
 #if ENABLE_FEATURE_TESTER
 	new CFeatureTester();
@@ -401,18 +403,15 @@ bool CGame::Init(IGameFramework *pFramework)
 	DumpMemInfo("CGame::Init end");
 #endif
 
+
+	//Set correct SessionHandler
+	m_pLobbySessionHandler = new CCryLobbySessionHandler();
+
 	return true;
 }
 
 bool CGame::CompleteInit()
 {
-	//Perform crucial post-localization boot checks and processing as the menu screen is going to be skipped
-	if( gEnv && gEnv->pSystem && gEnv->pSystem->GetPlatformOS() )
-	{
-		gEnv->pSystem->GetPlatformOS()->PostLocalizationBootChecks();
-		gEnv->pSystem->GetPlatformOS()->PostBootCheckProcessing();
-	}
-
 #ifdef GAME_DEBUG_MEM
 	DumpMemInfo("CGame::CompleteInit");
 #endif
@@ -422,7 +421,17 @@ bool CGame::CompleteInit()
 
 void CGame::RegisterGameFlowNodes()
 {
-	//gEnv->pMonoScriptSystem->RegisterFlownodes();
+	// Initialize Game02 flow nodes
+	if (IFlowSystem *pFlow = m_pFramework->GetIFlowSystem())
+	{
+		CG2AutoRegFlowNodeBase *pFactory = CG2AutoRegFlowNodeBase::m_pFirst;
+
+		while (pFactory)
+		{
+			pFlow->RegisterType( pFactory->m_sClassName,pFactory );
+			pFactory = pFactory->m_pNext;
+		}
+	}
 }
 
 void CGame::ResetServerGameTokenSynch()
@@ -466,7 +475,41 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 	}
 
 	if (m_pFramework->IsGamePaused() == false)
+	{
 		m_pGameAudio->Update();
+
+	}
+	else
+	{
+		if (m_hostMigrationState == eHMS_WaitingForPlayers)
+		{
+			if (gEnv->bServer)
+			{
+				if (GetRemainingHostMigrationTimeoutTime() <= 0.f)
+				{
+					CryLog("CGame: HostMigration timeout reached");
+					SetHostMigrationState(eHMS_Resuming);
+				}
+			}
+		}
+		else if (m_hostMigrationState == eHMS_Resuming)
+		{
+			const float curTime = gEnv->pTimer->GetAsyncCurTime();
+			const float timePassed = curTime - m_hostMigrationTimeStateChanged;
+			const float timeRemaining = g_pGameCVars->g_hostMigrationResumeTime - timePassed;
+			if (timeRemaining > 0.f)
+			{
+				// todo: UI
+			}
+			else
+			{
+				SetHostMigrationState(eHMS_NotMigrating);
+			}
+		}
+	}
+
+	UpdateInviteAcceptedState();
+	m_pGameMechanismManager->Update(frameTime);
 
 	m_pFramework->PostUpdate( true, updateFlags );
 
@@ -515,7 +558,7 @@ void CGame::EditorResetGame(bool bStart)
 
 void CGame::PlayerIdSet(EntityId playerId)
 {
-	m_uiPlayerID = playerId;	
+	m_clientActorId = playerId;	
 }
 
 string CGame::InitMapReloading()
@@ -524,8 +567,8 @@ string CGame::InitMapReloading()
 	levelFileName = PathUtil::GetFileName(levelFileName);
 	if(const char* visibleName = GetMappedLevelName(levelFileName))
 		levelFileName = visibleName;
-	//levelFileName.append("_levelstart.crysisjmsf"); //because of the french law we can't do this ...
-	levelFileName.append("_crysis.crysisjmsf");
+
+	levelFileName.append("_cryengine.cryenginejmsf");
 	if (m_pPlayerProfileManager)
 	{
 		const char* userName = GetISystem()->GetLoggedInUserName();
@@ -574,6 +617,11 @@ void CGame::Shutdown()
 	SAFE_DELETE(m_pServerSynchedStorage);
 	SAFE_DELETE(m_pServerGameTokenSynch);
 
+	if ( gEnv->pScaleformGFx && gEnv->pScaleformGFx->IsScaleformSupported() )
+	{
+		CUIManager::Destroy();
+	}
+
 	this->~CGame();
 }
 
@@ -595,8 +643,11 @@ void CGame::OnPostUpdate(float fDeltaTime)
 
 void CGame::OnSaveGame(ISaveGame* pSaveGame)
 {
-	IActor *pActor = GetIGameFramework()->GetClientActor();
-	
+	ScopedSwitchToGlobalHeap useGlobalHeap;
+
+	IActor*		pActor = GetIGameFramework()->GetClientActor();
+	GetGameRules()->PlayerPosForRespawn(pActor, true);
+
 	//save difficulty
 	pSaveGame->AddMetadata("sp_difficulty", g_pGameCVars->g_difficultyLevel);
 
@@ -672,6 +723,18 @@ void CGame::OnActionEvent(const SActionEvent& event)
 		if(gEnv->bServer && GetServerSynchedStorage())
 			GetServerSynchedStorage()->SetGlobalValue(GLOBAL_SERVER_NAME_KEY,string(event.m_description));
 		break;
+	case eAE_unloadLevel:
+			m_clientActorId = 0;
+		break;
+	case eAE_mapCmdIssued:
+		if (gEnv->bMultiplayer)
+		{
+			if (CGameLobby *pGameLobby = g_pGame->GetGameLobby())
+			{
+				pGameLobby->OnMapCommandIssued();
+			}
+		}
+		break;
   }
 }
 
@@ -697,6 +760,9 @@ void CGame::BlockingProcess(BlockingConditionFunction f)
 {
   INetwork* pNetwork = gEnv->pNetwork;
 
+  if (!pNetwork)
+	  return;
+
   bool ok = false;
 
   ITimer * pTimer = gEnv->pTimer;
@@ -709,6 +775,27 @@ void CGame::BlockingProcess(BlockingConditionFunction f)
     gEnv->pTimer->UpdateOnFrameStart();
     ok = (*f)();
   }
+}
+
+uint32 CGame::AddGameWarning(const char* stringId, const char* paramMessage, IGameWarningsListener* pListener)
+{
+	if(CUIManager::GetInstance() && !gEnv->IsDedicated())
+	{
+		return CUIManager::GetInstance()->GetWarningManager()->AddGameWarning(stringId, paramMessage, pListener);
+	}
+	else
+	{
+		CryLogAlways("GameWarning trying to display: %s", stringId);
+		return 0;
+	}
+}
+
+void CGame::RemoveGameWarning(const char* stringId)
+{
+	if(CUIManager::GetInstance() && !gEnv->IsDedicated())
+	{
+		CUIManager::GetInstance()->GetWarningManager()->RemoveGameWarning(stringId);
+	}
 }
 
 
@@ -807,8 +894,8 @@ void CGame::CheckReloadLevel()
 	string levelstart(GetIGameFramework()->GetLevelName());
 	if(const char* visibleName = GetMappedLevelName(levelstart))
 		levelstart = visibleName;
-	//levelstart.append("_levelstart.crysisjmsf"); //because of the french law we can't do this ...
-	levelstart.append("_crysis.crysisjmsf");
+
+	levelstart.append("_cryengine.cryenginejmsf");
 	GetIGameFramework()->LoadGame(levelstart.c_str(), true, true);
 	//**********
 	pLevelSystem->OnLoadingComplete(pLevel);
@@ -990,14 +1077,7 @@ IGame::TSaveGameName CGame::CreateSaveGameName()
 	const char* levelName = GetIGameFramework()->GetLevelName();
 	const char* mappedName = GetMappedLevelName(levelName);
 	saveGameName += mappedName;
-
-	saveGameName += "_";
-	string timeString;
-
-	//CTimeValue time = gEnv->pTimer->GetFrameStartTime() - m_levelStartTime;
-	//timeString.Format("%d", int_round(time.GetSeconds()));
-
-	//saveGameName += timeString;
+	saveGameName += "_cryengine";
 
 	saveGameName += CRY_SAVEGAME_FILE_EXT;
 
@@ -1038,4 +1118,807 @@ void CGame::OnSystemEvent( ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam 
 				break;
 		}
 }
+
+CGameLobby* CGame::GetGameLobby()
+{
+	return m_pGameLobbyManager ? m_pGameLobbyManager->GetGameLobby() : NULL;
+}
+
+bool CGame::IsGameActive() const
+{
+	assert(g_pGame);
+	IGameFramework* pGameFramework = g_pGame->GetIGameFramework();
+	assert(pGameFramework);
+	return (pGameFramework->StartingGameContext() || pGameFramework->StartedGameContext()) && (IsGameSessionHostMigrating() || pGameFramework->GetClientChannel());
+}
+
+void CGame::ClearGameSessionHandler()
+{
+	GetIGameFramework()->SetGameSessionHandler(NULL);
+	m_pLobbySessionHandler = NULL;
+}
+
+uint32 CGame::GetRandomNumber()
+{
+	return m_randomGenerator.Generate();
+}
+
+void CGame::VerifyMaxPlayers(ICVar * pVar)
+{
+	int nPlayers = pVar->GetIVal();
+	if (nPlayers < 2)
+		pVar->Set(2);
+}
+
+//------------------------------------------------------------------------
+float CGame::GetTimeSinceHostMigrationStateChanged() const
+{
+	const float curTime = gEnv->pTimer->GetAsyncCurTime();
+	const float timePassed = curTime - m_hostMigrationTimeStateChanged;
+	return timePassed;
+}
+
+//------------------------------------------------------------------------
+float CGame::GetRemainingHostMigrationTimeoutTime() const
+{
+	const float timePassed = GetTimeSinceHostMigrationStateChanged();
+	const float timeRemaining = m_hostMigrationNetTimeoutLength - timePassed;
+	return MAX(timeRemaining, 0.f);
+}
+
+//------------------------------------------------------------------------
+float CGame::GetHostMigrationTimeTillResume() const
+{
+	float timeRemaining = 0.f;
+	if (m_hostMigrationState == eHMS_WaitingForPlayers)
+	{
+		timeRemaining = GetRemainingHostMigrationTimeoutTime() + g_pGameCVars->g_hostMigrationResumeTime;
+	}
+	else if (m_hostMigrationState == eHMS_Resuming)
+	{
+		const float curTime = gEnv->pTimer->GetAsyncCurTime();
+		const float timePassed = curTime - m_hostMigrationTimeStateChanged;
+		timeRemaining = MAX(g_pGameCVars->g_hostMigrationResumeTime - timePassed, 0.f);
+	}
+	return timeRemaining;
+}
+
+//------------------------------------------------------------------------
+void CGame::SetHostMigrationState(EHostMigrationState newState)
+{
+	float timeOfChange = gEnv->pTimer->GetAsyncCurTime();
+	SetHostMigrationStateAndTime(newState, timeOfChange);
+}
+
+//------------------------------------------------------------------------
+void CGame::SetHostMigrationStateAndTime( EHostMigrationState newState, float timeOfChange )
+{
+	CryLog("CGame::SetHostMigrationState() state changing to '%i' (from '%i')", int(newState), int(m_hostMigrationState));
+
+	if ((m_hostMigrationState == eHMS_NotMigrating) && (newState != eHMS_NotMigrating))
+	{
+		m_pFramework->PauseGame(true, false);
+
+		ICVar *pTimeoutCVar = gEnv->pConsole->GetCVar("net_migrate_timeout");
+		m_hostMigrationNetTimeoutLength = pTimeoutCVar->GetFVal();
+		pTimeoutCVar->SetOnChangeCallback(OnHostMigrationNetTimeoutChanged);
+	}
+
+	m_hostMigrationState = newState;
+	m_hostMigrationTimeStateChanged = timeOfChange;
+
+	if (newState == eHMS_WaitingForPlayers)
+	{
+		// todo: show UI host migration
+	}
+	else if (newState == eHMS_Resuming)
+	{
+		// todo: hide UI host migration
+	}
+	else if (newState == eHMS_NotMigrating)
+	{
+		AbortHostMigration();
+	}
+
+	// Notify the gamerules
+	CGameRules *pGameRules = GetGameRules();
+	pGameRules->OnHostMigrationStateChanged();
+}
+
+//------------------------------------------------------------------------
+void CGame::AbortHostMigration()
+{
+	m_pFramework->PauseGame(false, false);
+	m_hostMigrationState = eHMS_NotMigrating;
+	m_hostMigrationTimeStateChanged = 0.f;
+	ICVar *pTimeoutCVar = gEnv->pConsole->GetCVar("net_migrate_timeout");
+	pTimeoutCVar->SetOnChangeCallback(NULL);
+}
+
+//------------------------------------------------------------------------
+void CGame::OnHostMigrationNetTimeoutChanged(ICVar *pVar)
+{
+	g_pGame->m_hostMigrationNetTimeoutLength = pVar->GetFVal();
+}
+
+
+//static---------------------------------------
+void CGame::InviteAcceptedCallback(UCryLobbyEventData eventData, void *arg)
+{
+	CryLog("[Invite] InviteAcceptedCallback");
+
+	CGame *pGame = (CGame*)arg;
+	SCryLobbyInviteAcceptedData* inviteData = eventData.pInviteAcceptedData;
+
+	bool acceptInvite = true;
+
+	CRY_ASSERT_MESSAGE(pGame, "No game!");
+
+	// we should always accept the invite if we have no exclusive controller
+	//if(pGame->GetExclusiveControllerDeviceIndex())
+	{
+		// can't possibly be in a squad if we're not multiplayer, i hope
+		if(gEnv->bMultiplayer && inviteData->m_error == eCLE_Success)
+		{
+			ICryLobby *pLobby = gEnv->pNetwork->GetLobby();
+			ICryLobbyService *pLobbyService = pLobby ? pLobby->GetLobbyService(eCLS_Online) : NULL;
+			ICryMatchMaking *pMatchMaking = pLobbyService ? pLobbyService->GetMatchMaking(): NULL;
+
+			bool alreadyInThisSquad = false;
+
+			// the session we are trying to join is the same as the session we are in
+			if( alreadyInThisSquad )
+			{
+				//CWarningsManager *pWarnings = pGame->GetWarnings();
+				if(g_pGame->GetPlayerProfileManager()->GetExclusiveControllerDeviceIndex() == inviteData->m_user)
+				{
+					CryLog("[invite] we tried to accept an invite to a session we are already in");
+
+					// the user is already in the session, tell them
+					acceptInvite = false;
+					//pWarnings->AddWarning("InviteFailedAlreadyInSession", pGame->GetFlashMenu());
+				}
+				else if(pGame->m_pSquadManager->InCharge())
+				{
+					CryLog("[invite] session is hosted on this system, yet someone on this system has tried to join it via invite");
+
+					// someone else is trying to accept the session on the same system
+					// as the host. only a problem on 360 which can have multiple users
+					// signed in at a time
+					acceptInvite = false;
+					//pWarnings->AddWarning("InviteFailedIsHost", pGame->GetFlashMenu());
+				}
+			}
+		}
+	}
+
+	if(acceptInvite)
+	{
+	//	CryInviteID id = inviteData->m_id;
+
+		pGame->SetInviteData(inviteData->m_service, inviteData->m_user, inviteData->m_id, inviteData->m_error);
+		pGame->SetInviteAcceptedState(eIAS_Init);
+
+		// 360 will set/reset m_bLoggedInFromInvite correctly because the system has to cope with
+		// multiple profiles being logged in at the same time, the other platforms, not so much,
+		// at least not yet...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	}
+}
+
+
+void CGame::SetInviteAcceptedState(EInviteAcceptedState state)
+{
+	CryLog("[Invite] SetInviteAcceptedState %d to %d", m_inviteAcceptedState, state);
+
+	m_inviteAcceptedState = state; 
+}
+
+void CGame::SetInviteData(ECryLobbyService service, uint32 user, CryInviteID id, ECryLobbyError error)
+{
+
+	m_inviteAcceptedData.m_service = service;
+	m_inviteAcceptedData.m_user = user;
+	m_inviteAcceptedData.m_id = id;
+	m_inviteAcceptedData.m_error = error;
+	m_inviteAcceptedData.m_bannedFromSession = false;
+
+	if(m_pSquadManager && error == eCLE_Success)
+	{
+		m_pSquadManager->SetInvitePending(true);
+	}
+}
+
+void CGame::InvalidateInviteData()
+{
+	CryLog("[Invite] InvalidateInviteData");
+
+	SetInviteData(eCLS_Online, 0, CryInvalidInvite, eCLE_Success);
+
+	if(m_pSquadManager)
+	{
+		m_pSquadManager->SetInvitePending(false);
+	}
+
+	//if(m_pWarningsManager)
+	//{
+	//	m_pWarningsManager->RemoveWarning("InviteSelectController");
+	//	m_pWarningsManager->RemoveWarning("ConfirmInvite");
+	//}
+
+	m_bLoggedInFromInvite = false;
+}
+
+void CGame::SetInviteUserFromPreviousControllerIndex()
+{
+	CryLog("[Invite] SetInviteUserFromPreviousControllerIndex %d", m_previousInputControllerDeviceIndex);
+
+	m_inviteAcceptedData.m_user = m_previousInputControllerDeviceIndex;
+}
+
+//static---------------------------------------
+void CGame::OnlineStateCallback(UCryLobbyEventData eventData, void *arg)
+{
+	CryLog("[Game] OnlineStateCallback");
+
+	CGame *pGame = (CGame*)arg;
+	CRY_ASSERT_MESSAGE(pGame, "No game!");
+
+	SCryLobbyOnlineStateData *pOnlineStateData  = eventData.pOnlineStateData;
+	if(pOnlineStateData)
+	{
+		if(pOnlineStateData->m_curState == eOS_SignedOut)
+		{
+			// ps3/pc do not have the concept of multiple signed-in users,
+			// so isCurrent user is always true, for 360 test against the user id
+			bool isCurrentUser = true;
+
+
+
+			if((pGame->m_inviteAcceptedData.m_id != CryInvalidInvite) && (isCurrentUser))
+			{
+				if(pOnlineStateData->m_reason != eCLE_CyclingForInvite)
+				{
+					CryLog("[Game] User %d signed out and was accepting an invite, invalidating the invite", pOnlineStateData->m_user);
+
+					pGame->InvalidateInviteData();
+				}
+			}
+		}
+
+	}
+}
+
+void CGame::UpdateInviteAcceptedState()
+{
+	if(GetInviteAcceptedState() != eIAS_None && m_inviteAcceptedData.m_error == eCLE_Success && m_inviteAcceptedData.m_id == CryInvalidInvite )
+	{
+		CryLog("[Invite] Join invite in progress, but session id is invalid, bailing...");
+
+		SetInviteAcceptedState(eIAS_None);
+		InvalidateInviteData();	// for safety
+	}
+
+	switch(GetInviteAcceptedState())
+	{
+	case eIAS_None:
+		{
+			break;
+		}
+
+	case eIAS_Init:
+		{
+			bool bContinue = true;
+
+			if (m_inviteAcceptedData.m_id != CryInvalidInvite )
+			{
+				CSquadManager *pSquadManager = g_pGame->GetSquadManager();
+				if (pSquadManager)
+				{
+					if (m_inviteAcceptedData.m_id->IsFromInvite() == false)
+					{
+						if (pSquadManager->AllowedToJoinSession(m_inviteAcceptedData.m_id) == false)
+						{
+							SetInviteAcceptedState(eIAS_Error);
+							m_inviteAcceptedData.m_bannedFromSession = true;
+							bContinue = false;
+						}
+					}
+					else
+					{
+						pSquadManager->RemoveFromBannedList(m_inviteAcceptedData.m_id);
+					}
+				}
+			}
+
+			if (bContinue)
+			{
+				SetInviteAcceptedState(eIAS_StartAcceptInvite);
+			}
+			break;
+		}
+
+	case eIAS_ConfirmInvite:
+		{
+			// this isn't used anymore, but just in case it comes back, leaving here for now
+			if(true/* // todo: ui !pFlashFrontEnd->IsLoading()*/)	// don't show dialog while in the middle of loading, wait until ingame
+			{
+				//m_pWarningsManager->RemoveWarning("ConfirmInvite");
+				//m_pWarningsManager->AddWarning("ConfirmInvite", GetFlashMenu());
+				SetInviteAcceptedState(eIAS_WaitForInviteConfirmation);
+			}
+			break;
+		}
+
+	case eIAS_WaitForInviteConfirmation:
+		{
+			// warning return will push this onto the next state
+			break;
+		}
+
+	case eIAS_StartAcceptInvite:
+		{
+
+
+
+			const bool bChangeUser = false;
+
+
+//			if(m_pWarningsManager)
+//			{
+//#if defined(PS3) || defined(XENON)
+//				// invites are destructive acts that have to happen
+//				// (according to TCRs), we need to clear any active
+//				// warnings here as they are no longer relevant
+//				m_pWarningsManager->ClearCurrentWarnings(true);
+//#else
+//				// on pc though we accept invites on the friends pop-up.
+//				if (gEnv->bMultiplayer)
+//				{
+//					//we dont want to close the friends popup when it's joining a squad and you're already in MP.
+//					const THUDWarningId  exceptions[] = { m_pWarningsManager->GetWarningId(CQuickSquadPopUp::GetQuickSquadPopUpName()) };
+//					m_pWarningsManager->ClearCurrentWarningsWithExceptions(exceptions, ARRAY_COUNT(exceptions), true);
+//				}
+//				else
+//				{
+//					//for now SP closes all warnings, possible TODO would be to reopen the friends pop-up (if open) once in MP. We don't leave it open as the SP->MP stall doesn't look good when leaving it open.
+//					m_pWarningsManager->ClearCurrentWarnings(true);
+//				}
+//#endif
+//			}
+
+			// If we're in singleplayer or we need to change user, do existing behaviour
+			if ((gEnv->bMultiplayer == false) || bChangeUser)
+			{
+#ifdef USE_C2_FRONTEND
+				if(pFlashFrontEnd->IsLoading())
+#else
+				if(false)
+#endif // USE_C2_FRONTEND
+				{
+					CryLog("[Invite] Waiting for loading to finish");
+
+					SetInviteAcceptedState(eIAS_WaitForLoadToFinish);
+				}
+				else if(GetIGameFramework()->StartedGameContext())
+				{
+					CryLog("[Invite] Accepting invite from in-game");
+
+					SetInviteAcceptedState(eIAS_DisconnectGame);
+				}
+				else if (m_pGameLobbyManager->HaveActiveLobby())
+				{
+					CryLog("[Invite] Accepting invite from in-lobby");
+
+					SetInviteAcceptedState(eIAS_DisconnectLobby);
+				}
+				else
+				{
+					CryLog("[Invite] Accepting invite from the menus");
+
+					SetInviteAcceptedState(eIAS_InitSinglePlayer);
+				}
+			}
+			else
+			{
+				if(m_inviteAcceptedData.m_error == eCLE_Success)
+				{
+					// theres a period during mp initialisation where
+					// the squad manager is not enabled yet, we need to cope with that here
+					SetInviteAcceptedState(eIAS_WaitForSquadManagerEnabled);
+				}
+				else
+				{
+					SetInviteAcceptedState(eIAS_Error);
+				}
+			}
+
+			break;
+		}
+
+	case eIAS_WaitForLoadToFinish:
+		{
+			bool isLoadingFinished = false;
+
+#if !defined(DEDICATED_SERVER)
+			if(!gEnv->bMultiplayer)
+			{
+#ifdef USE_C2_FRONTEND
+				if(g_pGameCVars->g_flashrenderingduringloading)
+				{
+					CFrontEndVideo *pVideo= pFlashFrontEnd->GetVideo();
+					if(pVideo && pVideo->IsPlaying())
+					{
+						IFlashPlayer *pVideoFlashPlayer = pVideo->GetFlashPlayer();
+						if(pVideoFlashPlayer)
+						{
+							SFlashVarValue hasLoadingFinished(true);
+							pVideoFlashPlayer->GetVariable("_root.loadingHasFinished", hasLoadingFinished);
+							isLoadingFinished = hasLoadingFinished.GetBool();
+
+							if(isLoadingFinished || pFlashFrontEnd->IsFlashLoadingFinished())
+							{
+								pVideo->SkipVideo();	
+							}
+						}
+						else
+						{
+							isLoadingFinished = true;
+						}
+					}
+					else
+					{
+						isLoadingFinished = true;
+					}
+				}
+				else
+				{
+					isLoadingFinished = !pFlashFrontEnd->IsLoading();
+				}
+#else
+				isLoadingFinished = true;
+#endif // USE_C2_FRONTEND
+			}
+			else
+#endif
+			{
+#ifdef USE_C2_FRONTEND
+				isLoadingFinished = !pFlashFrontEnd->IsLoading();
+#endif // USE_C2_FRONTEND
+			}
+
+			if(isLoadingFinished)
+			{
+				SetInviteAcceptedState(eIAS_DisconnectGame);	// finished loading, kill the game off
+			}
+			break;
+		}
+
+	case eIAS_DisconnectGame:
+		{
+			if(m_inviteAcceptedData.m_error == eCLE_Success)
+			{
+#ifdef USE_C2_FRONTEND
+				pFlashFrontEnd->OnDisconnect();			// Call flash disconnect (since this stops the loading screen)
+#endif // USE_C2_FRONTEND
+				SetInviteAcceptedState(eIAS_WaitForSessionDelete);
+			}
+			else
+			{
+				CryLog("[invite] trying to disconnect game for invite, but invite was retrieved with error %d", m_inviteAcceptedData.m_error);
+
+				// single player doesn't want disconnecting if the invite was retreived with error, if mp
+				// and signed out, then should of already been returned to sp main menu anyways
+				SetInviteAcceptedState(eIAS_Error); 
+			}
+
+			break;
+		}
+
+	case eIAS_DisconnectLobby:
+		{
+			m_pGameLobbyManager->LeaveGameSession(CGameLobbyManager::eLSR_AcceptingInvite);
+			SetInviteAcceptedState(eIAS_WaitForSessionDelete);
+			break;
+		}
+
+	case eIAS_WaitForSessionDelete:
+		{
+			if (!m_pGameLobbyManager->HaveActiveLobby())
+			{
+#ifdef USE_C2_FRONTEND
+				if(pFlashFrontEnd->IsMenuActive(CFlashFrontEnd::eFlM_Menu))
+#endif // USE_C2_FRONTEND
+				{
+					SetInviteAcceptedState(eIAS_InitSinglePlayer);
+				}
+			}
+			break;
+		}
+
+	case eIAS_InitSinglePlayer:
+		{
+			if(m_inviteAcceptedData.m_error == eCLE_Success)
+			{
+				EInviteAcceptedState nextState = eIAS_WaitForInitSinglePlayer;
+
+				if(gEnv->bMultiplayer)
+				{
+					if(HasExclusiveControllerIndex())	// demo will likely need this guard :(
+					{
+						CryLog("[invite] initialise single player as we are accepting an invite as a different user");
+
+						// if we get here and we are in multiplayer, then we must be changing
+						// users, so need to init back single player to sort the user profile out
+#ifdef USE_C2_FRONTEND
+						pFlashFrontEnd->Execute(CFlashFrontEnd::eFECMD_switch_game, !g_pGameCVars->g_multiplayerModeOnly ? "singleplayer" : "multiplayer");
+#endif // USE_C2_FRONTEND
+					}
+				}
+#if !defined(DEDICATED_SERVER)
+				else if(HasExclusiveControllerIndex())
+				{
+					if(GetIGameFramework()->GetIPlayerProfileManager()->GetExclusiveControllerDeviceIndex() == m_inviteAcceptedData.m_user)
+					{
+						CryLog("[invite] accepting an invite with the current user in sp, switching to mp");
+
+						nextState = eIAS_InitMultiplayer;
+					}
+					else
+					{
+						CryLog("[invite] in single player with a different user, heading back to splashscreen");
+
+						// without an exclusive controler index, we should already be on the saveicon
+						// or splashscreen pages, so no need to go to them
+#ifdef USE_C2_FRONTEND
+						pFlashFrontEnd->Execute(CFlashFrontEnd::eFECMD_gotoPageClearStack, "splashscreen");
+#endif // USE_C2_FRONTEND
+					}						
+				}
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+				SetInviteAcceptedState(nextState);
+			}
+			else
+			{
+				CryLog("[invite] trying to init singleplayer from invite, but invite was retrieved with error %d", m_inviteAcceptedData.m_error);
+				SetInviteAcceptedState(eIAS_Error);
+			}
+			break;
+		}
+
+	case eIAS_WaitForInitSinglePlayer:
+		{
+#ifdef USE_C2_FRONTEND
+			if(m_postLocalisationBootChecksDone) // it does not end well on PS3  if we do not wait for this
+			{
+				if(pFlashFrontEnd->IsMenuActive(CFlashFrontEnd::eFlM_Menu))
+				{
+					// the video check is in place so the legal videos can play
+					CFrontEndVideo *pVideo= pFlashFrontEnd->GetVideo();
+					if(!pVideo || !pVideo->IsPlaying() || pVideo->IsBackground())
+					{
+						EFlashFrontEndScreens currentScreen = pFlashFrontEnd->GetCurrentMenuScreen();
+						if((currentScreen == eFFES_tosscreen && pFlashFrontEnd->CanSkipTOS()) || currentScreen == eFFES_saveicon)
+						{
+							pFlashFrontEnd->Execute(CFlashFrontEnd::eFECMD_goto, "splashscreen");
+							SetInviteAcceptedState(eIAS_WaitForSplashScreen);
+						}
+						else if(currentScreen == eFFES_splashscreen)
+						{
+							SetInviteAcceptedState(eIAS_WaitForSplashScreen);
+						}
+					}
+				}
+			}
+#endif // USE_C2_FRONTEND
+				SetInviteAcceptedState(eIAS_WaitForSplashScreen);
+			
+			break;
+		}
+
+	case eIAS_WaitForSplashScreen:
+		{
+			if(true/*gamedatainstalled*/)
+			{
+				if(true/*pFlashFrontEnd->IsMenuActive(CFlashFrontEnd::eFlM_Menu) && pFlashFrontEnd->GetCurrentMenuScreen() == eFFES_splashscreen*/)
+				{
+					if(m_inviteAcceptedData.m_error == eCLE_Success)
+					{
+
+
+
+
+
+
+
+
+
+
+						SetInviteAcceptedState(eIAS_WaitForValidUser);
+					}
+					else
+					{
+						CryLog("[invite] trying to init singleplayer from invit, but invite was retrieved with error %d", m_inviteAcceptedData.m_error);
+
+						SetInviteAcceptedState(eIAS_Error);
+					}
+				}
+			}
+			break;
+		}
+
+	case eIAS_WaitForValidUser:
+		{
+			if(m_inviteAcceptedData.m_user != INVALID_CONTROLLER_INDEX)
+			{
+				SetPreviousExclusiveControllerDeviceIndex(m_inviteAcceptedData.m_user);	// set the controller
+				//pFlashFrontEnd->Execute(CFlashFrontEnd::eFECMD_goto, "profile_login"); // login profile, which will also set the exclusive controller for us
+				SetInviteAcceptedState(eIAS_WaitForInitProfile);	// wait
+			}
+			break;
+		}
+
+	case eIAS_WaitForInitProfile:
+		{
+
+			if(m_bLoggedInFromInvite)	// not convinced this is needed anymore, we now just wait for main and don't progress until file writing is done
+			{
+				// wait until we reach the single player main menu
+#ifdef USE_C2_FRONTEND
+				if(pFlashFrontEnd->IsMenuActive(CFlashFrontEnd::eFlM_Menu) && pFlashFrontEnd->GetCurrentMenuScreen() == eFFES_main)
+#endif // USE_C2_FRONTEND
+				{
+					SetInviteAcceptedState(eIAS_InitMultiplayer);
+				}
+			}
+			break;
+		}
+
+	case eIAS_InitMultiplayer:
+		{
+			SetInviteAcceptedState(eIAS_WaitForInitMultiplayer);
+			CGameLobby::SetLobbyService(eCLS_Online);
+			break;
+		}
+
+	case eIAS_WaitForInitMultiplayer:
+		{
+#ifdef USE_C2_FRONTEND
+			// need to wait for the multiplayer menu screen to actually load
+			if(pFlashFrontEnd->IsMenuActive(CFlashFrontEnd::eFlM_Menu) && pFlashFrontEnd->GetCurrentMenuScreen() == eFFES_main)
+#endif // USE_C2_FRONTEND
+			{
+				if(gEnv->bMultiplayer) // :(
+				{
+					SetInviteAcceptedState(eIAS_InitOnline);
+					m_pSquadManager->SetInvitePending(true);
+				}
+			}
+			break;
+		}
+
+	case eIAS_InitOnline:
+		{
+			SetInviteAcceptedState(eIAS_WaitForInitOnline);
+			break;
+		}
+
+	case eIAS_WaitForInitOnline:
+		{
+			// MP Loader sets accept invite now	
+			break;
+		}
+
+	case eIAS_WaitForSquadManagerEnabled:
+		{
+			CRY_ASSERT(gEnv->bMultiplayer);
+
+			if(m_pSquadManager->IsEnabled())
+			{
+				// if we're loading, then need to wait, it does not end well otherwise
+#ifdef USE_C2_FRONTEND
+				if(!pFlashFrontEnd->IsFlashRenderingDuringLoad())
+#endif // USE_C2_FRONTEND
+				{	
+#ifdef USE_C2_FRONTEND
+					// there are certain menu screens where accepting an invite is bad, mploader and console mycrysis screens need to wait before they can go forwards
+					bool isValidMPScreen = pFlashFrontEnd->GetCurrentMenuScreen() != eFFES_main && pFlashFrontEnd->GetCurrentMenuScreen() != eFFES_mycrysis_signup && pFlashFrontEnd->GetCurrentMenuScreen() != eFFES_mycrysis_tosscreen_console;
+
+					if(!pFlashFrontEnd->IsMenuActive(CFlashFrontEnd::eFlM_Menu) || isValidMPScreen)
+#endif // USE_C2_FRONTEND
+					{
+						SetInviteAcceptedState(eIAS_Accept);
+					}
+				}
+			}
+			break;
+		}
+
+	case eIAS_Accept:
+		{
+			m_pSquadManager->InviteAccepted(m_inviteAcceptedData.m_service, m_inviteAcceptedData.m_user, m_inviteAcceptedData.m_id);
+			SetInviteAcceptedState(eIAS_None);
+			InvalidateInviteData();
+			break;
+		}
+
+	case eIAS_Error:
+		{
+			//CFrontEndVideo *pVideo= pFlashFrontEnd->GetVideo();
+			//if((!pVideo || !pVideo->IsPlaying() || pVideo->IsBackground()) && (!pFlashFrontEnd->IsLoading()))
+			//{
+			//	m_pWarningsManager->RemoveWarning("InviteNotSignedIn");
+			//	m_pWarningsManager->RemoveWarning("InviteInvalidRequest");
+
+			//	if (m_inviteAcceptedData.m_bannedFromSession)
+			//	{
+			//		m_pWarningsManager->AddWarning("BannedFromSquad", GetFlashMenu());
+			//	}
+			//	else
+			//	{
+			//		switch(m_inviteAcceptedData.m_error)
+			//		{
+			//		case eCLE_UserNotSignedIn:	// user accepted the invite while in a signed out state
+			//			m_pWarningsManager->AddWarning("InviteNotSignedIn", GetFlashMenu());
+			//			break;
+
+			//		case eCLE_InvalidInviteFriendData:
+			//		case eCLE_InvalidJoinFriendData:
+			//			m_pWarningsManager->AddWarning("InviteInvalidRequest", GetFlashMenu());
+			//			break;
+
+			//		default:
+			//			CryLog("[invite] unexpected error %d passed into invite data", m_inviteAcceptedData.m_error);
+			//			break;
+			//		}
+			//	}
+
+				InvalidateInviteData();
+			//}
+			break;
+		}
+
+	default:
+		{
+			CryLog("[Invite] unknown invite accepted state");
+			break;
+		}
+	}
+}
+
 #include UNIQUE_VIRTUAL_WRAPPER(IGame)
+
