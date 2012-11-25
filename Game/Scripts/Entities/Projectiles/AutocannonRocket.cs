@@ -14,5 +14,6 @@ namespace CryGameCode.Projectiles
 		public override float Damage { get { return 10; } }
 		public override DamageType DamageType { get { return DamageType.Explosive; } }
 		public override bool ShouldExplode { get { return true; } }
+        public override float ExplosionRadius  { get { return 5f; } }
 	}
 }

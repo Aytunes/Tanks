@@ -2,7 +2,7 @@
  <GameRules name="DeathMatch"/>
  <Attributes>
   <loading_video value=""/>
-  <loading_image value="hobo_insert_loadingscreen_image_here.dds"/>
+  <loading_image value="textures/loadscreens/jungleloadscreen.dds"/>
   <DescriptionText text="lensflares courtesy of Jake Oliver"/>
  </Attributes>
 </MetaData>
