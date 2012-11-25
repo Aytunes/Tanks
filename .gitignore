@@ -57,3 +57,5 @@ error.bmp
 # Temporarily removed Bin64 until we've got it working again, don't want people assuming that the build is broken.
 Bin64/
 *.cs.orig
+
+user.cfg
