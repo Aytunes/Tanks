@@ -1,1 +1,1 @@
-C:\Users\Jake\Documents\GitHub\AngryBoids\Game\Levels\jungle_temple\loadscreen.dds
+C:\Users\Jake\Documents\GitHub\AngryBoids\Game\Objects\tank_gameplay_assets\pickup_hologram\$tmp_powerup_pickup_base.cga
