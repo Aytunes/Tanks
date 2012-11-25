@@ -22,13 +22,20 @@ namespace CryGameCode
 			{
 				LastSpawned = frameStartTime;
 
-				entity.Position = Position;
-				entity.Rotation = Rotation;
+                var pos = Position;
+                var rot = Rotation;
+
+				entity.Position = pos;
+				entity.Rotation = rot;
 
                 if (entity is Tank && Team != null)
                 {
-                    Debug.LogAlways("Setting {0}'s team as {1}", entity.Name, Team);
-                    (entity as Tank).Team = Team;
+                    var tank = entity as Tank;
+                    tank.Team = Team;
+
+                    tank.OnRevive();
+
+                    Network.RemoteInvocation(NetSpawn, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, tank.Id, pos);
                 }
 
 				return true;
@@ -36,6 +43,16 @@ namespace CryGameCode
 
 			return false;
 		}
+
+        [RemoteInvocation]
+        public void NetSpawn(EntityId targetId, Vec3 pos)
+        {
+            var tank = Entity.Get<Tank>(targetId);
+
+            tank.Position = pos;
+
+            tank.OnRevive();
+        }
 
 		public float LastSpawned { get; private set; }
 

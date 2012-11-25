@@ -65,8 +65,6 @@ namespace CryGameCode
 
 				spawnPoint.TrySpawn(tank);
 			}
-
-            tank.OnRevive();
 		}
 
 		public bool IsTeamValid(string team)
