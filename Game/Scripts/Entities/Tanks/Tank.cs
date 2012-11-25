@@ -56,27 +56,43 @@ namespace CryGameCode.Tanks
 			Reset(enteringGame);
 		}
 
+        [RemoteInvocation]
+        void NetReset(bool enteringGame, string turretTypeName)
+        {
+            Debug.LogAlways("NetReset {0}", enteringGame, turretTypeName);
+
+            if (enteringGame)
+            {
+                var turretType = System.Type.GetType(turretTypeName);
+
+                m_turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
+            }
+            else
+            {
+                m_turret.Destroy();
+                m_turret = null;
+            }
+        }
+
 		private void Reset(bool enteringGame)
 		{
             LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
             Debug.LogAlways("objects/tanks/tank_generic_" + Team + ".cdf");
 
-			if(enteringGame)
-			{
-				System.Type turretType;
+            if(Network.IsServer)
+            {
+                string turretType;
 
-				if(string.IsNullOrEmpty(ForceTankType))
-					turretType = TurretTypes[SinglePlayer.Selector.Next(TurretTypes.Count)];
-				else
-					turretType = System.Type.GetType("CryGameCode.Tanks." + ForceTankType, true, true);
+                if (string.IsNullOrEmpty(ForceTankType))
+                    turretType = TurretTypes[SinglePlayer.Selector.Next(TurretTypes.Count)].FullName;
+                else
+                    turretType = "CryGameCode.Tanks." + ForceTankType;
 
-				m_turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
-			}
-			else
-			{
-				m_turret.Destroy();
-				m_turret = null;
-			}
+                if (IsLocalClient)
+                    NetReset(enteringGame, turretType);
+
+                Network.RemoteInvocation(NetReset, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, enteringGame, turretType);
+            }
 
 			m_leftTrack = GetAttachment("track_left");
 			m_rightTrack = GetAttachment("track_right");

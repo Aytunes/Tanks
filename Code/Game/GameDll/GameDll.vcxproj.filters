@@ -235,6 +235,12 @@
     <ClCompile Include="GameRulesHostMigration.cpp">
       <Filter>GameRules</Filter>
     </ClCompile>
+    <ClCompile Include="FlowMouseInfo.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\MPNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameStartup.h">
@@ -439,6 +445,9 @@
     </ClInclude>
     <ClInclude Include="Network\Lobby\MatchMakingTelemetry.h">
       <Filter>Network\Lobby</Filter>
+    </ClInclude>
+    <ClInclude Include="Nodes\G2FlowBaseNode.h">
+      <Filter>Nodes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

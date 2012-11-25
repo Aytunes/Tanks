@@ -123,12 +123,13 @@ CGame::CGame()
 
 CGame::~CGame()
 {
-  m_pFramework->EndGameContext();
-  m_pFramework->UnregisterListener(this);
+	m_pFramework->EndGameContext();
+	m_pFramework->UnregisterListener(this);
 	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 	SAFE_DELETE(m_pGameAudio);
 	//SAFE_DELETE(m_pCameraManager);
 	SAFE_DELETE(m_pSPAnalyst);
+	SAFE_DELETE(m_pGameMechanismManager);
 	SAFE_DELETE(m_pCVars);
 	ClearGameSessionHandler(); // make sure this is cleared before the gamePointer is gone
 	g_pGame = 0;
