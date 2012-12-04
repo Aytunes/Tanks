@@ -24,8 +24,8 @@ namespace CryGameCode.Tanks
                 Input.ActionmapEvents.Add("zoom_in", OnZoomIn);
                 Input.ActionmapEvents.Add("zoom_out", OnZoomOut);
 
-                Input.ActionmapEvents.Add("moveright", OnMoveRight);
-                Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
+                Input.ActionmapEvents.Add("moveright", OnRotateRight);
+                Input.ActionmapEvents.Add("moveleft", OnRotateLeft);
                 Input.ActionmapEvents.Add("moveforward", OnMoveForward);
                 Input.ActionmapEvents.Add("moveback", OnMoveBack);
                 Input.ActionmapEvents.Add("sprint", OnSprint);
@@ -59,8 +59,6 @@ namespace CryGameCode.Tanks
         [RemoteInvocation]
         void NetReset(bool enteringGame, string turretTypeName)
         {
-            Debug.LogAlways("NetReset {0}", enteringGame, turretTypeName);
-
             if (enteringGame)
             {
                 var turretType = System.Type.GetType(turretTypeName);
@@ -77,7 +75,6 @@ namespace CryGameCode.Tanks
 		private void Reset(bool enteringGame)
 		{
             LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
-            Debug.LogAlways("objects/tanks/tank_generic_" + Team + ".cdf");
 
             if(Network.IsServer)
             {

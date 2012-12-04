@@ -22,23 +22,26 @@ namespace CryGameCode.Tanks
 
             Vec3 velocity = Velocity;
 
+            Quat localRotation = LocalRotation;
+
 			// dampen the movement.
 			MathHelpers.Interpolate(ref m_rotation, 0, rotationDamping * Time.DeltaTime);
             MathHelpers.Interpolate(ref velocity, Vec3.Zero, movementDamping * Time.DeltaTime);
             if (!Physics.LivingStatus.IsFlying)
             {
-                var acceleration = LocalRotation.Column1 * m_acceleration * speedMult;
+                var acceleration = localRotation.Column1 * m_acceleration * speedMult;
                 if(velocity != Vec3.Zero)
-                    velocity *= LocalRotation.Column1.Dot(velocity.Normalized);
+                    velocity *= localRotation.Column1.Dot(velocity.Normalized);
 
-                moveRequest.velocity = velocity + acceleration;
+                moveRequest.velocity = velocity + acceleration * Time.DeltaTime;
             }
 
             m_acceleration = 0;
 
-			moveRequest.rotation = LocalRotation;
-			moveRequest.rotation.SetRotationXYZ(new Vec3(0, 0, m_rotation) * Time.DeltaTime);
-			moveRequest.rotation = moveRequest.rotation.Normalized;
+            var turn = localRotation.Column2 * m_rotation * Time.DeltaTime;
+
+            moveRequest.rotation = Quat.CreateRotationXYZ(turn);
+            moveRequest.rotation.Normalize();
 
 			AddMovement(ref moveRequest);
 
@@ -51,25 +54,24 @@ namespace CryGameCode.Tanks
 		}
 
 
-		private void OnMoveRight(ActionMapEventArgs e)
+		private void OnRotateRight(ActionMapEventArgs e)
 		{
-			m_rotation = MathHelpers.Clamp(m_rotation - RotationSpeed * Time.DeltaTime, -m_maxRotationSpeed, m_maxRotationSpeed);
+            m_rotation = -e.Value * m_maxRotationSpeed;
 		}
 
-		private void OnMoveLeft(ActionMapEventArgs e)
+		private void OnRotateLeft(ActionMapEventArgs e)
 		{
-			m_rotation = MathHelpers.Clamp(m_rotation + RotationSpeed * Time.DeltaTime, -m_maxRotationSpeed, m_maxRotationSpeed);
+            m_rotation = e.Value * m_maxRotationSpeed;
 		}
 
 		private void OnMoveForward(ActionMapEventArgs e)
 		{
-            m_acceleration = e.Value;//MathHelpers.Clamp(m_acceleration + TankSpeed, -m_maxSpeed, m_maxSpeed);
+            m_acceleration = e.Value * m_maxSpeed;
 		}
 
 		private void OnMoveBack(ActionMapEventArgs e)
 		{
-
-            m_acceleration = -e.Value;//MathHelpers.Clamp(m_acceleration - TankSpeed, -m_maxSpeed, m_maxSpeed);
+            m_acceleration = -e.Value * m_maxSpeed;
 		}
 
 		private void OnSprint(ActionMapEventArgs e)
@@ -83,7 +85,7 @@ namespace CryGameCode.Tanks
 
 		private float m_acceleration;
 		private float m_rotation;
-		private const float m_maxSpeed = 8f;
+		private const float m_maxSpeed = 50f;
 		private const float m_maxRotationSpeed = 1.5f;
 
 		public bool IsBoosting { get; set; }
