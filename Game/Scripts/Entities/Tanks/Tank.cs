@@ -113,7 +113,7 @@ namespace CryGameCode.Tanks
 
             BoostTime = maxBoostTime;
             SpeedMultiplier = 2;
-            BackwardsSpeedMultiplier = 0.85f;
+            BackwardsSpeedMultiplier = 1.5f;
 
 			ReceiveUpdates = true;
 		}

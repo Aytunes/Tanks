@@ -1,1 +1,1 @@
-C:\Users\Jake\Documents\GitHub\AngryBoids\Game\Objects\tank_env_assets\desert_canyon\blockout\$tmp2_blockout.cgf
+C:\Users\Jake\Documents\GitHub\AngryBoids\game\objects\tank_env_assets\desert_canyon\rockbase\textures\unique_rock_ddn.dds
