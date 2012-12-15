@@ -1,0 +1,13 @@
+<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.22331043,0.22331043,0.22331043" Specular="0.022012994,0.022012994,0.022012994" Emissive="0,0,0" Shininess="10" Opacity="1">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/rock_diff.tif">
+   <TexMod TileU="0.30000001" TileV="0.30000001"/>
+  </Texture>
+  <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/rock_spec.tif"/>
+  <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/rock_ddn.tif"/>
+  <Texture Map="Opacity" File="objects/tank_env_assets/templetilesets/textures/wall_blendmask.dds"/>
+  <Texture Map="Custom" File="objects/tank_env_assets/templetilesets/textures/rock_diff.dds"/>
+  <Texture Map="[1] Custom" File="objects/tank_env_assets/templetilesets/textures/rock_ddn.dds"/>
+ </Textures>
+ <PublicParams FresnelPower="4.013" GlossFromDiffuseContrast="1" FresnelScale="13.87" GlossFromDiffuseOffset="0" FresnelBias="0.31299999" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
+</Material>
