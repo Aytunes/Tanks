@@ -1,30 +1,30 @@
 <Material MtlFlags="524544">
  <SubMaterials>
-  <Material Name="sand" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.11926401,0.11926401,0.11926401" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="sand" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_rock_dusty" MatTemplate="" Diffuse="0.11926401,0.11926401,0.11926401" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/sand_diff.tif"/>
     <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/sand_spec.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/sand_ddn.tif"/>
    </Textures>
-   <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="rock" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.28445208,0.28445208,0.28445208" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="rock" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.28445208,0.28445208,0.28445208" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/rock_diff.tif"/>
     <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/rock_spec.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/rock_ddn.tif"/>
    </Textures>
-   <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="uniquerock" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.33445781,0.33445781,0.33445781" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="uniquerock" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.33445781,0.33445781,0.33445781" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/unique_rock_diff.tif"/>
     <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/unique_rock_spec.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/unique_rock_ddn.tif"/>
    </Textures>
-   <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="flat" MtlFlags="524416" Shader="Illum" GenMask="100000000" StringGenMask="%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="flat" MtlFlags="524416" Shader="Illum" GenMask="100000000" StringGenMask="%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="1,1,1" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="textures/defaults/16_grey.dds"/>
    </Textures>

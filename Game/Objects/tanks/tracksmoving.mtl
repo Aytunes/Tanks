@@ -1,4 +1,4 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.27157745,0.27157745,0.27157745" Specular="1,1,1" Emissive="0,0,0" Shininess="50" Opacity="1">
+<Material MtlFlags="524288" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_metal_thick" MatTemplate="" Diffuse="0.27157745,0.27157745,0.27157745" Specular="1,1,1" Emissive="0,0,0" Shininess="50" Opacity="1">
  <Textures>
   <Texture Map="Diffuse" File="objects/tanks/tankchassis/tracks_diff.tif">
    <TexMod TexMod_VOscillatorType="2" TexMod_VOscillatorRate="-1" TexMod_VOscillatorAmplitude="1"/>
