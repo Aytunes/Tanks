@@ -60,6 +60,8 @@
 #include "GameMechanismManager/GameMechanismManager.h"
 #include "ICheckPointSystem.h"
 
+#include <IPluginManager_impl.h>
+
 #define GAME_DEBUG_MEM  // debug memory usage
 #undef  GAME_DEBUG_MEM
 
@@ -433,6 +435,8 @@ void CGame::RegisterGameFlowNodes()
 			pFactory = pFactory->m_pNext;
 		}
 	}
+
+	PluginManager::RegisterPluginFlownodes();
 }
 
 void CGame::ResetServerGameTokenSynch()

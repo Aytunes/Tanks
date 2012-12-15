@@ -39,6 +39,11 @@
             Set to true when the script instance is removed via ScriptManager.RemoveInstances.
             </summary>
         </member>
+        <member name="P:CryEngine.CryScriptInstance.Script">
+            <summary>
+            Gets the instance script, set in <see cref="M:CryEngine.Initialization.ScriptManager.CreateScriptInstance(CryEngine.Initialization.CryScript,System.Object[])"/>.
+            </summary>
+        </member>
         <member name="E:CryEngine.CryScriptInstance.OnDestroyed">
             <summary>
             Event that is invoked when this script is destroyed from <see cref="T:CryEngine.Initialization.ScriptManager"/>.
@@ -942,6 +947,76 @@
         <member name="T:CryEngine.EntityRemovalException">
             <summary>
             Thrown when an entity is attempted to be removed improperly.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeFilter.Approved">
+            <summary>
+            This node is approved for designers
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeFilter.Advanced">
+            <summary>
+            This node is slightly advanced and approved.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeFilter.Debug">
+            <summary>
+            This node is for debug purpose only.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeFilter.Obsolete">
+            <summary>
+            This node is obsolete and is not available in the editor.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeFlags.TargetEntity">
+            <summary>
+            This node targets an entity, entity id must be provided.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeFlags.HideUI">
+            <summary>
+            This node cannot be selected by user for placement in flow graph UI.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeFlags.DynamicOutput">
+            <summary>
+            This node is setup for dynamic output port growth in runtime.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeFlags.Unremovable">
+            <summary>
+            This node cannot be deleted by the user.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeType.Singleton">
+            <summary>
+            Node has only one instance, never cloned.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.FlowNodeType.Instanced">
+            <summary>
+            New instance of node will be created each time it is requested.
+            </summary>
+        </member>
+        <member name="P:CryEngine.FlowSystem.PortAttribute.StringPortType">
+            <summary>
+            Only to be used for string ports
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.StringPortType.Sound">
+            <summary>
+            Only applicable on string inputs.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.StringPortType.Color">
+            <summary>
+            Only applicable on Vec3 inputs.
+            </summary>
+        </member>
+        <member name="F:CryEngine.FlowSystem.StringPortType.Material">
+            <summary>
+            Only applicable on string inputs.
             </summary>
         </member>
         <member name="F:CryEngine.KeyEvent.OnPress">
@@ -2060,79 +2135,34 @@
             Gets or sets the raw engine time.
             </summary>
         </member>
-        <member name="P:CryEngine.FlowNodeAttribute.Name">
+        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Name">
             <summary>
             Gets or sets the name of the node, if not set will use the node class name.
             </summary>
         </member>
-        <member name="P:CryEngine.FlowNodeAttribute.UICategory">
+        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Category">
             <summary>
             Gets or sets the category in which the node will appear when right-clicking in the Flowgraph Editor.
             </summary>
         </member>
-        <member name="P:CryEngine.FlowNodeAttribute.Category">
+        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Filter">
             <summary>
             Gets or sets the Sandbox filtering category
             </summary>
         </member>
-        <member name="P:CryEngine.FlowNodeAttribute.Description">
+        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Type">
+            <summary>
+            Gets or sets how the node is cloned.
+            </summary>
+        </member>
+        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Description">
             <summary>
             Gets or sets the node description
             </summary>
         </member>
-        <member name="F:CryEngine.PortType.Sound">
+        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.TargetsEntity">
             <summary>
-            Only applicable on string inputs.
-            </summary>
-        </member>
-        <member name="F:CryEngine.PortType.Color">
-            <summary>
-            Only applicable on Vec3 inputs.
-            </summary>
-        </member>
-        <member name="F:CryEngine.PortType.Material">
-            <summary>
-            Only applicable on string inputs.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowNodeFlags.TargetEntity">
-            <summary>
-            This node targets an entity, entity id must be provided.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowNodeFlags.HideUI">
-            <summary>
-            This node cannot be selected by user for placement in flow graph UI.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowNodeFlags.DynamicOutput">
-            <summary>
-            This node is setup for dynamic output port growth in runtime.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowNodeFlags.Unremovable">
-            <summary>
-            This node cannot be deleted by the user.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowNodeCategory.Approved">
-            <summary>
-            This node is approved for designers
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowNodeCategory.Advanced">
-            <summary>
-            This node is slightly advanced and approved.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowNodeCategory.Debug">
-            <summary>
-            This node is for debug purpose only.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowNodeCategory.Obsolete">
-            <summary>
-            This node is obsolete and is not available in the editor.
+            Gets or sets whether this node targets an entity. See <see cref="P:CryEngine.FlowSystem.FlowNode.TargetEntity"/>
             </summary>
         </member>
         <member name="M:CryEngine.DelayedFunc`10.#ctor(System.Action{`0,`1,`2,`3,`4,`5,`6,`7,`8,`9},System.Single,`0,`1,`2,`3,`4,`5,`6,`7,`8,`9)">
@@ -5166,11 +5196,6 @@
             <param name="max"></param>
             <returns></returns>
         </member>
-        <member name="T:CryEngine.Engine">
-            <summary>
-            Provides an direct interface to the 3DEngine.
-            </summary>
-        </member>
         <member name="F:CryEngine.RayWorldIntersectionFlags.SeperateImportantHits">
             <summary>
             among pierceble hits, materials with sf_important will have priority
@@ -5567,52 +5592,52 @@
             If this is default entity class.
             </summary>
         </member>
-        <member name="M:CryEngine.FlowNode.OnPortActivated(System.Int32,System.Object)">
+        <member name="M:CryEngine.FlowSystem.FlowNode.OnPortActivated(System.Int32,System.Object)">
             <summary>
             Called if one or more input ports have been activated.
             </summary>
         </member>
-        <member name="M:CryEngine.FlowNode.OnInit">
+        <member name="M:CryEngine.FlowSystem.FlowNode.OnInit">
             <summary>
             Called after level has been loaded, is not called on serialization.
             </summary>
         </member>
-        <member name="M:CryEngine.FlowNode.GetPortInt(System.Action{System.Int32})">
+        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortInt(System.Action{System.Int32})">
             <summary>
             Gets the int value of an flownode port.
             </summary>
             <param name="port"></param>
             <returns></returns>
         </member>
-        <member name="M:CryEngine.FlowNode.GetPortFloat(System.Action{System.Single})">
+        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortFloat(System.Action{System.Single})">
             <summary>
             Gets the float value of an flownode port.
             </summary>
             <param name="port"></param>
             <returns></returns>
         </member>
-        <member name="M:CryEngine.FlowNode.GetPortVec3(System.Action{CryEngine.Vec3})">
+        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortVec3(System.Action{CryEngine.Vec3})">
             <summary>
             Gets the int value of an flownode port.
             </summary>
             <param name="port"></param>
             <returns></returns>
         </member>
-        <member name="M:CryEngine.FlowNode.GetPortString(System.Action{System.String})">
+        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortString(System.Action{System.String})">
             <summary>
             Gets the string value of an flownode port.
             </summary>
             <param name="port"></param>
             <returns></returns>
         </member>
-        <member name="M:CryEngine.FlowNode.GetPortBool(System.Action{System.Boolean})">
+        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortBool(System.Action{System.Boolean})">
             <summary>
             Gets the bool value of an flownode port.
             </summary>
             <param name="port"></param>
             <returns></returns>
         </member>
-        <member name="M:CryEngine.FlowNode.IsPortActive(System.Int32)">
+        <member name="M:CryEngine.FlowSystem.FlowNode.IsPortActive(System.Int32)">
             <summary>
             Used to check whether an input port is currently activated.
             </summary>
