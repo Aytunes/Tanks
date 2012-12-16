@@ -25,6 +25,10 @@ namespace CryGameCode.Tanks
 
             CVar.RegisterFloat("tank_movementSpeedMult", ref tank_movementSpeedMult);
 
+            CVar.RegisterFloat("tank_movementFrictionMult", ref tank_movementFrictionMult);
+
+            CVar.RegisterFloat("tank_rotationSpeed", ref tank_rotationSpeed);
+
 			ConsoleCommand.Register("spawn", (e) =>
 			{
 				//Entity.Spawn<AutocannonTank>("spawnedTank", (Actor.LocalClient as CameraProxy).TargetEntity.Position);
@@ -60,9 +64,13 @@ namespace CryGameCode.Tanks
         #endregion
 
     #region Tank movement
-        public static float tank_turnModifier = 1.2f;
+        public static float tank_turnModifier = 1.0f;
 
         public static float tank_movementSpeedMult = 6.0f;
+
+        public static float tank_movementFrictionMult = 1.0f;
+
+        public static float tank_rotationSpeed = 2.0f;
     #endregion
 
         public static string ForceTankType;

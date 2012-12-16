@@ -35,6 +35,9 @@ namespace CryGameCode.Tanks
             else
                 normalizedVelocity = forwardDir;
 
+            // Used to determine whether the side of the tank is facing the current velocity direction.
+            var travelDirectionDot = normalizedVelocity.Dot(forwardDir);
+
             var groundFriction = Physics.Status.Living.GroundSurfaceType.Parameters.Friction;
 
             var onGround = !Physics.Status.Living.IsFlying;
@@ -48,21 +51,20 @@ namespace CryGameCode.Tanks
             ///////////////////////////
 
             var acceleration = trackMoveDirection.X + trackMoveDirection.Y;
-            var forwardAcceleration = forwardDir * acceleration * GameCVars.tank_movementSpeedMult;
+            var forwardAcceleration = forwardDir * acceleration * GameCVars.tank_movementSpeedMult * travelDirectionDot;
 
-            var frictionDeceleration = normalizedVelocity * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle));
-            var dragDeceleration = (1.2f * 1.27f * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / Physics.Status.Dynamics.Mass;
+            var frictionDeceleration = normalizedVelocity * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle)) * GameCVars.tank_movementFrictionMult;
+
+            var dragDeceleration = (1.2f * 0.588f * 1.27f * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / Physics.Status.Dynamics.Mass;
 
             moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration) * Time.DeltaTime;
-            if (moveRequest.velocity.Length > 0 && onGround)
-                moveRequest.velocity *= MathHelpers.Min(forwardDir.Dot(normalizedVelocity) * GameCVars.tank_turnModifier, 1.0f);
-
+            A
             ///////////////////////////
             // Rotation
             ///////////////////////////
 
             // turning
-            float angleChange = ((trackMoveDirection.X - trackMoveDirection.Y) / 2) * Time.DeltaTime;
+            float angleChange = ((trackMoveDirection.X - trackMoveDirection.Y) / 2) * Time.DeltaTime * GameCVars.tank_rotationSpeed;
 
             var turnRot = Quat.CreateRotationZ(angleChange);
 
