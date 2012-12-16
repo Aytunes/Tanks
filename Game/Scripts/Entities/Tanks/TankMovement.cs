@@ -48,14 +48,14 @@ namespace CryGameCode.Tanks
             ///////////////////////////
 
             var acceleration = trackMoveDirection.X + trackMoveDirection.Y;
-            var forwardAcceleration = forwardDir * acceleration * GameCVars.movementSpeedMultiplier;
+            var forwardAcceleration = forwardDir * acceleration * GameCVars.tank_movementSpeedMult;
 
             var frictionDeceleration = normalizedVelocity * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle));
             var dragDeceleration = (1.2f * 1.27f * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / Physics.Status.Dynamics.Mass;
 
             moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration) * Time.DeltaTime;
             if (moveRequest.velocity.Length > 0 && onGround)
-                moveRequest.velocity *= MathHelpers.Min(forwardDir.Dot(normalizedVelocity) * GameCVars.turnModifier, 1.0f);
+                moveRequest.velocity *= MathHelpers.Min(forwardDir.Dot(normalizedVelocity) * GameCVars.tank_turnModifier, 1.0f);
 
             ///////////////////////////
             // Rotation
