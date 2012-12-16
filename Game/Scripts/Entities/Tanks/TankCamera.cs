@@ -8,20 +8,20 @@ namespace CryGameCode.Tanks
 		{
 			if(zoomingOut && ZoomLevel > 1)
 			{
-				ZoomLevel -= zoomSpeed;
+                ZoomLevel -= GameCVars.zoomSpeed;
 				if(ZoomLevel < 1)
 					ZoomLevel = 1;
 			}
-			else if(zoomingIn && ZoomLevel < maxZoomLevel)
+            else if (zoomingIn && ZoomLevel < GameCVars.maxZoomLevel)
 			{
-				ZoomLevel += zoomSpeed;
-				if(ZoomLevel > maxZoomLevel)
-					ZoomLevel = maxZoomLevel;
+                ZoomLevel += GameCVars.zoomSpeed;
+                if (ZoomLevel > GameCVars.maxZoomLevel)
+                    ZoomLevel = GameCVars.maxZoomLevel;
 			}
 
             viewParams.FieldOfView = MathHelpers.DegreesToRadians(60);
 
-			var distZ = minCameraDistanceZ + (minCameraDistanceZ - maxCameraDistanceZ) * ZoomRatio;
+            var distZ = GameCVars.minCameraDistanceZ + (GameCVars.minCameraDistanceZ - GameCVars.maxCameraDistanceZ) * ZoomRatio;
 
 			if(IsSpectating)
 			{
@@ -30,8 +30,8 @@ namespace CryGameCode.Tanks
 			}
 			else
 			{
-				viewParams.Position = Position + new Vec3(0, cameraDistanceY, distZ);
-				viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(minCameraAngleX + (minCameraAngleX - maxCameraAngleX) * ZoomRatio), 0, 0));
+                viewParams.Position = Position + new Vec3(0, GameCVars.cameraDistanceY, distZ);
+                viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(GameCVars.minCameraAngleX + (GameCVars.minCameraAngleX - GameCVars.maxCameraAngleX) * ZoomRatio), 0, 0));
 			}
 		}
 
@@ -55,7 +55,7 @@ namespace CryGameCode.Tanks
 		bool zoomingOut;
 
 		float ZoomLevel;
-		float ZoomRatio { get { return ZoomLevel / maxZoomLevel; } }
+        float ZoomRatio { get { return ZoomLevel / GameCVars.maxZoomLevel; } }
 
 		public bool IsSpectating { get; set; }
 	}

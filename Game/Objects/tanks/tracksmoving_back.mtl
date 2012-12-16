@@ -1,0 +1,10 @@
+<Material MtlFlags="524288" Shader="Illum" GenMask="80000" StringGenMask="%GLOSS_MAP" SurfaceType="mat_metal_thick" MatTemplate="" Diffuse="0.27157745,0.27157745,0.27157745" Specular="1,1,1" Emissive="0,0,0" Shininess="50" Opacity="1">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/tanks/tankchassis/tracks_diff.tif">
+   <TexMod TexMod_VOscillatorType="2" TexMod_VOscillatorRate="1" TexMod_VOscillatorAmplitude="1"/>
+  </Texture>
+  <Texture Map="Specular" File="objects/tanks/tankchassis/tracks_spec.dds"/>
+  <Texture Map="Bumpmap" File="objects/tanks/tankchassis/tracks_ddn.tif"/>
+ </Textures>
+ <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+</Material>

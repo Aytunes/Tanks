@@ -655,6 +655,37 @@
             CVar created using CVarAttribute, targeting a property.
             </summary>
         </member>
+        <member name="P:CryEngine.SurfaceType.Id">
+            <summary>
+            Gets the unique identifier of this surface type.
+            Maximum of 65535 simultaneous surface types can exist.
+            </summary>
+        </member>
+        <member name="P:CryEngine.SurfaceType.Name">
+            <summary>
+            Gets the unique name of this surface type.
+            </summary>
+        </member>
+        <member name="P:CryEngine.SurfaceType.TypeName">
+            <summary>
+            Gets the type name of this surface type.
+            </summary>
+        </member>
+        <member name="P:CryEngine.SurfaceType.Flags">
+            <summary>
+            Gets flags assigned to this surface type.
+            </summary>
+        </member>
+        <member name="P:CryEngine.SurfaceType.Parameters">
+            <summary>
+            Gets the parameters assigned to this surface type.
+            </summary>
+        </member>
+        <member name="P:CryEngine.SurfaceType.Handle">
+            <summary>
+            Gets or sets the native ISurfaceType pointer.
+            </summary>
+        </member>
         <member name="F:CryEngine.EntityUpdatePolicy.Never">
             <summary>
             Never update entity every frame.
@@ -1789,6 +1820,72 @@
             The object is intersecting the plane.
             </summary>
         </member>
+        <member name="F:CryEngine.Physics.PhysicalizationParams.slot">
+            <summary>
+            Index of object slot, -1 if all slots should be used.
+            </summary>
+        </member>
+        <member name="F:CryEngine.Physics.PhysicalizationParams.density">
+            <summary>
+            Only one either density or mass must be set, parameter set to 0 is ignored.
+            </summary>
+        </member>
+        <member name="F:CryEngine.Physics.PhysicalizationParams.lod">
+            <summary>
+            When physicalizing geometry can specify to use physics from different LOD.
+            Used for characters that have ragdoll physics in Lod1
+            </summary>
+        </member>
+        <member name="F:CryEngine.Physics.PhysicalizationParams.attachToEntity">
+            <summary>
+            Physical entity to attach this physics object (Only for Soft physical entity).
+            </summary>
+        </member>
+        <member name="F:CryEngine.Physics.PhysicalizationParams.attachToPart">
+            <summary>
+            Part ID in entity to attach to (Only for Soft physical entity).
+            </summary>
+        </member>
+        <member name="F:CryEngine.Physics.PhysicalizationParams.stiffnessScale">
+            <summary>
+            Used for character physicalization (Scale of force in character joint's springs).
+            </summary>
+        </member>
+        <member name="F:CryEngine.Physics.PhysicalizationParams.copyJointVelocities">
+            <summary>
+            Copy joints velocities when converting a character to ragdoll.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Physics.Status.DynamicsPhysicsStatus.CenterOfMass">
+            <summary>
+            The center of mass / pivot point for this entity.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Physics.Status.DynamicsPhysicsStatus.SubmergedFraction">
+            <summary>
+            Percentage of the entity that is underwater. (0 - 1)
+            </summary>
+        </member>
+        <member name="F:CryEngine.Physics.Status.LivingPhysicsStatus.bFlying">
+            <summary>
+            whether entity has no contact with ground
+            </summary>
+        </member>
+        <member name="P:CryEngine.Physics.Status.LivingPhysicsStatus.FlyTime">
+            <summary>
+             for how long the entity was flying
+            </summary>
+        </member>
+        <member name="P:CryEngine.Physics.Status.LivingPhysicsStatus.GroundVelocity">
+            <summary>
+            velocity of the object entity is standing on
+            </summary>
+        </member>
+        <member name="P:CryEngine.Physics.Status.LivingPhysicsStatus.GroundHeight">
+            <summary>
+            position where the last contact with the ground occured
+            </summary>
+        </member>
         <member name="M:CryEngine.Native.NativeScriptSystemMethods.RevertAppDomain">
             <summary>
             Revert the last script reload attempt.
@@ -2625,101 +2722,45 @@
             Represents an entity registered outside of CryMono, e.g. in CryGame.dll.
             </summary>
         </member>
-        <member name="T:CryEngine.PhysicalEntity">
+        <member name="T:CryEngine.Physics.PhysicalEntity">
             <summary>
             Physical entity present in the physics system.
             </summary>
         </member>
-        <member name="M:CryEngine.PhysicalEntity.Save">
+        <member name="M:CryEngine.Physics.PhysicalEntity.Save">
             <summary>
             Save the current physics settings.
             </summary>
         </member>
-        <member name="M:CryEngine.PhysicalEntity.Clear">
+        <member name="M:CryEngine.Physics.PhysicalEntity.Clear">
             <summary>
             Clears the current physics settings.
             </summary>
         </member>
-        <member name="P:CryEngine.PhysicalEntity.AutoUpdate">
+        <member name="P:CryEngine.Physics.PhysicalEntity.AutoUpdate">
             <summary>
             If true, physics value updates will be automatically applied. Otherwise, Save() must be called manually.
             </summary>
         </member>
-        <member name="P:CryEngine.PhysicalEntity.Resting">
+        <member name="P:CryEngine.Physics.PhysicalEntity.Resting">
             <summary>
             Determines if this physical entity is in a sleeping state or not. (Will not be affected by gravity)
             Autoamtically wakes upon collision.
             </summary>
         </member>
-        <member name="P:CryEngine.PhysicalEntity.Mass">
+        <member name="P:CryEngine.Physics.PhysicalEntity.Mass">
             <summary>
             The mass of the entity in kg.
             </summary>
         </member>
-        <member name="P:CryEngine.PhysicalEntity.Slot">
+        <member name="P:CryEngine.Physics.PhysicalEntity.Slot">
             <summary>
             The entity slot for which these physical parameters apply.
             </summary>
         </member>
-        <member name="P:CryEngine.PhysicalEntity.Stiffness">
+        <member name="P:CryEngine.Physics.PhysicalEntity.Stiffness">
             <summary>
             For characters: the scale of force in joint springs.
-            </summary>
-        </member>
-        <member name="F:CryEngine.pe_status_living.bFlying">
-            <summary>
-            whether entity has no contact with ground
-            </summary>
-        </member>
-        <member name="P:CryEngine.pe_status_living.FlyTime">
-            <summary>
-             for how long the entity was flying
-            </summary>
-        </member>
-        <member name="P:CryEngine.pe_status_living.GroundVelocity">
-            <summary>
-            velocity of the object entity is standing on
-            </summary>
-        </member>
-        <member name="P:CryEngine.pe_status_living.GroundHeight">
-            <summary>
-            position where the last contact with the ground occured
-            </summary>
-        </member>
-        <member name="F:CryEngine.PhysicalizationParams.slot">
-            <summary>
-            Index of object slot, -1 if all slots should be used.
-            </summary>
-        </member>
-        <member name="F:CryEngine.PhysicalizationParams.density">
-            <summary>
-            Only one either density or mass must be set, parameter set to 0 is ignored.
-            </summary>
-        </member>
-        <member name="F:CryEngine.PhysicalizationParams.lod">
-            <summary>
-            When physicalizing geometry can specify to use physics from different LOD.
-            Used for characters that have ragdoll physics in Lod1
-            </summary>
-        </member>
-        <member name="F:CryEngine.PhysicalizationParams.attachToEntity">
-            <summary>
-            Physical entity to attach this physics object (Only for Soft physical entity).
-            </summary>
-        </member>
-        <member name="F:CryEngine.PhysicalizationParams.attachToPart">
-            <summary>
-            Part ID in entity to attach to (Only for Soft physical entity).
-            </summary>
-        </member>
-        <member name="F:CryEngine.PhysicalizationParams.stiffnessScale">
-            <summary>
-            Used for character physicalization (Scale of force in character joint's springs).
-            </summary>
-        </member>
-        <member name="F:CryEngine.PhysicalizationParams.copyJointVelocities">
-            <summary>
-            Copy joints velocities when converting a character to ragdoll.
             </summary>
         </member>
         <member name="T:CryEngine.Lua.ScriptTable">
@@ -3401,7 +3442,7 @@
             <param name="position">The position in three dimensional space of the origin of the ray.</param>
             <param name="direction">The normalized direction of the ray.</param>
         </member>
-        <member name="M:CryEngine.Ray.Cast(CryEngine.RaycastHit@,CryEngine.EntityQueryFlags,CryEngine.RayWorldIntersectionFlags,System.Int32,CryEngine.PhysicalEntity[])">
+        <member name="M:CryEngine.Ray.Cast(CryEngine.RaycastHit@,CryEngine.EntityQueryFlags,CryEngine.RayWorldIntersectionFlags,System.Int32,CryEngine.Physics.PhysicalEntity[])">
             <summary>
             Steps through the entity grid and raytraces entities
             traces a finite ray from org along dir

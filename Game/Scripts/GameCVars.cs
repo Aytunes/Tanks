@@ -6,9 +6,9 @@ using CryEngine.Extensions;
 
 namespace CryGameCode.Tanks
 {
-	public partial class Tank
+    public static class GameCVars
 	{
-		static Tank()
+        static GameCVars()
 		{
 			CVar.RegisterFloat("cam_minDistZ", ref minCameraDistanceZ);
 			CVar.RegisterFloat("cam_maxDistZ", ref maxCameraDistanceZ);
@@ -20,8 +20,11 @@ namespace CryGameCode.Tanks
 
 			CVar.RegisterFloat("cam_zoomSpeed", ref zoomSpeed);
 
-            CVar.RegisterFloat("tank_boostTime", ref maxBoostTime);
-            CVar.RegisterFloat("tank_boostAccelerationMultiplier", ref boostSpeedMult);
+            CVar.RegisterFloat("tank_turnModifier", ref turnModifier);
+
+            CVar.RegisterFloat("tank_movementSpeedMult", ref movementSpeedMultiplier);
+
+            CVar.RegisterInt("g_hardcoreMode", ref hardcoreMode);
 
 			ConsoleCommand.Register("spawn", (e) =>
 			{
@@ -57,11 +60,15 @@ namespace CryGameCode.Tanks
 		public static int maxZoomLevel = 8;
         #endregion
 
-        private static float maxBoostTime = 3;
-        private static float boostSpeedMult = 1.5f;
+    #region Tank movement
+        public static float turnModifier = 1.2f;
 
-        private static string ForceTankType;
+        public static float movementSpeedMultiplier = 6.0f;
+    #endregion
 
-		private static List<System.Type> TurretTypes;
+        public static int hardcoreMode;
+
+        public static string ForceTankType;
+        public static List<System.Type> TurretTypes;
 	}
 }

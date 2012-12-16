@@ -26,9 +26,14 @@ namespace CryGameCode.Tanks
 
                 Input.ActionmapEvents.Add("moveright", OnRotateRight);
                 Input.ActionmapEvents.Add("moveleft", OnRotateLeft);
+
+                Input.ActionmapEvents.Add("sprint", OnSprint);
+
+                Input.ActionmapEvents.Add("moveright_reverse", OnRotateRightReverse);
+                Input.ActionmapEvents.Add("moveleft_reverse", OnRotateLeftReverse);
+
                 Input.ActionmapEvents.Add("moveforward", OnMoveForward);
                 Input.ActionmapEvents.Add("moveback", OnMoveBack);
-                Input.ActionmapEvents.Add("sprint", OnSprint);
             }
 
 			OnDestroyed += (e) =>
@@ -80,10 +85,10 @@ namespace CryGameCode.Tanks
             {
                 string turretType;
 
-                if (string.IsNullOrEmpty(ForceTankType))
-                    turretType = TurretTypes[SinglePlayer.Selector.Next(TurretTypes.Count)].FullName;
+                if (string.IsNullOrEmpty(GameCVars.ForceTankType))
+                    turretType = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
                 else
-                    turretType = "CryGameCode.Tanks." + ForceTankType;
+                    turretType = "CryGameCode.Tanks." + GameCVars.ForceTankType;
 
                 if (IsLocalClient)
                     NetReset(enteringGame, turretType);
@@ -109,11 +114,9 @@ namespace CryGameCode.Tanks
 			Physics.AirControl = 0.0f;
 			Physics.Save();
 
-			InitHealth(100);
+            m_trackMoveDirection = new Vec2(0, 0);
 
-            BoostTime = maxBoostTime;
-            SpeedMultiplier = 2;
-            BackwardsSpeedMultiplier = 1.5f;
+			InitHealth(100);
 
 			ReceiveUpdates = true;
 		}
@@ -123,10 +126,11 @@ namespace CryGameCode.Tanks
 			if(m_turret != null)
 				m_turret.Update();
 
-            if (BoostTime > 0 && IsBoosting)
-                BoostTime -= Time.DeltaTime;
-            else if (BoostTime < maxBoostTime && !IsBoosting)
-                BoostTime += Time.DeltaTime;
+            if (Physics.Status != null)
+            {
+                float blend = MathHelpers.Clamp(Time.DeltaTime / 0.15f, 0, 1.0f);
+                GroundNormal = (GroundNormal + blend * (Physics.Status.Living.GroundNormal - GroundNormal));
+            }
 		}
 
 		string team;
@@ -147,5 +151,7 @@ namespace CryGameCode.Tanks
 		private TankTurret m_turret;
 		private Attachment m_leftTrack;
 		private Attachment m_rightTrack;
+
+        public Vec3 GroundNormal { get; set; }
 	}
 }

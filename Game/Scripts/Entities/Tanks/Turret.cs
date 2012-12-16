@@ -88,11 +88,19 @@ namespace CryGameCode.Tanks
 				FireRight();
 
 			var dir = Renderer.ScreenToWorld(Input.MouseX, Input.MouseY) - Attachment.Position;
-			var rot = Attachment.Rotation;
-			rot.SetRotationZ((float)Math.Atan2(-dir.X, dir.Y));
 
-			Attachment.Rotation = Quat.CreateNlerp(Attachment.Rotation, rot, Time.DeltaTime * 10);
+            var ownerRotation = Owner.Rotation;
+            var attachmentRotation = Attachment.Rotation;
+
+            rotationZ = Quat.CreateSlerp(rotationZ, Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)), Time.DeltaTime * 10);
+
+            attachmentRotation = rotationZ;
+            attachmentRotation.Normalize();
+
+            Attachment.Rotation = attachmentRotation;
 		}
+
+        Quat rotationZ;
 
 		#region Weapons
 		protected virtual void ChargeWeapon() { }
@@ -105,7 +113,7 @@ namespace CryGameCode.Tanks
 
 				var jointAbsolute = Attachment.GetJointAbsolute(helper);
 				jointAbsolute.T = Attachment.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
-				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Attachment.Rotation);
+				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Attachment.Rotation.Normalized);
 				OnFire(jointAbsolute.T);
 			}
 		}
