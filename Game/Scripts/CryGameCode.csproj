@@ -93,7 +93,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="FlowNodes\" />
     <Folder Include="Properties\" />
+    <Folder Include="UI\HUD\" />
+    <Folder Include="UI\Main Menu\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Buildings\Drill.cs" />
@@ -112,9 +115,11 @@
     <Compile Include="Entities\Projectiles\Heavy.cs" />
     <Compile Include="Entities\Projectiles\MGBullet.cs" />
     <Compile Include="Entities\Projectiles\Projectile.cs" />
+    <Compile Include="Entities\Tanks\Input\InputFlags.cs" />
     <Compile Include="Entities\Tanks\TankDamage.cs" />
     <Compile Include="Entities\Tanks\TankCamera.cs" />
-    <Compile Include="Entities\Tanks\TankConsole.cs" />
+    <Compile Include="Entities\Tanks\Input\TankInput.cs" />
+    <Compile Include="GameCVars.cs" />
     <Compile Include="Entities\Tanks\TankMovement.cs" />
     <Compile Include="Entities\Tanks\Turrets\Autocannon.cs" />
     <Compile Include="Entities\Tanks\Turrets\Chaingun.cs" />

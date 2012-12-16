@@ -24,8 +24,6 @@ namespace CryGameCode.Tanks
 
             CVar.RegisterFloat("tank_movementSpeedMult", ref movementSpeedMultiplier);
 
-            CVar.RegisterInt("g_hardcoreMode", ref hardcoreMode);
-
 			ConsoleCommand.Register("spawn", (e) =>
 			{
 				//Entity.Spawn<AutocannonTank>("spawnedTank", (Actor.LocalClient as CameraProxy).TargetEntity.Position);
@@ -65,8 +63,6 @@ namespace CryGameCode.Tanks
 
         public static float movementSpeedMultiplier = 6.0f;
     #endregion
-
-        public static int hardcoreMode;
 
         public static string ForceTankType;
         public static List<System.Type> TurretTypes;

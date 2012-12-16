@@ -3442,7 +3442,7 @@
             <param name="position">The position in three dimensional space of the origin of the ray.</param>
             <param name="direction">The normalized direction of the ray.</param>
         </member>
-        <member name="M:CryEngine.Ray.Cast(CryEngine.RaycastHit@,CryEngine.EntityQueryFlags,CryEngine.RayWorldIntersectionFlags,System.Int32,CryEngine.Physics.PhysicalEntity[])">
+        <member name="M:CryEngine.Ray.Cast(CryEngine.EntityQueryFlags,CryEngine.RayWorldIntersectionFlags,System.Int32,CryEngine.Physics.PhysicalEntity[])">
             <summary>
             Steps through the entity grid and raytraces entities
             traces a finite ray from org along dir
@@ -3451,7 +3451,7 @@
             <param name="flags"></param>
             <param name="maxHits"></param>
             <param name="skipEntities"></param>
-            <returns>The total amount of hits detected (solid and pierceable)</returns>
+            <returns>Detected hits (solid and pierceable)</returns>
         </member>
         <member name="M:CryEngine.Ray.Intersects(CryEngine.Vec3@)">
             <summary>
@@ -5236,6 +5236,26 @@
             <param name="min"></param>
             <param name="max"></param>
             <returns></returns>
+        </member>
+        <member name="P:CryEngine.RaycastHit.SurfaceType">
+            <summary>
+            The surface type that the ray collided with.
+            </summary>
+        </member>
+        <member name="P:CryEngine.RaycastHit.OriginalMaterialIndex">
+            <summary>
+            original material index, not mapped with material mapping
+            </summary>
+        </member>
+        <member name="P:CryEngine.RaycastHit.iNode">
+            <summary>
+            BV tree node that had the intersection; can be used for "warm start" next time
+            </summary>
+        </member>
+        <member name="P:CryEngine.RaycastHit.iPrim">
+            <summary>
+            hit triangle index
+            </summary>
         </member>
         <member name="F:CryEngine.RayWorldIntersectionFlags.SeperateImportantHits">
             <summary>

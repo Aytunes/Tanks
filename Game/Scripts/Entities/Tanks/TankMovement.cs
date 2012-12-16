@@ -12,7 +12,7 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
-			if(IsDestroyed)
+            if (IsDestroyed || m_tankInput == null)
 				return;
 
 			var moveRequest = new EntityMovementRequest();
@@ -35,13 +35,13 @@ namespace CryGameCode.Tanks
             else
                 normalizedVelocity = forwardDir;
 
-            var trackMoveDirection = FilterMovement(m_trackMoveDirection);
-
             var groundFriction = Physics.Status.Living.GroundSurfaceType.Parameters.Friction;
 
             var onGround = !Physics.Status.Living.IsFlying;
 
             var slopeAngle = onGround ? NormalToAngle(GroundNormal) : MathHelpers.DegreesToRadians(90);
+
+            var trackMoveDirection = GetTrackMoveDirection();
 
             ///////////////////////////
             // Velocity
@@ -87,95 +87,31 @@ namespace CryGameCode.Tanks
             return Material.Find("objects/tanks/tracksmoving_forward");
         }
 
-        private void OnRotateRight(ActionMapEventArgs e)
+        Vec2 GetTrackMoveDirection()
         {
-            m_trackMoveDirection.Y = e.Value;
+            Vec2 moveDirection = new Vec2(0, 0);
 
-            if (GameCVars.hardcoreMode == 0)
-                m_trackMoveDirection.X = -e.Value;
-        }
+            var boostMultiplier = 1;
+            if (m_tankInput.HasFlag(InputFlags.Boost))
+                boostMultiplier = 2;
 
-        private void OnRotateLeft(ActionMapEventArgs e)
-        {
-            m_trackMoveDirection.X = e.Value;
-
-            if (GameCVars.hardcoreMode == 0)
-                m_trackMoveDirection.Y = -e.Value;
-        }
-
-        #region Hardcore mode only
-        private void OnRotateRightReverse(ActionMapEventArgs e)
-        {
-            if (GameCVars.hardcoreMode == 1)
-                m_trackMoveDirection.Y = -e.Value;
-        }
-
-        private void OnRotateLeftReverse(ActionMapEventArgs e)
-        {
-            if (GameCVars.hardcoreMode == 1)
-                m_trackMoveDirection.X = -e.Value;
-        }
-        #endregion
-
-        private void OnMoveForward(ActionMapEventArgs e)
-		{
-            if (GameCVars.hardcoreMode == 0)
+            if (m_tankInput.HasFlag(InputFlags.MoveForward))
+                moveDirection.X = moveDirection.Y = 1 * boostMultiplier;
+            else if (m_tankInput.HasFlag(InputFlags.MoveBack))
+                moveDirection.X = moveDirection.Y  = -1 * boostMultiplier;
+            
+            if (m_tankInput.HasFlag(InputFlags.MoveLeft))
             {
-                m_trackMoveDirection.X = e.Value;
-                m_trackMoveDirection.Y = e.Value;
+                moveDirection.X += 1;
+                moveDirection.Y += -1;
             }
-		}
-
-		private void OnMoveBack(ActionMapEventArgs e)
-		{
-            if (GameCVars.hardcoreMode == 0)
+            else if (m_tankInput.HasFlag(InputFlags.MoveRight))
             {
-                m_trackMoveDirection.X = -e.Value;
-                m_trackMoveDirection.Y = -e.Value;
+                moveDirection.X += -1;
+                moveDirection.Y += 1;
             }
-		}
 
-		private void OnSprint(ActionMapEventArgs e)
-		{
-		}
-
-        void ApplyMovement(Vec2 delta)
-        {
-            m_trackMoveDirection.X = MathHelpers.Clamp(m_trackMoveDirection.X + delta.X, -1.0f, 1.0f);
-            m_trackMoveDirection.Y = MathHelpers.Clamp(m_trackMoveDirection.Y + delta.Y, -1.0f, 1.0f);
+            return moveDirection;
         }
-
-        Vec2 FilterMovement(Vec2 desired)
-        {
-            float frameTimeCap = MathHelpers.Min(Time.DeltaTime, 0.033f);
-	        float inputAccel = 30;
-
-	        var oldFilteredMovement = m_filteredMoveDirection;
-
-	        if (desired.Length < 0.01f)
-		        m_filteredMoveDirection = new Vec2(0, 0);
-	        else if (inputAccel<=0.0f)
-		        m_filteredMoveDirection = desired;
-	        else
-	        {
-		        var delta = desired - m_filteredMoveDirection;
-
-		        float len = delta.Length;
-		        if (len<=1.0f)
-			        delta = delta * (1.0f - len*0.55f);
-
-		        m_filteredMoveDirection += delta * MathHelpers.Min(frameTimeCap * inputAccel, 1.0f);
-	        }
-
-            return m_filteredMoveDirection;
-        }
-
-        /// <summary>
-        /// -1 - 1, -1 if going backwards, 0 if still, 1 if forward.
-        /// x = left, y = right
-        /// </summary>
-        Vec2 m_trackMoveDirection;
-
-        Vec2 m_filteredMoveDirection;
 	}
 }

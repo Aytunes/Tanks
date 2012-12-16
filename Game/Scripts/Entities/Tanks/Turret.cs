@@ -1,5 +1,8 @@
 ﻿using System;
 
+using System.Collections.Generic;
+using System.Linq;
+
 using CryEngine;
 using CryGameCode.Projectiles;
 
@@ -120,7 +123,7 @@ namespace CryGameCode.Tanks
 
 		protected void FireLeft()
 		{
-			Fire(ref m_lastleftShot, LeftHelper);
+			Fire(ref m_lastleftShot, LeftHelper);   
 		}
 
 		protected void FireRight()

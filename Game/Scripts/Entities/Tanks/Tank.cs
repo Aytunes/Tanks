@@ -19,27 +19,11 @@ namespace CryGameCode.Tanks
 		{
 			ZoomLevel = 1;
 
-            if (IsLocalClient)
-            {
-                Input.ActionmapEvents.Add("zoom_in", OnZoomIn);
-                Input.ActionmapEvents.Add("zoom_out", OnZoomOut);
-
-                Input.ActionmapEvents.Add("moveright", OnRotateRight);
-                Input.ActionmapEvents.Add("moveleft", OnRotateLeft);
-
-                Input.ActionmapEvents.Add("sprint", OnSprint);
-
-                Input.ActionmapEvents.Add("moveright_reverse", OnRotateRightReverse);
-                Input.ActionmapEvents.Add("moveleft_reverse", OnRotateLeftReverse);
-
-                Input.ActionmapEvents.Add("moveforward", OnMoveForward);
-                Input.ActionmapEvents.Add("moveback", OnMoveBack);
-            }
+            m_tankInput = new TankInput(this);
 
 			OnDestroyed += (e) =>
 			{
-                if(IsLocalClient)
-				    Input.ActionmapEvents.RemoveAll(this);
+                m_tankInput.Destroy();
 
 				if(m_turret != null)
 				{
@@ -114,8 +98,6 @@ namespace CryGameCode.Tanks
 			Physics.AirControl = 0.0f;
 			Physics.Save();
 
-            m_trackMoveDirection = new Vec2(0, 0);
-
 			InitHealth(100);
 
 			ReceiveUpdates = true;
@@ -147,6 +129,8 @@ namespace CryGameCode.Tanks
                 }
 			}
 		}
+
+        private TankInput m_tankInput;
 
 		private TankTurret m_turret;
 		private Attachment m_leftTrack;

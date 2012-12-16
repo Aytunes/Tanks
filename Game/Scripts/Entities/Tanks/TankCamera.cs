@@ -6,18 +6,21 @@ namespace CryGameCode.Tanks
 	{
 		protected override void UpdateView(ref ViewParams viewParams)
 		{
-			if(zoomingOut && ZoomLevel > 1)
-			{
-                ZoomLevel -= GameCVars.zoomSpeed;
-				if(ZoomLevel < 1)
-					ZoomLevel = 1;
-			}
-            else if (zoomingIn && ZoomLevel < GameCVars.maxZoomLevel)
-			{
-                ZoomLevel += GameCVars.zoomSpeed;
-                if (ZoomLevel > GameCVars.maxZoomLevel)
-                    ZoomLevel = GameCVars.maxZoomLevel;
-			}
+            if (m_tankInput != null)
+            {
+                if (m_tankInput.HasFlag(InputFlags.ZoomOut) && ZoomLevel > 1)
+                {
+                    ZoomLevel -= GameCVars.zoomSpeed * Time.DeltaTime;
+                    if (ZoomLevel < 1)
+                        ZoomLevel = 1;
+                }
+                else if (m_tankInput.HasFlag(InputFlags.ZoomIn) && ZoomLevel < GameCVars.maxZoomLevel)
+                {
+                    ZoomLevel += GameCVars.zoomSpeed *Time.DeltaTime;
+                    if (ZoomLevel > GameCVars.maxZoomLevel)
+                        ZoomLevel = GameCVars.maxZoomLevel;
+                }
+            }
 
             viewParams.FieldOfView = MathHelpers.DegreesToRadians(60);
 
@@ -34,25 +37,6 @@ namespace CryGameCode.Tanks
                 viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(GameCVars.minCameraAngleX + (GameCVars.minCameraAngleX - GameCVars.maxCameraAngleX) * ZoomRatio), 0, 0));
 			}
 		}
-
-		private void OnZoomIn(ActionMapEventArgs e)
-		{
-			if(e.KeyEvent == KeyEvent.OnPress)
-				zoomingIn = true;
-			else if(e.KeyEvent == KeyEvent.OnRelease)
-				zoomingIn = false;
-		}
-
-		private void OnZoomOut(ActionMapEventArgs e)
-		{
-			if(e.KeyEvent == KeyEvent.OnPress)
-				zoomingOut = true;
-			else if(e.KeyEvent == KeyEvent.OnRelease)
-				zoomingOut = false;
-		}
-
-		bool zoomingIn;
-		bool zoomingOut;
 
 		float ZoomLevel;
         float ZoomRatio { get { return ZoomLevel / GameCVars.maxZoomLevel; } }
