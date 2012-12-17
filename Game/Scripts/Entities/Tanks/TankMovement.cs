@@ -58,6 +58,7 @@ namespace CryGameCode.Tanks
             var dragDeceleration = (1.2f * 0.588f * 1.27f * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / Physics.Status.Dynamics.Mass;
 
             moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration) * Time.DeltaTime;
+            moveRequest.velocity.ClampLength(GameCVars.tank_movementMaxSpeed);
 
             ///////////////////////////
             // Rotation

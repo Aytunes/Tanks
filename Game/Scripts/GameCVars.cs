@@ -24,6 +24,7 @@ namespace CryGameCode.Tanks
             CVar.RegisterFloat("tank_turnModifier", ref tank_turnModifier);
 
             CVar.RegisterFloat("tank_movementSpeedMult", ref tank_movementSpeedMult);
+            CVar.RegisterFloat("tank_movementMaxSpeed", ref tank_movementMaxSpeed);
 
             CVar.RegisterFloat("tank_movementFrictionMult", ref tank_movementFrictionMult);
 
@@ -67,6 +68,7 @@ namespace CryGameCode.Tanks
         public static float tank_turnModifier = 1.0f;
 
         public static float tank_movementSpeedMult = 6.0f;
+        public static float tank_movementMaxSpeed = 5.0f;
 
         public static float tank_movementFrictionMult = 1.0f;
 
