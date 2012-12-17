@@ -76,7 +76,7 @@ namespace CryGameCode.Tanks
 
         private void OnZoomOut(ActionMapEventArgs e)
         {
-            SetFlag(InputFlags.ZoomIn, e.KeyEvent);
+            SetFlag(InputFlags.ZoomOut, e.KeyEvent);
         }
         #endregion
 
