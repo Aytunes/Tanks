@@ -51,7 +51,7 @@ namespace CryGameCode.Tanks
             ///////////////////////////
 
             var acceleration = trackMoveDirection.X + trackMoveDirection.Y;
-            var forwardAcceleration = forwardDir * acceleration * GameCVars.tank_movementSpeedMult * travelDirectionDot;
+            var forwardAcceleration = forwardDir * acceleration * GameCVars.tank_movementSpeedMult * Math.Abs(travelDirectionDot);
 
             var frictionDeceleration = normalizedVelocity * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle)) * GameCVars.tank_movementFrictionMult;
 
