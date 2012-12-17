@@ -68,7 +68,7 @@ namespace CryGameCode.Tanks
         public static float tank_turnModifier = 1.0f;
 
         public static float tank_movementSpeedMult = 6.0f;
-        public static float tank_movementMaxSpeed = 5.0f;
+        public static float tank_movementMaxSpeed = 6.0f;
 
         public static float tank_movementFrictionMult = 1.0f;
 
