@@ -30,6 +30,8 @@ namespace CryGameCode.Tanks
 					m_turret.Destroy();
 					m_turret = null;
 				}
+
+				ReceiveUpdates = false;
 			};
 
 			Reset(true);
