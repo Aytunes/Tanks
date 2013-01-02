@@ -422,6 +422,7 @@ bool CGame::CompleteInit()
 	return true;
 }
 
+#include <IMonoScriptSystem.h>
 void CGame::RegisterGameFlowNodes()
 {
 	// Initialize Game02 flow nodes
@@ -436,7 +437,7 @@ void CGame::RegisterGameFlowNodes()
 		}
 	}
 
-	PluginManager::RegisterPluginFlownodes();
+	GetMonoScriptSystem()->RegisterFlownodes();
 }
 
 void CGame::ResetServerGameTokenSynch()
