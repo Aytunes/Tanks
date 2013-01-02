@@ -105,6 +105,7 @@
     <Compile Include="Entities\Collectibles\CollectibleHolder.cs" />
     <Compile Include="Entities\Collectibles\HasteCollectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />
+    <Compile Include="Entities\MyEntity.cs" />
     <Compile Include="Entities\Projectiles\AutocannonRocket.cs" />
     <Compile Include="Entities\Projectiles\ChaingunBullet.cs" />
     <Compile Include="Entities\Tanks\Cursor.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Entities\Tanks\TankDamage.cs" />
     <Compile Include="Entities\Tanks\TankCamera.cs" />
     <Compile Include="Entities\Tanks\Input\TankInput.cs" />
+    <Compile Include="Entities\Tanks\TankNode.cs" />
     <Compile Include="GameCVars.cs" />
     <Compile Include="Entities\Tanks\TankMovement.cs" />
     <Compile Include="Entities\Tanks\Turrets\Autocannon.cs" />
