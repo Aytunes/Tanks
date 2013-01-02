@@ -47,24 +47,30 @@ namespace CryGameCode.Tanks
     #region Tank movement
         static void RegisterTankMovementCVars()
         {
-            CVar.RegisterFloat("tank_turnModifier", ref tank_turnModifier);
-
             CVar.RegisterFloat("tank_movementSpeedMult", ref tank_movementSpeedMult);
             CVar.RegisterFloat("tank_movementMaxSpeed", ref tank_movementMaxSpeed);
 
-            CVar.RegisterFloat("tank_movementFrictionMult", ref tank_movementFrictionMult);
-
             CVar.RegisterFloat("tank_rotationSpeed", ref tank_rotationSpeed);
-        }
 
-        public static float tank_turnModifier = 1.0f;
+            CVar.RegisterFloat("tank_maxAcceleration", ref tank_maxAcceleration);
+            CVar.RegisterFloat("tank_maxAccelerationBoosting", ref tank_maxAcceleration);
+
+            CVar.RegisterFloat("tank_accelerationSpeed", ref tank_accelerationSpeed);
+            CVar.RegisterFloat("tank_accelerationSpeedRotation", ref tank_accelerationSpeedRotation);
+            CVar.RegisterFloat("tank_decelerationSpeed", ref tank_decelerationSpeed);
+        }
 
         public static float tank_movementSpeedMult = 6.0f;
         public static float tank_movementMaxSpeed = 6.0f;
 
-        public static float tank_movementFrictionMult = 1.0f;
-
         public static float tank_rotationSpeed = 2.0f;
+
+        public static float tank_maxAcceleration = 1.0f;
+        public static float tank_maxAccelerationBoosting = 1.5f;
+
+        public static float tank_accelerationSpeed = 5.0f;
+        public static float tank_accelerationSpeedRotation = 0.75f;
+        public static float tank_decelerationSpeed = 500.0f;
     #endregion
 
         #region Console commands

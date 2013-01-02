@@ -100,6 +100,8 @@ namespace CryGameCode.Tanks
 			Physics.AirControl = 0.0f;
 			Physics.Save();
 
+            m_acceleration = new Vec2();
+
 			InitHealth(100);
 
 			ReceiveUpdates = true;
