@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using CryEngine;
+using CryEngine.Serialization;
+
 using CryGameCode.Projectiles;
 
 namespace CryGameCode.Tanks
@@ -47,7 +49,19 @@ namespace CryGameCode.Tanks
 
                 Input.MouseEvents += ProcessMouseEvents;
             }
+
+            m_mousePosition = new Vec2();
 		}
+
+        void Serialize(CrySerialize serialize)
+        {
+            serialize.BeginGroup("TankTurret");
+
+            serialize.Value("m_mousePosition.X", ref m_mousePosition.X);
+            serialize.Value("m_mousePosition.Y", ref m_mousePosition.Y);
+
+            serialize.EndGroup();
+        }
 
 		public void Destroy()
 		{
@@ -90,7 +104,13 @@ namespace CryGameCode.Tanks
 			if(m_rightFiring)
 				FireRight();
 
-			var dir = Renderer.ScreenToWorld(Input.MouseX, Input.MouseY) - Attachment.Position;
+            if (Owner.IsLocalClient)
+            {
+                m_mousePosition.X = Input.MouseX;
+                m_mousePosition.Y = Input.MouseY;
+            }
+
+            var dir = Renderer.ScreenToWorld((int)m_mousePosition.X, (int)m_mousePosition.Y) - Attachment.Position;
 
             var ownerRotation = Owner.Rotation;
             var attachmentRotation = Attachment.Rotation;
@@ -103,6 +123,10 @@ namespace CryGameCode.Tanks
             Attachment.Rotation = attachmentRotation;
 		}
 
+        /// <summary>
+        /// Mouse position in screenspace
+        /// </summary>
+        Vec2 m_mousePosition;
         Quat rotationZ;
 
 		#region Weapons

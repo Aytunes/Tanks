@@ -8,6 +8,8 @@ namespace CryGameCode.Tanks
     [Flags]
     public enum InputFlags
     {
+        First = 1 << 0,
+
         ZoomIn = 1 << 1,
         ZoomOut = 1 << 2,
 
@@ -18,5 +20,7 @@ namespace CryGameCode.Tanks
         MoveBack = 1 << 6,
 
         Boost = 1 << 7,
+
+        Last = 1 << 8,
     }
 }

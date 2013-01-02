@@ -107,6 +107,15 @@ namespace CryGameCode.Tanks
 			ReceiveUpdates = true;
 		}
 
+        protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
+        {
+            serialize.BeginGroup("Tank");
+
+
+
+            serialize.EndGroup();
+        }
+
 		public override void OnUpdate()
 		{
 			if(m_turret != null)
