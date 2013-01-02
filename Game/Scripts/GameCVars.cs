@@ -10,8 +10,17 @@ namespace CryGameCode.Tanks
 	{
         static GameCVars()
 		{
-			CVar.RegisterFloat("cam_minDistZ", ref cam_minDistZ);
-			CVar.RegisterFloat("cam_maxDistZ", ref cam_maxDistZ);
+            RegisterCameraCVars();
+            RegisterTankMovementCVars();
+
+            RegisterConsoleCommands();
+        }
+
+        #region Camera
+        static void RegisterCameraCVars()
+        {
+            CVar.RegisterFloat("cam_minDistZ", ref cam_minDistZ);
+            CVar.RegisterFloat("cam_maxDistZ", ref cam_maxDistZ);
 
             CVar.RegisterFloat("cam_distY", ref cam_distY);
 
@@ -20,37 +29,8 @@ namespace CryGameCode.Tanks
 
             CVar.RegisterFloat("cam_zoomSpeed", ref cam_zoomSpeed);
             CVar.RegisterInt("cam_maxZoomLevel", ref cam_maxZoomLevel);
+        }
 
-            CVar.RegisterFloat("tank_turnModifier", ref tank_turnModifier);
-
-            CVar.RegisterFloat("tank_movementSpeedMult", ref tank_movementSpeedMult);
-            CVar.RegisterFloat("tank_movementMaxSpeed", ref tank_movementMaxSpeed);
-
-            CVar.RegisterFloat("tank_movementFrictionMult", ref tank_movementFrictionMult);
-
-            CVar.RegisterFloat("tank_rotationSpeed", ref tank_rotationSpeed);
-
-			ConsoleCommand.Register("spawn", (e) =>
-			{
-				//Entity.Spawn<AutocannonTank>("spawnedTank", (Actor.LocalClient as CameraProxy).TargetEntity.Position);
-			});
-
-			TurretTypes = (from type in Assembly.GetExecutingAssembly().GetTypes()
-						   where type.Implements<TankTurret>()
-						   select type).ToList();
-
-			ConsoleCommand.Register("SetTankType", (e) =>
-			{
-				ForceTankType = e.Args[0];
-			});
-
-			ConsoleCommand.Register("ResetTankType", (e) =>
-			{
-				ForceTankType = string.Empty;
-			});
-		}
-
-        #region Camera
         public static float cam_minDistZ = 25;
 		public static float cam_maxDistZ = 40;
 
@@ -65,6 +45,18 @@ namespace CryGameCode.Tanks
         #endregion
 
     #region Tank movement
+        static void RegisterTankMovementCVars()
+        {
+            CVar.RegisterFloat("tank_turnModifier", ref tank_turnModifier);
+
+            CVar.RegisterFloat("tank_movementSpeedMult", ref tank_movementSpeedMult);
+            CVar.RegisterFloat("tank_movementMaxSpeed", ref tank_movementMaxSpeed);
+
+            CVar.RegisterFloat("tank_movementFrictionMult", ref tank_movementFrictionMult);
+
+            CVar.RegisterFloat("tank_rotationSpeed", ref tank_rotationSpeed);
+        }
+
         public static float tank_turnModifier = 1.0f;
 
         public static float tank_movementSpeedMult = 6.0f;
@@ -75,7 +67,31 @@ namespace CryGameCode.Tanks
         public static float tank_rotationSpeed = 2.0f;
     #endregion
 
+        #region Console commands
+        static void RegisterConsoleCommands()
+        {
+            ConsoleCommand.Register("spawn", (e) =>
+            {
+                //Entity.Spawn<AutocannonTank>("spawnedTank", (Actor.LocalClient as CameraProxy).TargetEntity.Position);
+            });
+
+            TurretTypes = (from type in Assembly.GetExecutingAssembly().GetTypes()
+                           where type.Implements<TankTurret>()
+                           select type).ToList();
+
+            ConsoleCommand.Register("SetTankType", (e) =>
+            {
+                ForceTankType = e.Args[0];
+            });
+
+            ConsoleCommand.Register("ResetTankType", (e) =>
+            {
+                ForceTankType = string.Empty;
+            });
+        }
+
         public static string ForceTankType;
         public static List<System.Type> TurretTypes;
-	}
+        #endregion
+    }
 }
