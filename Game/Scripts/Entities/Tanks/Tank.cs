@@ -53,8 +53,13 @@ namespace CryGameCode.Tanks
             if (enteringGame)
             {
                 var turretType = System.Type.GetType(turretTypeName);
-
-                m_turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
+                if (turretType == null)
+                {
+                    m_turret = new Autocannon(this);
+                    Debug.LogAlways("Turret type {0} could not be located", turretTypeName);
+                }
+                else
+                    m_turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
             }
             else
             {
