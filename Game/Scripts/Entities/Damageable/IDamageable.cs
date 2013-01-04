@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CryGameCode.Entities
 {
-	public interface IDamageable
+    public interface IDamageable
 	{
 		float Health { get; }
 		float MaxHealth { get; }
