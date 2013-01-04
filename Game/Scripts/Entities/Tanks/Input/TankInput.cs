@@ -20,17 +20,22 @@ namespace CryGameCode.Tanks
 
             if (tank.IsLocalClient)
             {
-                Input.ActionmapEvents.Add("zoom_in", OnZoomIn);
-                Input.ActionmapEvents.Add("zoom_out", OnZoomOut);
+                AddEvent("zoom_in", InputFlags.ZoomIn);
+                AddEvent("zoom_out", InputFlags.ZoomOut);
 
-                Input.ActionmapEvents.Add("moveright", OnMoveRight);
-                Input.ActionmapEvents.Add("moveleft", OnMoveLeft);
+                AddEvent("moveright", InputFlags.MoveRight);
+                AddEvent("moveleft", InputFlags.MoveLeft);
 
-                Input.ActionmapEvents.Add("sprint", OnBoost);
+                AddEvent("moveforward", InputFlags.MoveForward);
+                AddEvent("moveback", InputFlags.MoveBack);
 
-                Input.ActionmapEvents.Add("moveforward", OnMoveForward);
-                Input.ActionmapEvents.Add("moveback", OnMoveBack);
+                AddEvent("sprint", InputFlags.Boost);
             }
+        }
+
+        void AddEvent(string actionMapName, InputFlags flag)
+        {
+            Input.ActionmapEvents.Add(actionMapName, (e) => { SetFlag(flag, e.KeyEvent); });
         }
 
         void NetSerialize(CrySerialize serialize)
@@ -83,44 +88,5 @@ namespace CryGameCode.Tanks
             // Enum.HasFlag is very slow, avoid usage.
             return ((m_flags & flag) == flag);
         }
-
-        #region Camera
-        private void OnZoomIn(ActionMapEventArgs e)
-        {
-            SetFlag(InputFlags.ZoomIn, e.KeyEvent);
-        }
-
-        private void OnZoomOut(ActionMapEventArgs e)
-        {
-            SetFlag(InputFlags.ZoomOut, e.KeyEvent);
-        }
-        #endregion
-
-        #region Movement
-        private void OnMoveRight(ActionMapEventArgs e)
-        {
-            SetFlag(InputFlags.MoveRight, e.KeyEvent);
-        }
-
-        private void OnMoveLeft(ActionMapEventArgs e)
-        {
-            SetFlag(InputFlags.MoveLeft, e.KeyEvent);
-        }
-
-        private void OnMoveForward(ActionMapEventArgs e)
-        {
-            SetFlag(InputFlags.MoveForward, e.KeyEvent);
-        }
-
-        private void OnMoveBack(ActionMapEventArgs e)
-        {
-            SetFlag(InputFlags.MoveBack, e.KeyEvent);
-        }
-
-        private void OnBoost(ActionMapEventArgs e)
-        {
-            SetFlag(InputFlags.Boost, e.KeyEvent);
-        }
-        #endregion
     }
 }
