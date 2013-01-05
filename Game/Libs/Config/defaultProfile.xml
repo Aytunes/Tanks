@@ -133,6 +133,8 @@
 		<action name="rotatepitch" keyboard="maxis_y" />
 		<action name="zoom_in" onPress="1" onRelease="1" keyboard="mwheel_up" xboxpad="xi_shoulderr" ps3pad="pad_r1"/>
 		<action name="zoom_out" onPress="1"  onRelease="1" keyboard="mwheel_down" xboxpad="xi_shoulderl" ps3pad="pad_l1"/>
+		
+		<action name="cycle_view" onPress="1" keyboard="f1"/>
 	</actionmap>
 
 	<actionmap name="vehicle_general" version="22">

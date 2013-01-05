@@ -21,6 +21,8 @@ namespace CryGameCode.Tanks
 
         Boost = 1 << 7,
 
-        Last = 1 << 8,
+        CycleView = 1 << 8,
+
+        Last = 1 << 9,
     }
 }

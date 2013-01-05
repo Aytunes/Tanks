@@ -25,10 +25,10 @@ namespace CryGameCode.Tanks
 			{
                 m_tankInput.Destroy();
 
-				if(m_turret != null)
+				if(Turret != null)
 				{
-					m_turret.Destroy();
-					m_turret = null;
+					Turret.Destroy();
+					Turret = null;
 				}
 
 				ReceiveUpdates = false;
@@ -55,16 +55,16 @@ namespace CryGameCode.Tanks
                 var turretType = System.Type.GetType(turretTypeName);
                 if (turretType == null)
                 {
-                    m_turret = new Autocannon(this);
+                    Turret = new Autocannon(this);
                     Debug.LogAlways("Turret type {0} could not be located", turretTypeName);
                 }
                 else
-                    m_turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
+                    Turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
             }
             else
             {
-                m_turret.Destroy();
-                m_turret = null;
+                Turret.Destroy();
+                Turret = null;
             }
         }
 
@@ -123,8 +123,8 @@ namespace CryGameCode.Tanks
 
 		public override void OnUpdate()
 		{
-			if(m_turret != null)
-				m_turret.Update();
+			if(Turret != null)
+				Turret.Update();
 
             if (Physics.Status != null)
             {
@@ -150,7 +150,7 @@ namespace CryGameCode.Tanks
 
         private TankInput m_tankInput;
 
-		private TankTurret m_turret;
+        public TankTurret Turret { get; set; }
 		private Attachment m_leftTrack;
 		private Attachment m_rightTrack;
 

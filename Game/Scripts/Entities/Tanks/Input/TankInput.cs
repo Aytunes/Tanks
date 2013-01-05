@@ -30,6 +30,26 @@ namespace CryGameCode.Tanks
                 AddEvent("moveback", InputFlags.MoveBack);
 
                 AddEvent("sprint", InputFlags.Boost);
+
+                Input.ActionmapEvents.Add("rotateyaw", (e) =>
+                {
+                    if (Owner != null && Owner.Turret != null)
+                        Owner.Turret.OnRotateYaw(e.Value);
+                });
+
+                Input.ActionmapEvents.Add("rotatepitch", (e) =>
+                {
+                    if (Owner != null && Owner.Turret != null)
+                        Owner.Turret.OnRotatePitch(e.Value);
+                });
+
+                Input.ActionmapEvents.Add("cycle_view", (e) =>
+                    {
+                        if (GameCVars.cam_type < (int)CameraType.Last - 1)
+                            GameCVars.cam_type++;
+                        else
+                            GameCVars.cam_type = 0;
+                    });
             }
         }
 

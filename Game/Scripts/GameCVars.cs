@@ -29,6 +29,8 @@ namespace CryGameCode.Tanks
 
             CVar.RegisterFloat("cam_zoomSpeed", ref cam_zoomSpeed);
             CVar.RegisterInt("cam_maxZoomLevel", ref cam_maxZoomLevel);
+
+            CVar.RegisterInt("cam_type", ref cam_type);
         }
 
         public static float cam_minDistZ = 25;
@@ -42,6 +44,8 @@ namespace CryGameCode.Tanks
         public static float cam_zoomSpeed = 2;
 
         public static int cam_maxZoomLevel = 8;
+
+        public static int cam_type = (int)CameraType.TopDown;
         #endregion
 
     #region Tank movement

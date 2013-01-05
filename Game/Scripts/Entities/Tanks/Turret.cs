@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using CryEngine;
+using CryEngine.Physics;
 using CryEngine.Serialization;
 
 using CryGameCode.Projectiles;
@@ -72,6 +73,16 @@ namespace CryGameCode.Tanks
 			}
 		}
 
+        public void OnRotateYaw(float value)
+        {
+
+        }
+
+        public void OnRotatePitch(float value)
+        {
+
+        }
+
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
 			switch(e.MouseEvent)
@@ -138,7 +149,7 @@ namespace CryGameCode.Tanks
 			{
 				shotTime = Time.FrameStartTime;
 
-				var jointAbsolute = Attachment.GetJointAbsolute(helper);
+                var jointAbsolute = Attachment.GetJointAbsolute(helper);
 				jointAbsolute.T = Attachment.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
 				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Attachment.Rotation.Normalized);
 				OnFire(jointAbsolute.T);

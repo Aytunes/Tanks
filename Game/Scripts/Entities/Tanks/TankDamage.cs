@@ -28,8 +28,8 @@ namespace CryGameCode.Tanks
 		{
 			Hidden = hide;
 
-			if(m_turret != null)
-				m_turret.Hide(hide);
+			if(Turret != null)
+				Turret.Hide(hide);
 
 			if(!m_leftTrack.IsDestroyed)
 				m_leftTrack.Hidden = hide;
