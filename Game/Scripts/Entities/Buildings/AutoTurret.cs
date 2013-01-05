@@ -10,7 +10,7 @@ using CryGameCode.Tanks;
 namespace CryGameCode.Entities.Buildings
 {
     [Entity(Category = "Buildings")]
-    public class AutoTurret : Entity
+    public class AutoTurret : DamageableEntity
     {
         protected override void OnEditorReset(bool enteringGame)
         {
@@ -31,11 +31,35 @@ namespace CryGameCode.Entities.Buildings
         {
             ReceiveUpdates = true;
 
+            LoadObject(Model);
+
+            Physics.Mass = 100;
+            Physics.Resting = false;
+            Physics.Type = PhysicalizationType.Rigid;
+
+            Physics.AddImpulse(new Vec3(0, 0, -1));
+
+            Health = MaxHealth = 100;
+
+            Hidden = false;
+
             Range = 500;
+        }
+
+        protected override void OnCollision(EntityId colliderId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
+        {
+            // collided with terrain
+            if (colliderId == 0)
+            {
+                Physics.Type = PhysicalizationType.Static;
+            }
         }
 
         public override void OnUpdate()
         {
+            if (IsDead)
+                return;
+
             var position = Position;
 
             var bbox = new BoundingBox(new Vec3(position.X - Range, position.Y - Range, position.Z - Range), new Vec3(position.X + Range, position.Y + Range, position.Z + Range));
@@ -69,13 +93,20 @@ namespace CryGameCode.Entities.Buildings
             {
                 lastShot = Time.FrameStartTime;
 
-                var turretPos = Position + new Vec3(0, 0, 1);
+                var turretPos = Position + Rotation * new Vec3(2, 0, 1); // temporary offset, remove when we have helpers.
                 Vec3 direction = target.Position - Position;
                 direction.Normalize();
 
                 Entity.Spawn<Projectiles.Bullet>("pain", turretPos, Quat.CreateRotationVDir(direction));
             }
         }
+
+        public override void OnDeath()
+        {
+            Hidden = true;
+        }
+
+        public string Model { get { return "Objects/tank_gameplay_assets/droppod_turret/turretblock.cgf"; } }
 
         float lastShot;
         float TimeBetweenShots { get { return 0.1f; } }
