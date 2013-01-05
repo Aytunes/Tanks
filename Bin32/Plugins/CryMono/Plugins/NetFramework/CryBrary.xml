@@ -193,7 +193,7 @@
         </member>
         <member name="P:CryEngine.EntityBase.Hidden">
             <summary>
-            Gets or sets a value indicating whether the player is hidden or not.
+            Gets or sets a value indicating whether the entity is hidden or not.
             </summary>
         </member>
         <member name="P:CryEngine.EntityBase.Position">
@@ -681,48 +681,6 @@
             Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
             </summary>
         </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortInt(System.Action{System.Int32})">
-            <summary>
-            Gets the int value of an flownode port.
-            </summary>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortFloat(System.Action{System.Single})">
-            <summary>
-            Gets the float value of an flownode port.
-            </summary>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortVec3(System.Action{CryEngine.Vec3})">
-            <summary>
-            Gets the int value of an flownode port.
-            </summary>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortString(System.Action{System.String})">
-            <summary>
-            Gets the string value of an flownode port.
-            </summary>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.GetPortBool(System.Action{System.Boolean})">
-            <summary>
-            Gets the bool value of an flownode port.
-            </summary>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.IsPortActive(System.Int32)">
-            <summary>
-            Used to check whether an input port is currently activated.
-            </summary>
-            <param name="port"></param>
-            <returns></returns>
-        </member>
         <member name="P:CryEngine.EntityLink.Handle">
             <summary>
             Native IEntityLink handle
@@ -1080,11 +1038,6 @@
         <member name="F:CryEngine.FlowSystem.StringPortType.Sound">
             <summary>
             Only applicable on string inputs.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowSystem.StringPortType.Color">
-            <summary>
-            Only applicable on Vec3 inputs.
             </summary>
         </member>
         <member name="F:CryEngine.FlowSystem.StringPortType.Material">
@@ -2806,6 +2759,11 @@
             For characters: the scale of force in joint springs.
             </summary>
         </member>
+        <member name="P:CryEngine.Physics.PhysicalEntity.Handle">
+            <summary>
+            IPhysicalEntity *
+            </summary>
+        </member>
         <member name="T:CryEngine.Lua.ScriptTable">
             <summary>
             Represents a Lua ScriptTable.
@@ -3362,13 +3320,12 @@
             <param name="blue"></param>
             <param name="alpha"></param>
         </member>
-        <member name="M:CryEngine.Color.#ctor(System.Single,System.Single,System.Single)">
+        <member name="M:CryEngine.Color.#ctor(CryEngine.Vec3,System.Single)">
             <summary>
-            Constructs a new color object specifying the red, green, and blue values.
+            Constructs a new color object specifying the red, green, blue and alpha values.
             </summary>
-            <param name="red"></param>
-            <param name="green"></param>
-            <param name="blue"></param>
+            <param name="rgb"></param>
+            <param name="a"></param>
         </member>
         <member name="M:CryEngine.Color.#ctor(System.Single)">
             <summary>
