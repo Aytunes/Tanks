@@ -1,6 +1,6 @@
-<Material MtlFlags="524290" Shader="Vegetation" GenMask="400200000" StringGenMask="%GRASS%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.31118053,0.31118053,0.31118053" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.55000001">
+<Material MtlFlags="524290" Shader="Vegetation" GenMask="400200000" StringGenMask="%GRASS%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.50543249,0.50543249,0.50543249" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.55000001">
  <Textures>
   <Texture Map="Diffuse" File="objects/tank_env_assets/natural/grasses/desert_grass_diff.tif"/>
  </Textures>
- <PublicParams bendDetailLeafAmplitude="0.57800001" BackShadowBias="0" FresnelPower="4" bendDetailFrequency="2.55" bendDetailBranchAmplitude="0.44" blendWithTerrainAmount="0.5" FresnelScale="1" FresnelBias="1" BackViewDep="0.5" BackDiffuseMultiplier="4" BackDiffuse="0.35865393,0.12752977,0.027755279" IndirectColor="0.25,0.25,0.25"/>
+ <PublicParams bendDetailLeafAmplitude="0.57800001" BackShadowBias="0" FresnelPower="4" bendDetailFrequency="2.55" bendDetailBranchAmplitude="0.44" blendWithTerrainAmount="0.5" FresnelScale="1" FresnelBias="1" BackViewDep="0.5" BackDiffuseMultiplier="4" BackDiffuse="0.63877946,0.31576276,0.13902245" IndirectColor="0.25,0.25,0.25"/>
 </Material>

@@ -1,6 +1,6 @@
 <Material MtlFlags="524544">
  <SubMaterials>
-  <Material Name="Cacti" MtlFlags="524416" Shader="Vegetation" GenMask="400800000" StringGenMask="%LEAVES%TEMP_VEGETATION" SurfaceType="" MatTemplate="" Diffuse="0.51139784,0.34402567,0.10615607" Specular="0.19751643,0.19751643,0.19751643" Emissive="0,0,0" Shininess="184" Opacity="1">
+  <Material Name="Cacti" MtlFlags="524416" Shader="Illum" GenMask="2100080000" StringGenMask="%GLOSS_MAP%TESSELLATION%VERTCOLORS" SurfaceType="" MatTemplate="" Diffuse="0.32972905,0.32972905,0.32972905" Specular="1,1,1" Emissive="0,0,0" Shininess="97" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/natural/cacti/textures/cacti_diff.tif"/>
     <Texture Map="Specular" File="objects/tank_env_assets/natural/cacti/textures/cacti_spec.tif"/>
@@ -8,7 +8,7 @@
     <Texture Map="Environment" File="textures/cubemaps/desert/environmentprobe1_cm.tif"/>
     <Texture Map="Opacity" File="objects/tank_env_assets/natural/cacti/textures/cacti_spec.tif"/>
    </Textures>
-   <PublicParams bendDetailLeafAmplitude="0.2" BackShadowBias="0.89999998" FresnelPower="4" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" FresnelScale="1" FresnelBias="1" CapOpacityFalloff="1" BackViewDep="0.5" BackDiffuseMultiplier="0.85000002" BackDiffuse="0.93227684,0.56680977,0.26735809" IndirectColor="0.25,0.25,0.25"/>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
   <Material Name="Barbs" MtlFlags="524418" Shader="Illum" GenMask="100010000" StringGenMask="%ENVIRONMENT_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.68703085,0.68703085,0.68703085" Specular="0.096266121,0.096266121,0.096266121" Emissive="0,0,0" Shininess="10" Opacity="1" AlphaTest="0.25">
    <Textures>
