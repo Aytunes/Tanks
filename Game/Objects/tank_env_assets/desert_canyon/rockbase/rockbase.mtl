@@ -1,6 +1,6 @@
 <Material MtlFlags="524544">
  <SubMaterials>
-  <Material Name="sand" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.13609855,0.13609855,0.13609855" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="sand" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.13609855,0.13609855,0.13609855" Specular="0.09387587,0.09387587,0.09387587" Emissive="0,0,0" Shininess="90" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/sand_diff.tif"/>
     <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/sand_spec.tif"/>

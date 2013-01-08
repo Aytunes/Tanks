@@ -1,0 +1,6 @@
+<Material MtlFlags="524290" Shader="Illum" GenMask="2100000000" StringGenMask="%TESSELLATION%VERTCOLORS" SurfaceType="" MatTemplate="" Diffuse="0.43134022,0.43134022,0.43134022" Specular="1,1,1" Emissive="2.3328002e-005,2.3328002e-005,2.3328002e-005" Opacity="0.0099999998" AlphaTest="0.16">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/tank_env_assets/clouds/cloudpuffalpha1.tif"/>
+ </Textures>
+ <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
+</Material>
