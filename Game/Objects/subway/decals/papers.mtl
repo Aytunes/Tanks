@@ -1,0 +1,7 @@
+<Material MtlFlags="524288" Shader="Illum" GenMask="100000000" StringGenMask="%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.50543249,0.50543249,0.50543249" Specular="1,1,1" Emissive="0,0,0" Shininess="255" Opacity="0.99000001">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/subway/decals/paperdecals.tif"/>
+  <Texture Map="Environment" File="textures/cubemaps/subway/environmentprobe1_cm.tif"/>
+ </Textures>
+ <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0.30000001" GlossFromDiffuseBrightness="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

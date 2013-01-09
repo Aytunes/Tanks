@@ -1,0 +1,6 @@
+<Material MtlFlags="524288" Shader="Illum" GenMask="100000800" StringGenMask="%DECAL%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.38891026,0.38891026,0.38891026" Specular="0,0,0" Emissive="0,0,0" Opacity="0.99000001" AlphaTest="0.99000001">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/subway/decals/textdecals.tif"/>
+ </Textures>
+ <PublicParams FresnelPower="0" GlossFromDiffuseContrast="10" FresnelScale="0" GlossFromDiffuseOffset="0" FresnelBias="0" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>
