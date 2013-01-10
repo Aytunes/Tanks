@@ -45,10 +45,10 @@
    </Textures>
    <PublicParams FogColor="1,1,1" BumpMapTile="0" TintColor="0,0,0" FresnelPower="0" FresnelScale="0" FogCutoffEnd="20" FresnelBias="0" FogDensity="1" TintCloudiness="1" BackLightScale="0.83399999" BumpScale="0.1"/>
   </Material>
-  <Material Name="bridge" MtlFlags="524416" Shader="Illum" GenMask="2100090000" StringGenMask="%ENVIRONMENT_MAP%GLOSS_MAP%TESSELLATION%VERTCOLORS" SurfaceType="" MatTemplate="" Diffuse="0.026548682,0.067724593,0.0045597549" Specular="0.25084025,0.25084025,0.25084025" Emissive="0,0,0" Shininess="139" Opacity="1">
+  <Material Name="bridge" MtlFlags="524416" Shader="Illum" GenMask="2100080000" StringGenMask="%GLOSS_MAP%TESSELLATION%VERTCOLORS" SurfaceType="" MatTemplate="" Diffuse="0.15415226,0.0071550366,0.0071550366" Specular="0.15728073,0.15728073,0.15728073" Emissive="0,0,0" Shininess="125" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/greenmetal_bridge.tif">
-     <TexMod TileU="0.5" TileV="0.5"/>
+     <TexMod TileU="0.75" TileV="0.75"/>
     </Texture>
     <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/greenmetal_bridge_spec.tif"/>
     <Texture Map="Environment" File="textures/cubemaps/desert/environmentprobe1_cm.tif"/>
@@ -59,6 +59,27 @@
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/road_diff.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/road_ddn.tif"/>
+   </Textures>
+   <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="woodenbarrier" MtlFlags="524416" Shader="Illum" GenMask="2100080000" StringGenMask="%GLOSS_MAP%TESSELLATION%VERTCOLORS" SurfaceType="" MatTemplate="" Diffuse="0.14497213,0.21951973,0.26735809" Specular="0.15728073,0.15728073,0.15728073" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/wood_barriers_diff.tif">
+     <TexMod TileU="0.75" TileV="0.75"/>
+    </Texture>
+    <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/wood_barriers_spec.tif"/>
+    <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/wood_barriers_ddn.tif"/>
+    <Texture Map="Environment" File="textures/cubemaps/desert/environmentprobe1_cm.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="concrete" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.047775757,0.035614368,0.031551391" Specular="0.48195225,0.48195225,0.48195225" Emissive="0,0,0" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/concretewall_dif.tif">
+     <TexMod TileU="0.34" TileV="0.34"/>
+    </Texture>
+    <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/concretewall_spec.tif"/>
+    <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/concretewall_ddn.tif"/>
    </Textures>
    <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
   </Material>
