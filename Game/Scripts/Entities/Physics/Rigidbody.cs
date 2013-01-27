@@ -5,7 +5,7 @@ namespace CryGameCode.Entities
 	[Entity(Category = "Physics")]
 	public class Rigidbody : Entity
 	{
-		[EditorProperty(Type = EntityPropertyType.Object)]
+		[EditorProperty(Type = EditorPropertyType.Object)]
 		public string Model { get { return GetObjectFilePath(); } set { LoadObject(value); } }
 
         float mass;

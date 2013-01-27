@@ -738,7 +738,7 @@ void CGameStartup::ShutdownWindow()
 #ifdef WIN32
 
 //////////////////////////////////////////////////////////////////////////
-LRESULT CALLBACK CGameStartup::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+PLUGIN_SDK_WINPROC_INJECTOR(LRESULT CALLBACK CGameStartup::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam))
 {
 	switch(msg)
 	{

@@ -18,7 +18,7 @@ namespace CryGameCode.Entities.Lights
 			Activate(Activated);
 		}
 
-		protected override void OnPropertyChanged(System.Reflection.MemberInfo memberInfo, EntityPropertyType propertyType, object newValue)
+        protected override void OnPropertyChanged(System.Reflection.MemberInfo memberInfo, EditorPropertyType propertyType, object newValue)
 		{
 			Activate(Activated, true);
 		}
@@ -56,30 +56,30 @@ namespace CryGameCode.Entities.Lights
 		[EditorProperty]
 		public bool Activated { get; set; }
 
-		[EditorProperty(DefaultValue = 10)]
-		public float Radius;
+		[EditorProperty]
+        public float Radius = 10;
 
 		#region Style
 		[EditorProperty]
 		public int LightStyle;
 
-		[EditorProperty(DefaultValue = 1)]
-		public float CoronaScale;
-		[EditorProperty(DefaultValue = 1)]
-		public float CoronaIntensity;
-		[EditorProperty(DefaultValue = 1)]
-		public float CoronaDistSizeFactor;
-		[EditorProperty(DefaultValue = 1)]
-		public float CoronaDistIntensityFactor;
+		[EditorProperty]
+		public float CoronaScale = 1;
+		[EditorProperty]
+		public float CoronaIntensity = 1;
+        [EditorProperty]
+        public float CoronaDistSizeFactor = 1;
+		[EditorProperty]
+		public float CoronaDistIntensityFactor = 1;
 		#endregion
 
 		#region Color
-		[EditorProperty(Type = EntityPropertyType.Color)]
+        [EditorProperty(Type = EditorPropertyType.Color)]
 		public Vec3 DiffuseColor { get; set; }
-		[EditorProperty(DefaultValue = 1)]
-		public float DiffuseMultiplier;
-		[EditorProperty(DefaultValue = 1)]
-		public float SpecularMultiplier;
+		[EditorProperty]
+		public float DiffuseMultiplier = 1;
+		[EditorProperty]
+		public float SpecularMultiplier = 1;
 
 		[EditorProperty]
 		public float HDRDynamic;

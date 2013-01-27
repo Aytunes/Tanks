@@ -33,7 +33,7 @@ namespace CryGameCode.Projectiles
 				var target = Entity.Get(targetEntityId) as IDamageable;
 
 				if(target != null)
-					target.Damage(Damage, DamageType);
+					target.Damage(Damage, DamageType, hitPos, dir);
 			}
 
 			if(ShouldExplode)

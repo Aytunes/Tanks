@@ -34,12 +34,12 @@ namespace CryGameCode.Entities.Buildings
 			//if(m_destroyedEffect != null)
 			//	m_destroyedEffect.Remove();
 
-			OnDamage(0, DamageType.None);
+			OnDamage(0, DamageType.None, Vec3.Zero, Vec3.Zero);
 
 			Material = Material.Find("objects/tank_env_assets/scifi/drill_" + m_team);
 		}
 
-		public override void OnDeath()
+        public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
 			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
 			StopAnimation(blendOutTime: 1);

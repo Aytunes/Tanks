@@ -4,13 +4,13 @@ namespace CryGameCode.Entities
 {
 	public abstract class DamageableActor : Actor, IDamageable
 	{
-		public void Damage(float damage, DamageType type)
+        public void Damage(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
             Health = MathHelpers.Max(Health - damage, 0);
-			OnDamage(damage, type);
+			OnDamage(damage, type, pos, dir);
 
 			if(Health <= 0 && !IsDead)
-				OnDeath();
+				OnDeath(damage, type, pos, dir);
 		}
 
 		public void Heal(float amount)
@@ -24,7 +24,7 @@ namespace CryGameCode.Entities
 			MaxHealth = amount;
 		}
 
-		public virtual void OnDeath() { }
-		public virtual void OnDamage(float damage, DamageType type) { }
+        public virtual void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir) { }
+        public virtual void OnDamage(float damage, DamageType type, Vec3 pos, Vec3 dir) { }
 	}
 }

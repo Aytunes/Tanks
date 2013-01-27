@@ -437,7 +437,7 @@ void CGame::RegisterGameFlowNodes()
 		}
 	}
 
-	GetMonoScriptSystem()->RegisterFlownodes();
+	//GetMonoScriptSystem()->RegisterFlownodes();
 }
 
 void CGame::ResetServerGameTokenSynch()

@@ -3,7 +3,7 @@
 namespace CryGameCode.Entities.Physics
 {
 	[Entity(Category = "Physics", Icon = "physicsobject.bmp")]
-	public class DestroyableObject : Entity
+	public class DestroyableObject : DamageableEntity
 	{
 		public override void OnSpawn()
 		{
@@ -20,41 +20,31 @@ namespace CryGameCode.Entities.Physics
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Stiffness = 70;
 
-			Destroyed = false;
+            InitHealth(100);
 		}
 
-		protected override void  OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
-		{
-			if(!Destroyed && targetEntityId!=0)
-			{
-				var breakageParams = new BreakageParameters();
-				breakageParams.type = BreakageType.Destroy;
-				breakageParams.fParticleLifeTime = 7.0f;
-				breakageParams.bMaterialEffects = true;
-				breakageParams.nGenericCount = 0;
-				breakageParams.bForceEntity = false;
-				breakageParams.bOnlyHelperPieces = false;
+        public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
+        {
+            var breakageParams = new BreakageParameters();
+            breakageParams.type = BreakageType.Destroy;
+            breakageParams.fParticleLifeTime = 7.0f;
+            breakageParams.bMaterialEffects = true;
+            breakageParams.nGenericCount = 0;
+            breakageParams.bForceEntity = false;
+            breakageParams.bOnlyHelperPieces = false;
 
-				breakageParams.fExplodeImpulse = 10.0f;
-				breakageParams.vHitImpulse = dir;
-				breakageParams.vHitPoint = hitPos;
+            breakageParams.fExplodeImpulse = 10.0f;
+            breakageParams.vHitImpulse = dir;
+            breakageParams.vHitPoint = pos;
 
-				Physics.Break(breakageParams);
+            Physics.Break(breakageParams);
 
-				SetSlotFlags(GetSlotFlags() | EntitySlotFlags.Render);
-
-				Destroyed = true;
-			}
-		}
+            SetSlotFlags(GetSlotFlags() | EntitySlotFlags.Render);
+        }
 
 		#region Editor Properties
-		[EditorProperty(Type = EntityPropertyType.Float, DefaultValue = 100.0f)]
-		public float Health { get; set; }
-
-		[EditorProperty(Type = EntityPropertyType.Object, DefaultValue = "objects/props/maritime/lobster_cage/lobster_cage.cgf")]
+        [EditorProperty(Type = EditorPropertyType.Object)]
 		public string Model { get { return GetObjectFilePath(); } set { LoadObject(value); } }
 		#endregion
-
-		public bool Destroyed { get; private set; }
 	}
 }

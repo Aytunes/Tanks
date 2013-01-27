@@ -41,7 +41,7 @@
         </member>
         <member name="P:CryEngine.CryScriptInstance.Script">
             <summary>
-            Gets the instance script, set in <see cref="M:CryEngine.Initialization.ScriptManager.CreateScriptInstance(CryEngine.Initialization.CryScript,System.Object[])"/>.
+            Gets the instance script, set in <see cref="M:CryEngine.Initialization.ScriptManager.CreateScriptInstance(CryEngine.Initialization.CryScript,System.Object[],System.Boolean)"/>.
             </summary>
         </member>
         <member name="E:CryEngine.CryScriptInstance.OnDestroyed">
@@ -459,6 +459,46 @@
             View field of view
             </summary>
         </member>
+        <member name="T:CryEngine.GameRulesAttribute">
+            <summary>
+            Attribute used for specifying extra functionality for custom game rules classes.
+            </summary>
+        </member>
+        <member name="P:CryEngine.GameRulesAttribute.Name">
+            <summary>
+            Sets the game mode's name. Uses the class name if not set.
+            </summary>
+        </member>
+        <member name="P:CryEngine.GameRulesAttribute.Default">
+            <summary>
+            If set to true, the game mode will be set as default.
+            </summary>
+        </member>
+        <member name="T:CryEngine.Sandbox.SandboxExtensionAttribute">
+            <summary>
+            Defines a Sandbox extension.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Sandbox.SandboxExtensionAttribute.Name">
+            <summary>
+            The name of the extension.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Sandbox.SandboxExtensionAttribute.Description">
+            <summary>
+            An optional description of the extension's purpose.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Sandbox.SandboxExtensionAttribute.AuthorName">
+            <summary>
+            The name of the author.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Sandbox.SandboxExtensionAttribute.AuthorContact">
+            <summary>
+            A method, such as a website or email address, to contact the extension developer.
+            </summary>
+        </member>
         <member name="T:CryEngine.CVarException">
             <summary>
             This exception is called when invalid CVar operations are performed.
@@ -668,6 +708,78 @@
         <member name="P:CryEngine.SurfaceType.Handle">
             <summary>
             Gets or sets the native ISurfaceType pointer.
+            </summary>
+        </member>
+        <member name="T:CryEngine.EditorPropertyAttribute">
+            <summary>
+            Defines a property that is displayed and editable inside Sandbox.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EditorPropertyAttribute.Min">
+            <summary>
+            Gets or sets the minimum value
+            </summary>
+        </member>
+        <member name="P:CryEngine.EditorPropertyAttribute.Max">
+            <summary>
+            Gets or sets the maximum value
+            </summary>
+        </member>
+        <member name="P:CryEngine.EditorPropertyAttribute.Type">
+            <summary>
+            Gets or sets the property type.
+            Should be used for special types such as files.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EditorPropertyAttribute.Name">
+            <summary>
+            Gets or sets the name of the property, if not set the entity class name will be used.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EditorPropertyAttribute.Description">
+            <summary>
+            Gets or sets the description to display when the user hovers over this property inside Sandbox.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EditorPropertyAttribute.Folder">
+            <summary>
+            Folder in which the entity property resides.
+            If null, not contained in a folder.
+            </summary>
+        </member>
+        <member name="T:CryEngine.EntityAttribute">
+            <summary>
+            Defines additional information used by the entity registration system.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityAttribute.Name">
+            <summary>
+            Gets or sets the Entity class name. Uses class name if not set.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityAttribute.EditorHelper">
+            <summary>
+            Gets or sets the helper mesh displayed inside Sandbox.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityAttribute.Flags">
+            <summary>
+            Gets or sets the class flags for this entity.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityAttribute.Category">
+            <summary>
+            Gets or sets the category in which the entity will be placed.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityAttribute.Icon">
+            <summary>
+            Gets or sets the helper graphic displayed inside Sandbox.
+            </summary>
+        </member>
+        <member name="T:CryEngine.EditorPropertyType">
+            <summary>
+            Defines the list of supported editor types.
             </summary>
         </member>
         <member name="M:CryEngine.FlowSystem.FlowNode.OnPortActivated(System.Int32,System.Object)">
@@ -931,7 +1043,7 @@
             </summary>
             <param name="parent"></param>
         </member>
-        <member name="M:CryEngine.Entity.OnPropertyChanged(System.Reflection.MemberInfo,CryEngine.EntityPropertyType,System.Object)">
+        <member name="M:CryEngine.Entity.OnPropertyChanged(System.Reflection.MemberInfo,CryEngine.EditorPropertyType,System.Object)">
             <summary>
             Called when the user changes a property from within the Editor.
             </summary>
@@ -1033,16 +1145,6 @@
         <member name="P:CryEngine.FlowSystem.PortAttribute.StringPortType">
             <summary>
             Only to be used for string ports
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowSystem.StringPortType.Sound">
-            <summary>
-            Only applicable on string inputs.
-            </summary>
-        </member>
-        <member name="F:CryEngine.FlowSystem.StringPortType.Material">
-            <summary>
-            Only applicable on string inputs.
             </summary>
         </member>
         <member name="F:CryEngine.KeyEvent.OnPress">
@@ -1891,6 +1993,12 @@
             Attempt to reload scripts again
             </summary>
         </member>
+        <member name="F:CryEngine.Initialization.EntityRegistrationParams.propertyFolders">
+            <summary>
+            EntityPropertyFolder array containing properties.
+            The first index contains a fake folder which is referred to as the default category.
+            </summary>
+        </member>
         <member name="T:CryEngine.ScriptInstanceDestroyedException">
             <summary>
             Thrown when attempting to invoke native methods on a destroyed entity.
@@ -2367,31 +2475,6 @@
         <member name="F:CryEngine.NetworkTarget.ToRemoteClients">
             <summary>
             To all remote clients
-            </summary>
-        </member>
-        <member name="T:CryEngine.Sandbox.SandboxExtensionAttribute">
-            <summary>
-            Defines a Sandbox extension.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Sandbox.SandboxExtensionAttribute.Name">
-            <summary>
-            The name of the extension.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Sandbox.SandboxExtensionAttribute.Description">
-            <summary>
-            An optional description of the extension's purpose.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Sandbox.SandboxExtensionAttribute.AuthorName">
-            <summary>
-            The name of the author.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Sandbox.SandboxExtensionAttribute.AuthorContact">
-            <summary>
-            A method, such as a website or email address, to contact the extension developer.
             </summary>
         </member>
         <member name="F:CryEngine.Sandbox.FormLoader.components">
@@ -3442,7 +3525,7 @@
             <param name="position">The position in three dimensional space of the origin of the ray.</param>
             <param name="direction">The normalized direction of the ray.</param>
         </member>
-        <member name="M:CryEngine.Ray.Cast(CryEngine.EntityQueryFlags,CryEngine.RayWorldIntersectionFlags,System.Int32,CryEngine.Physics.PhysicalEntity[])">
+        <member name="M:CryEngine.Ray.Cast(CryEngine.EntityQueryFlags,CryEngine.RayWorldIntersectionFlags,System.Int32,System.IntPtr[])">
             <summary>
             Steps through the entity grid and raytraces entities
             traces a finite ray from org along dir
@@ -3450,7 +3533,7 @@
             <param name="objectTypes"></param>
             <param name="flags"></param>
             <param name="maxHits"></param>
-            <param name="skipEntities"></param>
+            <param name="skipEntities">an array of IPhysicalEntity handles. <see cref="M:CryEngine.Native.NativeHandleExtensions.GetIPhysicalEntity(CryEngine.Physics.PhysicalEntity)"/></param>
             <returns>Detected hits (solid and pierceable)</returns>
         </member>
         <member name="M:CryEngine.Ray.Intersects(CryEngine.Vec3@)">
@@ -5413,72 +5496,6 @@
             <param name="comment">Help string, will be displayed when typing in console "command ?".</param>
             <param name="flags">Bitfield consist of VF_ flags (e.g. VF_CHEAT)</param>
         </member>
-        <member name="T:CryEngine.EntityAttribute">
-            <summary>
-            Defines additional information used by the entity registration system.
-            </summary>
-        </member>
-        <member name="P:CryEngine.EntityAttribute.Name">
-            <summary>
-            Gets or sets the Entity class name. Uses class name if not set.
-            </summary>
-        </member>
-        <member name="P:CryEngine.EntityAttribute.EditorHelper">
-            <summary>
-            Gets or sets the helper mesh displayed inside Sandbox.
-            </summary>
-        </member>
-        <member name="P:CryEngine.EntityAttribute.Flags">
-            <summary>
-            Gets or sets the class flags for this entity.
-            </summary>
-        </member>
-        <member name="P:CryEngine.EntityAttribute.Category">
-            <summary>
-            Gets or sets the category in which the entity will be placed.
-            </summary>
-        </member>
-        <member name="P:CryEngine.EntityAttribute.Icon">
-            <summary>
-            Gets or sets the helper graphic displayed inside Sandbox.
-            </summary>
-        </member>
-        <member name="T:CryEngine.EditorPropertyAttribute">
-            <summary>
-            Defines a property that is displayed and editable inside Sandbox.
-            </summary>
-        </member>
-        <member name="P:CryEngine.EditorPropertyAttribute.Min">
-            <summary>
-            Gets or sets the minimum value
-            </summary>
-        </member>
-        <member name="P:CryEngine.EditorPropertyAttribute.Max">
-            <summary>
-            Gets or sets the maximum value
-            </summary>
-        </member>
-        <member name="P:CryEngine.EditorPropertyAttribute.DefaultValue">
-            <summary>
-            Gets or sets the default value
-            </summary>
-        </member>
-        <member name="P:CryEngine.EditorPropertyAttribute.Type">
-            <summary>
-            Gets or sets the property type.
-            Should be used for special types such as files.
-            </summary>
-        </member>
-        <member name="P:CryEngine.EditorPropertyAttribute.Description">
-            <summary>
-            Gets or sets the description to display when the user hovers over this property inside Sandbox.
-            </summary>
-        </member>
-        <member name="T:CryEngine.EntityPropertyType">
-            <summary>
-            Defines the list of supported editor types.
-            </summary>
-        </member>
         <member name="T:CryEngine.Time">
             <summary>
             Contains useful functions related to game timing.
@@ -5668,144 +5685,10 @@
             Gets the currently active game rules instance.
             </summary>
         </member>
-        <member name="T:CryEngine.GameRulesAttribute">
+        <member name="T:CryEngine.Utilities.PointerWrapper">
             <summary>
-            Attribute used for specifying extra functionality for custom game rules classes.
-            </summary>
-        </member>
-        <member name="P:CryEngine.GameRulesAttribute.Name">
-            <summary>
-            Sets the game mode's name. Uses the class name if not set.
-            </summary>
-        </member>
-        <member name="P:CryEngine.GameRulesAttribute.Default">
-            <summary>
-            If set to true, the game mode will be set as default.
-            </summary>
-        </member>
-        <member name="T:CryEngine.DisconnectionCause">
-            <summary>
-            Used to determine the cause of a client disconnection.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.Timeout">
-            <summary>
-            This cause must be first! - timeout occurred.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.ProtocolError">
-            <summary>
-            Incompatible protocols.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.ResolveFailed">
-            <summary>
-            Failed to resolve an address.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.VersionMismatch">
-            <summary>
-            Versions mismatch.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.ServerFull">
-            <summary>
-            Server is full.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.Kicked">
-            <summary>
-            User initiated kick.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.Banned">
-            <summary>
-            Teamkill ban/ admin ban.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.ContextCorruption">
-            <summary>
-            Context database mismatch.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.AuthenticationFailed">
-            <summary>
-            Password mismatch, cdkey bad, etc.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.GameError">
-            <summary>
-            Misc. game error.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.NotDX11Capable">
-            <summary>
-            DX11 not found.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.NubDestroyed">
-            <summary>
-            The nub has been destroyed.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.ICMPError">
-            <summary>
-            Icmp reported error.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.NatNegError">
-            <summary>
-            NAT negotiation error.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.PunkDetected">
-            <summary>
-            Punk buster detected something bad.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.DemoPlaybackFinished">
-            <summary>
-            Demo playback finished.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.DemoPlaybackFileNotFound">
-            <summary>
-            Demo playback file not found.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.UserRequested">
-            <summary>
-            User decided to stop playing.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.NoController">
-            <summary>
-            User should have controller connected.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.CantConnect">
-            <summary>
-            Unable to connect to server.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.ArbitrationFailed">
-            <summary>
-            Arbitration failed in a live arbitrated session.
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.FailedToMigrateToNewHost">
-            <summary>
-            Failed to successfully join migrated game
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.SessionDeleted">
-            <summary>
-            The session has just been deleted
-            </summary>
-        </member>
-        <member name="F:CryEngine.DisconnectionCause.Unknown">
-            <summary>
-            Unknown cause
+            Wrapper to be able to make sure that we're getting the correct handle in C++.
+            In native code, interpret as struct MyStruct { void *pHandle; } (See mono::pointer)
             </summary>
         </member>
         <member name="T:CryEngine.Utilities.CryStats">
