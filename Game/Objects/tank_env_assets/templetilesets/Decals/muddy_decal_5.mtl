@@ -1,0 +1,8 @@
+<Material MtlFlags="524288" Shader="Illum" GenMask="100080800" StringGenMask="%DECAL%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.27157745,0.12474094,0.086901255" Specular="0.14497213,0.14497213,0.14497213" Emissive="0,0,0" Shininess="10" Opacity="0.88999999">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/tank_env_assets/templetilesets/decals/muddy_decal_diff_1.tif"/>
+  <Texture Map="Specular" File="objects/tank_env_assets/templetilesets/decals/muddy_decal_spec.tif"/>
+  <Texture Map="Bumpmap" File="objects/tank_env_assets/templetilesets/decals/muddy_decal_ddn.tif"/>
+ </Textures>
+ <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+</Material>
