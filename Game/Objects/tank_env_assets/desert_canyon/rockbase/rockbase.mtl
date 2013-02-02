@@ -16,7 +16,7 @@
    </Textures>
    <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
-  <Material Name="uniquerock" MtlFlags="524416" Shader="Illum" GenMask="100080200" StringGenMask="%DETAIL_TEXTURE_IS_SET%GLOSS_MAP%TESSELLATION" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.30212551,0.30212551,0.30212551" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
+  <Material Name="uniquerock" MtlFlags="524416" Shader="Illum" GenMask="2100080200" StringGenMask="%DETAIL_TEXTURE_IS_SET%GLOSS_MAP%TESSELLATION%VERTCOLORS" SurfaceType="mat_rock" MatTemplate="" Diffuse="0.30212551,0.30212551,0.30212551" Specular="0,0,0" Emissive="0,0,0" Shininess="10" Opacity="1">
    <Textures>
     <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/unique_rock_diff.tif"/>
     <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/unique_rock_spec.tif"/>
@@ -80,6 +80,22 @@
     </Texture>
     <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/concretewall_spec.tif"/>
     <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/concretewall_ddn.tif"/>
+   </Textures>
+   <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="Metalcladding" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="1,0.080219261,0.089193508" Specular="1,1,1" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/panels_diffuse.tif"/>
+    <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/panels_spec.dds"/>
+    <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/panels_ddn.tif"/>
+   </Textures>
+   <PublicParams FresnelPower="4" GlossFromDiffuseContrast="1" FresnelScale="1" GlossFromDiffuseOffset="0" FresnelBias="1" GlossFromDiffuseAmount="0" GlossFromDiffuseBrightness="0.333" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="Bricks" MtlFlags="524416" Shader="Illum" GenMask="100080000" StringGenMask="%GLOSS_MAP%TESSELLATION" SurfaceType="" MatTemplate="" Diffuse="0.096266121,0.096266121,0.096266121" Specular="0.096266121,0.096266121,0.096266121" Emissive="0,0,0" Shininess="10" Opacity="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/tank_env_assets/desert_canyon/rockbase/textures/brickwall_diff.tif"/>
+    <Texture Map="Specular" File="objects/tank_env_assets/desert_canyon/rockbase/textures/brickwall_spec.dds"/>
+    <Texture Map="Bumpmap" File="objects/tank_env_assets/desert_canyon/rockbase/textures/brickwall_normals.tga"/>
    </Textures>
    <PublicParams SpecMapChannelB="0" SpecMapChannelR="0" FresnelPower="4" GlossMapChannelB="0" SpecMapChannelG="0" FresnelScale="1" FresnelBias="1" IndirectColor="0.25,0.25,0.25"/>
   </Material>
