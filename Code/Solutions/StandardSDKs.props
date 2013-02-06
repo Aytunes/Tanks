@@ -21,11 +21,9 @@
   </ImportGroup>
   <ImportGroup Condition="$(Platform)=='Win32'" Label="PropertySheets">
     <Import Project="$(SolutionDir).\DirectXSDK.props" />
-    <Import Project="$(SolutionDir).\GFWLSDK.props" />
   </ImportGroup>
   <ImportGroup Condition="$(Platform)=='x64'" Label="PropertySheets">
     <Import Project="$(SolutionDir).\DirectXSDK.props" />
-    <Import Project="$(SolutionDir).\GFWLSDK.props" />
   </ImportGroup>
   
   <!-- Finally import the SoftCode and UserDebug properties-->

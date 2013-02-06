@@ -423,7 +423,7 @@ public:
 class CryEventTimed
 {
 public:
-	ILINE CryEventTimed(){}
+	ILINE CryEventTimed(bool bManualReset = false) {m_bManualReset = bManualReset;}
 	ILINE ~CryEventTimed(){}
 
 	// Reset the event to the unsignalled state.
@@ -446,6 +446,7 @@ private:
 	CryConditionVariable m_cond;
 #endif
 	volatile bool m_flag;
+  bool m_bManualReset;
 };
 
 #define PS3_USE_SEMAPHORE	1

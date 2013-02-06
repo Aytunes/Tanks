@@ -54,13 +54,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="IActionManager.h">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
     <ClInclude Include="IActionMapManager.h">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="IActionSpotManager.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="IActorSystem.h">
@@ -82,9 +76,6 @@
       <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="ICooperativeAnimationManager.h">
-      <Filter>Interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="IDeferredRaycastManager.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
     <ClInclude Include="IEffectSystem.h">

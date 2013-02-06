@@ -397,7 +397,7 @@ bool CryAssert(const char *_pszCondition,const char *_pszFile,unsigned int _uiLi
 
 		}
 	}
-	if (gEnv)
+	if (gEnv && gEnv->pSystem)
 	{
 		gEnv->pSystem->OnAssert(_pszCondition, gs_szMessage, _pszFile, _uiLine);
 	}

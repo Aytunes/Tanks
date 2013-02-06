@@ -13,33 +13,33 @@ struct ISystem;
 
 enum EModifierMask
 {
-	eMM_None				= 0,
-	eMM_LCtrl				= (1 << 0),
-	eMM_LShift			= (1 << 1),
-	eMM_LAlt				= (1 << 2),
-	eMM_LWin				= (1 << 3),
-	eMM_RCtrl				= (1 << 4),
-	eMM_RShift			= (1 << 5),
-	eMM_RAlt				= (1 << 6),
-	eMM_RWin				= (1 << 7),
-	eMM_NumLock			= (1 << 8),
-	eMM_CapsLock		= (1 << 9),
+	eMM_None		= 0,
+	eMM_LCtrl		= (1 << 0),
+	eMM_LShift		= (1 << 1),
+	eMM_LAlt		= (1 << 2),
+	eMM_LWin		= (1 << 3),
+	eMM_RCtrl		= (1 << 4),
+	eMM_RShift		= (1 << 5),
+	eMM_RAlt		= (1 << 6),
+	eMM_RWin		= (1 << 7),
+	eMM_NumLock		= (1 << 8),
+	eMM_CapsLock	= (1 << 9),
 	eMM_ScrollLock	= (1 << 10),
 
-	eMM_Ctrl				= (eMM_LCtrl | eMM_RCtrl),
-	eMM_Shift				= (eMM_LShift | eMM_RShift),
-	eMM_Alt					= (eMM_LAlt | eMM_RAlt),
-	eMM_Win					= (eMM_LWin | eMM_RWin),
-	eMM_Modifiers		= (eMM_Ctrl | eMM_Shift | eMM_Alt | eMM_Win),
-	eMM_LockKeys		= (eMM_CapsLock | eMM_NumLock | eMM_ScrollLock)
+	eMM_Ctrl		= (eMM_LCtrl | eMM_RCtrl),
+	eMM_Shift		= (eMM_LShift | eMM_RShift),
+	eMM_Alt			= (eMM_LAlt | eMM_RAlt),
+	eMM_Win			= (eMM_LWin | eMM_RWin),
+	eMM_Modifiers	= (eMM_Ctrl | eMM_Shift | eMM_Alt | eMM_Win),
+	eMM_LockKeys	= (eMM_CapsLock | eMM_NumLock | eMM_ScrollLock)
 };
 
 
 enum EDeviceId
 {
 	eDI_Keyboard	= 0,
-	eDI_Mouse			= 1,
-	eDI_XI				= 2,
+	eDI_Mouse		= 1,
+	eDI_XI			= 2,
 	eDI_Unknown		= 0xff,
 };
 
@@ -58,9 +58,9 @@ enum EInputState
 	eIS_Unknown		= 0,
 	eIS_Pressed		= (1 << 0),
 	eIS_Released	= (1 << 1),
-	eIS_Down			= (1 << 2),
+	eIS_Down		= (1 << 2),
 	eIS_Changed		= (1 << 3),
-	eIS_UI				= (1 << 4),
+	eIS_UI			= (1 << 4),
 };
 
 enum EInputDeviceType
@@ -73,8 +73,8 @@ enum EInputDeviceType
 
 enum EInputPlatformFlags
 {
-	eIPF_NONE													= 0,
-	eIPF_SwapFrontEndForwardAndBack		= (1 << 0),
+	eIPF_NONE						= 0,
+	eIPF_SwapFrontEndForwardAndBack	= (1 << 0),
 };
 
 #define USE_CRY_NAME_FOR_KEY_NAMES 1
@@ -112,10 +112,11 @@ inline bool operator>( const char *str,const TKeyName &n ) { return n > str; }
 #endif //USE_CRY_NAME_FOR_KEY_NAMES
 
 #define KI_KEYBOARD_BASE	0
-#define KI_MOUSE_BASE			256
+#define KI_MOUSE_BASE		256
 #define KI_XINPUT_BASE		512
-#define KI_PS3_BASE				1024
-#define KI_SYS_BASE				2048
+#define KI_PS3_BASE			1024
+#define KI_WII_BASE			2048
+#define KI_SYS_BASE			4096
 
 enum EKeyId
 {
@@ -309,6 +310,73 @@ enum EKeyId
 	eKI_PS3_RotZ_KeyD,
 	eKI_PS3_RotZ_KeyU,
 
+//#ifdef CAFE	
+	// wii drc
+	eKI_WII_DRC_Up = KI_WII_BASE,
+	eKI_WII_DRC_Down,
+	eKI_WII_DRC_Left,
+	eKI_WII_DRC_Right,
+	eKI_WII_DRC_Start,
+	eKI_WII_DRC_Select,
+	eKI_WII_DRC_Home,
+	eKI_WII_DRC_A,
+	eKI_WII_DRC_B,
+	eKI_WII_DRC_X,
+	eKI_WII_DRC_Y,
+	eKI_WII_DRC_L,
+	eKI_WII_DRC_R,
+	eKI_WII_DRC_ZL,
+	eKI_WII_DRC_ZR,
+	eKI_WII_DRC_StickL,
+	eKI_WII_DRC_StickR,
+	eKI_WII_DRC_StickLX,
+	eKI_WII_DRC_StickLY,
+	eKI_WII_DRC_StickRX,
+	eKI_WII_DRC_StickRY,
+	eKI_WII_DRC_TouchPanelX,
+	eKI_WII_DRC_TouchPanelY,
+	eKI_WII_DRC_TouchPanelTouch,
+	eKI_WII_DRC_MotionUpright,
+
+	// wii classic controller
+	eKI_WII_CLASSIC_Up,
+	eKI_WII_CLASSIC_Down,
+	eKI_WII_CLASSIC_Left,
+	eKI_WII_CLASSIC_Right,
+	eKI_WII_CLASSIC_Start,
+	eKI_WII_CLASSIC_Select,
+	eKI_WII_CLASSIC_Home,
+	eKI_WII_CLASSIC_A,
+	eKI_WII_CLASSIC_B,
+	eKI_WII_CLASSIC_X,
+	eKI_WII_CLASSIC_Y,
+	eKI_WII_CLASSIC_L,
+	eKI_WII_CLASSIC_R,
+	eKI_WII_CLASSIC_ZL,
+	eKI_WII_CLASSIC_ZR,
+	eKI_WII_CLASSIC_StickLX,
+	eKI_WII_CLASSIC_StickLY,
+	eKI_WII_CLASSIC_StickRX,
+	eKI_WII_CLASSIC_StickRY,
+
+	// wii remote controller
+	eKI_WII_REMOTE_Up,
+	eKI_WII_REMOTE_Down,
+	eKI_WII_REMOTE_Left,
+	eKI_WII_REMOTE_Right,
+	eKI_WII_REMOTE_Minus,
+	eKI_WII_REMOTE_Plus,
+	eKI_WII_REMOTE_Home,
+	eKI_WII_REMOTE_A,
+	eKI_WII_REMOTE_B,
+	eKI_WII_REMOTE_Button1,
+	eKI_WII_REMOTE_Button2,
+	eKI_WII_REMOTE_TrackingX,
+	eKI_WII_REMOTE_TrackingY,
+	eKI_WII_REMOTE_GyroX,
+	eKI_WII_REMOTE_GyroY,
+//#endif	
+
 	// Normal inputs should be added above
 	// eKI_SYS_COMMIT and below will be ignored by input blocking functionality
 	eKI_SYS_Commit = KI_SYS_BASE,
@@ -327,23 +395,23 @@ struct SInputSymbol;
 struct SInputEvent
 {
 	EDeviceId		deviceId;		// Which device did the event originate from.
-	EInputState	state;				// Type of input event.
-	wchar_t			inputChar;	// If event is UI (Contains translated input char)
+	EInputState		state;			// Type of input event.
+	wchar_t			inputChar;		// If event is UI (Contains translated input char)
 	TKeyName		keyName;		// Human readable name of the event.
 	EKeyId			keyId;			// Device-specific id corresponding to the event.
-	int					modifiers;	// Key modifiers enabled at the time of this event.
-	float				value;		// Value associated with the event.
+	int				modifiers;		// Key modifiers enabled at the time of this event.
+	float			value;			// Value associated with the event.
 	SInputSymbol*	pSymbol;		// Input symbol the event originated from.
-	uint8			  deviceIndex;	//Controller index
+	uint8			deviceIndex;	//Controller index
 
 	SInputEvent()
 	{
 		deviceId	= eDI_Unknown;
-		state			= eIS_Unknown;
-		keyId			= eKI_Unknown;
+		state		= eIS_Unknown;
+		keyId		= eKI_Unknown;
 		modifiers	= eMM_None;
-		value			= 0;
-		keyName   = "";
+		value		= 0;
+		keyName		= "";
 		pSymbol		= 0;
 		deviceIndex = 0;
 	}
@@ -1039,7 +1107,7 @@ struct IInput
 
 	// Description:
 	//	 For direct key processing (e.g. win proc functions)
-	//   currently only used by gringo metro launcher
+	//
 	virtual void ProcessKey(uint32 key, bool pressed, wchar_t unicode, bool repeat) = 0;
 
 	// Description:

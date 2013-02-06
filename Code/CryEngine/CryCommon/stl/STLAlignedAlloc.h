@@ -196,10 +196,18 @@ public:
 
 
 	template<class _Iter>
+
+
+
 	aligned_vector(_Iter _First, _Iter _Last) : MySuperClass(_First,_Last) {};
 
+
 	template<class _Iter>
+
+
+
 	aligned_vector(_Iter _First, _Iter _Last, const MyAlloc& _Al) : MySuperClass(_First,_Last,_Al) {};
+
 };
 
 template <class Vec>

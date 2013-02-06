@@ -2,7 +2,7 @@
 #define _CryThread_dummy_h_ 1
 
 //////////////////////////////////////////////////////////////////////////
-CryEvent::CryEvent() {}
+CryEvent::CryEvent(bool bManualReset = false) {}
 CryEvent::~CryEvent() {}
 void CryEvent::Reset() {}
 void CryEvent::Set() {}

@@ -682,7 +682,7 @@ UNIQUE_IFACE struct IPlatformOS
 
   virtual bool IsHDDAvailable() const { return true; }
 
-  	//Function to handle a verification error. Used by some platforms to handle workarounding attempts
+  	//Function to handle a verification error. Used by some platforms to handle hacking attempts
 	virtual void HandleArchiveVerificationFailure( ) {};
 protected:
 

@@ -88,7 +88,66 @@
 	}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #else
+
+
+
 #define CrySharedLibraySupported false
 #define CrySharedLibrayExtension ""
 #define CryLoadLibrary(libName) NULL

@@ -352,6 +352,10 @@ enum ESystemEvent
 	//		Sent once the Editor switches between in-game and editing mode.
 	ESYSTEM_EVENT_EDITOR_GAME_MODE_CHANGED,
 
+	// Description:
+	//		Sent once segmented world manager shifts the world
+	ESYSTEM_EVENT_SHIFT_WORLD,
+
 	ESYSTEM_EVENT_USER = 0x1000,
 };
 
@@ -617,7 +621,9 @@ struct SSystemGlobalEnvironment
 	IInput*                    pInput;
 	ITimer*                    pTimer;
 	IConsole*                  pConsole;
+#if !defined(CAFE) || defined(USE_TELEMETRY)
 	Telemetry::ITelemetrySystem* pTelemetrySystem;
+#endif
 	IScriptSystem*             pScriptSystem;
 	I3DEngine*                 p3DEngine;
 	ISoundSystem*              pSoundSystem;

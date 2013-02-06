@@ -525,11 +525,11 @@ public:
 };
 
 #if !defined(RHCB_CANT_OVERLOAD_ON_CONSTNESS)
-template <class P1,class Callee,class CallType>
-inline CBMemberTranslator1<P1,Callee,void (CallType::*)(P1)>
-functor(Callee &c,void (CallType::* RHCB_CONST_REF f)(P1))
+template <class P1,class RT,class Callee,class CallType>
+inline CBMemberTranslator1<P1,Callee,RT (CallType::*)(P1)>
+functor(Callee &c,RT (CallType::* RHCB_CONST_REF f)(P1))
 {
-	typedef void (CallType::*MemFunc)(P1);
+	typedef RT (CallType::*MemFunc)(P1);
 	return CBMemberTranslator1<P1,Callee,MemFunc>(c,f);
 }
 #endif

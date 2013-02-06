@@ -436,7 +436,7 @@ public:
 		}
 
 		if (!foundObject)
-			return true; // lie about success if we cant find the object... editor workaround
+			return true; // lie about success if we cant find the object... editor hack
 		else
 			return ok;
 	}

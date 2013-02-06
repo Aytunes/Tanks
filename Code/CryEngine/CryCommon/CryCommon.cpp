@@ -57,10 +57,14 @@
 #include "MTPseudoRandom.cpp"
 #include "CryStructPack.cpp"
 #if !defined __CRYCG__
-	#if defined(PS3) || defined(LINUX)
+	#if defined(PS3) || defined(LINUX) || defined(CAFE)
 		#include "WinBase.cpp"
 	#endif
 #endif
+
+
+
+
 
 
 

@@ -79,9 +79,9 @@
   <CompileAssetsJob>
    </CompileAssetsJob>
 
+  <Run Job="CleanJob"/>
   <Run Job="ConvertJob"/>
   <Run Job="CopyJob"/>
   <Run Job="PakJob"/>
-  <Run Job="CleanJob"/>
 
 </RCJobs>

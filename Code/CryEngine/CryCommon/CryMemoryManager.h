@@ -37,12 +37,12 @@
 
 #define _CRY_DEFAULT_MALLOC_ALIGNMENT 4
 
-#if !defined(PS3)
+#if !defined(PS3) && !defined(CAFE)
 	#include <malloc.h>
 #endif
 
 #if defined(__cplusplus)
-#if defined(PS3) || defined(LINUX)
+#if defined(PS3) || defined(LINUX) || defined(CAFE)
 	#include <new>
 #else
 	#include <new.h>
@@ -67,7 +67,7 @@
 	#endif
 #endif //DEBUG_MEMORY_MANAGER
 
-#if defined(_DEBUG) && !defined(PS3) && !defined(LINUX)
+#if defined(_DEBUG) && !defined(PS3) && !defined(LINUX) && !defined(CAFE)
 	#include <crtdbg.h>
 #endif //_DEBUG
 
@@ -75,7 +75,7 @@
 // returns non-0 if it's valid and 0 if not valid
 ILINE int IsHeapValid()
 {
-#if (defined(_DEBUG) && !defined(RELEASE_RUNTIME) && !defined(PS3)) || (defined(DEBUG_MEMORY_MANAGER))
+#if (defined(_DEBUG) && !defined(RELEASE_RUNTIME) && !defined(PS3) && !defined(CAFE)) || (defined(DEBUG_MEMORY_MANAGER))
 	return _CrtCheckMemory();
 #else
 	return true;
@@ -521,7 +521,7 @@ CRY_MEM_USAGE_API void CryModuleGetMemoryInfo( CryModuleMemoryInfo *pMemInfo );
 
 //#error hi2
 
-					#if !defined(XENON)
+					#if !defined(XENON) && !defined(CAFE)
 						//ILINE void * __cdecl operator new   (size_t size) throw () { return CryModuleMalloc(size, eCryModule); }
 					#endif // !defined(XENON)
 
@@ -533,7 +533,7 @@ CRY_MEM_USAGE_API void CryModuleGetMemoryInfo( CryModuleMemoryInfo *pMemInfo );
 						return ret;
 					}
 
-					#if !defined(XENON)
+					#if !defined(XENON) && !defined(CAFE)
 						//ILINE void * __cdecl operator new[] (size_t size) throw () { return CryModuleMalloc(size, eCryModule); }
 					#endif // !defined(XENON)
 

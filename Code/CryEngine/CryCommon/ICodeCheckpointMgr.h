@@ -20,9 +20,9 @@ class CCodeCheckpoint;
 
 // Not for release
 #ifndef _RELEASE
-
+#ifndef CAFE
 	#define CODECHECKPOINT_ENABLED
-
+#endif
 #endif
 
 /// Interface for a global manager of code coverage checkpoints. Must be thread safe.

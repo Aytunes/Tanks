@@ -105,6 +105,20 @@ BASIC_TYPE_INFO(double)
 
 DECLARE_TYPE_INFO(string)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // All pointers share same TypeInfo.
 const CTypeInfo& PtrTypeInfo();
 template<class T>

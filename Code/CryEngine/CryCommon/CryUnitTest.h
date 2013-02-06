@@ -184,7 +184,7 @@ class ClassName : public CryUnitTest::Test \
 }                                                                  \
 	namespace SuiteName
 
-#if defined(__GNUC__) || defined(PS3)
+#if defined(__GNUC__) || defined(PS3) || defined(CAFE)
 #define CRY_UNIT_TEST_ASSERT(condition) ((void)(condition))
 #else
 #define CRY_UNIT_TEST_ASSERT(condition)							                \

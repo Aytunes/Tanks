@@ -16,6 +16,14 @@ namespace CryGameCode.Projectiles
 			Launch();
 		}
 
+        protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
+        {
+            var pos = Position;
+            var rot = Rotation;
+            serialize.Value("pos", ref pos, "wrld");
+            serialize.Value("rot", ref rot, "ori1");
+        }
+
 		public virtual void Launch()
 		{
 			var dir = Rotation.Column1;

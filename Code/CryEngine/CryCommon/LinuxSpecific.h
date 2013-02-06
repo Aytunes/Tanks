@@ -501,6 +501,8 @@ typedef void *PIXELFORMATDESCRIPTOR;
 
 #define FP16_MESH 
 
+#define BOOST_DISABLE_WIN32
+
 #endif //_CRY_COMMON_LINUX_SPECIFIC_HDR_
 
 // vim:ts=2:sw=2:tw=78

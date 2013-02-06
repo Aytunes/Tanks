@@ -38,6 +38,12 @@ bool CryCreateClassInstance(const CryClassID& cid, boost::shared_ptr<T>& p)
 			if (pT)
 				p = pT;
 		}
+
+
+
+
+
+
 	}
 	return p;
 }

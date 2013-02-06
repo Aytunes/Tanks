@@ -74,7 +74,7 @@ enum EDataType
 
 #define FGP_STAGE_SHIFT 0x10
 
-#define MAX_CUSTOM_TEX_BINDS_NUM 2
+#define MAX_CUSTOM_TEX_BINDS_NUM 3
 
 class CRendElement
 {	

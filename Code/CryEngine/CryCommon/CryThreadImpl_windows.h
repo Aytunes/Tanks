@@ -23,9 +23,9 @@ struct SThreadNameDesc
 THREADLOCAL CrySimpleThreadSelf* CrySimpleThreadSelf::m_Self = NULL;
 
 //////////////////////////////////////////////////////////////////////////
-CryEvent::CryEvent()
+CryEvent::CryEvent(bool bManualReset)
 {
-	m_handle = (void*)CreateEvent(NULL, FALSE, FALSE, NULL);
+	m_handle = (void*)CreateEvent(NULL, bManualReset, FALSE, NULL);
 }
 
 //////////////////////////////////////////////////////////////////////////

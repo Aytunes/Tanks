@@ -1226,6 +1226,9 @@
     <ClInclude Include="IBreakableManager.h">
       <Filter>Interfaces_h</Filter>
     </ClInclude>
+    <ClInclude Include="IRenderToScreenOnController.h">
+      <Filter>Interfaces_h</Filter>
+    </ClInclude>
     <ClInclude Include="RenderObjectDefines.h">
       <Filter>Common_h</Filter>
     </ClInclude>
@@ -1256,6 +1259,9 @@
     </ClInclude>
     <ClInclude Include="SpuUtils.h">
       <Filter>Platform_h</Filter>
+    </ClInclude>
+    <ClInclude Include="CryMemBlock.h">
+      <Filter>Common_h</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -60,6 +60,7 @@ UNIQUE_IFACE struct IArea
 	virtual const EntityId GetEntityByIdx(int index) const = 0;
 	virtual void GetMinMax(Vec3 **min, Vec3 **max) const = 0;
 	virtual int GetPriority() const = 0;
+	virtual int GetID() const = 0;
 };
 
 // Summary:
@@ -260,6 +261,18 @@ struct SEntityProximityQuery
 		nEntityFlags = 0;
 	}
 };
+
+UNIQUE_IFACE struct IGuidRemapper
+{
+	virtual ~IGuidRemapper () {}
+
+	// _smart_ptr interface
+	virtual void AddRef () = 0;
+	virtual void Release () = 0;
+
+	virtual EntityGUID Remap (EntityGUID guid) = 0;
+};
+typedef _smart_ptr<IGuidRemapper> IGuidRemapperPtr;
 
 // removed unused ifdef for devirtualization
 // #ifndef _NO_IENTITY
@@ -467,9 +480,15 @@ UNIQUE_IFACE struct IEntitySystem
 	//	 Gets pointer to original ISystem.
 	virtual ISystem* GetSystem() const = 0;
 
+	virtual IGuidRemapperPtr CreateGuidRemapper () const = 0;
+
+	virtual IGuidRemapperPtr GetCurrentGuidRemapper () const = 0;
+	virtual void SetCurrentGuidRemapper (IGuidRemapperPtr pGuidRemapper) = 0;
+
 	// Description:
 	//    Loads entities exported from Editor.
 	virtual void LoadEntities( XmlNodeRef &objectsNode ) = 0;
+	virtual void LoadEntities( XmlNodeRef &objectsNode, const Vec3 &segmentOffest, std::vector<IEntity *> *outGlobalEntityIds, std::vector<IEntity *> *outLocalEntityIds ) = 0;
 
 	// Summary:
 	//	  Registers Entity Event`s listeners.
@@ -567,6 +586,8 @@ UNIQUE_IFACE struct IEntitySystem
 	virtual void UnregisterPhysicCallbacks() = 0;
 
 	virtual void PurgeDeferredCollisionEvents( bool bForce = false ) =0;
+
+	virtual bool EntitiesUseGUIDs () const = 0;
 
 	virtual void DebugDraw() = 0;
 

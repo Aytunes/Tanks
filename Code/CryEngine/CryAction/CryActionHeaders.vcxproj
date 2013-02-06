@@ -228,9 +228,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="GameObjects\GameObject.h" />
-    <ClInclude Include="IActionManager.h" />
     <ClInclude Include="IActionMapManager.h" />
-    <ClInclude Include="IActionSpotManager.h" />
     <ClInclude Include="IActorSystem.h" />
     <ClInclude Include="IAnimatedCharacter.h" />
     <ClInclude Include="IAnimationGraph.h" />
@@ -238,7 +236,6 @@
     <ClInclude Include="IAnimationStateNode.h" />
     <ClInclude Include="ICheckPointSystem.h" />
     <ClInclude Include="ICooperativeAnimationManager.h" />
-    <ClInclude Include="IDeferredRaycastManager.h" />
     <ClInclude Include="IEffectSystem.h" />
     <ClInclude Include="IForceFeedbackSystem.h" />
     <ClInclude Include="IGameObject.h" />

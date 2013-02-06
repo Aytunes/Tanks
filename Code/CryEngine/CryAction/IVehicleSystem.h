@@ -893,6 +893,8 @@ struct IVehicle : public IGameObjectExtension
 	// Evacuate all passengers immediately on a client without having to ask the server for permission
 	virtual void ClientEvictAllPassengers() = 0;
 
+	virtual void OffsetPosition(const Vec3 &delta) = 0;
+
 	// Sound parameters structure.
 	struct SSoundParams
 	{
@@ -1153,6 +1155,7 @@ struct IVehicleMovement
 
 	virtual void GetMemoryUsage(ICrySizer * s) const = 0;
 	virtual void AllowBoosting(const bool allowBoosting) = 0;
+	virtual void SetMaxSpeed(const float maxSpeed) = 0;
 
 };
 
@@ -1203,6 +1206,8 @@ struct IVehicleView
   virtual bool IsAvailableRemotely() const = 0;
 
 	virtual void GetMemoryUsage(ICrySizer *pSizer) const =0;
+
+	virtual void OffsetPosition(const Vec3 &delta) = 0;
 };
 
 // Summary:
@@ -1299,6 +1304,8 @@ UNIQUE_IFACE struct IVehicleSeat
 	// Returns the name of the action map specified for this vehicle seat in
 	//	the xml file (can be null if no specific seat actionmap)
 	virtual const char* GetActionMap() const = 0;
+
+	virtual void OffsetPosition(const Vec3 &delta) = 0;
 };
 
 

@@ -551,7 +551,7 @@ namespace stl
 		size_t operator()(const _Key& _Keyval) const
 		{
 			// return hash value.
-			uint32 a = _Keyval;
+			uint32 a = (uint32) _Keyval;
 			a = (a+0x7ed55d16) + (a<<12);
 			a = (a^0xc761c23c) ^ (a>>19);
 			a = (a+0x165667b1) + (a<<5);
@@ -613,6 +613,9 @@ namespace stl
 		//hash_map1() : std__hash_map<Key,Value,HashFunc<Key>,HashFunc<Key>,Alloc>( HashFunc::min_buckets ) {}
 	};
 	*/
+
+
+
 #else
 	// MS STL
 	using stdext::hash_compare;
@@ -770,9 +773,41 @@ namespace stl
 	{
 		p->~T();
 	}
+
+  // helper functions
+  template <class Container>
+  void DeleteOrdered(Container &c)
+  {
+    // deleting from the back so that it can efficiently process vectors
+    while (!c.empty()) {
+      delete c.back();
+      c.pop_back();
+    }
+  }
+
+  template <class Container>
+  void DeleteUnordered(Container &c)
+  {
+    typename Container::iterator it;
+    for (it = c.begin(); it != c.end(); ++it)
+      delete (*it);
+    c.clear();
+  }
+
 }
 
 #define DEFINE_INTRUSIVE_LINKED_LIST( Class ) \
 	template<> Class* stl::intrusive_linked_list_node<Class>::m_root_intrusive = 0;
+#define ARRSIZE(arr)  (sizeof(arr) / sizeof(arr[0]))
+
+#define DEFINE_INTRUSIVE_LINKED_LIST( Class ) \
+	template<> Class* stl::intrusive_linked_list_node<Class>::m_root_intrusive = 0;
+
+
+
+
+	#define DEFINE_INTRUSIVE_LINKED_LIST( Class ) \
+		template<> Class* stl::intrusive_linked_list_node<Class>::m_root_intrusive = 0;
+
 
 #endif

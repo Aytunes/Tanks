@@ -340,6 +340,7 @@ public:
 	virtual void setAttr( const char* key,const Vec2& value ) = 0;
 	virtual void setAttr( const char* key,const Ang3& value ) = 0;
 	virtual void setAttr( const char* key,const Vec3& value ) = 0;
+	virtual void setAttr( const char* key,const Vec4& value ) = 0;
 	virtual void setAttr( const char* key,const Quat &value ) = 0;
 	//##@}
 
@@ -371,6 +372,7 @@ public:
 	virtual bool getAttr( const char *key,Vec2& value ) const = 0;
 	virtual bool getAttr( const char *key,Ang3& value ) const = 0;
 	virtual bool getAttr( const char *key,Vec3& value ) const = 0;
+	virtual bool getAttr( const char *key,Vec4& value ) const = 0;
 	virtual bool getAttr( const char *key,Quat &value ) const = 0;
 	virtual bool getAttr( const char *key,bool &value ) const = 0;
 	virtual bool getAttr( const char *key,XmlString &value ) const = 0;

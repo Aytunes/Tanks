@@ -38,7 +38,7 @@ enum EVarFlags
 	VF_BLOCKFRAME =						0x00400000,			// Blocks the execution of console commands for one frame
 	VF_CONST_CVAR =					  0x00800000,			// Set if it is a const cvar not to be set inside cfg-files
 	VF_CHEAT_ALWAYS_CHECK =  	0x01000000,			// This variable is critical to check in every hash, since it's extremely vulnerable
-	VF_CHEAT_NOCHECK =  			0x02000000,		  // This variable is set as VF_CHEAT but doesn't have to be checked/hashed since it's harmless to workaround
+	VF_CHEAT_NOCHECK =  			0x02000000,		  // This variable is set as VF_CHEAT but doesn't have to be checked/hashed since it's harmless to hack
 
 	// These flags should never be set during cvar creation, and probably never set manually.
 	VF_INTERNAL_FLAGS_START = 0x00000080,

@@ -282,7 +282,7 @@ namespace NConfigurableVariantHelpers
 			{
 				typedef typename NTypelist::TypeAt<SLOT, TL> TheTypeAt;
 				typedef typename TheTypeAt::type SlotType;
-				//SlotType * ptr = from.GetPtrworkarounded( (SlotType*)0 );
+				//SlotType * ptr = from.GetPtrHacked( (SlotType*)0 );
 				const SlotType * ptr;
 				from.GetPtr( &ptr );
 				to.SetValueWithConversion( *ptr );

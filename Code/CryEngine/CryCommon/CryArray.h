@@ -139,7 +139,11 @@ template< class T, class I = int, class S = NArray::ArrayStorage<T,I> >
 struct Array: S
 {
 	// Tedious redundancy.
+
+
+
 	using_type(S, size_type)
+
 
 	using S::size;
 	using S::begin;

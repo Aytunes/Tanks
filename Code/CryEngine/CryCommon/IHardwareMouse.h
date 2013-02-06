@@ -90,7 +90,7 @@ UNIQUE_IFACE struct IHardwareMouse
 	virtual void GetHardwareMouseClientPosition(float *pfX,float *pfY) = 0;
 	virtual void SetHardwareMouseClientPosition(float fX,float fY) = 0;
 
-	// I consider a call to that function as a workaround...
+	// I consider a call to that function as a hack...
 	virtual void Reset(bool bVisibleByDefault) = 0;
 	virtual void ConfineCursor(bool confine) = 0;
 	virtual void Hide(bool hide) = 0;

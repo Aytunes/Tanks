@@ -144,7 +144,7 @@ extern "C" DLL_EXPORT void ModuleInitISystem( ISystem *pSystem,const char *modul
 	if (pSystem) // DONT REMOVE THIS. ITS FOR RESOURCE COMPILER!!!!
 	gEnv = pSystem->GetGlobalEnvironment();
 #endif
-#if !defined(PS3) && !(defined(XENON) && defined(_LIB)) && !(defined(GRINGO) && defined(_LIB))
+#if !defined(PS3) && !(defined(XENON) && defined(_LIB)) && !(defined(GRINGO) && defined(_LIB)) && !(defined(CAFE) && defined(_LIB))
 	if (pSystem)
 	{
 		ICryFactoryRegistryImpl* pCryFactoryImpl = static_cast<ICryFactoryRegistryImpl*>(pSystem->GetCryFactoryRegistry());
@@ -191,6 +191,11 @@ unsigned int cry_rand()
 float cry_frand()
 {
 	return g_random_generator.GenerateFloat();
+}
+void cry_srand(unsigned int nSeed)
+{
+	//return CryRandom(); // Return in range from 0 to RAND_MAX
+	g_random_generator.seed(nSeed);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -330,11 +335,15 @@ long	CryInterlockedCompareExchange(long volatile * dst, long exchange, long comp
 	return InterlockedCompareExchange(dst, exchange, comperand);
 }
 
+void* CryInterlockedExchangePointer(void* volatile *dst, void* value)
+{
+  return InterlockedExchangePointer((void **) dst, (void*) value);
+}
+
 void*	CryInterlockedCompareExchangePointer(void* volatile * dst, void* exchange, void* comperand)
 {
 	return InterlockedCompareExchangePointer(dst, exchange, comperand);
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 void* CryCreateCriticalSection()
@@ -348,6 +357,19 @@ void  CryCreateCriticalSectionInplace(void* pCS)
 {
   InitializeCriticalSection((CRITICAL_SECTION *)pCS);
 }
+
+
+#ifdef WIN32
+
+void* CryCreateCriticalSectionWithSpinCount(int spinCount)
+{
+  CRITICAL_SECTION *pCS = new CRITICAL_SECTION;
+	InitializeCriticalSectionAndSpinCount(pCS, (DWORD) spinCount);
+	return pCS;
+}
+
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 void  CryDeleteCriticalSection( void *cs )
 {
@@ -388,7 +410,7 @@ void  CryLeaveCriticalSection( void *cs )
 //////////////////////////////////////////////////////////////////////////
 uint32 CryGetFileAttributes( const char *lpFileName )
 {
-	// Normal GetFileAttributes not available anymore in non desktop applications (eg Gringo)
+	// Normal GetFileAttributes not available anymore in non desktop applications
 	WIN32_FILE_ATTRIBUTE_DATA data;
 	BOOL res;
 

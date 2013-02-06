@@ -120,6 +120,8 @@ struct ISerializeHelper;
 class OATester;
 #endif
 
+class CSegmentedWorld;
+
 class CCryAction :
 	public IGameFramework
 {
@@ -346,7 +348,7 @@ public:
 	bool LoadingScreenEnabled() const;
 
 
-	// this is a bit of a workaround
+	// this is a bit of a hack
 	int NetworkExposeClass( IFunctionHandler * pFH );
 
 	void ResetMusicGraph();
@@ -565,6 +567,7 @@ private:
 	IGameSessionHandler *m_pGameSessionHandler;
 
 	CAIProxyManager *m_pAIProxyManager;
+	CSegmentedWorld *m_pSegmentedWorld;
 
 	// developer mode
 	CDevMode          *m_pDevMode;

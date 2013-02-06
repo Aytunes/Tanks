@@ -29,7 +29,8 @@ struct SThreadTaskInfo;
 enum EThreadTaskFlags
 {
 	THREAD_TASK_BLOCKING = BIT(0),				// Blocking tasks will be allocated on their own thread.
-	THREAD_TASK_ASSIGN_TO_POOL = BIT(1),	// Task can be assigned to any thread in the group of threads
+  THREAD_TASK_SINGLE_UPDATE = BIT(1),   // OnOpdate() will be called only one time, then the task will be removed
+	THREAD_TASK_ASSIGN_TO_POOL = BIT(2),	// Task can be assigned to any thread in the group of threads
 };
 
 UNIQUE_IFACE class IThreadTask_Thread
@@ -85,6 +86,7 @@ struct SThreadTaskInfo : public CMultiThreadRefCount
 	SThreadTaskParams		m_params;
 
 	SThreadTaskInfo() : m_pThread(NULL), m_pTask(NULL) { m_params.nFlags = 0; m_params.nPreferedThread = -1; }
+  ~SThreadTaskInfo() { m_pThread = 0; }
 };
 
 #if !defined(DEDICATED_SERVER)
@@ -139,7 +141,7 @@ UNIQUE_IFACE struct IThreadTaskManager
 	virtual void SetMaxThreadCount( int nMaxThreads ) = 0;
 
 	// Create a pool of threads
-	virtual ThreadPoolHandle CreateThreadsPool(const ThreadPoolDesc& desc) = 0;
+	virtual ThreadPoolHandle CreateThreadsPool(const ThreadPoolDesc& desc, bool bWaitForInit = false) = 0;
 	virtual const bool DestroyThreadsPool(const ThreadPoolHandle& handle) = 0;
 	virtual const bool GetThreadsPoolDesc(const ThreadPoolHandle handle, ThreadPoolDesc* pDesc) const = 0;
 	virtual const bool SetThreadsPoolAffinity(const ThreadPoolHandle handle, const ThreadPoolAffinityMask AffinityMask) = 0;

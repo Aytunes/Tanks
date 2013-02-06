@@ -263,6 +263,7 @@
     <ClInclude Include="CryExtension\Impl\Conversion.h" />
     <ClInclude Include="CryFixedArray.h" />
     <ClInclude Include="CryLobbyEvent.h" />
+    <ClInclude Include="CryMemBlock.h" />
     <ClInclude Include="DebugHelper.h" />
     <ClInclude Include="FinalizingSpline.h" />
     <ClInclude Include="GenericParam.h" />
@@ -366,6 +367,7 @@
     <ClInclude Include="IRenderAuxGeom.h" />
     <ClInclude Include="IRenderer.h" />
     <ClInclude Include="IRenderMesh.h" />
+    <ClInclude Include="IRenderToScreenOnController.h" />
     <ClInclude Include="IResourceCollector.h" />
     <ClInclude Include="IResourceManager.h" />
     <ClInclude Include="IReverbManager.h" />

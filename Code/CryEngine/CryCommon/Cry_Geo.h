@@ -678,6 +678,96 @@ struct Ellipsoid {
 	~Ellipsoid( void ) {};
 };
 
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// struct TRect
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+template <class Num>
+struct TRect_tpl {
+  typedef Vec2_tpl<Num> Vec;
+
+  Vec Min, Max;
+
+  inline TRect_tpl() {}
+  inline TRect_tpl(Num x1, Num y1, Num x2, Num y2): Min(x1, y1), Max(x2, y2) {}
+  inline TRect_tpl(const TRect_tpl<Num> &rc): Min(rc.Min), Max(rc.Max) {}
+
+  inline bool IsEmpty() const { return Max.x < Min.x && Max.y < Min.y; }
+  inline TRect_tpl<Num> &SetEmpty() { Max = Vec(-1, -1); Min = Vec(0, 0); return *this; }
+
+  inline Vec GetDim() const { return Max - Min; }
+  inline Num GetWidth() const { return Max.x - Min.x; }
+  inline Num GetHeight() const { return Max.y - Min.y; }
+
+  inline bool IsEqual(const TRect_tpl<Num> &rc) const { return Min.x == rc.Min.x && Min.y == rc.Min.y && Max.x == rc.Max.x && Max.y == rc.Max.y; }
+
+  inline bool InRect(const TRect_tpl<Num> &rc) const { return rc.Min.x >= Min.x && rc.Max.x <= Max.x && rc.Min.y >= Min.y && rc.Max.y <= Max.y; }
+  inline bool InRect(Vec pt) const { return pt.x >= Min.x && pt.x <= Max.x && pt.y >= Min.y && pt.y <= Max.y; }
+  inline Vec &IntoRect(Vec &pt) const 
+  {
+    if (pt.x < Min.x) pt.x = Min.x; 
+    else if (pt.x > Max.x) pt.x = Max.x; 
+    if (pt.y < Min.y) pt.y = Min.y; 
+    else if (pt.y > Max.y) pt.y = Max.y; 
+    return pt;
+  }
+
+  inline bool Intersects(const TRect_tpl<Num> &rc) const 
+  { 
+    return !IsEmpty() && !rc.IsEmpty() && 
+      !(Min.x > rc.Max.x || Max.x < rc.Min.x || 
+      Min.y > rc.Max.y || Max.y < rc.Min.y); 
+  }
+
+  inline TRect_tpl<Num> &DoUnite(const TRect_tpl<Num> &rc) 
+  {
+    if(IsEmpty()) { Min = rc.Min; Max = rc.Max; return *this;}
+    if(rc.IsEmpty()) return *this;
+    if(Min.x > rc.Min.x) Min.x = rc.Min.x;
+    if(Min.y > rc.Min.y) Min.y = rc.Min.y;
+    if(Max.x < rc.Max.x) Max.x = rc.Max.x;
+    if(Max.y < rc.Max.y) Max.y = rc.Max.y;
+    return *this;
+  }
+
+  inline TRect_tpl<Num> &DoIntersect(const TRect_tpl<Num> &rc)
+  {
+    if (IsEmpty()) return *this;
+    if (rc.IsEmpty()) return SetEmpty(); 
+    if (Min.x < rc.Min.x) Min.x = rc.Min.x;
+    if (Min.y < rc.Min.y) Min.y = rc.Min.y;
+    if (Max.x > rc.Max.x) Max.x = rc.Max.x;
+    if (Max.y > rc.Max.y) Max.y = rc.Max.y;
+    return *this;
+  }
+
+	inline TRect_tpl<Num> GetSubRect(const TRect_tpl<Num> &rc) const
+	{
+		if (IsEmpty()) return *this;
+		if (rc.IsEmpty()) return rc;
+		return TRect_tpl<Num>(Min.x + rc.Min.x * GetWidth(),
+			                    Min.y + rc.Min.y * GetHeight(),
+													Min.x + rc.Max.x * GetWidth(),
+			                    Min.y + rc.Max.y * GetHeight());
+	}
+
+	inline TRect_tpl<Num> GetSubRectInv(const TRect_tpl<Num> &rcSub) const
+	{
+		if (IsEmpty()) return *this;
+		if (rcSub.IsEmpty()) return rcSub;
+		return TRect_tpl((rcSub.Min.x - Min.x) / GetWidth(),
+										 (rcSub.Min.y - Min.y) / GetHeight(),
+										 (rcSub.Max.x - Min.x) / GetWidth(),
+										 (rcSub.Max.y - Min.y) / GetHeight());
+	}
+};
+
+typedef TRect_tpl<float> TRect;
+typedef TRect_tpl<int> TRectI;
 
 
 

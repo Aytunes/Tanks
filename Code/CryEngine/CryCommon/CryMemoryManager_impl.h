@@ -98,7 +98,11 @@ struct _CryMemoryManagerPoolHelper
     numAllocations = 0;
 
 #ifndef _LIB
+
+
+
 		HMODULE hMod;
+
 		int iter;
 #ifdef LINUX
 		for(iter=0,hMod=::dlopen(NULL, RTLD_LAZY); hMod; iter++)
@@ -107,9 +111,12 @@ struct _CryMemoryManagerPoolHelper
 
 
 
-	#else //LINUX
+
+
+
+#else //LINUX
 		for(iter=0,hMod=GetModuleHandle(0); hMod; iter++)
-	#endif //LINUX
+#endif //LINUX
 		{
 			_CryMalloc=(FNC_CryMalloc)CryGetProcAddress(hMod,DLL_ENTRY_CRYMALLOC);
 			_CryRealloc=(FNC_CryRealloc)CryGetProcAddress(hMod,DLL_ENTRY_CRYREALLOC);
@@ -124,9 +131,11 @@ struct _CryMemoryManagerPoolHelper
 				break;
 #ifdef LINUX
 			hMod = CryLoadLibrary("CrySystem.so");
-	#else //LINUX
+
+
+#else
       hMod = CryLoadLibrary("CrySystem.dll"); 
-	#endif //LINUX
+#endif
 		}
 		if (!hMod || !_CryMalloc || !_CryRealloc || !_CryFree || !_CryGetMemSize ||! _CryCrtMalloc || !_CryCrtFree || !_CryCrtSize || !_CryGetIMemoryManagerInterface)
 		{
@@ -223,12 +232,12 @@ struct _CryMemoryManagerPoolHelper
 		size_t allocated,oldsize;
 		void * p=  _CryRealloc( memblock,size,allocated,oldsize,alignment );
 
-    CryInterlockedExchangeAdd(&allocatedMemory, allocated);
-		CryInterlockedExchangeAdd(&requestedMemory,size);
+    CryInterlockedExchangeAdd(&allocatedMemory, (long) allocated);
 		CryInterlockedIncrement(&numAllocations);
 
     CryInterlockedExchangeAdd(&freedMemory,oldsize);
 
+    CryInterlockedExchangeAdd(&requestedMemory, (long) size);
 		return p;
     }
 			

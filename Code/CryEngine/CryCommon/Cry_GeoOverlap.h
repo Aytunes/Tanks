@@ -250,17 +250,31 @@ namespace Overlap {
       return false;
 
     // points of A in B
+    /*
 		for (itA = polygonA.begin() ; itA != itEndA ; ++itA)
 		{
 			if (Point_Polygon2D(*itA, polygonB, pAABBB))
 				return true;
 		}
+		*/
+		// It is only necessary to check for one point from A in B since we're checking for edge intersections later
+    itA = polygonA.begin();
+		if (itA != itEndA && Point_Polygon2D(*itA, polygonB, pAABBB))
+			return true;
+
 		// points of B in A
+		/*
 		for (itB = polygonB.begin() ; itB != itEndB ; ++itB)
 		{
 			if (Point_Polygon2D(*itB, polygonA, pAABBA))
 				return true;
 		}
+		*/
+    // It is only necessary to check for one point from B in A since we're checking for edge intersections later
+		itB = polygonB.begin();
+		if (itB != itEndB && Point_Polygon2D(*itB, polygonA, pAABBA))
+			return true;
+
 		// segments of one A against B
 		for (itA = polygonA.begin() ; itA != itEndA ; ++itA)
 		{

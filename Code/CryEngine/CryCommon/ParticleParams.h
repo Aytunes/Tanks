@@ -712,13 +712,14 @@ struct ParticleParams
 	TSmall<EGeomForm> eAttachForm;				// How to emit from attached geometry.
 	Vec3S vPositionOffset;								// Spawn Position offset from the effect spawn position
 	Vec3U vRandomOffset;									// Random offset of the particle relative position to the spawn position
-	UFloat fPosRandomOffset;							// Radial random offset.
+	UnitFloat fOffsetRoundness;						// Fraction of corners to round: 0 = box, 1 = ellipsoid.
 
 	// <Group=Angles>
 	TVarEParam<UHalfAngle> fFocusAngle;		// Angle to vary focus from default (Y axis), for variation.
 	TVarEParam<SFloat> fFocusAzimuth;			// $<SoftMax=360> Angle to rotate focus about default, for variation. 0 = Z axis.
 	TSmallBool bFocusGravityDir;					// Uses negative gravity dir, rather than emitter Y, as focus dir.
 	TSmallBool bFocusRotatesEmitter;			// Focus rotation is equivalent to emitter rotation; else affects just emission direction.
+	TSmallBool bEmitOffsetDir;						// Default emission direction parallel to emission offset from origin.
 	TVarEParam<UHalfAngle> fEmitAngle;		// Angle from focus dir (emitter Y), in degrees. RandomVar determines min angle.
 	
 	// <Group=Appearance>

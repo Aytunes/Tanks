@@ -133,14 +133,18 @@ public:
 
 	// Minus.
 	ILINE CTimeValue operator-( const CTimeValue &inRhs ) const {	CTimeValue ret;	ret.m_lValue = m_lValue - inRhs.m_lValue;return ret; };
-	// Plus.
-	ILINE CTimeValue operator+( const CTimeValue &inRhs ) const {	CTimeValue ret;	ret.m_lValue = m_lValue + inRhs.m_lValue;return ret;	};
 	// Unary minus.
 	ILINE CTimeValue operator-() const { CTimeValue ret; ret.m_lValue = -m_lValue;return ret; };
+	// Plus.
+	ILINE CTimeValue operator+( const CTimeValue &inRhs ) const {	CTimeValue ret;	ret.m_lValue = m_lValue + inRhs.m_lValue;return ret;	};
+	// Multiply.
+	ILINE CTimeValue operator*( int inRhs ) const {	CTimeValue ret;	ret.m_lValue = m_lValue * inRhs;return ret;	};
+	// Divide.
+	ILINE CTimeValue operator/( int inRhs ) const {	CTimeValue ret;	ret.m_lValue = m_lValue / inRhs;return ret;	};
 
 	ILINE CTimeValue& operator+=( const CTimeValue& inRhs ) { m_lValue += inRhs.m_lValue; return *this; }
 	ILINE CTimeValue& operator-=( const CTimeValue& inRhs ) { m_lValue -= inRhs.m_lValue; return *this; }
-
+	ILINE CTimeValue& operator*=( int inRhs ) { m_lValue *= inRhs; return *this; }
 	ILINE CTimeValue& operator/=( int inRhs ) { m_lValue /= inRhs; return *this; }
 
 	// comparison -----------------------

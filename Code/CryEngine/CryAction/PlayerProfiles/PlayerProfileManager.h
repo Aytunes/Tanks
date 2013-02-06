@@ -318,7 +318,7 @@ protected:
 	void SetOnlineAttributesState(const IOnlineAttributesListener::EEvent event, const IOnlineAttributesListener::EState newState);
 	void SendOnlineAttributeState(const IOnlineAttributesListener::EEvent event, const IOnlineAttributesListener::EState newState);
 
-	//Online attribtues use checksums to check the validity of data loaded (as these are stored locally on a 360 in a gpd file and can be easily workarounded)
+	//Online attribtues use checksums to check the validity of data loaded (as these are stored locally on a 360 in a gpd file and can be easily hacked)
 	void InsertChecksums();
 	int Checksum(const int checksum, const SCryLobbyUserData* pData, uint32 numData);
 	int ChecksumHash(const int hash, const int value) const;

@@ -37,8 +37,10 @@ class CStackContainer
 
   // Prevent the object to be placed on the heap 
   // (.... it simply wouldn't make much sense)
-  void* operator new(size_t);
+#ifndef CAFE
+	void* operator new(size_t);
   void operator delete(void*); 
+#endif
 
 public: 
 

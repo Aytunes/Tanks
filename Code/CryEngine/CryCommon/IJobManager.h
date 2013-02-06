@@ -212,7 +212,7 @@ struct SVEC4_UINT
 
 
 
-#if defined(LINUX)
+#if defined(LINUX) || defined(CAFE)
 	uint32 v[4];
 #else
 	__m128 v;	

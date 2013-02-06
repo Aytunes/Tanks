@@ -188,19 +188,19 @@ struct SEntityUpdateContext
 //////////////////////////////////////////////////////////////////////////
 enum EEntityXFormFlags
 {
-	ENTITY_XFORM_POS											= BIT(1),
-	ENTITY_XFORM_ROT											= BIT(2),
-	ENTITY_XFORM_SCL											= BIT(3),
-	ENTITY_XFORM_NO_PROPOGATE							= BIT(4),
-	ENTITY_XFORM_FROM_PARENT							= BIT(5),  // When parent changes his transformation.
-	ENTITY_XFORM_PHYSICS_STEP							= BIT(13),
-	ENTITY_XFORM_EDITOR										= BIT(14),
-	ENTITY_XFORM_TRACKVIEW								= BIT(15),
-	ENTITY_XFORM_TIMEDEMO									= BIT(16),
-	ENTITY_XFORM_NOT_REREGISTER						= BIT(17), // An optimization flag, when set object will not be re-registered in 3D engine.
+	ENTITY_XFORM_POS          = BIT(1),
+	ENTITY_XFORM_ROT          = BIT(2),
+	ENTITY_XFORM_SCL          = BIT(3),
+	ENTITY_XFORM_NO_PROPOGATE = BIT(4),
+	ENTITY_XFORM_FROM_PARENT  = BIT(5),  // When parent changes his transformation.
+	ENTITY_XFORM_PHYSICS_STEP = BIT(13),
+	ENTITY_XFORM_EDITOR       = BIT(14),
+	ENTITY_XFORM_TRACKVIEW    = BIT(15),
+	ENTITY_XFORM_TIMEDEMO     = BIT(16),
+	ENTITY_XFORM_NOT_REREGISTER= BIT(17), // An optimization flag, when set object will not be re-registered in 3D engine.
 	ENTITY_XFORM_NO_EVENT									= BIT(18), // suppresses ENTITY_EVENT_XFORM event
 	ENTITY_XFORM_NO_SEND_TO_ENTITY_SYSTEM	= BIT(19),
-	ENTITY_XFORM_USER											= 0x1000000,
+	ENTITY_XFORM_USER         = 0x1000000,
 };
 
 // Description:
@@ -546,6 +546,7 @@ struct IEntityLink
 	EntityId     entityId; // Entity targeted by the link.
 	Quat         relRot;   // Relative rotation for the bone attachment link.
 	Vec3         relPos;   // Relative translation for the bone attachment link.
+	EntityGUID   entityGuid; // Entity targeted by the link.
 	IEntityLink* next;     // Pointer to the next link, or NULL if last link.
 
 	static bool IsBoneAttachLinkName(const char *linkName)
@@ -760,7 +761,7 @@ UNIQUE_IFACE struct IEntity
 	//     Sets the entity local space position.
 	// See Also: 
 	//	   SetPos,GetPos,SetRotation,GetRotation,SetScale,GetScale
-	virtual void SetPos( const Vec3 &vPos,int nWhyFlags=0 ) = 0;
+	virtual void SetPos( const Vec3 &vPos,int nWhyFlags=0, bool bRecalcPhyBounds=true ) = 0;
 	// Description:
 	//     Retrieves the entity local space position.
 	// See Also: 
@@ -1164,7 +1165,7 @@ UNIQUE_IFACE struct IEntity
 
 	// Description:
 	//     Invalidates the entity's and all its children's transformation matrices!
-	virtual void InvalidateTM( int nWhyFlags=0 ) = 0;
+	virtual void InvalidateTM( int nWhyFlags=0, bool bRecalcPhyBounds=true ) = 0;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Easy Script table access.
@@ -1182,7 +1183,7 @@ UNIQUE_IFACE struct IEntity
 	// Description:
 	//	 Gets pointer to the first entity link.
 	virtual IEntityLink* GetEntityLinks() = 0;
-	virtual IEntityLink* AddEntityLink( const char *sLinkName,EntityId entityId,
+	virtual IEntityLink* AddEntityLink( const char *sLinkName,EntityId entityId, EntityGUID entityGuid = 0,
 												const Quat& relRot=Quat(IDENTITY),const Vec3& relPos=Vec3(IDENTITY) ) = 0;
 	virtual void RemoveEntityLink( IEntityLink* pLink ) = 0;
 	virtual void RemoveAllEntityLinks() = 0;

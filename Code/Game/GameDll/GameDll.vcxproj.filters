@@ -16,9 +16,6 @@
     <Filter Include="HUD">
       <UniqueIdentifier>{7c48cd2a-f644-4992-8a31-5cdc5e570a1c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Nodes">
-      <UniqueIdentifier>{ded0a8ba-00e8-4497-ad67-291e331ea97f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Audio Files">
       <UniqueIdentifier>{7b068f8a-4e37-47de-aa7f-18f123feaa53}</UniqueIdentifier>
     </Filter>
@@ -235,12 +232,6 @@
     <ClCompile Include="GameRulesHostMigration.cpp">
       <Filter>GameRules</Filter>
     </ClCompile>
-    <ClCompile Include="FlowMouseInfo.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
-    <ClCompile Include="Nodes\MPNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameStartup.h">
@@ -445,9 +436,6 @@
     </ClInclude>
     <ClInclude Include="Network\Lobby\MatchMakingTelemetry.h">
       <Filter>Network\Lobby</Filter>
-    </ClInclude>
-    <ClInclude Include="Nodes\G2FlowBaseNode.h">
-      <Filter>Nodes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

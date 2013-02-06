@@ -238,14 +238,14 @@ public:
 			InputPortConfig<string>("Title", _HELP("Dialog title")),
 			InputPortConfig<string>("Message", _HELP("Dialog message")),
 			InputPortConfig<string>("Param", _HELP("Special param (e.g. for input dialog)")),
-			{0}
+			InputPortConfig_Null()
 		};
 
 		static const SOutputPortConfig outputs[] = {
 			OutputPortConfig_AnyType("OnShow", _HELP("Triggers on Show")),
 			OutputPortConfig<int>("OnResult", _HELP("Returns once the dialog returns: 0=Yes/Ok/Confirm, 1=No/Cancel/Decline, 2=Canceled by system")),
 			OutputPortConfig<string>("Param", _HELP("Special param (e.g. for input dialog)")),
-			{0}
+			OutputPortConfig_Null()
 		};
 
 		config.sDescription = _HELP("This node displays a dialog");

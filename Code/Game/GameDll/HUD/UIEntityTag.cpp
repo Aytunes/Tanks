@@ -325,12 +325,12 @@ public:
 		static const SInputPortConfig inputs[] = {
 			InputPortConfig_AnyType("Get",_HELP("Trigger the nodes to get tag instance name")),
 			InputPortConfig<string>("TagIdx",_HELP("The tag idx")),
-			{0}
+			InputPortConfig_Null()
 		};
 
 		static const SOutputPortConfig outputs[] = {
 			OutputPortConfig<string>("MCInstanceName", _HELP("Name of the movieclip instance name")),
-			{0}
+			OutputPortConfig_Null()
 		};
 
 		config.nFlags |= EFLN_TARGET_ENTITY;

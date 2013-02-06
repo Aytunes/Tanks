@@ -553,8 +553,6 @@
     <ClCompile Include="HUD\UISettings.cpp" />
     <ClCompile Include="GameRules.cpp" />
     <ClCompile Include="GameRulesClientServer.cpp" />
-    <ClCompile Include="FlowMouseInfo.cpp" />
-    <ClCompile Include="Nodes\MPNodes.cpp" />
     <ClCompile Include="Audio\BattleStatus.cpp" />
     <ClCompile Include="Audio\GameAudio.cpp" />
     <ClCompile Include="Audio\ScriptBind_GameAudio.cpp" />
@@ -639,7 +637,6 @@
     <ClInclude Include="HUD\UIMultiPlayer.h" />
     <ClInclude Include="HUD\UISettings.h" />
     <ClInclude Include="GameRules.h" />
-    <ClInclude Include="Nodes\G2FlowBaseNode.h" />
     <ClInclude Include="Audio\BattleStatus.h" />
     <ClInclude Include="Audio\GameAudio.h" />
     <ClInclude Include="Audio\ScriptBind_GameAudio.h" />

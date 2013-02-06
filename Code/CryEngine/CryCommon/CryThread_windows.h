@@ -11,7 +11,7 @@
 class CryEvent
 {
 public:
-	CryEvent();
+	CryEvent(bool bManualReset = false);
 	~CryEvent();
 
 	// Reset the event to the unsignalled state.
@@ -100,7 +100,7 @@ public:
 
 	bool IsLocked()
 	{
-		return m_cs.RecursionCount > 0 && (DWORD)m_cs.OwningThread == CryGetCurrentThreadId();
+		return m_cs.RecursionCount > 0 && (DWORD)(UINT_PTR)m_cs.OwningThread == CryGetCurrentThreadId(); 
 	}
 
 private:

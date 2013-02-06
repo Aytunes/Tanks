@@ -25,6 +25,7 @@
 
 #include "IGameStartup.h"
 #include "Cry_Color.h"
+#include <Cry_Geo.h>
 #include "TimeValue.h"
 
 struct pe_explosion;
@@ -360,6 +361,8 @@ UNIQUE_IFACE struct IPersistantDebug
 	virtual void AddText ( float x, float y, float size, ColorF clr, float timeout, const char * fmt, ... ) = 0;
 	virtual void Add2DLine( float x1, float y1, float x2, float y2, ColorF clr, float timeout ) = 0;
 	virtual void AddQuat( const Vec3& pos, const Quat& q, float r, ColorF clr, float timeout ) = 0;
+	virtual void AddOBB(const Vec3& pos, const OBB& obb, ColorF clr, float timeout) = 0;
+	virtual void AddAABB(const Vec3& pos, const AABB& aabb, ColorF clr, float timeout) = 0;
 	virtual void AddEntityTag(const SEntityTagParams& params, const char *tagContext="") = 0;
 	virtual void ClearEntityTags(EntityId entityId) = 0;
 	virtual void ClearStaticTag(EntityId entityId, const char *staticId) = 0;
