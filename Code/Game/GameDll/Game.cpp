@@ -60,8 +60,6 @@
 #include "GameMechanismManager/GameMechanismManager.h"
 #include "ICheckPointSystem.h"
 
-#include <IPluginManager_impl.h>
-
 #define GAME_DEBUG_MEM  // debug memory usage
 #undef  GAME_DEBUG_MEM
 

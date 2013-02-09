@@ -5825,14 +5825,14 @@
         </member>
         <member name="P:CryEngine.Utilities.PathUtils.BinaryFolder">
             <summary>
-            Gets the current folder containing binaries relevant to current build type (Bin32 / Bin64).
+            Gets the folder containing binaries relevant to current build type (Bin32 / Bin64).
             </summary>
             <returns>The filepath to the Binary folder as a string, ex:
             <example>"C:\CryENGINE3\Bin32"</example></returns>
         </member>
-        <member name="P:CryEngine.Utilities.PathUtils.NativePluginsFolder">
+        <member name="P:CryEngine.Utilities.PathUtils.ConfigFolder">
             <summary>
-            PluginSDK main directory
+            Gets the folder containing CryMono configuration files.
             </summary>
         </member>
         <member name="P:CryEngine.Utilities.PathUtils.PluginsFolder">
