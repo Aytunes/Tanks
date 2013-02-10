@@ -44,8 +44,6 @@ namespace CryGameCode.Tanks
                                 else
                                     Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Owner.Id);
                             }
-                            else if (Owner != null && !Owner.IsDead)
-                                Debug.LogAlways("Could not revive, owner was not dead");
                         }
                     });
 

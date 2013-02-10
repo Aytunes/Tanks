@@ -19,13 +19,7 @@ namespace CryGameCode.Tanks
 		{
 			Owner = owner;
 
-			Attachment = Owner.GetAttachment("turret");
-			Attachment.UseEntityRotation = true;
-
-			Attachment.LoadObject(Model);
-			Attachment.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
-
-            Attachment.OnDestroyed += (x) => { Destroy(); };
+            Reset();
 
             if (Owner.IsLocalClient)
             {
@@ -54,6 +48,17 @@ namespace CryGameCode.Tanks
             m_mousePosition = new Vec2();
 		}
 
+        public void Reset()
+        {
+            Attachment = Owner.GetAttachment("turret");
+            Attachment.UseEntityRotation = true;
+
+            Attachment.LoadObject(Model);
+            Attachment.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
+
+            Attachment.OnDestroyed += (x) => { Destroy(); };
+        }
+
         void Serialize(CrySerialize serialize)
         {
             serialize.BeginGroup("TankTurret");
@@ -71,6 +76,9 @@ namespace CryGameCode.Tanks
 				Input.MouseEvents -= ProcessMouseEvents;
 				Input.ActionmapEvents.RemoveAll(this);
 			}
+
+            if (!Attachment.IsDestroyed)
+                Attachment.Remove();
 		}
 
         public void OnRotateYaw(float value)

@@ -30,6 +30,8 @@ namespace CryGameCode
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
 				return;
 			}
+
+            tank.ToggleSpectatorPoint();
 		}
 
 		public override void OnClientDisconnect(int channelId)
@@ -52,6 +54,7 @@ namespace CryGameCode
             if (!Network.IsServer)
                 return;
 
+            Debug.LogAlways("Received revival request");
             var actor = Actor.Get<Tank>(actorId);
             if (actor.IsDead && !actor.IsDestroyed)
                 RevivePlayer(actorId);

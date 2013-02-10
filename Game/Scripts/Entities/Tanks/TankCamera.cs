@@ -17,9 +17,6 @@ namespace CryGameCode.Tanks
 	{
 		protected override void UpdateView(ref ViewParams viewParams)
 		{
-            if (Turret == null || !Turret.IsActive)
-                return;
-
             viewParams.FieldOfView = MathHelpers.DegreesToRadians(60);
 
             if (IsDead)
@@ -29,6 +26,9 @@ namespace CryGameCode.Tanks
 
                 return;
             }
+
+            if (Turret == null || !Turret.IsActive)
+                return;
 
             if (m_tankInput != null)
             {

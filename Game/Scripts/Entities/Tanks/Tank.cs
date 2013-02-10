@@ -70,19 +70,16 @@ namespace CryGameCode.Tanks
         {
             Health = MaxHealth;
 
-            Hide(false);
-        }
+            Turret.Reset();
 
-        protected override void PostSerialize()
-        {
-            Reset(true);
+            Hide(false);
         }
 
 		protected override void OnEditorReset(bool enteringGame)
 		{
             Health = 0;
 
-            if (!enteringGame)
+            if(enteringGame)
                 ToggleSpectatorPoint();
             
 			Reset(enteringGame);
@@ -100,9 +97,9 @@ namespace CryGameCode.Tanks
 			Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
             Physics.MaxClimbAngle = MathHelpers.DegreesToRadians(30);
 			Physics.AirControl = 0.0f;
-			Physics.Save();*/
+			Physics.Save();
 
-            m_acceleration = new Vec2();
+            m_acceleration = new Vec2();*/
 
 			ReceiveUpdates = true;
 		}
@@ -163,6 +160,7 @@ namespace CryGameCode.Tanks
         private PlayerInput m_tankInput;
 
         public TankTurret Turret { get; set; }
+
 		private Attachment m_leftTrack;
 		private Attachment m_rightTrack;
 
