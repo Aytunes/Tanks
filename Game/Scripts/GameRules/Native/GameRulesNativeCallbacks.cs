@@ -58,7 +58,7 @@ namespace CryGameCode
         /// <summary>
         /// Called when the local client has connected to a new server server, following <see cref="OnConnect"/>.
         /// </summary>
-        public virtual void OnConnected() { }
+        public virtual void OnConnected(EntityId id) { }
         
         public virtual void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId) { }
 		public virtual void OnReviveInVehicle(EntityId actorId, EntityId vehicleId, int seatId, int teamId) { }
