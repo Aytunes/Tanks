@@ -17,9 +17,26 @@ namespace CryGameCode
 
         public virtual void OnSetTeam(EntityId actorId, int teamId) { }
 
+        /// <summary>
+        /// Called when a new client has connected to the server.
+        /// </summary>
+        /// <param name="channelId"></param>
+        /// <param name="isReset"></param>
+        /// <param name="playerName"></param>
 		public virtual void OnClientConnect(int channelId, bool isReset = false, string playerName = "Dude") { }
-		public virtual void OnClientDisconnect(int channelId) { }
+		/// <summary>
+		/// Called when the client disconnects from the server.
+		/// </summary>
+		/// <param name="channelId"></param>
+        public virtual void OnClientDisconnect(int channelId) { }
 
+        /// <summary>
+        /// Called after <see cref="OnClientConnect"/>, when the new client has successfully loaded the level.
+        /// </summary>
+        /// <param name="channelId"></param>
+        /// <param name="playerId"></param>
+        /// <param name="reset"></param>
+        /// <param name="loadingSaveGame"></param>
 		public virtual void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame) { }
 
 		public virtual void OnChangeTeam(EntityId actorId, int teamId) { }
@@ -35,5 +52,8 @@ namespace CryGameCode
 		public virtual void OnKill(EntityId actorId, EntityId shooterId, string weaponClassName, int damage, int material, int hitType) { }
 
 		public virtual void OnCollision(EntityId sourceId, EntityId targetId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal) { }
-	}
+
+        public virtual void OnPlayerJoined(string playerName, EntityId playerId) { }
+        public virtual void OnPlayerLeft(string playerName, EntityId playerId) { }
+    }
 }

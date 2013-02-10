@@ -281,10 +281,14 @@ IMPLEMENT_RMI(CGameRules, ClEnteredGame)
 
 IMPLEMENT_RMI(CGameRules, ClPlayerJoined)
 {
+	m_pScript->CallMethod("OnPlayerJoined", ToMonoString(params.name.c_str()), params.entityId);
+
 	return true;
 }
 
 IMPLEMENT_RMI(CGameRules, ClPlayerLeft)
 {
+	m_pScript->CallMethod("OnPlayerLeft", ToMonoString(params.name.c_str()), params.entityId);
+
 	return true;
 }
