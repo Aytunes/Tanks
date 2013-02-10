@@ -18,55 +18,59 @@ namespace CryGameCode.Tanks
         {
             Owner = tank;
 
-            if (tank.IsLocalClient)
-            {
-                AddEvent("zoom_in", InputFlags.ZoomIn);
-                AddEvent("zoom_out", InputFlags.ZoomOut);
+            AddEvent("zoom_in", InputFlags.ZoomIn);
+            AddEvent("zoom_out", InputFlags.ZoomOut);
 
-                AddEvent("moveright", InputFlags.MoveRight);
-                AddEvent("moveleft", InputFlags.MoveLeft);
+            AddEvent("moveright", InputFlags.MoveRight);
+            AddEvent("moveleft", InputFlags.MoveLeft);
 
-                AddEvent("moveforward", InputFlags.MoveForward);
-                AddEvent("moveback", InputFlags.MoveBack);
+            AddEvent("moveforward", InputFlags.MoveForward);
+            AddEvent("moveback", InputFlags.MoveBack);
 
-                AddEvent("sprint", InputFlags.Boost);
+            AddEvent("sprint", InputFlags.Boost);
 
-                Input.ActionmapEvents.Add("attack1", (e) =>
+            Input.ActionmapEvents.Add("attack1", (e) =>
+                {
+                    if (e.KeyEvent == KeyEvent.OnPress)
                     {
-                        if (e.KeyEvent == KeyEvent.OnPress)
-                        {
-                            var gameRules = GameRules.Current as SinglePlayer;
+                        var gameRules = GameRules.Current as SinglePlayer;
 
-                            if (gameRules != null && Owner != null && Owner.IsDead)
+                        if (Owner != null && Owner.IsDead)
+                        {
+                            if (Network.IsServer)
+                                gameRules.RequestRevive(Owner.Id, Owner.Team, Owner.Turret.GetType().Name);
+                            else
                             {
-                                if (Network.IsServer)
-                                    gameRules.RequestRevive(Owner.Id);
-                                else
-                                    Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Owner.Id);
+                                Debug.LogAlways("Requesting revive ({0}, {1}, {2})", Owner.Id, Owner.Team, Owner.Turret.GetType().Name);
+                                Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Owner.Id, Owner.Team, Owner.Turret.GetType().Name);
                             }
                         }
-                    });
+                        else if (Owner == null)
+                            Debug.LogAlways("Could not request revive, owner as null");
+                        else if (Owner.IsDead)
+                            Debug.LogAlways("Could not request revive, owner was alive.");
+                    }
+                });
 
-                Input.ActionmapEvents.Add("rotateyaw", (e) =>
-                    {
-                        if (Owner != null && Owner.Turret != null)
-                            Owner.Turret.OnRotateYaw(e.Value);
-                    });
+            Input.ActionmapEvents.Add("rotateyaw", (e) =>
+                {
+                    if (Owner != null && Owner.Turret != null)
+                        Owner.Turret.OnRotateYaw(e.Value);
+                });
 
-                Input.ActionmapEvents.Add("rotatepitch", (e) =>
-                    {
-                        if (Owner != null && Owner.Turret != null)
-                            Owner.Turret.OnRotatePitch(e.Value);
-                    });
+            Input.ActionmapEvents.Add("rotatepitch", (e) =>
+                {
+                    if (Owner != null && Owner.Turret != null)
+                        Owner.Turret.OnRotatePitch(e.Value);
+                });
 
-                Input.ActionmapEvents.Add("cycle_view", (e) =>
-                    {
-                        if (GameCVars.cam_type < (int)CameraType.Last - 1)
-                            GameCVars.cam_type++;
-                        else
-                            GameCVars.cam_type = 0;
-                    });
-            }
+            Input.ActionmapEvents.Add("cycle_view", (e) =>
+                {
+                    if (GameCVars.cam_type < (int)CameraType.Last - 1)
+                        GameCVars.cam_type++;
+                    else
+                        GameCVars.cam_type = 0;
+                });
         }
 
         void AddEvent(string actionMapName, InputFlags flag)

@@ -1314,7 +1314,6 @@ void CGame::RegisterConsoleCommands()
 	REGISTER_COMMAND("restartgame", CmdRestartGame, VF_NULL, "Restarts CryENGINE completely.");
 
 	REGISTER_COMMAND("name", CmdName, VF_RESTRICTEDMODE, "Sets player name.");
-	REGISTER_COMMAND("team", CmdTeam, VF_RESTRICTEDMODE, "Sets player team.");
 	REGISTER_COMMAND("loadLastSave", CmdLoadLastSave, VF_NULL, "Loads the last savegame if available.");
 	REGISTER_COMMAND("sv_restart", CmdRestart, VF_NULL, "Restarts the round.");
 	REGISTER_COMMAND("sv_say", CmdSay, VF_NULL, "Broadcasts a message to all clients.");
@@ -1406,21 +1405,6 @@ void CGame::CmdName(IConsoleCmdArgs *pArgs)
 	CGameRules *pGameRules = g_pGame->GetGameRules();
 	if (pGameRules)
 		pGameRules->RenamePlayer(pGameRules->GetActorByEntityId(pClientActor->GetEntityId()), pArgs->GetArg(1));
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdTeam(IConsoleCmdArgs *pArgs)
-{
-	if (!gEnv->IsClient())
-		return;
-
-	IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
-	if (!pClientActor)
-		return;
-
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	if (pGameRules)
-		pGameRules->ChangeTeam(pGameRules->GetActorByEntityId(pClientActor->GetEntityId()), pArgs->GetArg(1));
 }
 
 //------------------------------------------------------------------------

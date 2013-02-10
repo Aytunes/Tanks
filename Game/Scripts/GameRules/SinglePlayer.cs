@@ -41,42 +41,65 @@ namespace CryGameCode
 
 		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
 		{
+            var actor = Actor.Get<Tank>(playerId);  
+
+            actor.OnEnteredGame();
+		}
+
+        public override void OnPlayerJoined(string playerName, EntityId playerId)
+        {
             var actor = Actor.Get<Tank>(playerId);
 
             actor.OnEnteredGame();
+        }
 
-            Actors.Add(actor);
-		}
-
+        /// <summary>
+        /// Sent to server when a remote actor wishes to be revived, change team and / or change turret type.
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <param name="team"></param>
+        /// <param name="turretTypeName"></param>
         [RemoteInvocation]
-        public void RequestRevive(EntityId actorId)
+        public void RequestRevive(EntityId actorId, string team, string turretTypeName)
         {
             if (!Network.IsServer)
                 return;
 
             Debug.LogAlways("Received revival request");
-            var actor = Actor.Get<Tank>(actorId);
-            if (actor.IsDead && !actor.IsDestroyed)
-                RevivePlayer(actorId);
+            var tank = Actor.Get<Tank>(actorId);
+
+            if (tank.IsDead && !tank.IsDestroyed)
+            {
+                if (IsTeamValid(team))
+                    tank.Team = team;
+
+                var turretType = Type.GetType(turretTypeName);
+                if (turretType != null)
+                    tank.Turret = Activator.CreateInstance(turretType, tank) as TankTurret;
+
+                Debug.LogAlways("Reviving!");
+
+                var spawnPoint = FindSpawnPoint();
+                if (spawnPoint != null)
+                    spawnPoint.TrySpawn(tank);
+
+                tank.OnRevived();
+
+                tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, team, turretTypeName);
+            }
         }
 
-        public virtual void RevivePlayer(EntityId actorId)
-		{
-			var tank = Actor.Get<Tank>(actorId);
-			if(tank == null)
-			{
-				Debug.Log("[SinglePlayer.OnRevive] Failed to get the player. Check the log for errors.");
-				return;
-			}
+        [RemoteInvocation]
+        void OnRevivedPlayer(EntityId actorId, Vec3 position, string team, string turretTypeName)
+        {
+            Debug.LogAlways("OnRevivedPlayer");
+            var tank = Actor.Get<Tank>(actorId);
 
-            Debug.LogAlways("Reviving!");
+            tank.Team = team;
+            tank.Turret = Activator.CreateInstance(Type.GetType(turretTypeName), tank) as TankTurret;
 
-            var spawnPoint = FindSpawnPoint();
-            if (spawnPoint != null)
-                spawnPoint.TrySpawn(tank);
-
-            tank.OnRevived();
-		}
+            tank.Position = position;
+        }
 
         protected virtual SpawnPoint FindSpawnPoint(string team = null)
         {
@@ -94,8 +117,6 @@ namespace CryGameCode
 
             return null;
         }
-
-        public List<Actor> Actors = new List<Actor>();
 
         public virtual string[] Teams
         {
