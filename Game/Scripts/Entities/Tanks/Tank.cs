@@ -63,6 +63,8 @@ namespace CryGameCode.Tanks
 
             Health = 0;
 
+            Hide(true);
+
             Reset(true);
         }
 
