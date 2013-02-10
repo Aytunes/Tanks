@@ -26,6 +26,9 @@ namespace CryGameCode.Tanks
                 // Temp hax for right mouse events not working
                 Input.ActionmapEvents.Add("attack2", (e) =>
                 {
+                    if (Owner.IsDead)
+                        return;
+
                     switch (e.KeyEvent)
                     {
                         case KeyEvent.OnPress:
@@ -36,7 +39,7 @@ namespace CryGameCode.Tanks
                         case KeyEvent.OnRelease:
                             if (AutomaticFire)
                                 m_rightFiring = false;
-                            else
+                            else 
                                 FireRight();
                             break;
                     }
@@ -93,6 +96,9 @@ namespace CryGameCode.Tanks
 
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
+            if (Owner.IsDead)
+                return;
+
 			switch(e.MouseEvent)
 			{
 			case MouseEvent.LeftButtonDown:
@@ -117,7 +123,7 @@ namespace CryGameCode.Tanks
 
 		public void Update()
 		{
-            if (Attachment.IsDestroyed)
+            if (Attachment.IsDestroyed || Owner.IsDead)
                 return;
 
 			if(m_leftFiring)
