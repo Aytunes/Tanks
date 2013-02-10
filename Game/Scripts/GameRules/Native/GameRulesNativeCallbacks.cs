@@ -44,15 +44,33 @@ namespace CryGameCode
 		public virtual void RestartGame(bool forceInGame) { }
 
 		// Client-only
+        /// <summary>
+        /// Called on the local client when connecting to a new server.
+        /// </summary>
 		public virtual void OnConnect() { }
+        /// <summary>
+        /// Called on the local client when disconnecting from the server.
+        /// </summary>
+        /// <param name="cause"></param>
+        /// <param name="description"></param>
 		public virtual void OnDisconnect(DisconnectionCause cause, string description) { }
 
-		public virtual void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId) { }
+        /// <summary>
+        /// Called when the local client has connected to a new server server, following <see cref="OnConnect"/>.
+        /// </summary>
+        public virtual void OnConnected() { }
+        
+        public virtual void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId) { }
 		public virtual void OnReviveInVehicle(EntityId actorId, EntityId vehicleId, int seatId, int teamId) { }
 		public virtual void OnKill(EntityId actorId, EntityId shooterId, string weaponClassName, int damage, int material, int hitType) { }
 
 		public virtual void OnCollision(EntityId sourceId, EntityId targetId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal) { }
 
+        /// <summary>
+        /// Sent to all clients when a new player has entered the game.
+        /// </summary>
+        /// <param name="playerName"></param>
+        /// <param name="playerId"></param>
         public virtual void OnPlayerJoined(string playerName, EntityId playerId) { }
         public virtual void OnPlayerLeft(string playerName, EntityId playerId) { }
     }

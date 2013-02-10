@@ -203,6 +203,8 @@ IMPLEMENT_RMI(CGameRules, ClEnteredGame)
 		IEntity *pClientEntity = pClientActor->GetEntity();
 		const EntityId clientEntityId = pClientEntity->GetId();
 
+		m_pScript->CallMethod("OnConnected", clientEntityId);
+
 		if(!gEnv->bServer)
 		{
 			int status[2];
