@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
 using CryEngine;
 using CryEngine.Extensions;
+
 using CryGameCode.Entities;
 using CryGameCode.Tanks;
 
@@ -15,7 +17,6 @@ namespace CryGameCode
 	[GameRules(Default = true)]
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
-		public static string[] Teams = { "red", "blue" };
 		public static Random Selector = new Random();
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
@@ -24,7 +25,6 @@ namespace CryGameCode
 				return;
 
 			var tank = Actor.Create<Tank>(channelId, playerName);
-
 			if(tank == null)
 			{
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
@@ -37,19 +37,27 @@ namespace CryGameCode
 			Actor.Remove(channelId);
 		}
 
-		public override void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId)
-		{
-			if(Network.IsEditor)
-				RevivePlayer(actorId);
-		}
-
 		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
 		{
-			if(!Network.IsEditor)
-				RevivePlayer(playerId);
+            var actor = Actor.Get<Tank>(playerId);
+
+            actor.OnEnteredGame();
+
+            Actors.Add(actor);
 		}
 
-		public virtual void RevivePlayer(EntityId actorId)
+        [RemoteInvocation]
+        public void RequestRevive(EntityId actorId)
+        {
+            if (!Network.IsServer)
+                return;
+
+            var actor = Actor.Get<Tank>(actorId);
+            if (actor.IsDead && !actor.IsDestroyed)
+                RevivePlayer(actorId);
+        }
+
+        public virtual void RevivePlayer(EntityId actorId)
 		{
 			var tank = Actor.Get<Tank>(actorId);
 			if(tank == null)
@@ -58,18 +66,45 @@ namespace CryGameCode
 				return;
 			}
 
-			var spawnpoints = Entity.GetByClass<SpawnPoint>();
-			if(spawnpoints.Count() > 0)
-			{
-				var spawnPoint = spawnpoints.ElementAt(Selector.Next(0, spawnpoints.Count() - 1));
+            Debug.LogAlways("Reviving!");
 
-				spawnPoint.TrySpawn(tank);
-			}
+            var spawnPoint = FindSpawnPoint();
+            if (spawnPoint != null)
+                spawnPoint.TrySpawn(tank);
+
+            tank.OnRevived();
 		}
 
-		public bool IsTeamValid(string team)
-		{
-			return Teams.Contains(team);
-		}
+        protected virtual SpawnPoint FindSpawnPoint(string team = null)
+        {
+            var spawnpoints = Entity.GetByClass<SpawnPoint>();
+            if (spawnpoints.Count() > 0)
+            {
+                spawnpoints = spawnpoints.Where(x =>
+                    {
+                        return x.CanSpawn && (team == null || x.Team == team);
+                    });
+
+                if (spawnpoints.Count() > 0)
+                    return spawnpoints.ElementAt(Selector.Next(0, spawnpoints.Count() - 1));
+            }
+
+            return null;
+        }
+
+        public List<Actor> Actors = new List<Actor>();
+
+        public virtual string[] Teams
+        {
+            get
+            {
+                return new string[] { "red" };
+            }
+        }
+
+        public bool IsTeamValid(string team)
+        {
+            return Teams.Contains(team);
+        }
 	}
 }

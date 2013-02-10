@@ -1,13 +1,76 @@
 ﻿using CryEngine;
 using CryGameCode.Entities;
 
+using System;
+using System.Linq;
+
 namespace CryGameCode.Tanks
 {
 	public partial class Tank : DamageableActor
 	{
-        public override void OnSpawn()
+        public Tank()
         {
+            MaxHealth = 100;
+        }
+
+        /// <summary>
+        /// Called when the client has finished loading and is ready to play.
+        /// </summary>
+        public void OnEnteredGame()
+        {
+            m_tankInput = new PlayerInput(this);
+
+            ZoomLevel = 1;
+
+            OnDestroyed += (e) =>
+            {
+                m_tankInput.Destroy();
+
+                if (Turret != null)
+                {
+                    Turret.Destroy();
+                    Turret = null;
+                }
+
+                ReceiveUpdates = false;
+            };
+
+            var gameMode = GameRules.Current as SinglePlayer;
+
+            // TODO: Allow picking of Team + Turret via UI
+            Team = gameMode.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameMode.Teams.Length - 1));
+
+            LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
+
+            Type turretType;
+
+            if (string.IsNullOrEmpty(GameCVars.ForceTankType))
+                turretType = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)];
+            else
+            {
+                turretType = Type.GetType("CryGameCode.Tanks." + GameCVars.ForceTankType);
+                if (turretType == null)
+                {
+                    turretType = typeof(Autocannon);
+                    Debug.LogAlways("Forced turret type {0} could not be located", GameCVars.ForceTankType);
+                }
+            }
+
+            Turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
+
+            m_leftTrack = GetAttachment("track_left");
+            m_rightTrack = GetAttachment("track_right");
+
+            Health = 0;
+
             Reset(true);
+        }
+
+        public void OnRevived()
+        {
+            Health = MaxHealth;
+
+            Hide(false);
         }
 
         protected override void PostSerialize()
@@ -15,85 +78,19 @@ namespace CryGameCode.Tanks
             Reset(true);
         }
 
-		public void OnRevive()
-		{
-			ZoomLevel = 1;
-
-            m_tankInput = new TankInput(this);
-
-			OnDestroyed += (e) =>
-			{
-                m_tankInput.Destroy();
-
-				if(Turret != null)
-				{
-					Turret.Destroy();
-					Turret = null;
-				}
-
-				ReceiveUpdates = false;
-			};
-
-			Reset(true);
-
-            if (Network.IsMultiplayer)
-                Entity.Spawn<Cursor>("Cursor", null, null, null, true, EntityFlags.CastShadow | EntityFlags.ClientOnly);
-            else
-                Entity.Spawn<Cursor>("Cursor");
-		}
-
 		protected override void OnEditorReset(bool enteringGame)
 		{
+            Health = 0;
+
+            if (!enteringGame)
+                ToggleSpectatorPoint();
+            
 			Reset(enteringGame);
 		}
 
-        [RemoteInvocation]
-        void NetReset(bool enteringGame, string turretTypeName)
-        {
-            if (enteringGame)
-            {
-                var turretType = System.Type.GetType(turretTypeName);
-                if (turretType == null)
-                {
-                    Turret = new Autocannon(this);
-                    Debug.LogAlways("Turret type {0} could not be located", turretTypeName);
-                }
-                else
-                    Turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
-            }
-            else
-            {
-                Turret.Destroy();
-                Turret = null;
-            }
-        }
-
 		private void Reset(bool enteringGame)
 		{
-            LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
-
-            if(Network.IsServer)
-            {
-                string turretType;
-
-                if (string.IsNullOrEmpty(GameCVars.ForceTankType))
-                    turretType = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
-                else
-                    turretType = "CryGameCode.Tanks." + GameCVars.ForceTankType;
-
-                if (IsLocalClient)
-                    NetReset(enteringGame, turretType);
-
-                Network.RemoteInvocation(NetReset, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, enteringGame, turretType);
-            }
-
-			m_leftTrack = GetAttachment("track_left");
-			m_rightTrack = GetAttachment("track_right");
-
-			// Unhide just in case
-			Hide(false);
-
-			Physics.AutoUpdate = false;
+			/*Physics.AutoUpdate = false;
 			Physics.Type = PhysicalizationType.Living;
 			Physics.Mass = 500;
 			Physics.HeightCollider = 1.2f;
@@ -103,23 +100,12 @@ namespace CryGameCode.Tanks
 			Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
             Physics.MaxClimbAngle = MathHelpers.DegreesToRadians(30);
 			Physics.AirControl = 0.0f;
-			Physics.Save();
+			Physics.Save();*/
 
             m_acceleration = new Vec2();
 
-			InitHealth(100);
-
 			ReceiveUpdates = true;
 		}
-
-        protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
-        {
-            serialize.BeginGroup("Tank");
-
-
-
-            serialize.EndGroup();
-        }
 
 		public override void OnUpdate()
 		{
@@ -148,12 +134,40 @@ namespace CryGameCode.Tanks
 			}
 		}
 
-        private TankInput m_tankInput;
+        public void ToggleSpectatorPoint(bool increment = false)
+        {
+            if (!IsDead)
+                return;
+
+            var spectatorPoints = Entity.GetByClass<SpectatorPoint>();
+            var spectatorPointCount = spectatorPoints.Count();
+
+            if (spectatorPointCount > 0)
+            {
+                if(increment)
+                    CurrentSpectatorPoint++;
+
+                if (CurrentSpectatorPoint >= spectatorPointCount)
+                    CurrentSpectatorPoint = 0;
+
+                var iSpectatorPoint = SinglePlayer.Selector.Next(CurrentSpectatorPoint, spectatorPointCount - 1);
+                var spectatorPoint = spectatorPoints.ElementAt(iSpectatorPoint);
+
+                Position = spectatorPoint.Position;
+                Rotation = spectatorPoint.Rotation;
+            }
+
+            Hide(true);
+        }
+
+        private PlayerInput m_tankInput;
 
         public TankTurret Turret { get; set; }
 		private Attachment m_leftTrack;
 		private Attachment m_rightTrack;
 
         public Vec3 GroundNormal { get; set; }
+
+        public int CurrentSpectatorPoint { get; set; }
 	}
 }

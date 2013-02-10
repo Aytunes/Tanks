@@ -91,12 +91,6 @@ IMPLEMENT_RMI(CGameRules, ClChatMessage)
 }
 
 //------------------------------------------------------------------------
-IMPLEMENT_RMI(CGameRules, ClForbiddenAreaWarning)
-{
-	return true;
-}
-
-//------------------------------------------------------------------------
 IMPLEMENT_RMI(CGameRules, SvRequestChangeTeam)
 {
 	IActor *pActor = GetActorByEntityId(params.entityId);

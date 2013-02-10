@@ -31,10 +31,10 @@ namespace CryGameCode.Tanks
 			if(Turret != null)
 				Turret.Hide(hide);
 
-			if(!m_leftTrack.IsDestroyed)
+            if (m_leftTrack != null && !m_leftTrack.IsDestroyed)
 				m_leftTrack.Hidden = hide;
 
-			if(!m_rightTrack.IsDestroyed)
+			if(m_rightTrack != null && !m_rightTrack.IsDestroyed)
 				m_rightTrack.Hidden = hide;
 		}
 

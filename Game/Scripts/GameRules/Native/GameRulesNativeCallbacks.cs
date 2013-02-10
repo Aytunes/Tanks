@@ -15,7 +15,7 @@ namespace CryGameCode
 		public virtual EntityId GetPlayerSpawnGroup(EntityId actorId) { return new EntityId(System.Convert.ToUInt32(0)); }
 		public virtual void ShowScores(bool show) { }
 
-		public virtual void OnSetTeam(EntityId actorId, EntityId teamId) { }
+        public virtual void OnSetTeam(EntityId actorId, int teamId) { }
 
 		public virtual void OnClientConnect(int channelId, bool isReset = false, string playerName = "Dude") { }
 		public virtual void OnClientDisconnect(int channelId) { }

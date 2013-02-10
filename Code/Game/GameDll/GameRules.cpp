@@ -1374,12 +1374,6 @@ void CGameRules::SendChatMessage(EChatMessageType type, EntityId sourceId, Entit
 }
 
 //------------------------------------------------------------------------
-void CGameRules::ForbiddenAreaWarning(bool active, int timer, EntityId targetId)
-{
-	GetGameObject()->InvokeRMI(ClForbiddenAreaWarning(), ForbiddenAreaWarningParams(active, timer), eRMI_ToClientChannel, GetChannelId(targetId));
-}
-
-//------------------------------------------------------------------------
 
 void CGameRules::ResetGameTime()
 {

@@ -336,7 +336,6 @@ protected:
 	static void CmdDumpSS(IConsoleCmdArgs *pArgs);
 
 	static void CmdName(IConsoleCmdArgs *pArgs);
-	static void CmdTeam(IConsoleCmdArgs *pArgs);
 	static void CmdLoadLastSave(IConsoleCmdArgs *pArgs);
 	static void CmdRestart(IConsoleCmdArgs *pArgs);
 	static void CmdSay(IConsoleCmdArgs *pArgs);

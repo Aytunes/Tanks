@@ -12,7 +12,7 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
-            if (IsDestroyed || m_tankInput == null)
+            if (IsDestroyed || m_tankInput == null || IsDead)
 				return;
 
             var frameTime = Time.DeltaTime;
