@@ -73,9 +73,7 @@ namespace CryGameCode
                 if (IsTeamValid(team))
                     tank.Team = team;
 
-                var turretType = Type.GetType(turretTypeName);
-                if (turretType != null)
-                    tank.Turret = Activator.CreateInstance(turretType, tank) as TankTurret;
+                tank.TurretTypeName = turretTypeName;
 
                 Debug.LogAlways("Reviving!");
 
@@ -86,20 +84,23 @@ namespace CryGameCode
                 tank.OnRevived();
 
                 Debug.LogAlways("Invoking RMI OnRevivedPlayer");
-                tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, team, turretTypeName);
+                tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, tank.Rotation, team, turretTypeName);
             }
         }
 
         [RemoteInvocation]
-        void OnRevivedPlayer(EntityId actorId, Vec3 position, string team, string turretTypeName)
+        void OnRevivedPlayer(EntityId actorId, Vec3 position, Quat rotation, string team, string turretTypeName)
         {
             Debug.LogAlways("OnRevivedPlayer");
             var tank = Actor.Get<Tank>(actorId);
 
             tank.Team = team;
-            tank.Turret = Activator.CreateInstance(Type.GetType(turretTypeName), tank) as TankTurret;
+            tank.TurretTypeName = turretTypeName;
 
             tank.Position = position;
+            tank.Rotation = rotation;
+
+            tank.OnRevived();
         }
 
         protected virtual SpawnPoint FindSpawnPoint(string team = null)
