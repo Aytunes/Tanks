@@ -697,7 +697,7 @@ void CGameRules::OnRevive(IActor *pActor, const Vec3 &pos, const Quat &rot, int 
 	//Vec3 rotVec = Vec3(Ang3(rot));
 	//CallScript(m_clientScript, "OnRevive", handle, pos, rotVec, teamId);
 
-	m_pScript->CallMethod("OnRevive", pActor->GetEntityId(), pos, Ang3(rot), teamId);
+	m_pScript->CallMethod("OnRevive", pActor->GetEntityId(), pos, rot, teamId);
 }
 
 //------------------------------------------------------------------------

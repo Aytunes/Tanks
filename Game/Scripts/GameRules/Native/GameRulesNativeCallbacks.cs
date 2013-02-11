@@ -60,7 +60,7 @@ namespace CryGameCode
         /// </summary>
         public virtual void OnConnected(EntityId id) { }
         
-        public virtual void OnRevive(EntityId actorId, Vec3 pos, Vec3 rot, int teamId) { }
+        public virtual void OnRevive(EntityId actorId, Vec3 pos, Quat rot, int teamId) { }
 		public virtual void OnReviveInVehicle(EntityId actorId, EntityId vehicleId, int seatId, int teamId) { }
 		public virtual void OnKill(EntityId actorId, EntityId shooterId, string weaponClassName, int damage, int material, int hitType) { }
 
