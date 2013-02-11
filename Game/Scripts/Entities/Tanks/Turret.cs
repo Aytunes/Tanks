@@ -19,16 +19,19 @@ namespace CryGameCode.Tanks
 		{
 			Owner = owner;
 
-            Reset();
+            Attachment = Owner.GetAttachment("turret");
+            Attachment.UseEntityRotation = true;
+
+            Attachment.LoadObject(Model);
+            Attachment.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
+
+            Attachment.OnDestroyed += (x) => { Destroy(); };
 
             if (Owner.IsLocalClient)
             {
                 // Temp hax for right mouse events not working
                 Input.ActionmapEvents.Add("attack2", (e) =>
                 {
-                    if (Owner.IsDead)
-                        return;
-
                     switch (e.KeyEvent)
                     {
                         case KeyEvent.OnPress:
@@ -50,17 +53,6 @@ namespace CryGameCode.Tanks
 
             m_mousePosition = new Vec2();
 		}
-
-        public void Reset()
-        {
-            Attachment = Owner.GetAttachment("turret");
-            Attachment.UseEntityRotation = true;
-
-            Attachment.LoadObject(Model);
-            Attachment.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
-
-            Attachment.OnDestroyed += (x) => { Destroy(); };
-        }
 
         void Serialize(CrySerialize serialize)
         {
@@ -96,9 +88,6 @@ namespace CryGameCode.Tanks
 
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
-            if (Owner.IsDead)
-                return;
-
 			switch(e.MouseEvent)
 			{
 			case MouseEvent.LeftButtonDown:
@@ -123,7 +112,7 @@ namespace CryGameCode.Tanks
 
 		public void Update()
 		{
-            if (Attachment.IsDestroyed || Owner.IsDead)
+            if (Attachment.IsDestroyed)
                 return;
 
 			if(m_leftFiring)

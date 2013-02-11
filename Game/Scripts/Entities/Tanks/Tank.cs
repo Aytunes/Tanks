@@ -27,21 +27,10 @@ namespace CryGameCode.Tanks
                 // Set team & turret type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
                 Team = gameMode.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameMode.Teams.Length - 1));
 
-                Type turretType;
-
                 if (string.IsNullOrEmpty(GameCVars.ForceTankType))
-                    turretType = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)];
+                    TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
                 else
-                {
-                    turretType = Type.GetType("CryGameCode.Tanks." + GameCVars.ForceTankType);
-                    if (turretType == null)
-                    {
-                        turretType = typeof(Autocannon);
-                        Debug.LogAlways("Forced turret type {0} could not be located", GameCVars.ForceTankType);
-                    }
-                }
-
-                Turret = System.Activator.CreateInstance(turretType, this) as TankTurret;
+                    TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
             }
 
             ZoomLevel = 1;
@@ -79,7 +68,7 @@ namespace CryGameCode.Tanks
 
             ResetModel();
 
-            Turret.Reset();
+            Turret = Activator.CreateInstance(Type.GetType(TurretTypeName), this) as TankTurret;
 
             Hide(false);
         }
@@ -111,32 +100,16 @@ namespace CryGameCode.Tanks
 
 		public override void OnUpdate()
 		{
-			if(Turret != null)
-				Turret.Update();
+            if (IsDead)
+                return;
+
+			Turret.Update();
 
             if (Physics.Status != null)
             {
                 float blend = MathHelpers.Clamp(Time.DeltaTime / 0.15f, 0, 1.0f);
                 GroundNormal = (GroundNormal + blend * (Physics.Status.Living.GroundNormal - GroundNormal));
             }
-		}
-
-		string team;
-		[EditorProperty]
-		public string Team
-		{
-			get { return team ?? "red"; }
-			set
-			{
-				var gameRules = GameRules.Current as SinglePlayer;
-                if (gameRules != null && gameRules.IsTeamValid(value))
-                {
-                    team = value;
-
-                    // Load correct model for this team
-                    ResetModel();
-                }
-			}
 		}
 
         public void ToggleSpectatorPoint(bool increment = false)
@@ -164,6 +137,25 @@ namespace CryGameCode.Tanks
 
             Hide(true);
         }
+
+        string team;
+		public string Team
+		{
+			get { return team ?? "red"; }
+			set
+			{
+				var gameRules = GameRules.Current as SinglePlayer;
+                if (gameRules.IsTeamValid(value))
+                {
+                    team = value;
+
+                    // Load correct model for this team
+                    ResetModel();
+                }
+			}
+		}
+
+        public string TurretTypeName { get; set; }
 
         private PlayerInput m_tankInput;
 
