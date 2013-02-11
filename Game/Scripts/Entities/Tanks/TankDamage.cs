@@ -9,6 +9,9 @@ namespace CryGameCode.Tanks
 		{
 			Debug.DrawText("Died!", 3, Color.Red, 5);
 
+            Turret.Destroy();
+            Turret = null;
+
 			// Don't remove tank if it was placed by hand via the Editor.
 			if(Flags.HasFlag(EntityFlags.NoSave))
 				Remove();

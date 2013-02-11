@@ -85,6 +85,7 @@ namespace CryGameCode
 
                 tank.OnRevived();
 
+                Debug.LogAlways("Invoking RMI OnRevivedPlayer");
                 tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, team, turretTypeName);
             }
         }

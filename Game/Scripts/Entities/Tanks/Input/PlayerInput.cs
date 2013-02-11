@@ -31,18 +31,18 @@ namespace CryGameCode.Tanks
 
             Input.ActionmapEvents.Add("attack1", (e) =>
                 {
-                    if (e.KeyEvent == KeyEvent.OnPress)
+                    if (e.KeyEvent == KeyEvent.OnRelease)
                     {
                         var gameRules = GameRules.Current as SinglePlayer;
 
                         if (Owner != null && Owner.IsDead)
                         {
                             if (Network.IsServer)
-                                gameRules.RequestRevive(Owner.Id, Owner.Team, Owner.Turret.GetType().Name);
+                                gameRules.RequestRevive(Owner.Id, Owner.Team, Owner.TurretTypeName);
                             else
                             {
                                 Debug.LogAlways("Requesting revive ({0}, {1}, {2})", Owner.Id, Owner.Team, Owner.Turret.GetType().Name);
-                                Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Owner.Id, Owner.Team, Owner.Turret.GetType().Name);
+                                Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Owner.Id, Owner.Team, Owner.TurretTypeName);
                             }
                         }
                         else if (Owner == null)
