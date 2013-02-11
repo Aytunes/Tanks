@@ -41,7 +41,7 @@ namespace CryGameCode.Tanks
                                 gameRules.RequestRevive(Owner.Id, Owner.Team, Owner.TurretTypeName);
                             else
                             {
-                                Debug.LogAlways("Requesting revive ({0}, {1}, {2})", Owner.Id, Owner.Team, Owner.Turret.GetType().Name);
+                                Debug.LogAlways("Requesting revive ({0}, {1}, {2})", Owner.Id, Owner.Team, Owner.TurretTypeName);
                                 Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Owner.Id, Owner.Team, Owner.TurretTypeName);
                             }
                         }
