@@ -22,8 +22,6 @@
 
 #define WRITE_LOCK_VAL (1<<16)
 
-typedef volatile int TRWLock;
-
 
 
 
@@ -114,7 +112,6 @@ typedef SAtomicVar<float> TFloatAtomic;
 		long   CryInterlockedDecrement( int volatile *lpAddend );
 		long   CryInterlockedExchangeAdd(long volatile * lpAddend, long Value);
 		long	 CryInterlockedCompareExchange(long volatile * dst, long exchange, long comperand);
-		void*  CryInterlockedExchangePointer(void* volatile *dst, void* value);
 		void*	 CryInterlockedCompareExchangePointer(void* volatile * dst, void* exchange, void* comperand);
 		int64  CryInterlockedCompareExchange64( volatile int64 *addr, int64 exchange, int64 comperand );
 	#endif
@@ -125,68 +122,6 @@ typedef SAtomicVar<float> TFloatAtomic;
 	void   CryEnterCriticalSection( void *cs );
 	bool   CryTryCriticalSection( void *cs );
 	void   CryLeaveCriticalSection( void *cs );
-
-#ifdef WIN32
-  void*  CryCreateCriticalSectionWithSpinCount(int spinCount);
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -918,7 +853,7 @@ struct WriteLockCond
 	int iActive;
 };
 
-#if !defined(PS3) && !defined(LINUX) && !defined(CAFE)
+#if !defined(PS3) && !defined(LINUX)
 ILINE int64 CryInterlockedCompareExchange64( volatile int64 *addr, int64 exchange, int64 compare )
 {
 	return _InterlockedCompareExchange64( (volatile int64*)addr, exchange,compare);

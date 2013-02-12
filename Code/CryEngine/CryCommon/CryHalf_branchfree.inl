@@ -264,7 +264,7 @@ ILINE uint16_t _uint16_sels( uint16_t test, uint16_t a, uint16_t b )
 // Count Leading Zeros
 ILINE uint32_t _uint32_cntlz( uint32_t x )
 {
-#if defined(__GNUC__) && !defined(CAFE)
+#ifdef __GNUC__
   /* NOTE: __builtin_clz is undefined for x == 0 */
   /* On PowerPC, this will map to insn: cntlzw   */
   /* On Pentium, this will map to insn: clz      */

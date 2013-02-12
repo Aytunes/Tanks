@@ -14,6 +14,5 @@
 #define COB_HUD_REQUIRE_DEPTHTEST							(1<<6)			// 0x40
 #define COB_CLOAK_INTERFERENCE								(1<<7)			// 0x80
 #define COB_CLOAK_HIGHLIGHT										(1<<8)			// 0x100
-#define COB_DISABLE_MOTIONBLUR										(1<<9)			// 0x100
 
 #endif // _RENDER_OBJECT_DEFINES_

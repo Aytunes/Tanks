@@ -53,17 +53,6 @@
 
 struct XMVec4
 {
-
-
-
-
-
-
-
-
-
-
-
 	NULL_STRUCT_INFO
 };
 
@@ -1142,7 +1131,6 @@ extern unsigned int cry_rand();
 extern unsigned int cry_rand32();
 // Generates random floating number in the closed interval [0,1].
 extern float cry_frand();
-extern void cry_srand(unsigned int);
 //////////////////////////////////////////////////////////////////////////
 
 // Random float between 0 and 1 inclusive.

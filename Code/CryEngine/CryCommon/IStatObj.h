@@ -96,8 +96,7 @@ struct SRayHitInfo
 	bool		inRetTriangle;
 	bool    bUseCache;
   bool    bOnlyZWrite;
-	bool    bGetVertColorAndTC;
-	bool		bNoFastIntersect;
+  bool    bGetVertColorAndTC;
 	float   fMaxHitDistance; // When not 0, only hits with closer distance will be registered.
 	Vec3		vTri0;
 	Vec3		vTri1;

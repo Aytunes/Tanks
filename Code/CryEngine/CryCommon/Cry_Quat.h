@@ -95,9 +95,6 @@ template <typename F> struct __passinreg Quat_tpl
 
 
 
-
-
-
 	//CONSTRUCTOR for different types. It converts a Euler Angle into a Quat. 
 	//Needs to be 'explicit' because we loose fp-precision in the conversion process 
 	//Quat(Ang3(1,2,3));

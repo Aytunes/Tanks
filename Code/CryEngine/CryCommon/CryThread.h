@@ -206,8 +206,6 @@ template<class Runnable = CryRunnable> class CryThread;
 // Include architecture specific code.
 
 
-
-
 #if defined(LINUX)
 #include <CryThread_pthreads.h>
 #elif defined(WIN32) || defined(WIN64)
@@ -526,42 +524,6 @@ public:
 	#define DEBUG_MODIFYLOCK(p)
 #endif
 
-
-//////////////////////////////////////////////////////////////////////////
-// A synchronization aid that allows one or more threads to wait until
-// a set of operations being performed in other threads completes
-//////////////////////////////////////////////////////////////////////////
-
-class CCountDownLatch
-{
-public:
-  CCountDownLatch(int nCount) { m_nCount = nCount; }
-  
-  void Reset(int nCount)
-  {
-    m_nCount = nCount;
-    m_Event.Reset();
-  }
-
-  long CountDown() 
-  {
-    long nOld = CryInterlockedDecrement(&m_nCount);
-
-    if (m_nCount <= 0)
-      m_Event.Set();
-
-    return nOld;
-  }
-
-  void Await()
-  {
-    m_Event.Wait(); 
-  }
-
-private:
-  CryEvent m_Event;
-  volatile int m_nCount;
-};
 
 // Include all multithreading containers.
 #include "MultiThread_Containers.h"

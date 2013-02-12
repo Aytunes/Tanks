@@ -300,7 +300,6 @@ enum ESoundUpdateMode
 	eSoundUpdateMode_Sounds				 = BIT(1),
 	eSoundUpdateMode_Rest					 = BIT(2),
 	eSoundUpdateMode_LostFocus		 = BIT(3),
-	eSoundUpdateMode_FromMenu      = BIT(4),
 	eSoundUpdateMode_CleanInactive = BIT(7),
 	eSoundUpdateMode_All					 = 0x0000000F
 };
@@ -385,15 +384,15 @@ typedef struct IListener
 	virtual float GetRecordLevel() const = 0;
 
 	virtual Vec3 GetPosition() const = 0;
-	virtual void SetPosition(Vec3 const& Position) = 0;
+	virtual void SetPosition(const Vec3 Position) = 0;
 
 	virtual Vec3 GetForward() const = 0;
 	virtual Vec3 GetTop() const = 0;
-	virtual Vec3 const& GetVelocity() const = 0;
-	virtual void SetVelocity(Vec3 const& vVel) = 0;
+	virtual Vec3 GetVelocity() const = 0;
+	virtual void SetVelocity(Vec3 vVel) = 0;
 
-	virtual void SetMatrix(Matrix34 const& newTransformation) = 0;
-	virtual Matrix34 const& GetMatrix() const = 0;
+	virtual void SetMatrix(const Matrix34 newTransformation) = 0;
+	virtual Matrix34 GetMatrix() const = 0;
 
 	virtual float GetUnderwater() const = 0;
 	virtual void	SetUnderwater(const float fUnder) = 0;
@@ -824,21 +823,18 @@ enum EAudioFileCacheType
 // State of file cached in the FileCacheManager
 enum EAudioFileCacheState
 {
-	eAFCS_CACHED                   = BIT(0),
-	eAFCS_NOTCACHED                = BIT(1),
-	eAFCS_NOTFOUND                 = BIT(2),
-	eAFCS_MEMALLOCFAIL             = BIT(3),
-	eAFCS_REMOVABLE                = BIT(4),
-	eAFCS_LOADING                  = BIT(5),
-	eAFCS_QUEUED_FOR_CACHING       = BIT(6),
-	eAFCS_QUEUED_FOR_PRELOAD       = BIT(7),
-	eAFCS_QUEUED_FOR_UNLOAD        = BIT(8),
-	eAFCS_PRELOADED                = BIT(9),
-	eAFCS_VIRTUAL                  = BIT(10),
-	eAFCS_UNCACHE_AFTER_UNLOAD     = BIT(11),
-	eAFCS_SOUND_NOT_READY          = BIT(12),
-	eAFCS_UNLOAD_WHEN_SOUND_READY  = BIT(13),
-	eAFCS_UNCACHE_WHEN_SOUND_READY = BIT(14),
+	eAFCS_CACHED               = BIT(0),
+	eAFCS_NOTCACHED            = BIT(1),
+	eAFCS_NOTFOUND             = BIT(2),
+	eAFCS_MEMALLOCFAIL         = BIT(3),
+	eAFCS_REMOVABLE            = BIT(4),
+	eAFCS_LOADING              = BIT(5),
+	eAFCS_QUEUED_FOR_CACHING   = BIT(6),
+	eAFCS_QUEUED_FOR_PRELOAD   = BIT(7),
+	eAFCS_QUEUED_FOR_UNLOAD    = BIT(8),
+	eAFCS_PRELOADED            = BIT(9),
+	eAFCS_VIRTUAL              = BIT(10),
+	eAFCS_UNCACHE_AFTER_UNLOAD = BIT(11),
 };
 
 // Summary:
@@ -856,7 +852,7 @@ struct ISoundSystem
 
 	// Summary:
 	//	 Has to be called regularly.	
-	virtual void Update(const ESoundUpdateMode UpdateMode, bool const bIgnoreTimers = false) = 0;
+	virtual void Update(const ESoundUpdateMode UpdateMode) = 0;
 
 	// Summary:
 	//	 Saves and restores the state of the complete SoundSystem
@@ -967,8 +963,8 @@ struct ISoundSystem
 	//	 bool true, if this sound effect can be safely be culled, false if it should not be culling
 	virtual ESoundSystemErrorCode const GetCullingByCache ( const uint32 nGroupAndSoundNameCRC, const Vec3& vPosition, SSoundCacheInfo &CullInfo ) = 0;
 
-	// HACK HACK HACK FOR CRYSIS 2
-	virtual void HackFixupName(const char *soundName, char *output_buffer, size_t output_buffer_size) = 0;
+	// workaround HACK HACK FOR CRYSIS 2
+	virtual void workaroundFixupName(const char *soundName, char *output_buffer, size_t output_buffer_size) = 0;
 
 	// Description:
 	//	 Creates a sound object by combining the definition of the sound and the buffer of sound data.
@@ -977,7 +973,7 @@ struct ISoundSystem
 	//   nFlagsExtended - Extended sound flags.
 	// Return Value:
 	//	 ISound* is a Ptr to a Sound, this will change to the unique Sound ID later.
-	virtual ISound* const CreateSound       (char const* const sGroupAndSoundName, uint32 nFlags, uint32 nFlagsExtended = 0, uint32 const nPrecacheFlags = 0) = 0;
+	virtual ISound* const CreateSound       (char const* const sGroupAndSoundName, uint32 nFlags, uint32 nFlagsExtended = 0) = 0;
 
 	// Description:
 	//	 Creates a sound object by combining the definition of the sound and the buffer of sound data.
@@ -1495,7 +1491,7 @@ struct ISound
 	virtual bool			SetParam(int nIndex, float fValue, bool bOutputWarning=true) = 0;
 
 	// Description:
-	//	 Sets a distance multiplier so sound event's distance can be tweak (sadly pretty hack feature).
+	//	 Sets a distance multiplier so sound event's distance can be tweak (sadly pretty workaround feature).
 	virtual void			SetDistanceMultiplier(const float fMultiplier) = 0;
 
 	//////////////////////////////////////////////////////////////////////////

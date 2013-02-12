@@ -121,7 +121,7 @@ __forceinline float CryConvertHalfToFloat(const CryHalf Value)
 	return Result;
 }
 
-#elif defined(PS3) || defined(CAFE)
+#	elif defined(PS3)
 
 #include <CryHalf_branchfree.inl>
 

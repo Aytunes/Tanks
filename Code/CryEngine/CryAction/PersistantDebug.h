@@ -22,8 +22,7 @@ public:
 	void Add2DLine( float x1, float y1, float x2, float y2, ColorF clr, float timeout );
 	void AddText ( float x, float y, float size, ColorF clr, float timeout, const char * fmt, ... );
 	void AddQuat(const Vec3& pos, const Quat& q, float r, ColorF clr, float timeout);
-	void AddOBB(const Vec3& pos, const OBB& obb, ColorF clr, float timeout);
-	void AddAABB(const Vec3& pos, const AABB& aabb, ColorF clr, float timeout);
+
 	void AddEntityTag(const SEntityTagParams& params, const char *tagContext="");
 	void ClearEntityTags(EntityId entityId);
 	void ClearStaticTag(EntityId entityId, const char *staticId);
@@ -56,8 +55,6 @@ private:
 		eOT_Text,
 		eOT_Line2D,
 		eOT_Quat,
-		eOT_OBB,
-		eOT_AABB,
 		eOT_EntityTag,
 		eOT_Cone,
 		eOT_Cylinder
@@ -90,8 +87,6 @@ private:
 		Vec3 pos;
 		Vec3 dir;
 		Quat q;
-		OBB obb;
-		AABB aabb;
 		string text;
 
 		EntityId entityId;

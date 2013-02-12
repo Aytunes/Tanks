@@ -229,7 +229,7 @@ UNIQUE_IFACE struct IRenderMesh
   virtual int GetAllocatedBytes( bool bVideoMem ) const = 0;
   virtual float GetAverageTrisNumPerChunk(IMaterial * pMat) = 0;
   virtual int GetTextureMemoryUsage( const IMaterial *pMaterial,ICrySizer *pSizer=NULL, bool bStreamedIn = true ) const = 0;
-  virtual void KeepSysMesh(bool keep) = 0;	// HACK: temp workaround for GDC-888
+  virtual void KeepSysMesh(bool keep) = 0;	// workaround: temp workaround for GDC-888
 	virtual void UnKeepSysMesh() = 0;
   virtual void SetMeshLod( int nLod ) = 0;
 
@@ -238,8 +238,6 @@ UNIQUE_IFACE struct IRenderMesh
 
 	// Sets the async update state - will sync before rendering to this 
 	virtual volatile int* SetAsyncUpdateState(void) = 0;
-
-	virtual void OffsetPosition(const Vec3& delta) = 0;
 };
 
 struct SBufferStream

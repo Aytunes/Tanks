@@ -40,7 +40,6 @@ public:
 		, m_viewerInsideVolume( false )
 		, m_viewerCloseToWaterPlane( false )
 		, m_viewerCloseToWaterVolume( false )
-		, m_useStaticMesh( true )
     {
 		}
 
@@ -59,7 +58,6 @@ public:
     bool m_viewerInsideVolume;
 		bool m_viewerCloseToWaterPlane;
 		bool m_viewerCloseToWaterVolume;
-		bool m_useStaticMesh;
 	};
 
 	struct SOceanParams

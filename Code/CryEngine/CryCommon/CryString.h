@@ -265,8 +265,6 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	//! Format string, use (sprintf)
 	_Self& Format( const value_type* format,... );
-  _Self& FormatV( const value_type* format,va_list argList );
-
 	// This is _fast_ version
 	_Self& MakeLower();
 	// This is correct version
@@ -858,7 +856,6 @@ inline CryStringT<T>::CryStringT( const_iterator _First,const_iterator _Last )
 template <class T>
 inline CryStringT<T>::~CryStringT()
 {
-	if (m_str != NULL)
 	_FreeData( _header() );
 }
 
@@ -1227,11 +1224,7 @@ inline void CryStringT<T>::resize( size_type nCount,value_type _Ch )
 	}
 	else if (nCount < length())
 	{
-
-
-
-    _header()->nLength = (int) nCount;
-
+		_header()->nLength = nCount;
 		m_str[length()] = 0; // Make null terminated string.
 
 	}
@@ -1870,12 +1863,7 @@ inline CryStringT<T>& CryStringT<T>::erase( size_type nIndex,size_type nCount )
 		_MakeUnique();
 		size_type nNumToCopy = length() - (nIndex + nCount) + 1;
 		_move( m_str+nIndex,m_str+nIndex+nCount,nNumToCopy );
-
-
-
-
-    _header()->nLength = (int) (length() - nCount);
-
+		_header()->nLength = length() - nCount;
 	}
 	
 	return *this;
@@ -1910,15 +1898,10 @@ inline CryStringT<T>& CryStringT<T>::insert( size_type nIndex,size_type nCount,v
 		_copy( m_str,pstr,pOldData->nLength+1 );
 		_FreeData(pOldData);
 	}
-	
-	_move( m_str+nIndex+nCount, m_str+nIndex, (nNewLength-nIndex-nCount) );
+
+	_move( m_str+nIndex+nCount, m_str+nIndex, (nNewLength-nIndex) );
 	_set( m_str+nIndex,ch,nCount );
-
-
-
-
-  _header()->nLength = (int) nNewLength;
-
+	_header()->nLength = nNewLength;
 	CRY_STRING_DEBUG(m_str)
 
 	return *this;
@@ -1951,12 +1934,7 @@ inline CryStringT<T>& CryStringT<T>::insert( size_type nIndex,const_str pstr,siz
 
 		_move( m_str + nIndex + nInsertLength, m_str + nIndex, (nNewLength-nIndex-nInsertLength+1) );
 		_copy( m_str + nIndex, pstr, nInsertLength );
-
-
-
-
-    _header()->nLength = (int) nNewLength;
-
+		_header()->nLength = nNewLength;
 		m_str[length()] = 0;
 	}
 	CRY_STRING_DEBUG(m_str)
@@ -2068,12 +2046,7 @@ inline CryStringT<T>& CryStringT<T>::replace( const_str strOld,const_str strNew 
 			}
 			strStart += _strlen(strStart) + 1;
 		}
-
-
-
-
-    _header()->nLength = (int) nNewLength;
-
+		_header()->nLength = nNewLength;
 	}
 	CRY_STRING_DEBUG(m_str)
 
@@ -2094,38 +2067,17 @@ template <class T>
 inline CryStringT<T>& CryStringT<T>::Format( const_str format,... )
 {
 	assert(_IsValidString(format));
-  va_list argList;
-  va_start(argList, format );
-  CryStringT<T> &retStr = FormatV( format,argList );
-  va_end(argList);
-  return retStr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-template <class T> 
-inline CryStringT<T>& CryStringT<T>::FormatV( const_str format,va_list argList )
-{
-  assert(_IsValidString(format));
 
 #if defined(WIN32) || defined(WIN64)
+	va_list argList;
+	va_start(argList, format );
 	int n = _vscpf(format, argList);
 	if (n < 0) n = 0;
 	resize(n);
 	_vsnpf(m_str, n, format, argList);
+	va_end(argList);
 	return *this;
 #else
-	value_type temp[4096]; // Limited to 4096 characters!
-	_vsnpf( temp,4096,format,argList ); 
-	temp[4095] = '\0';
-	*this = temp;
-	return *this;
-#endif
-}
-
-#if defined(XENON) || defined(PS3) || defined(LINUX) || defined(MAC) || defined(CAFE)
-template <> 
-inline CryStringT<wchar_t>& CryStringT<wchar_t>::Format( const_str format,... )
-{
 	value_type temp[4096]; // Limited to 4096 characters!
 	va_list argList;
 	va_start(argList, format );
@@ -2134,8 +2086,8 @@ inline CryStringT<wchar_t>& CryStringT<wchar_t>::Format( const_str format,... )
 	va_end(argList);
 	*this = temp;
 	return *this;
+#endif
 }
-#endif 
 
 //////////////////////////////////////////////////////////////////////////
 #define __ascii_tolower(c)      ( (((c) >= 'A') && ((c) <= 'Z')) ? ((c) - 'A' + 'a') : (c) )
@@ -2224,13 +2176,7 @@ inline CryStringT<T>& CryStringT<T>::TrimRight( const value_type *sCharSet )
 		// Just shrink length of the string.
 		size_type nNewLength = (size_type)(str - m_str) + 1; // m_str can change in _MakeUnique
 		_MakeUnique();
-
-
-
-
-    _header()->nLength = (int) nNewLength;
-
-
+		_header()->nLength = nNewLength;
 		m_str[nNewLength] = 0;
 	}
 
@@ -2254,13 +2200,7 @@ inline CryStringT<T>& CryStringT<T>::TrimRight()
 		// Just shrink length of the string.
 		size_type nNewLength = (size_type)(str - m_str) + 1; // m_str can change in _MakeUnique
 		_MakeUnique();
-
-
-
-
-    _header()->nLength = (int) nNewLength;
-
-
+		_header()->nLength = nNewLength;
 		m_str[nNewLength] = 0;
 	}
 
@@ -2292,13 +2232,7 @@ inline CryStringT<T>& CryStringT<T>::TrimLeft( const value_type *sCharSet )
 		_MakeUnique();
 		size_type nNewLength = length() - nOff;
 		_move( m_str,m_str+nOff,nNewLength+1 );
-
-
-
-
-    _header()->nLength = (int) nNewLength;
-
-
+		_header()->nLength = nNewLength;
 		m_str[nNewLength] = 0;
 	}
 
@@ -2319,13 +2253,7 @@ inline CryStringT<T>& CryStringT<T>::TrimLeft()
 		_MakeUnique();
 		size_type nNewLength = length() - nOff;
 		_move( m_str,m_str+nOff,nNewLength+1 );
-
-
-
-
-    _header()->nLength = (int) nNewLength;
-
-
+		_header()->nLength = nNewLength;
 		m_str[nNewLength] = 0;
 	}
 

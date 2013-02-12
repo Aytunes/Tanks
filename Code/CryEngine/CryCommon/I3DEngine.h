@@ -506,9 +506,6 @@ UNIQUE_IFACE struct IVisArea
   // Return Value:
   //     none
   virtual const Vec3 GetFinalAmbientColor() = 0;
-
-	virtual void GetShapePoints(const Vec3 *&pPoints, size_t &nPoints) = 0;
-	virtual float GetHeight() = 0;
 };
 
 
@@ -521,11 +518,6 @@ UNIQUE_IFACE struct IVisArea
 // : otherwise offseted by -WATER_LEVEL_SORTID_OFFSET
 #define WATER_LEVEL_SORTID_OFFSET			10000000
 
-#ifdef SEG_WORLD
-#define DEFAULT_SID -1
-#else
-#define DEFAULT_SID 0
-#endif
 
 // Summary:
 //     indirect lighting quadtree definition.
@@ -552,8 +544,8 @@ enum EVoxelEditTarget
 enum EVoxelEditOperation
 {
   eveoNone=0,
-  eveoCreateSoft,
-  eveoSubstractSoft,
+  eveoPaintHeightPos,
+  eveoPaintHeightNeg,
 	eveoCreate,
 	eveoSubstract,
 	eveoMaterial,
@@ -574,7 +566,6 @@ enum EVoxelEditOperation
 #define COMPILED_VISAREA_MAP_FILE_NAME      "terrain\\indoor.dat"
 #define COMPILED_TERRAIN_TEXTURE_FILE_NAME  "terrain\\cover.ctc"
 #define COMPILED_VOX_MAP_FILE_NAME          "terrain\\voxmap.dat"
-#define LEVEL_INFO_FILE_NAME                "levelinfo.xml"
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -744,28 +735,16 @@ UNIQUE_IFACE struct ITerrain
 	virtual bool SetCompiledData(byte * pData, int nDataSize, std::vector<struct IStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable, bool bHotUpdate = false, SHotUpdateInfo * pExportInfo = NULL, int nSID = 0, Vec3 vSegmentOrigin = Vec3(0,0,0)) = 0;
 
 	// Summary: 
-	//   Executes one step of streaming the compiled data in pData.
-	//   Returns false when the streaming is complete, true if there is still work to do.
-	//   You should call this until it returns true.
-	virtual bool StreamCompiledData(byte* pData, int nDataSize, int nSID, const Vec3 &vSegmentOrigin) = 0;
-	virtual void CancelStreamCompiledData(int nSID) = 0;
-
-	// Summary: 
 	//	 Saves data from terrain engine into memory block.
-	virtual bool GetCompiledData(byte * pData, int nDataSize, std::vector<struct IStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable, std::vector<struct IStatInstGroup*> ** ppStatInstGroupTable, EEndian eEndian, SHotUpdateInfo * pExportInfo = NULL, int nSID = 0, const Vec3 &segmentOffset = Vec3(0, 0, 0)) = 0;
+	virtual bool GetCompiledData(byte * pData, int nDataSize, std::vector<struct IStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable, EEndian eEndian, SHotUpdateInfo * pExportInfo = NULL, int nSID = 0) = 0;
 
 	// Summary:
 	//	 Returns terrain data memory block size.
 	virtual int GetCompiledDataSize(SHotUpdateInfo * pExportInfo = NULL, int nSID = 0) = 0;
-
-	//virtual bool LoadTables(byte * & f, int & nDataSize, std::vector<struct IStatObj*> *& pStatObjTable, std::vector<IMaterial*> *& pMatTable, bool bHotUpdate, bool bSW, EEndian eEndian) = 0;
-	virtual int  GetTablesSize (SHotUpdateInfo * pExportInfo, int nSID) = 0;
-	virtual void SaveTables(byte *& pData, int & nDataSize, std::vector<struct IStatObj*> *& pStatObjTable, std::vector<IMaterial*> *& pMatTable, std::vector<struct IStatInstGroup*> *& pStatInstGroupTable, EEndian eEndian, SHotUpdateInfo * pExportInfo, int nSID) = 0;
-	virtual void GetBrushTables(std::vector<struct IStatObj*> *& pStatObjTable, std::vector<IMaterial*> *& pMatTable, std::vector<struct IStatInstGroup*> *& pStatInstGroupTable, int nSID) = 0;
 	
 	// Summary:
 	//	 Creates and place a new vegetation object on the terrain.
-	virtual IRenderNode* AddVegetationInstance( int nStaticGroupID,const Vec3 &vPos,const float fScale,uint8 ucBright,uint8 angle, int nSID=DEFAULT_SID ) = 0;
+	virtual IRenderNode* AddVegetationInstance( int nStaticGroupID,const Vec3 &vPos,const float fScale,uint8 ucBright,uint8 angle, int nSID=0 ) = 0;
 
 	// Summary:
 	//	 Sets ocean level.
@@ -778,10 +757,8 @@ UNIQUE_IFACE struct ITerrain
 	// Summary:
 	//	 Updates part of height map.
 	// Notes:
-	//	 x1, y1, nSizeX, nSizeY are in terrain units
-	//   pTerrainBlock points to a square 2D array with dimensions GetTerrainSize()
-	//   by default update only elevation.
-	virtual void SetTerrainElevation(int x1, int y1, int nSizeX, int nSizeY, float * pTerrainBlock, uint8 * pSurfaceData, int nSurfOrgX, int nSurfOrgY, int nSurfSizeX, int nSurfSizeY, uint32 * pResolMap, int nResolMapSizeX, int nResolMapSizeY, int nSID=DEFAULT_SID) = 0;
+	//	 In terrain units, by default update only elevation.
+	virtual void SetTerrainElevation(int x1, int y1, int nSizeX, int nSizeY, float * pTerrainBlock, uint8 * pSurfaceData, uint32 * pResolMap, int nResolMapSizeX, int nResolMapSizeY, int nSID=0) = 0;
 
 	// Summary:
 	//	 Checks if it is possible to paint on the terrain with a given surface type ID.
@@ -801,7 +778,7 @@ UNIQUE_IFACE struct ITerrain
 	//   arrIndices					- Indices of the resulting mesh
 	// Return Value:
 	//   number of triangles generated
-  virtual int GenerateMeshFromHeightmap(  int nMinX, int nMinY, int nMaxX, int nMaxY, PodArray<Vec3> & arrVerts, PodArray<uint16> & arrIndices ) = 0;
+  virtual int GenerateMeshFromHeightmap(  int nMinX, int nMinY, int nMaxX, int nMaxY, PodArray<Vec3> & arrVerts, PodArray<uint16> & arrIndices, int nSID=0 ) = 0;
 
 	// Summary:
 	//	 Retrieves the resource (mostly texture system memory) memory usage
@@ -819,89 +796,20 @@ UNIQUE_IFACE struct ITerrain
 	//   Fills materials array if materials!=NULL
 	virtual int GetDetailTextureMaterials(IMaterial* materials[], int nSID=0) = 0;
 
-
-	// Description:
-	// Deallocate segment data in the deleted array
-	virtual void ReleaseInactiveSegments() = 0;
-
   // Description:
   //   Allocate new world segment
   //   Returns handle of newly created segment (usually it is just id of segment in the list of currently loaded segments)
-  virtual int CreateSegment(Vec3 vSegmentSize, Vec3 vSegmentOrigin = Vec3(0, 0, 0), const char *pcPath = 0) = 0;
-
-	// Description:
-	//   Changes the segment file path
-	//   Returns true if specified segment exist and path was successfully updated
-	virtual bool SetSegmentPath(int nSID, const char *pcPath) = 0;
-
-  // Description:
-	//   Returns a pointer to the segment file path
-	virtual const char* GetSegmentPath(int nSID) = 0;
+  virtual int CreateSegment() = 0;
 
   // Description:
   //   Set new origin for existing world segment
   //   Returns true if specified segment exist and origin was successfully updated
-  virtual bool SetSegmentOrigin(int nSID, Vec3 vSegmentOrigin, bool callOffsetPosition = true) = 0;
-
-  // Description:
-  //   Returns the segment origin of the given segment id.
-  virtual Vec3 GetSegmentOrigin(int nSID) = 0;
-  // Description:
-  //   Get origin for existing world segment, really.
-  //   Returns Vec3 with position or NaNs if segment ID is invalid
-  virtual const Vec3 &GetSegmentOrigin(int nSID) const = 0;
+  virtual bool SetSegmentOrigin(int nSID, Vec3 vSegmentOrigin) = 0;
 
   // Description:
   //   Set new origin for existing world segment
   //   Returns true if specified segment was found and successfully deleted
-  virtual bool DeleteSegment(int nSID, bool bDeleteNow) = 0;
-
-	// Description:
-	//   Find (first) world segment containing given point (in local world coordinates)
-	//   Returns id of the found segment or -1 if not found
-	virtual int FindSegment(Vec3 vPt) = 0;
-
-	// Description:
-	//   Find (first) world segment containing given point (in heightmap coordinates)
-	//   Returns id of the found segment or -1 if not found
-	virtual int FindSegment(int x, int y) = 0;
-
-	// Description:
-	//   Returns a number bigger than the last valid segment ID
-	//   to be used in loops like: for (int nSID = 0; nSID < GetMaxSegmentsCount(); ++nSID)
-	virtual int GetMaxSegmentsCount() const = 0;
-
-	// Description:
-	//   fills bbox with the bounding box of the specified segment (nSID)
-	//   Returns true if succeeded, false if nSID is not valid segment id
-	virtual bool GetSegmentBounds(int nSID, AABB &bbox) = 0;
-
-	// Description:
-	//   if nSID < 0 finds segment containing vPt (in local world coordinates) and
-	//     adjusts vPt to be relative to segment's origin
-	//   if nSID >= 0 does nothing
-	//   Returns id of the found segment or -1 if not found
-	virtual int WorldToSegment(Vec3 &vPt, int nSID = DEFAULT_SID) = 0;
-
-	// Description:
-	//   if nSID < 0 finds segment containing given point
-	//   on input, (x << nBitShift, y << nBitShift) represents a point in local world coordinates
-	//   on output, x and y are adjusted to be relative to found segment
-	//   if nSID >= 0 does nothing
-	//   Returns id of the found segment or -1 if not found
-	virtual int WorldToSegment(int &x, int &y, int nBitShift, int nSID = DEFAULT_SID) = 0;
-};
-
-// callbacks interface for higher level segments management
-struct ISegmentsManager {
-	virtual ~ISegmentsManager(){}
-	virtual void WorldVecToGlobalSegVec(const Vec3 &inPos, Vec3 &outPos, Vec2 &outAbsCoords) = 0;
-	virtual void GlobalSegVecToLocalSegVec(const Vec3 &inPos, const Vec2 &inAbsCoords, Vec3 &outPos) = 0;
-	virtual Vec3 LocalToAbsolutePosition( Vec3 const& vPos, f32 fDir = 1.f) const =0;
-	virtual void GetTerrainSizeInMeters(int &x, int &y) = 0;
-	virtual bool CreateSegments(ITerrain *pTerrain) = 0;
-	virtual bool DeleteSegments(ITerrain *pTerrain) = 0;
-	virtual bool FindSegment(ITerrain *pTerrain, Vec3 pt, int &nSID) = 0;
+  virtual bool DeleteSegment(int nSID) = 0;
 };
 
 UNIQUE_IFACE struct IVisAreaCallback
@@ -916,11 +824,11 @@ UNIQUE_IFACE struct IVisAreaManager
 	virtual ~IVisAreaManager(){}
 	// Summary:
 	//	 Loads data into VisAreaManager engine from memory block.
-  virtual bool SetCompiledData(uint8 * pData, int nDataSize, std::vector<struct IStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable, bool bHotUpdate, SHotUpdateInfo * pExportInfo, const Vec3 &vSegmentOrigin = Vec3(0, 0, 0)) = 0;
+  virtual bool SetCompiledData(uint8 * pData, int nDataSize, std::vector<struct IStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable, bool bHotUpdate, SHotUpdateInfo * pExportInfo) = 0;
 	
 	// Summary:
 	//	 Saves data from VisAreaManager engine into memory block.
-	virtual bool GetCompiledData(uint8 * pData, int nDataSize, std::vector<struct IStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable, std::vector<struct IStatInstGroup*> ** ppStatInstGroupTable, EEndian eEndian, SHotUpdateInfo * pExportInfo = NULL, const Vec3 &segment = Vec3(0, 0, 0)) = 0;
+	virtual bool GetCompiledData(uint8 * pData, int nDataSize, std::vector<struct IStatObj*> ** ppStatObjTable, std::vector<IMaterial*> ** ppMatTable, EEndian eEndian, SHotUpdateInfo * pExportInfo = NULL) = 0;
 
 	// Summary: 
 	//	 Returns VisAreaManager data memory block size.
@@ -936,14 +844,6 @@ UNIQUE_IFACE struct IVisAreaManager
 
 	virtual void AddListener( IVisAreaCallback *pListener ) = 0;
 	virtual void RemoveListener( IVisAreaCallback *pListener ) = 0;
-
-	virtual void PrepareSegmentData(const AABB &box) = 0;
-	virtual void ReleaseInactiveSegments() = 0;
-	virtual bool CreateSegment(int nSID) = 0;
-	virtual bool DeleteSegment(int nSID, bool bDeleteNow) = 0;
-	virtual bool StreamCompiledData(uint8 * pData, int nDataSize, int nSID, std::vector<struct IStatObj*> * pStatObjTable, std::vector<IMaterial*> * pMatTable, std::vector<struct IStatInstGroup*> * pStatInstGroupTable, const Vec3 &vSegmentOrigin, const Vec2 &vIndexOffset) = 0;
-	virtual void OffsetPosition(const Vec3& delta) = 0;
-	virtual void UpdateConnections() = 0;
 };
 
 struct ITimeOfDayUpdateCallback;
@@ -1590,7 +1490,7 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	//     Registers an entity to be rendered.
 	// Arguments:
 	//     pEntity - The entity to render
-	virtual void RegisterEntity( IRenderNode * pEntity, int nSID=-1, int nSIDConsideredSafe=-1 )=0;
+	virtual void RegisterEntity( IRenderNode * pEntity, int nSID=-1 )=0;
 
 	// Summary:
 	//     Selects an entity for debugging.
@@ -1760,23 +1660,6 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	virtual void GetRainParams(float & fReflAmount, float & fFakeGlossiness, float & fPuddlesAmount, bool & bRainDrops, float & fRainDropsSpeed, float & fUmbrellaRadius) const = 0;
 
 	// Summary:
-	//		Sets current snow surface parameters.
-	virtual void SetSnowSurfaceParams( const Vec3 & vCenter, float fRadius, float fSnowAmount, float fFrostAmount, float fSurfaceFreezing ) = 0;
-
-	// Summary:
-	//		Gets current snow surface parameters.
-	VIRTUAL bool GetSnowSurfaceParams( Vec3 & vCenter, float & fRadius, float & fSnowAmount, float & fFrostAmount, float & fSurfaceFreezing ) = 0;
-
-	// Summary:
-	//		Sets current snow parameters.
-	virtual void SetSnowFallParams( int nSnowFlakeCount, float fSnowFlakeSize, float fSnowFallBrightness, float fSnowFallGravityScale, float fSnowFallWindScale, float fSnowFallTurbulence, float fSnowFallTurbulenceFreq ) = 0;
-
-	// Summary:
-	//		Gets current snow parameters.
-	VIRTUAL bool GetSnowFallParams( int & nSnowFlakeCount, float & fSnowFlakeSize, float & fSnowFallBrightness, float & fSnowFallGravityScale, float & fSnowFallWindScale, float & fSnowFallTurbulence, float & fSnowFallTurbulenceFreq ) = 0;
-
-
-	// Summary:
 	//     Sets the view distance scale.
 	// Arguments:
 	//     fScale - may be between 0 and 1, 1.f = Unmodified view distance set by level designer, value of 0.5 will reduce it twice
@@ -1859,7 +1742,7 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	//	   bIncludeOutdoorVoxles	-
 	// Return Value:
 	//     A float which indicate the elevation level.
-	virtual float GetTerrainElevation(float x, float y, bool bIncludeOutdoorVoxles = false, int nSID = DEFAULT_SID) = 0;
+	virtual float GetTerrainElevation(float x, float y, bool bIncludeOutdoorVoxles = false) = 0;
 
 	// Summary:
 	//     Gets the terrain elevation for a specified location.
@@ -1892,22 +1775,6 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
   // Return Value:
   //     A terrain surface normal.
   virtual Vec3 GetTerrainSurfaceNormal(Vec3 vPos) = 0;
-
-	// Summary:
-	//		 Gets various information about given terrain point in one call
-	// Notes:
-	//     Current implementation does not work for voxel terrain
-	//     If there is terrain hole at the given point or point is outside terrain some default values are returned
-	// Arguments:
-	//     vPos.x - X coordinate of the location
-	//     vPos.y - Y coordinate of the location
-	//     vPos.z - ignored
-	//     pfHeight - if not null, terrain height at given point is returned here
-	//     pvNormal - if not null, terrain normal at given point is returned here
-	//     ppSurfaceType - if not null, surface type at given point is returned here
-	// Return Value:
-	//     false if point is outside terrain or there is a terrain hole at the given point
-	virtual bool GetTerrainPointInfo(Vec3 vPos, float *pfHeight, Vec3 *pvNormal, ISurfaceType **ppSurfType) = 0;
 
 	// Summary:
 	//     Gets the unit size of the terrain
@@ -1948,7 +1815,7 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 //	virtual bool PhysicalizeStaticObject(void *pForeignData,int iForeignData,int iForeignFlags) = 0;
 	// Summary:
 	//		Removes all static objects on the map (for editor)
-	virtual void RemoveAllStaticObjects(int nSID=DEFAULT_SID) = 0;
+	virtual void RemoveAllStaticObjects(int nSID=0) = 0;
 	// Summary:
 	//		Allows to set terrain surface type id for specified point in the map (for editor)
 	virtual void SetTerrainSurfaceType(int x, int y, int nType)=0; // from 0 to 6 - sur type ( 7 = hole )
@@ -2025,11 +1892,11 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	//	 Loads environment settings for specified mission
 	virtual void LoadMissionDataFromXMLNode(const char * szMissionName) = 0;
 
-	virtual void LoadEnvironmentSettingsFromXML(XmlNodeRef pInputNode, int nSID=DEFAULT_SID) = 0;
+	virtual void LoadEnvironmentSettingsFromXML(XmlNodeRef pInputNode, int nSID=0) = 0;
 
 	// Summary:
 	//	 Loads detail texture and detail object settings from XML doc (load from current LevelData.xml if pDoc is 0)
-	virtual void	LoadTerrainSurfacesFromXML(XmlNodeRef pDoc, bool bUpdateTerrain, int nSID=DEFAULT_SID) = 0;
+	virtual void	LoadTerrainSurfacesFromXML(XmlNodeRef pDoc, bool bUpdateTerrain, int nSID=0) = 0;
 
 //DOC-IGNORE-END
 
@@ -2181,7 +2048,7 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	//   Creates a new VisArea.
 	// Return Value:
 	//   A pointer to a newly created VisArea object
-	virtual IVisArea * CreateVisArea(uint64 visGUID) = 0;
+	virtual IVisArea * CreateVisArea() = 0;
 
 	// Summary:
 	//   Deletes a VisArea.
@@ -2233,10 +2100,6 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	// Summary:
 	//	 Gets wind direction and force, averaged within a box.
 	virtual Vec3 GetWind( const AABB & box, bool bIndoors ) const =0;
-
-	// Summary:
-	//	 Gets the global wind vector.
-	virtual Vec3 GetGlobalWind( bool bIndoors ) const =0;
 
 	// Description:
 	//   Gets the VisArea which is present at a specified point.
@@ -2380,7 +2243,7 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 
 	// Summary:
 	//	 Closes terrain texture file handle and allows to replace/update it.
-	virtual void CloseTerrainTextureFile(int nSID=DEFAULT_SID) = 0;
+	virtual void CloseTerrainTextureFile(int nSID=0) = 0;
 	
 	// Summary:
 	//	 Removes all decals attached to specified entity.
@@ -2575,18 +2438,6 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 	//	 True if e_ambient_occlusion is ON and AO data is valid
 	virtual bool IsAmbientOcclusionEnabled() = 0;
 
-	// pointer to ISegmentsManager interface
-	virtual ISegmentsManager *GetSegmentsManager() = 0;
-	virtual void SetSegmentsManager(ISegmentsManager *pSegmentsManager) = 0;
-	// true if segmented world is performing an operation (load/save/move/etc)
-	virtual bool IsSegmentedWorldActive() = 0;
-	virtual void SetSegmentedWorldActive(bool bActive) = 0;
-
-	// Returns true if the segment is completely loaded and prepared to be used/rendered/whatever in game.
-	// If this returns false, DO NOT TOUCH THE SEGMENT OR ANYTHING IN IT. It is probably being streamed in
-	// a background thread and you will race all over its internal structures.
-	virtual bool IsSegmentSafeToUse(int nSID) = 0;
-
 	// Description:
 	//	 Call function 2 times (first to get the size then to fill in the data)
 	// Arguments:
@@ -2653,9 +2504,6 @@ UNIQUE_IFACE struct I3DEngine : public IProcess
 
 	// Activate streaming of render node and all sub-components
 	virtual void PrecacheRenderNode(IRenderNode * pObj, float fEntDistanceReal) = 0;
-
-	// Called when the segmented world moves
-	virtual void OffsetPosition(Vec3 &delta) = 0;
 
 	virtual IDeferredPhysicsEventManager* GetDeferredPhysicsEventManager() =0;
 

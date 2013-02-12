@@ -679,14 +679,6 @@
             CVar created using CVarAttribute, targeting a property.
             </summary>
         </member>
-        <member name="M:CryEngine.Cry3DEngine.ActivatePortal(CryEngine.Vec3,System.Boolean,System.String)">
-            <summary>
-            Enables or disables portal at a specified position.
-            </summary>
-            <param name="pos"></param>
-            <param name="activate"></param>
-            <param name="entityName"></param>
-        </member>
         <member name="P:CryEngine.SurfaceType.Id">
             <summary>
             Gets the unique identifier of this surface type.

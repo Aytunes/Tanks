@@ -319,34 +319,20 @@ inline bool ConvertInt( D& dest, const void* src, const CTypeInfo& typeSrc, D nM
 	{
 		switch (typeSrc.Size)
 		{
-
-
-
-
-
-
-		case 1: return ConvertInt(dest, *(const int8*)src, nMin, nMax);
-		case 2: return ConvertInt(dest, *(const int16*)src, nMin, nMax);
-		case 4: return ConvertInt(dest, *(const int32*)src, nMin, nMax);
-		case 8: return ConvertInt(dest, *(const int64*)src, nMin, nMax);
-
+			case 1: return ConvertInt(dest, *(const int8*)src, nMin, nMax);
+			case 2: return ConvertInt(dest, *(const int16*)src, nMin, nMax);
+			case 4: return ConvertInt(dest, *(const int32*)src, nMin, nMax);
+			case 8: return ConvertInt(dest, *(const int64*)src, nMin, nMax);
 		}
 	}
 	else if (typeSrc.IsType<uint>())
 	{
 		switch (typeSrc.Size)
 		{
-
-
-
-
-
-
-		case 1: return ConvertInt(dest, *(const uint8*)src, nMin, nMax);
-		case 2: return ConvertInt(dest, *(const uint16*)src, nMin, nMax);
-		case 4: return ConvertInt(dest, *(const uint32*)src, nMin, nMax);
-		case 8: return ConvertInt(dest, *(const uint64*)src, nMin, nMax);
-
+			case 1: return ConvertInt(dest, *(const uint8*)src, nMin, nMax);
+			case 2: return ConvertInt(dest, *(const uint16*)src, nMin, nMax);
+			case 4: return ConvertInt(dest, *(const uint32*)src, nMin, nMax);
+			case 8: return ConvertInt(dest, *(const uint64*)src, nMin, nMax);
 		}
 	}
 	return false;
@@ -761,6 +747,182 @@ void TestType(T val)
 }
 
 #endif // _DEBUG
+
+//---------------------------------------------------------------------------
+// deep_ptr: acts as a value type, copying the pointee value, and allocating on write.
+// To manually force allocation (when bINIT = false): *ptr
+// To manually free it: ptr = 0
+
+template<class T, bool bINIT = false>
+struct deep_ptr
+{
+	typedef deep_ptr<T,bINIT> this_t;
+
+	~deep_ptr()
+		{ delete m_ptr; }
+
+	deep_ptr()
+		: m_ptr( bINIT ? new T() : 0 ) {}
+
+	deep_ptr( T* p )
+		: m_ptr(p) {}
+
+	deep_ptr( const this_t& init )
+		: m_ptr( init.m_ptr ? new T(*init.m_ptr) : 0) {}
+
+	this_t& operator=( const this_t& init )
+	{
+		if (init.m_ptr != m_ptr)
+		{
+			delete m_ptr;
+			m_ptr = init.m_ptr ? new T(*init.m_ptr) : 0;
+		}
+		return *this;
+	}
+
+	this_t& operator=( T* p )
+	{
+		if (p != m_ptr)
+		{
+			delete m_ptr;
+			m_ptr = p;
+		}
+		return *this;
+	}
+
+	// Read access
+	operator bool() const
+		{ return !!m_ptr; }
+	bool operator !() const
+		{ return !m_ptr; }
+
+	const T* operator ->() const
+	{
+		assert(m_ptr);
+		return m_ptr;
+	}
+	T* operator ->()
+	{
+		// When writing empty value, allocate new.
+		if (bINIT)
+			assert(m_ptr);
+		else if (!m_ptr)
+			m_ptr = new T;
+		return m_ptr;
+	}
+
+	const T& operator *() const
+		{ return *operator->(); }
+	T& operator *()
+		{ return *operator->(); }
+
+	void GetMemoryUsage(ICrySizer *pSizer) const
+	{
+		if (m_ptr)
+			m_ptr->GetMemoryUsage(pSizer, true);
+	}
+
+	CUSTOM_STRUCT_INFO(CCustomInfo)
+
+private:
+	T*	m_ptr;
+
+	// Provide interface to pointee data.
+	struct CCustomInfo: CTypeInfo
+	{
+		static const CTypeInfo& ValTypeInfo()
+			{ return ::TypeInfo((T*)0); }
+
+		CCustomInfo()
+			: CTypeInfo( ValTypeInfo().Name, sizeof(T*) ) {}
+
+		static void FreeDefault(this_t& ptr)
+		{
+			T objDefault;
+			if (ValTypeInfo().ValueEqual(&*ptr, &objDefault))
+				ptr = 0;
+		}
+
+		virtual bool IsType( CTypeInfo const& Info ) const		
+			{ return &Info == this || ValTypeInfo().IsType(Info); }
+
+		// Read functions: read from a default object if not allocated.
+		virtual string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const
+		{
+			const T* ptr = *(const T**)data;
+			const T* def_ptr = def_data ? *(const T**)def_data : 0;
+			if (ptr)
+			{
+				return ValTypeInfo().ToString(ptr, flags, def_ptr); 
+			}
+			else
+			{
+				T objDefault;
+				return ValTypeInfo().ToString(&objDefault, flags, def_ptr);
+			}
+		}
+		virtual bool ToValue(const void* data, void* value, const CTypeInfo& typeVal) const
+		{
+			const T* ptr = *(const T**)data;
+			if (ptr)
+			{
+				return ValTypeInfo().ToValue(ptr, value, typeVal); 
+			}
+			else
+			{
+				T objDefault;
+				return ValTypeInfo().ToValue(&objDefault, value, typeVal); 
+			}
+		}
+		virtual bool ValueEqual(const void* data, const void* def_data = 0) const
+		{
+			const T* ptr = *(const T**)data;
+			const T* def_ptr = def_data ? *(const T**)def_data : 0;
+			if (!ptr && !def_ptr)
+				return true;
+			if (ptr && def_ptr)
+				return ValTypeInfo().ValueEqual(ptr, def_ptr); 
+			T objDefault;
+			return ValTypeInfo().ValueEqual(ptr ? ptr : &objDefault, def_ptr ? def_ptr : &objDefault); 
+		}
+
+		// Write functions: allocate and copy data only if non-default.
+		virtual bool FromString(void* data, cstr str, FFromString flags = 0) const
+		{
+			this_t& ptr = *(this_t*)data;
+			if (!*str)
+			{
+				if (!flags._SkipEmpty)
+					ptr = 0;
+				return true;
+			}
+			bool bSuccess = ValTypeInfo().FromString( &*ptr, str, flags ); 
+			FreeDefault(ptr);
+			return bSuccess;
+		}
+		virtual bool FromValue(void* data, const void* value, const CTypeInfo& typeVal) const
+		{ 
+			this_t& ptr = *(this_t*)data;
+			bool bSuccess = ValTypeInfo().FromValue( &*ptr, value, typeVal );
+			FreeDefault(ptr);
+			return bSuccess;
+		}
+
+		virtual void SwapEndian(void* data, size_t nCount, bool bWriting) const
+		{
+			T* ptr = *(T**)data;
+			if (ptr)
+				ValTypeInfo().SwapEndian(ptr, nCount, bWriting);
+		}
+		virtual void GetMemoryUsage(ICrySizer* pSizer, const void* data) const
+		{
+			const T* ptr = *(const T**)data;
+			if (ptr)
+				ValTypeInfo().GetMemoryUsage(pSizer, ptr);
+		}
+	};
+};
+
 
 #pragma warning(pop)
 #endif

@@ -15,7 +15,6 @@
 		template struct Vec3_tpl<float>;
 		template struct Vec4_tpl<float>;
 	#endif
-	template struct Vec2_tpl<float>;
 	template struct Ang3_tpl<float>;
 	template struct Plane_tpl<float>;
 	template struct Matrix33_tpl<float>;

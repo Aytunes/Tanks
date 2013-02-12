@@ -228,10 +228,7 @@ public:
 				++qit;
 			}
 
-
-
-		std::stable_sort(m_queue.begin(), m_queue.end(), QueueCompare<Compare>(m_slots, compare));
-
+			std::stable_sort(m_queue.begin(), m_queue.end(), QueueCompare<Compare>(m_slots, compare));
 		}
 	}
 

@@ -1109,8 +1109,7 @@ UNIQUE_IFACE struct IUIElement
 		eFUI_RENDER_LOCKLESS   = 0x00080,
 		eFUI_FIXED_PROJ_DEPTH  = 0x00100,
 		eFUI_IS_HUD            = 0x00200,
-		eFUI_SHARED_RT         = 0x00400,
-		eFUI_LAZY_UPDATE       = 0x00800 | eFUI_NOT_CHANGEABLE,
+		eFUI_LAZY_UPDATE       = 0x00400 | eFUI_NOT_CHANGEABLE,
 
 		// flags per UIElement
 		eFUI_MASK_PER_ELEMENT  = 0xF0000,
@@ -1179,7 +1178,6 @@ UNIQUE_IFACE struct IUIElement
 
 	// visibility
 	virtual void RequestHide() = 0;
-	virtual bool IsHiding() const = 0;
 
 	virtual void SetVisible( bool bVisible ) = 0;
 	virtual bool IsVisible() const = 0;
@@ -1535,9 +1533,6 @@ public:
 	// used by scaleform to validate if texture is preloaded (only debug/profile)
 	virtual void CheckPreloadedTexture(ITexture* pTexture) const = 0;
 
-	// used by the renderer to check if an UIElement should be used on dyn texture
-	virtual bool UseSharedRT(const char* instanceStr, bool defVal) const = 0;
-
 	// memory statistics
 	virtual void GetMemoryStatistics(ICrySizer * s) const = 0;
 
@@ -1553,7 +1548,7 @@ public:
 		ePUI_PC = 0,
 		ePUI_X360,
 		ePUI_PS3,
-		ePUI_Other,
+		ePUI_Gringo,
 	};
 	typedef Functor0wRet< EPlatformUI > TEditorPlatformCallback;
 	virtual void SetEditorPlatformCallback(TEditorPlatformCallback& cb) = 0;

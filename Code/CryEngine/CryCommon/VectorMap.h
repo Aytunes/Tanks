@@ -44,7 +44,7 @@
 //
 // Performance Notes:
 //
-// This class uses the empty base optimization hack to allow comparison
+// This class uses the empty base optimization workaround to allow comparison
 // predicate objects that have no state to take up no space in the object.
 // As a result the size of the overall VectorMap instance is the same as
 // that of the std::vector it uses to store the elements.

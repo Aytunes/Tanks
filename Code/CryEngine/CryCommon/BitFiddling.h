@@ -20,18 +20,6 @@
 #define countLeadingZeros32(x)              __builtin_clz(x)
 #elif defined(XENON)
 #define countLeadingZeros32(x)              _CountLeadingZeros(x)
-#elif defined(CAFE)
-ILINE uint8 countLeadingZeros32(uint32 x)
-{
-	uint8 res=0;
-	while (!(x&(1<<31)))
-	{
-		res++;
-		x<<=1;
-		x|=1;
-	}
-	return res;
-}
 #elif defined(PS3)
 #if defined(__SPU__)
 #define countLeadingZeros32(x)              (spu_extract( spu_cntlz( spu_promote((x),0) ),0) )

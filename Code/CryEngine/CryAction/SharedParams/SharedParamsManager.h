@@ -71,8 +71,6 @@ History:
 #include <STLPoolAllocator_ManyElems.h>
 #ifdef LINUX
 #include <tr1/unordered_map>
-
-
 #else
 #include <unordered_map>
 #endif
@@ -204,13 +202,12 @@ class CSharedParamsManager : public ISharedParamsManager
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Hashing function.
 		////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(STLPORT) || defined(CAFE)
+#ifdef STLPORT
 		typedef std::hash<uint32> THashUInt32;
 #else
 		typedef std::tr1::hash<uint32> THashUInt32;
 #endif //STLPORT
 
-#ifndef CAFE
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Map of names.
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,10 +217,6 @@ class CSharedParamsManager : public ISharedParamsManager
 		// Map of shared parameters.
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		typedef std::tr1::unordered_map<uint32, ISharedParamsPtr, THashUInt32, std::equal_to<uint32>, stl::STLPoolAllocator_ManyElems<std::pair<uint32, ISharedParamsPtr> > > TRecordMap;
-
-
-
-#endif
 
 		TNameMap			m_names;
 

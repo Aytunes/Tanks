@@ -306,8 +306,6 @@ struct InternalCriticalSectionDummy {
 
 
 
-
-
 ;
 
 inline void CryInternalCreateCriticalSection(void * pCS)
@@ -1008,7 +1006,7 @@ inline void __cas_new_head (_ListElem * volatile *__free_list, _ListElem *__new_
 	do {
 		__old_head = *__free_list;
 		__new_head->_M_next = __old_head;
-	} while (!Node_Alloc_Lock<__threads, __size>::ATOMIC_CAS((long volatile*)__free_list, (long)(UINT_PTR)__new_head, (long)(UINT_PTR)__old_head));
+	} while (!Node_Alloc_Lock<__threads, __size>::ATOMIC_CAS((long volatile*)__free_list, (long)__new_head, (long)__old_head));
 }
 
 template <class _ListElem, bool __threads, int __size>
@@ -1017,7 +1015,7 @@ inline void __cas_new_head_block (_ListElem * volatile *__free_list, _ListElem *
 	do {
 		__old_head = *__free_list;
 		__new_head->_M_Block_next = __old_head;
-	} while (!Node_Alloc_Lock<__threads, __size>::ATOMIC_CAS((long volatile*)__free_list, (long)(UINT_PTR)__new_head, (long)(UINT_PTR)__old_head));
+	} while (!Node_Alloc_Lock<__threads, __size>::ATOMIC_CAS((long volatile*)__free_list, (long)__new_head, (long)__old_head));
 }
 
 
@@ -1038,10 +1036,10 @@ void* node_alloc<_alloc, __threads, _Size>::_M_allocate(size_t __n)
 			break;
 		}
 	}
-	while (!Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS((long volatile*)__my_free_list, (long)(UINT_PTR)__r->_M_next, (long)(UINT_PTR)__r));
+	while (!Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS((long volatile*)__my_free_list, (long)__r->_M_next, (long)__r));
 #if !defined(_RELEASE)
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_allocation,(long) (((allocated + 1) << _ALIGN_SHIFT) - __n));
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,(long) (-((allocated + 1) << _ALIGN_SHIFT)));
+	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_allocation,((allocated + 1) << _ALIGN_SHIFT) - __n);
+	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,-((allocated + 1) << _ALIGN_SHIFT));
 #endif	
 	long volatile * counter = _S_freelist_counter + S_FREELIST_INDEX(__n);
 	Node_Alloc_Lock<__threads, _Size>::ATOMIC_DECREMENT(counter);
@@ -1067,7 +1065,7 @@ void node_alloc<_alloc, __threads, _Size>::_M_deallocate(void *__p, size_t __n)
 {
 
 
-	long allocated = (long) S_FREELIST_INDEX(__n);
+	long allocated = S_FREELIST_INDEX(__n);
 	Node_Alloc_Lock<__threads, _Size> lock(allocated);
 	_Obj * volatile * __my_free_list = _S_free_list + allocated;
 	_Obj *__pobj = __STATIC_CAST(_Obj*, __p);
@@ -1096,8 +1094,8 @@ void node_alloc<_alloc, __threads, _Size>::_M_deallocate(void *__p, size_t __n)
 #endif
 
 #ifndef _RELEASE
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_allocation,(long) (-((allocated + 1) << _ALIGN_SHIFT) + __n));
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,(long) (((allocated + 1) << _ALIGN_SHIFT)));
+	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_allocation,-((allocated + 1) << _ALIGN_SHIFT) + __n);
+	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,((allocated + 1) << _ALIGN_SHIFT));
 #endif
 	long volatile * counter = _S_freelist_counter + S_FREELIST_INDEX(__n);
 	Node_Alloc_Lock<__threads, _Size>::ATOMIC_INCREMENT(counter);
@@ -1162,7 +1160,7 @@ _Node_alloc_obj* node_alloc<_alloc,__threads, _Size>::_S_refill(size_t __n) {
 		__next_obj->_M_next = *__my_free_list;
 		// !!!!
 
-	} while (!Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS((long volatile*)__my_free_list, (long)(UINT_PTR)__new_head, (long)(UINT_PTR)__next_obj->_M_next));
+	} while (!Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS((long volatile*)__my_free_list, (long)__new_head, (long)__next_obj->_M_next));
 
 	return __result;
 }
@@ -1268,7 +1266,7 @@ char* node_alloc<_alloc,__threads, _Size>::_S_chunk_alloc(size_t _p_size,
 	Node_Alloc_Lock<__threads, _Size>::ATOMIC_INCREMENT(&_S_allocations);
 	//_S_wasted_in_blocks += __bytes_to_get;
 #ifndef _RELEASE
-	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,(long)__bytes_to_get);
+	Node_Alloc_Lock<__threads, _Size>::ATOMIC_EXCHANGE_ADD(&_S_wasted_in_blocks,__bytes_to_get);
 #endif
 	//this is gonna be optimized away in profile builds
 	if (0 == __result) 
@@ -1291,7 +1289,7 @@ char* node_alloc<_alloc,__threads, _Size>::_S_chunk_alloc(size_t _p_size,
 		do {
 			oldHeapSize = _S_heap_size;
 			newHeapSize = oldHeapSize + __bytes_to_get;
-		} while (!Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS(&_S_heap_size, (long) newHeapSize, (long) oldHeapSize));
+		} while (!Node_Alloc_Lock<__threads, _Size>::ATOMIC_CAS(&_S_heap_size, newHeapSize, oldHeapSize));
 	}
 
 	//#  ifdef DO_CLEAN_NODE_ALLOC
