@@ -11,6 +11,8 @@ namespace CryGameCode.Tanks
         public Tank()
         {
             MaxHealth = 100;
+
+            m_acceleration = new Vec2();
         }
 
         /// <summary>
@@ -20,10 +22,10 @@ namespace CryGameCode.Tanks
         {
             var gameMode = GameRules.Current as SinglePlayer;
 
+            m_tankInput = new PlayerInput(this);
+
             if (IsLocalClient)
             {
-                m_tankInput = new PlayerInput(this);
-
                 // Set team & turret type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
                 Team = gameMode.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameMode.Teams.Length - 1));
 
@@ -52,6 +54,16 @@ namespace CryGameCode.Tanks
             Hide(true);
 
             ReceiveUpdates = true;
+        }
+
+        protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
+        {
+            serialize.BeginGroup("TankActor");
+
+            if(m_tankInput != null)
+                m_tankInput.NetSerialize(serialize);
+
+            serialize.EndGroup();
         }
 
         void ResetModel()
