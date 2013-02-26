@@ -64,7 +64,7 @@ namespace CryGameCode.Tanks
 
             int flags = (int)m_flags;
             serialize.EnumValue("m_flags", ref flags, (int)InputFlags.First, (int)InputFlags.Last);
-            if (!serialize.IsReading())
+            if (!serialize.IsReading)
                 m_flags = (InputFlags)flags;
 
             serialize.EndGroup();

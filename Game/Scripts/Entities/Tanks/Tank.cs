@@ -84,7 +84,7 @@ namespace CryGameCode.Tanks
                 if (IsLocalClient)
                     NetReset(enteringGame, turretType);
 
-                Network.RemoteInvocation(NetReset, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, enteringGame, turretType);
+                RemoteInvocation(NetReset, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, enteringGame, turretType);
             }
 
 			m_leftTrack = GetAttachment("track_left");

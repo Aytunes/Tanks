@@ -679,14 +679,6 @@
             CVar created using CVarAttribute, targeting a property.
             </summary>
         </member>
-        <member name="M:CryEngine.Cry3DEngine.ActivatePortal(CryEngine.Vec3,System.Boolean,System.String)">
-            <summary>
-            Enables or disables portal at a specified position.
-            </summary>
-            <param name="pos"></param>
-            <param name="activate"></param>
-            <param name="entityName"></param>
-        </member>
         <member name="P:CryEngine.SurfaceType.Id">
             <summary>
             Gets the unique identifier of this surface type.
@@ -790,60 +782,9 @@
             Defines the list of supported editor types.
             </summary>
         </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.OnPortActivated(System.Int32,System.Object)">
+        <member name="F:CryEngine.EntityMoveFlags.FromParent">
             <summary>
-            Called if one or more input ports have been activated.
-            </summary>
-        </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.OnInit">
-            <summary>
-            Called after level has been loaded, is not called on serialization.
-            Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
-            </summary>
-        </member>
-        <member name="P:CryEngine.EntityLink.Handle">
-            <summary>
-            Native IEntityLink handle
-            </summary>
-        </member>
-        <member name="F:CryEngine.EntityUpdatePolicy.Never">
-            <summary>
-            Never update entity every frame.
-            </summary>
-        </member>
-        <member name="F:CryEngine.EntityUpdatePolicy.InRange">
-            <summary>
-            Only update entity if it is in specified range from active camera.
-            </summary>
-        </member>
-        <member name="F:CryEngine.EntityUpdatePolicy.PotentiallyVisible">
-            <summary>
-            Only update entity if it is potentially visible.
-            </summary>
-        </member>
-        <member name="F:CryEngine.EntityUpdatePolicy.Visible">
-            <summary>
-            Only update entity if it is visible.
-            </summary>
-        </member>
-        <member name="F:CryEngine.EntityUpdatePolicy.Physics">
-            <summary>
-            Only update entity if it is need to be updated due to physics.
-            </summary>
-        </member>
-        <member name="F:CryEngine.EntityUpdatePolicy.PhysicsVisible">
-            <summary>
-            Only update entity if it is need to be updated due to physics or if it is visible.
-            </summary>
-        </member>
-        <member name="F:CryEngine.EntityUpdatePolicy.Always">
-            <summary>
-            Always update entity every frame.
-            </summary>
-        </member>
-        <member name="T:CryEngine.Attachment">
-            <summary>
-            Represents a character attachment, obtained via <see cref="M:CryEngine.EntityBase.GetAttachment(System.Int32,System.Int32)"/> and <see cref="M:CryEngine.EntityBase.GetAttachment(System.String,System.Int32)"/>.
+            When parent changes his transformation.
             </summary>
         </member>
         <member name="T:CryEngine.Entity">
@@ -1028,7 +969,7 @@
             Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
             </summary>
         </member>
-        <member name="M:CryEngine.Entity.OnMove">
+        <member name="M:CryEngine.Entity.OnMove(CryEngine.EntityMoveFlags)">
             <summary>
             Called when the entities local or world transformation matrix changes. (Position / Rotation / Scale)
             </summary>
@@ -1068,6 +1009,62 @@
             <summary>
             Set to detect movement within an area. 
             See OnEnterArea, OnMoveInsideArea, OnLeaveArea, OnEnterNearArea, OnLeaveNearArea and OnMoveNearArea
+            </summary>
+        </member>
+        <member name="M:CryEngine.FlowSystem.FlowNode.OnPortActivated(System.Int32,System.Object)">
+            <summary>
+            Called if one or more input ports have been activated.
+            </summary>
+        </member>
+        <member name="M:CryEngine.FlowSystem.FlowNode.OnInit">
+            <summary>
+            Called after level has been loaded, is not called on serialization.
+            Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityLink.Handle">
+            <summary>
+            Native IEntityLink handle
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.Never">
+            <summary>
+            Never update entity every frame.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.InRange">
+            <summary>
+            Only update entity if it is in specified range from active camera.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.PotentiallyVisible">
+            <summary>
+            Only update entity if it is potentially visible.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.Visible">
+            <summary>
+            Only update entity if it is visible.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.Physics">
+            <summary>
+            Only update entity if it is need to be updated due to physics.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.PhysicsVisible">
+            <summary>
+            Only update entity if it is need to be updated due to physics or if it is visible.
+            </summary>
+        </member>
+        <member name="F:CryEngine.EntityUpdatePolicy.Always">
+            <summary>
+            Always update entity every frame.
+            </summary>
+        </member>
+        <member name="T:CryEngine.Attachment">
+            <summary>
+            Represents a character attachment, obtained via <see cref="M:CryEngine.EntityBase.GetAttachment(System.Int32,System.Int32)"/> and <see cref="M:CryEngine.EntityBase.GetAttachment(System.String,System.Int32)"/>.
             </summary>
         </member>
         <member name="P:CryEngine.Attachment.Owner">
@@ -1149,6 +1146,17 @@
             <summary>
             New instance of node will be created each time it is requested.
             </summary>
+        </member>
+        <member name="T:CryEngine.FlowSystem.OutputPort">
+            <summary>
+            Used to declare flownode output ports that can output any or no value.
+            </summary>
+        </member>
+        <member name="T:CryEngine.FlowSystem.OutputPort`1">
+            <summary>
+            Used to declare flownode output ports of a specified type.
+            </summary>
+            <typeparam name="T">Int, Float, EntityId, String, Bool or Vec3.</typeparam>
         </member>
         <member name="P:CryEngine.FlowSystem.PortAttribute.StringPortType">
             <summary>

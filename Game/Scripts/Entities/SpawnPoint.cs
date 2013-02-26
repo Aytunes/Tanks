@@ -35,7 +35,7 @@ namespace CryGameCode
 
                     tank.OnRevive();
 
-                    Network.RemoteInvocation(NetSpawn, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, tank.Id, pos);
+                    RemoteInvocation(NetSpawn, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, tank.Id, pos);
                 }
 
 				return true;
