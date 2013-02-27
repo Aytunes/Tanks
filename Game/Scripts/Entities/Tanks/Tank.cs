@@ -72,6 +72,8 @@ namespace CryGameCode.Tanks
 
             m_leftTrack = GetAttachment("track_left");
             m_rightTrack = GetAttachment("track_right");
+
+            Physicalize();
         }
 
         public void OnRevived()
@@ -93,19 +95,24 @@ namespace CryGameCode.Tanks
                 ToggleSpectatorPoint();
 		}
 
+        void Physicalize()
+        {
+            Physics.AutoUpdate = false;
+            Physics.Type = PhysicalizationType.Living;
+            Physics.Mass = 500;
+            Physics.HeightCollider = 1.2f;
+            Physics.Slot = 0;
+            Physics.UseCapsule = false;
+            Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
+            Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
+            Physics.MaxClimbAngle = MathHelpers.DegreesToRadians(30);
+            Physics.AirControl = 0.0f;
+            Physics.Save();
+        }
+
 		/*private void Reset(bool enteringGame)
 		{
-			Physics.AutoUpdate = false;
-			Physics.Type = PhysicalizationType.Living;
-			Physics.Mass = 500;
-			Physics.HeightCollider = 1.2f;
-			Physics.Slot = 0;
-			Physics.UseCapsule = false;
-			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
-			Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
-            Physics.MaxClimbAngle = MathHelpers.DegreesToRadians(30);
-			Physics.AirControl = 0.0f;
-			Physics.Save();
+		    Physicalize();	
 
             m_acceleration = new Vec2();
 		}*/

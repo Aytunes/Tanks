@@ -782,6 +782,11 @@
             Defines the list of supported editor types.
             </summary>
         </member>
+        <member name="F:CryEngine.EntityMoveFlags.FromParent">
+            <summary>
+            When parent changes his transformation.
+            </summary>
+        </member>
         <member name="T:CryEngine.Entity">
             <summary>
             Represents an entity created via CryMono.
@@ -964,7 +969,7 @@
             Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
             </summary>
         </member>
-        <member name="M:CryEngine.Entity.OnMove">
+        <member name="M:CryEngine.Entity.OnMove(CryEngine.EntityMoveFlags)">
             <summary>
             Called when the entities local or world transformation matrix changes. (Position / Rotation / Scale)
             </summary>
@@ -1141,6 +1146,17 @@
             <summary>
             New instance of node will be created each time it is requested.
             </summary>
+        </member>
+        <member name="T:CryEngine.FlowSystem.OutputPort">
+            <summary>
+            Used to declare flownode output ports that can output any or no value.
+            </summary>
+        </member>
+        <member name="T:CryEngine.FlowSystem.OutputPort`1">
+            <summary>
+            Used to declare flownode output ports of a specified type.
+            </summary>
+            <typeparam name="T">Int, Float, EntityId, String, Bool or Vec3.</typeparam>
         </member>
         <member name="P:CryEngine.FlowSystem.PortAttribute.StringPortType">
             <summary>
