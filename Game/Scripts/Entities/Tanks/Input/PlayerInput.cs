@@ -9,12 +9,12 @@ using CryEngine.Serialization;
 
 namespace CryGameCode.Tanks
 {
-    public class TankInput
+    public class PlayerInput
     {
         // Default constructor for realtime scripting 
-        TankInput() { }
+        PlayerInput() { }
 
-        public TankInput(Tank tank)
+        public PlayerInput(Tank tank)
         {
             Owner = tank;
 
@@ -31,17 +31,40 @@ namespace CryGameCode.Tanks
 
                 AddEvent("sprint", InputFlags.Boost);
 
+                Input.ActionmapEvents.Add("attack1", (e) =>
+                    {
+                        if (e.KeyEvent == KeyEvent.OnRelease)
+                        {
+                            var gameRules = GameRules.Current as SinglePlayer;
+
+                            if (Owner != null && Owner.IsDead)
+                            {
+                                if (Network.IsServer)
+                                    gameRules.RequestRevive(Owner.Id, Owner.Team, Owner.TurretTypeName);
+                                else
+                                {
+                                    Debug.LogAlways("Requesting revive ({0}, {1}, {2})", Owner.Id, Owner.Team, Owner.TurretTypeName);
+                                    Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Owner.Id, Owner.Team, Owner.TurretTypeName);
+                                }
+                            }
+                            else if (Owner == null)
+                                Debug.LogAlways("Could not request revive, owner as null");
+                            else if (Owner.IsDead)
+                                Debug.LogAlways("Could not request revive, owner was alive.");
+                        }
+                    });
+
                 Input.ActionmapEvents.Add("rotateyaw", (e) =>
-                {
-                    if (Owner != null && Owner.Turret != null)
-                        Owner.Turret.OnRotateYaw(e.Value);
-                });
+                    {
+                        if (Owner != null && Owner.Turret != null)
+                            Owner.Turret.OnRotateYaw(e.Value);
+                    });
 
                 Input.ActionmapEvents.Add("rotatepitch", (e) =>
-                {
-                    if (Owner != null && Owner.Turret != null)
-                        Owner.Turret.OnRotatePitch(e.Value);
-                });
+                    {
+                        if (Owner != null && Owner.Turret != null)
+                            Owner.Turret.OnRotatePitch(e.Value);
+                    });
 
                 Input.ActionmapEvents.Add("cycle_view", (e) =>
                     {
@@ -58,14 +81,17 @@ namespace CryGameCode.Tanks
             Input.ActionmapEvents.Add(actionMapName, (e) => { SetFlag(flag, e.KeyEvent); });
         }
 
-        void NetSerialize(CrySerialize serialize)
+        public void NetSerialize(CrySerialize serialize)
         {
             serialize.BeginGroup("TankInput");
 
-            int flags = (int)m_flags;
-            serialize.EnumValue("m_flags", ref flags, (int)InputFlags.First, (int)InputFlags.Last);
-            if (!serialize.IsReading)
-                m_flags = (InputFlags)flags;
+            /*if (m_flags != 0 || serialize.IsReading)
+            {
+                int flags = (int)m_flags;
+                serialize.EnumValue("m_flags", ref flags, (int)InputFlags.First, (int)InputFlags.Last);
+                if (serialize.IsReadin)gm
+                    m_flags = (InputFlags)flags;
+            }*/
 
             serialize.EndGroup();
         }

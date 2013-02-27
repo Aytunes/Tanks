@@ -663,6 +663,9 @@ struct IParticleManager
 	// PerfHUD
 	virtual void CreatePerfHUDWidget() = 0;
 
+	// Collect stats
+	virtual void CollectStats() = 0;
+
 	// Summary:
 	//	 Registers new particle events listener.
 	virtual void AddEventListener(IParticleEffectListener *pListener) = 0;
@@ -745,7 +748,6 @@ enum EPerfHUD_ParticleDisplayMode
 	PARTICLE_DISP_MODE_NONE=0,
 	PARTICLE_DISP_MODE_PARTICLE,
 	PARTICLE_DISP_MODE_EMITTER,
-	PARTICLE_DISP_MODE_FILL,
 	PARTICLE_DISP_MODE_NUM,
 };
 

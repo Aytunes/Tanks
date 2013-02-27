@@ -30,39 +30,33 @@
     <ProjectName>CryAction</ProjectName>
     <ProjectGuid>{498187B3-E46F-45FA-A202-992AE9FDA01A}</ProjectGuid>
     <RootNamespace>CryAction</RootNamespace>
-    <Keyword>Win32Proj</Keyword>
+<Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -228,7 +222,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="GameObjects\GameObject.h" />
+    <ClInclude Include="IActionManager.h" />
     <ClInclude Include="IActionMapManager.h" />
+    <ClInclude Include="IActionSpotManager.h" />
     <ClInclude Include="IActorSystem.h" />
     <ClInclude Include="IAnimatedCharacter.h" />
     <ClInclude Include="IAnimationGraph.h" />
@@ -236,6 +232,7 @@
     <ClInclude Include="IAnimationStateNode.h" />
     <ClInclude Include="ICheckPointSystem.h" />
     <ClInclude Include="ICooperativeAnimationManager.h" />
+    <ClInclude Include="IDeferredRaycastManager.h" />
     <ClInclude Include="IEffectSystem.h" />
     <ClInclude Include="IForceFeedbackSystem.h" />
     <ClInclude Include="IGameObject.h" />

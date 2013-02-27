@@ -277,7 +277,7 @@ namespace Distance {
     Vec3_tpl<F> b=t.v1-p;	
     Vec3_tpl<F> c=t.v2-p;
     //transform triangle into XY-plane to simplify the test
-    Matrix33_tpl<F> r33=Matrix33_tpl<F>::CreateRotationV0V1( ((b-a)%(a-c)).GetNormalized(),Vec3(0,0,1) );
+    Matrix33_tpl<F> r33=Matrix33_tpl<F>::CreateRotationV0( ((b-a)%(a-c)).GetNormalized() );
     Vec3_tpl<F> h = Origin_Triangle2D(Triangle_tpl<F>(r33*a,r33*b,r33*c));
     output=h*r33+p;
     return (h|h); //return squared distance
@@ -845,7 +845,7 @@ namespace Distance {
 		else
 		{
 			// vPoint is inside the AABB
-			uint16 nSubBox = 0;
+			uint8 nSubBox = 0;
 			F fHalf = 2;
 
 			F fMiddleX = ((aabb.max.x - aabb.min.x) / fHalf) + aabb.min.x;

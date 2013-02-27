@@ -53,7 +53,7 @@ protected:
 
 inline unsigned int Crc32Gen::GetCRC32( const char *text ) const
 {
-	int len = (int) strlen(text);
+	int len = strlen(text);
 	return GetCRC32( text,len,0xffffffff );
 }
 
@@ -64,7 +64,7 @@ inline unsigned int Crc32Gen::GetCRC32( const char *data, int size, unsigned int
 
 inline unsigned int Crc32Gen::GetCRC32Lowercase( const char *text ) const
 {
-	int len = (int) strlen(text);
+	int len = strlen(text);
 	return GetCRC32Lowercase( text,len,0xffffffff );
 }
 

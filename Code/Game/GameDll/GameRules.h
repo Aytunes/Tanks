@@ -354,8 +354,6 @@ public:
 
 	virtual bool IsFrozen(EntityId id) const { return false; }
 
-	virtual void ForbiddenAreaWarning(bool active, int timer, EntityId targetId);
-
 	virtual void ResetGameTime();
 	virtual float GetRemainingGameTime() const;
 	virtual void SetRemainingGameTime(float seconds);
@@ -561,21 +559,6 @@ public:
 		}
 	};
 
-	struct ForbiddenAreaWarningParams
-	{
-		int timer;
-		bool active;
-		ForbiddenAreaWarningParams() {};
-		ForbiddenAreaWarningParams(bool act, int time) : active(act), timer(time)
-		{}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("active", active, 'bool');
-			ser.Value("timer", timer, 'ui5');
-		}
-	};
-
 	struct BoolParam
 	{
 		bool success;
@@ -734,8 +717,6 @@ public:
 	DECLARE_SERVER_RMI_NOATTACH(SvRequestChangeTeam, ChangeTeamParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClSetTeam, SetTeamParams, eNRT_ReliableOrdered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClTextMessage, TextMessageParams, eNRT_ReliableUnordered);
-
-	DECLARE_CLIENT_RMI_NOATTACH(ClForbiddenAreaWarning, ForbiddenAreaWarningParams, eNRT_ReliableOrdered); // needs to be ordered to respect enter->leave->enter transitions
 
 	DECLARE_CLIENT_RMI_NOATTACH(ClSetGameTime, SetGameTimeParams, eNRT_ReliableUnordered);
 	DECLARE_CLIENT_RMI_NOATTACH(ClSetRoundTime, SetGameTimeParams, eNRT_ReliableUnordered);

@@ -17,7 +17,17 @@ namespace CryGameCode.Tanks
 	{
 		protected override void UpdateView(ref ViewParams viewParams)
 		{
-            if (Turret == null)
+            viewParams.FieldOfView = MathHelpers.DegreesToRadians(60);
+
+            if (IsDead)
+            {
+                viewParams.Position = Position;
+                viewParams.Rotation = Rotation;
+
+                return;
+            }
+
+            if (Turret == null || !Turret.IsActive)
                 return;
 
             if (m_tankInput != null)
@@ -36,8 +46,6 @@ namespace CryGameCode.Tanks
                         ZoomLevel = GameCVars.cam_maxZoomLevel;
                 }
             }
-
-            viewParams.FieldOfView = MathHelpers.DegreesToRadians(60);
 
             switch ((CameraType)GameCVars.cam_type)
             {

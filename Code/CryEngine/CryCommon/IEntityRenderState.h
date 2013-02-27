@@ -219,12 +219,7 @@ struct IRenderNode : public IShadowCaster
     m_pRNTmpData = NULL;
     m_pPrev = m_pNext = NULL;
     m_nSID = 0;
-		m_fBending = 0.0f;
   }
-
-	//wind bending on entities and brushes
-	virtual void SetBending(float fBending) {m_fBending = fBending;}
-	virtual const float GetBending() {return m_fBending;}
 
   // Debug info about object.
   virtual const char* GetName() const = 0;
@@ -253,11 +248,6 @@ struct IRenderNode : public IShadowCaster
   virtual void SetBBox( const AABB& WSBBox ) = 0;
 
   // Summary:
-  //    Changes the world coordinates position of this node by delta
-  //    Don't forget to call this base function when overriding it.
-  virtual void OffsetPosition(const Vec3& delta) = 0;
-
-  // Summary:
   //	 Renders node geometry
   virtual void Render(const struct SRendParams & EntDrawParams) = 0;
 
@@ -283,7 +273,6 @@ struct IRenderNode : public IShadowCaster
     pDest->m_ucLodRatio					= m_ucLodRatio;
     pDest->m_nInternalFlags			= m_nInternalFlags;
     pDest->m_nMaterialLayers		= m_nMaterialLayers;
-	pDest->m_fBending						= m_fBending;
     //pDestBrush->m_pRNTmpData				//If this is copied from the source render node, there are two
     //	pointers to the same data, and if either is deleted, there will
     //	be a crash when the dangling pointer is used on the other
@@ -553,9 +542,6 @@ public:
 
   // Segment Id
   int m_nSID;
-
-	// for entity/brush bending
-	float m_fBending;
 };
 
 //We must use interfaces instead of unsafe type casts and unnecessary includes
@@ -566,7 +552,7 @@ UNIQUE_IFACE struct IVegetation : public IRenderNode
 
 UNIQUE_IFACE struct IBrush : public IRenderNode
 {
-	virtual const Matrix34& GetMatrix() const = 0;
+  virtual const Matrix34& GetMatrix() const = 0;
 };
 
 struct SVegetationSpriteInfo
@@ -823,8 +809,7 @@ UNIQUE_IFACE struct IWaterVolumeRenderNode : public IRenderNode
     eWVT_Unknown,
     eWVT_Ocean,
     eWVT_Area,
-    eWVT_River,
-	eWVT_NonPlanarRiver,
+    eWVT_River
   };
 
   virtual void SetFogDensity( float fogDensity ) = 0;
@@ -836,8 +821,8 @@ UNIQUE_IFACE struct IWaterVolumeRenderNode : public IRenderNode
   virtual void SetStreamSpeed(float streamSpeed) = 0;
 
   virtual void CreateOcean( uint64 volumeID, /* TBD */ bool keepSerializationParams = false ) = 0;
-  virtual void CreateArea( uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, const Vec2& surfUVScale, const Plane& fogPlane, bool keepSerializationParams = false, int nSID = -1 ) = 0;
-  virtual void CreateRiver( uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, float uTexCoordBegin, float uTexCoordEnd, const Vec2& surfUVScale, const Plane& fogPlane, bool keepSerializationParams = false, bool nonPlanar = false, int nSID = -1 ) = 0;	
+  virtual void CreateArea( uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, const Vec2& surfUVScale, const Plane& fogPlane, bool keepSerializationParams = false ) = 0;
+  virtual void CreateRiver( uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, float uTexCoordBegin, float uTexCoordEnd, const Vec2& surfUVScale, const Plane& fogPlane, bool keepSerializationParams = false ) = 0;	
 
   virtual void SetAreaPhysicsArea( const Vec3* pVertices, unsigned int numVertices, bool keepSerializationParams = false ) = 0;
   virtual void SetRiverPhysicsArea( const Vec3* pVertices, unsigned int numVertices, bool keepSerializationParams = false ) = 0;

@@ -178,22 +178,13 @@ void FixedAllocator<ObjSize, ObjAlign, ChunkObjCount>::dealloc(void* p)
 			if (allocChunk_ == emptyChunk_)
 				allocChunk_ = chunk;
 
-			if (&chunks_.back() != emptyChunk_)
-				std::swap(*emptyChunk_, chunks_.back());
-
+			std::swap(*emptyChunk_, chunks_.back());
 			if (&chunks_.back() == allocChunk_)
 				allocChunk_ = emptyChunk_;
-
 			chunks_.pop_back();
 		}
 
-		if (chunks_.empty())
-		{
-			emptyChunk_ = 0;
-			allocChunk_ = 0;
-		}
-		else
-			emptyChunk_ = chunk;
+		emptyChunk_ = chunk;
 	}
 }
 

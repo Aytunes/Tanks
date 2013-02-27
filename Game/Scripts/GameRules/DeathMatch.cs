@@ -2,31 +2,18 @@
 
 using CryEngine;
 
-using CryGameCode.Tanks;
 using CryGameCode.Entities;
 
 namespace CryGameCode
 {
 	public class DeathMatch : SinglePlayer
 	{
-        public override void RevivePlayer(EntityId actorId)
+        public override string[] Teams
         {
-            var tank = Actor.Get<Tank>(actorId);
-            if (tank == null)
+            get
             {
-                Debug.Log("[SinglePlayer.OnRevive] Failed to get the player. Check the log for errors.");
-                return;
+                return new string[] { "red", "blue" };
             }
-
-            var spawnpoints = Entity.GetByClass<SpawnPoint>();
-            if (spawnpoints.Count() > 0)
-            {
-                var spawnPoint = spawnpoints.ElementAt(Selector.Next(0, spawnpoints.Count() - 1));
-
-                spawnPoint.TrySpawn(tank);
-            }
-
-            tank.OnRevive();
         }
     }
 }

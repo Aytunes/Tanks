@@ -383,10 +383,13 @@ bool CGameRules::OnInitiate(SHostMigrationInfo& hostMigrationInfo, uint32& state
 			}*/
 
 			IMovementController *pMovementController = pPlayer->GetMovementController();
-			SMovementState movementState;
-			pMovementController->GetMovementState(movementState);
+			if(pMovementController)
+			{
+				SMovementState movementState;
+				pMovementController->GetMovementState(movementState);
 
-			m_pHostMigrationClientParams->m_aimDirection = movementState.aimDirection;
+				m_pHostMigrationClientParams->m_aimDirection = movementState.aimDirection;
+			}
 
 			/*CItem *pItem = static_cast<CItem*>(pPlayer->GetCurrentItem());
 			if (pItem)

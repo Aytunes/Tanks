@@ -41,7 +41,7 @@ struct IDeferredPhysicsEvent;
 struct ILog;
 IPhysicalEntity *const WORLD_ENTITY = (IPhysicalEntity*)-10;
 
-#if !defined(PS3) && !defined(XENON) && !defined(CAFE)
+#if !defined(PS3) && !defined(XENON)
 #if defined(DEDICATED_SERVER)
 #define MAX_PHYS_THREADS 1
 #else
@@ -827,7 +827,7 @@ struct pe_params_rope : pe_params {
 		type=type_id; MARK_UNUSED length,mass,collDist,surface_idx,friction,nSegments,pPoints.data,pVelocities.data;
 		MARK_UNUSED pEntTiedTo[0],ptTiedTo[0],idPartTiedTo[0],pEntTiedTo[1],ptTiedTo[1],idPartTiedTo[1],stiffnessAnim,maxForce,
 			flagsCollider,nMaxSubVtx,stiffnessDecayAnim,dampingAnim,bTargetPoseActive,wind,windVariance,airResistance,waterResistance,density,
-			jointLimit,jointLimitDecay,sensorRadius,frictionPull,stiffness,collisionBBox[0],penaltyScale,maxIters,attachmentZone,minSegLen,unprojLimit,noCollDist,hingeAxis;
+			jointLimit,jointLimitDecay,sensorRadius,frictionPull,stiffness,collisionBBox[0],penaltyScale,maxIters,attachmentZone,minSegLen,unprojLimit,noCollDist;
 		bLocalPtTied = 0;
 	}
 
@@ -864,7 +864,6 @@ struct pe_params_rope : pe_params {
 	int nMaxSubVtx;	// maximum internal vertices per segment in subdivision mode
 	Vec3 collisionBBox[2]; // bbox for entity proximity query in host's space 
 												 // (used make all ropes belonging to one host share the same box, to automatically reuse the query results)
-	Vec3 hingeAxis; // only allow rotation around this axis (in parent's frame if rope_target_vtx_rel is set)
 	strided_pointer<Vec3> pPoints;
 	strided_pointer<Vec3> pVelocities;
 
@@ -2603,7 +2602,6 @@ UNIQUE_IFACE struct IPhysicalWorld {
 
 	// RegisterBBoxInPODGrid marks affected sectors as needing on-demand physicalization via IPhysicsStreamer->CreatePhysicalEntitiesInBox
 	virtual void RegisterBBoxInPODGrid(const Vec3 *BBox) = 0;
-	virtual void UnregisterBBoxInPODGrid(const Vec3 *BBox) = 0;
 	virtual void DeactivateOnDemandGrid() = 0; // deactivates sector-based on-demand physicalization
 	// AddRefEntInPODGrid: makes sure the entity gets an on-demand AddRef for each on-demand sector it touches
 	// (needed when manually creating entities outside on-deman callback)
@@ -2612,7 +2610,6 @@ UNIQUE_IFACE struct IPhysicalWorld {
 	// SetHeightfieldData - sets the global heightfield data. Uses callbacks to get height
 	virtual IPhysicalEntity *SetHeightfieldData(const primitives::heightfield *phf,int *pMatMapping=0,int nMats=0) = 0;
 	virtual IPhysicalEntity *GetHeightfieldData(primitives::heightfield *phf) = 0;
-	virtual void SetMaterialMapping(int *pMatMapping, int nMats) = 0;
 	virtual PhysicsVars *GetPhysVars() = 0; // returns a writable structure
 
 	// CreatePhysicalEntity - creates an entity with specified type, sets foreign data and optionally initializes if some pe_params

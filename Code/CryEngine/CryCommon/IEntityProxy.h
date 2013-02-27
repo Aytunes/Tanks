@@ -610,8 +610,6 @@ UNIQUE_IFACE struct IEntityRenderProxy : public IEntityProxy
 	// Description:
 	//	Removes all slots from the render proxy
 	virtual void ClearSlots() = 0;
-
-	virtual void SetMotionBlur(bool enable) = 0;
 };
 
 // Description:
@@ -738,12 +736,6 @@ UNIQUE_IFACE struct IEntityAreaProxy : public IEntityProxy
 	//    When someone enters/leaves an area, it will send ENTERAREA,LEAVEAREA,AREAFADE, events to these target entities.
 	// See Also: ClearEntities
 	virtual void	AddEntity( EntityId id ) = 0;
-
-	// Description:
-	//    Add target entity to the area.
-	//    When someone enters/leaves an area, it will send ENTERAREA,LEAVEAREA,AREAFADE, events to these target entities.
-	// See Also: ClearEntities
-	virtual void	AddEntity( EntityGUID guid ) = 0;
 
 	// Description:
 	//    Removes all added target entities.

@@ -456,28 +456,8 @@ inline void CopyPhysInfo (CryBonePhysics_Comp& left, const CryBonePhysics& right
 	__copy3(framemtx[1]);
 	__copy3(framemtx[2]);
 }
+
 #undef __copy3
-
-//TODO: Temporary Fix -> should be fixed from R&D
-#define __copy2(MEMBER) left.MEMBER = right.MEMBER; 
-inline void CopyCryBone (CryBoneDescData_Comp& left, const CryBoneDescData& right)
-{
-  __copy2(m_nControllerID);
-  CopyPhysInfo(left.m_PhysInfo[0], right.m_PhysInfo[0]);
-  CopyPhysInfo(left.m_PhysInfo[1], right.m_PhysInfo[1]);
-
-  __copy2(m_fMass);
-  __copy2(m_DefaultW2B);
-  __copy2(m_DefaultB2W);
-
-  strcpy(left.m_arrBoneName, right.m_arrBoneName);
-  __copy2(m_nLimbId);
-  __copy2(m_nOffsetParent);
-  __copy2(m_numChildren);
-  __copy2(m_nOffsetChildren);
-}
-#undef __copy2
-//-------------------------------------------------
 
 struct BONE_ENTITY
 {

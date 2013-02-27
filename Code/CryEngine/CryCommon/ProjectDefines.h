@@ -18,29 +18,12 @@
 #ifndef PROJECTDEFINES_H
 #define PROJECTDEFINES_H
 
-/*
-Limited SDK cuts out:
-- Live create (console option in menu)
-- Uses the freeSDK menu and Asset browser dialog Ribbon
-- Export to engine functionality
-- Trackview functionality
-*/
-// #define IS_LIMITED_SANDBOX 1
-
 #ifdef _RELEASE
 	#define RELEASE
 #endif
 
 #if defined(LINUX)
 #	define EXCLUDE_SCALEFORM_SDK
-
-
-
-
-
-
-
-
 
 
 
@@ -78,7 +61,7 @@ Limited SDK cuts out:
 #define DYNTEX_ALLOW_SFDVIDEO
 #endif
 
-// see http://confluence/display/CRYENGINE/TerrainTexCompression for more details on this
+// see http://wiki/bin/view/CryEngine/TerrainTexCompression for more details on this
 // 0=off, 1=on
 #define TERRAIN_USE_CIE_COLORSPACE 0
 
@@ -88,7 +71,7 @@ Limited SDK cuts out:
 
 
 
-#if defined(WIN32) || defined(WIN64) || defined(CAFE)
+#if defined(WIN32) || defined(WIN64)
 #define RELEASE_LOGGING
 #endif
 
@@ -264,7 +247,7 @@ Limited SDK cuts out:
 	#define FMOD_STREAMING_DEBUGGING 1
 #endif
 
-#if (defined(PS3) || defined(XENON) || defined(CAFE)) && !defined(ENABLE_LW_PROFILERS)
+#if (defined(PS3) || defined(XENON)) && !defined(ENABLE_LW_PROFILERS)
 #ifndef USE_NULLFONT
 #define USE_NULLFONT 1
 #endif
@@ -278,7 +261,7 @@ Limited SDK cuts out:
 
 
 
-#if (defined(WIN32) || defined(WIN64) || defined(CAFE)) && !defined(_LIB)
+#if (defined(WIN32) || defined(WIN64)) && !defined(_LIB)
 #define CRY_ENABLE_RC_HELPER 1
 #endif
 
@@ -299,7 +282,7 @@ Limited SDK cuts out:
 #define USE_PIX
 #endif
 
-#if !defined(_RELEASE) && !defined(PS3) && !defined(LINUX) && !defined(GRINGO) && !defined(CAFE)
+#if !defined(_RELEASE) && !defined(PS3) && !defined(LINUX) && !defined(GRINGO)
 	#define SOFTCODE_SYSTEM_ENABLED
 #endif
 
@@ -327,7 +310,7 @@ Limited SDK cuts out:
 // a special ticker thread to run during load and unload of levels
 #define USE_NETWORK_STALL_TICKER_THREAD
 
-#if !defined(XENON) && !defined(PS3) && !defined(CAFE)
+#if !defined(XENON) && !defined(PS3)
 
 	//---------------------------------------------------------------------
 	// Enable Tessellation Stages
@@ -353,9 +336,7 @@ Limited SDK cuts out:
 
 #endif //#if !defined(XENON) && !defined(PS3)
 
-#if defined(WIN32) || defined(WIN64)
-	//#define SEG_WORLD
-#endif
+
 
 #include "ProjectDefinesInclude.h"
 

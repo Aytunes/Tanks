@@ -91,12 +91,6 @@ IMPLEMENT_RMI(CGameRules, ClChatMessage)
 }
 
 //------------------------------------------------------------------------
-IMPLEMENT_RMI(CGameRules, ClForbiddenAreaWarning)
-{
-	return true;
-}
-
-//------------------------------------------------------------------------
 IMPLEMENT_RMI(CGameRules, SvRequestChangeTeam)
 {
 	IActor *pActor = GetActorByEntityId(params.entityId);
@@ -209,6 +203,8 @@ IMPLEMENT_RMI(CGameRules, ClEnteredGame)
 		IEntity *pClientEntity = pClientActor->GetEntity();
 		const EntityId clientEntityId = pClientEntity->GetId();
 
+		m_pScript->CallMethod("OnConnected", clientEntityId);
+
 		if(!gEnv->bServer)
 		{
 			int status[2];
@@ -287,10 +283,14 @@ IMPLEMENT_RMI(CGameRules, ClEnteredGame)
 
 IMPLEMENT_RMI(CGameRules, ClPlayerJoined)
 {
+	m_pScript->CallMethod("OnPlayerJoined", ToMonoString(params.name.c_str()), params.entityId);
+
 	return true;
 }
 
 IMPLEMENT_RMI(CGameRules, ClPlayerLeft)
 {
+	m_pScript->CallMethod("OnPlayerLeft", ToMonoString(params.name.c_str()), params.entityId);
+
 	return true;
 }

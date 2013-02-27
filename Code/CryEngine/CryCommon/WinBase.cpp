@@ -22,34 +22,18 @@
 	#include <signal.h>
 #endif
 
-#ifndef CAFE
 #include <pthread.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#endif
 
 
 
-
-
-#if defined(USE_FILE_HANDLE_CACHE)
-
-
-
-
-
-
-
-
-#endif
 
 #if !defined(PATH_MAX)
 	#define PATH_MAX MAX_PATH
 #endif
 
-#ifndef CAFE
 #include <sys/time.h>
-#endif
 
 
 
@@ -80,12 +64,9 @@
 
 
 
-#if defined(USE_FILE_HANDLE_CACHE)
-// forward declarations for PS3 file handle cache
-void OpenFromFileHandleCacheAsFD( const char *adjustedFilename, int flags, int &fd, int dummy, int &err);
-void CloseFromFileHandleCacheAsFD( int fd );
 
-#endif
+
+
 
 #if defined(LINUX)
 #include <sys/types.h>
@@ -97,17 +78,6 @@ void CloseFromFileHandleCacheAsFD( int fd );
 
 
 // File I/O compatibility macros
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1066,9 +1036,6 @@ char *ltoa ( long i , char *a , int radix )
 
 
 
-
-
-
 void _makepath(char * path, const char * drive, const char *dir, const char * filename, const char * ext)
 {
   char ch;
@@ -1179,9 +1146,6 @@ bool QueryPerformanceCounter(LARGE_INTEGER *counter)
 	clock_gettime(CLOCK_MONOTONIC, &tv);
 	counter->QuadPart = (uint64)tv.tv_sec * 1000000 + tv.tv_nsec / 1000;
 	return true;
-
-
-
 #else
 	return false;
 #endif
@@ -1195,9 +1159,6 @@ bool QueryPerformanceFrequency(LARGE_INTEGER *frequency)
 	frequency->u.LowPart  = 1000000;
 	frequency->u.HighPart = 0;
 	return true;
-
-
-
 #else
 	return false;
 #endif
@@ -1327,6 +1288,10 @@ DWORD GetFileAttributes(LPCSTR lpFileName)
 
 int _mkdir(const char *dirname)
 {
+#if !defined(PS3)
+	const mode_t mode = 0x0777;
+	const int suc = mkdir(dirname, mode);
+	return (suc == 0)? 0 : -1;
 
 
 
@@ -1335,31 +1300,24 @@ int _mkdir(const char *dirname)
 
 
 
-	//do not create those folders
-	//assert(strlen(dirname) > 1 && strcmp(dirname, PathUtil::GetGameFolder().c_str()) && strstr(dirname, "haders"));
-	char buf[512];
-	const char* const cpConvName = ConvertFileName(buf, dirname);
-#if defined(_DEBUG)
-	//test if exists already 
-	int dirHandle;
-	if(cellFsOpendir(cpConvName, &dirHandle) == CELL_FS_SUCCEEDED)
-	{
-		fprintf(stderr, "_mkdir: tried to create an existing directory for \"%s\" \n", dirname);
-		cellFsClosedir(dirHandle);
-		return 0;
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif
-	CellFsErrno Err	=	cellFsMkdir(cpConvName, CELL_FS_DEFAULT_CREATE_MODE_1);
-	if(Err != CELL_FS_SUCCEEDED && Err != CELL_FS_EEXIST)
-	{
-		char errorBuf[512];
-		sprintf(errorBuf, "_mkdir for \"%s\" failed with error: %s\n", dirname, GetCellFsErrString(Err));
-//		CryFatalError(errorBuf);
-		return -1;
-	}
-	else 
-		return 0;
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1607,7 +1565,7 @@ void __finddata64_t::CopyFoundData(const char *rMatchedFileName)
 #else
 	{ 
 /*
-		// HACK
+		// workaround
 		int fd;
 		if (!isDir) 
 		{
@@ -1632,11 +1590,7 @@ void __finddata64_t::CopyFoundData(const char *rMatchedFileName)
 	if (!isDir)
 	{
 		size = fsStat.st_size;
-
-
-
 		time_access = fsStat.st_atime;
-
 		time_write = fsStat.st_mtime;
 		time_create = fsStat.st_ctime;
 	} else
@@ -1889,7 +1843,7 @@ intptr_t _findfirst64(const char *pFileName, __finddata64_t *pFindData)
 	char *slash = strrchr(filename, '/');
 	if (slash)
 	{
-#if !defined(PS3) && !defined(CAFE)
+#if !defined(PS3)
 		if (FixDirnameCase(filename) == -1)
 			return -1;
 #endif
@@ -2061,7 +2015,7 @@ __finddata64_t::~__finddata64_t()
 }
 
 //end--------------------------------findfirst/-next implementation----------------------------------------------------
-#if !defined(PS3) && !defined(CAFE)
+#if !defined(PS3)
 void adaptFilenameToLinux(string& rAdjustedFilename)
 {
 	//first replace all \\ by /
@@ -2100,7 +2054,7 @@ void adaptFilenameToLinux(string& rAdjustedFilename)
 	}
 #endif
 
-#if !defined(PS3) && !defined(CAFE)
+#if !defined(PS3)
 	const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len)
 	{
 		//create two strings and replace the \\ by / and /./ by /
@@ -2225,10 +2179,6 @@ const bool GetFilenameNoCase
 	const bool cCreateNew
 )
 {
-
-
-
-
 	assert(file);
 	assert(pAdjustedFilename);
 	strcpy(pAdjustedFilename, file);
@@ -2238,7 +2188,6 @@ const bool GetFilenameNoCase
 	for (int i = 0; i<cLen; ++i) 
 		if(pAdjustedFilename[i] == '\\') 
 			pAdjustedFilename[i] = '/';
-
 	char *slash;
 	const char *dirname;
 	char *name;
@@ -2372,7 +2321,6 @@ const bool GetFilenameNoCase
 	
 #endif//USE_FILE_MAP
 	return true;
-
 }
 #endif//PS3
 
@@ -2388,10 +2336,6 @@ HANDLE CreateFile(
 													HANDLE hTemplateFile
 												 )
 {
-
-
-
-
 	int flags = 0;
 	int fd = -1;
 	FS_ERRNO_TYPE fserr;
@@ -2472,11 +2416,11 @@ HANDLE CreateFile(
 	} 
 	else
 	{
-#if defined(USE_FILE_HANDLE_CACHE)
-		OpenFromFileHandleCacheAsFD(adjustedFilename, flags, fd, 0, errno);
-#else
+
+
+
 		FS_OPEN(adjustedFilename, flags, fd, 0, errno);		
-#endif
+
 	}
 #endif
 	(void)fserr;
@@ -2488,7 +2432,6 @@ HANDLE CreateFile(
 		h = (HANDLE)fd;
 	}
 	return h;
-
 }
 
 #define Int32x32To64(a, b) ((uint64)((uint64)(a)) * (uint64)((uint64)(b)))
@@ -2552,10 +2495,6 @@ BOOL SetFileTime(const char* lpFileName, const FILETIME *lpLastAccessTime)
 //for testing we do just store the time as is without conversion to win32 system time
 const uint64 GetFileModifTime(FILE * hFile)
 {
-
-
-
-
 	FS_ERRNO_TYPE fsErr = 0;
 	FS_STAT_TYPE st;
 	FS_FSTAT(fileno(hFile), st, fsErr);
@@ -2614,10 +2553,6 @@ BOOL SetFileAttributes(
 //////////////////////////////////////////////////////////////////////////
 DWORD GetFileSize(HANDLE hFile,DWORD *lpFileSizeHigh )
 {
-
-
-
-
 	FS_ERRNO_TYPE err = 0;
 	FS_STAT_TYPE st;
 	int fd = (int)hFile;
@@ -2630,7 +2565,6 @@ DWORD GetFileSize(HANDLE hFile,DWORD *lpFileSizeHigh )
 		*lpFileSizeHigh = (DWORD)(st.st_size >> 32);
 	r = (DWORD)st.st_size;
 	return r;
-
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2640,11 +2574,11 @@ BOOL CloseHandle( HANDLE hObject )
 
 	if (fd != -1)
 	{
-#if defined(USE_FILE_HANDLE_CACHE)
-		CloseFromFileHandleCacheAsFD(fd);
-#else
+
+
+
 		close(fd);
-#endif
+
 	}
 	return TRUE;
 }
@@ -2747,7 +2681,7 @@ DWORD SetFilePointer
 }
 
 //////////////////////////////////////////////////////////////////////////
-#if !defined(PS3) && !defined(CAFE)
+#if !defined(PS3)
 DWORD GetCurrentThreadId()
 {
 	return static_cast<DWORD>(pthread_self());
@@ -2770,118 +2704,50 @@ HANDLE CreateEvent
 
 
 //////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#ifndef PS3
+DWORD Sleep(DWORD dwMilliseconds)
+{
+#ifdef LINUX
+	timespec req;
+	timespec rem;
+
+	memset(&req, 0, sizeof(req));
+	memset(&rem, 0, sizeof(rem));
+
+	time_t sec = (int)(dwMilliseconds/1000);
+	req.tv_sec = sec;
+	req.tv_nsec = (dwMilliseconds - (sec*1000))*1000000L;
+	if (nanosleep(&req, &rem) == -1)
+		nanosleep(&rem, 0);
+
+	return 0;
+#else
+	timeval tv, start, now;
+	uint64 tStart;
+
+	memset(&tv, 0, sizeof tv);
+	memset(&start, 0, sizeof start);
+	memset(&now, 0, sizeof now);
+	gettimeofday(&now, NULL);
+	start = now;
+	tStart = (uint64)start.tv_sec * 1000000 + start.tv_usec;
+	while (true)
+	{
+		uint64 tNow, timePassed, timeRemaining;
+		tNow = (uint64)now.tv_sec * 1000000 + now.tv_usec;
+		timePassed = tNow - tStart;
+		if (timePassed >= dwMilliseconds)
+			break;
+		timeRemaining = dwMilliseconds * 1000 - timePassed;
+		tv.tv_sec = timeRemaining / 1000000;
+		tv.tv_usec = timeRemaining % 1000000;
+		select(1, NULL, NULL, NULL, &tv);
+		gettimeofday(&now, NULL);
+	}
+	return 0;
+#endif
+}
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 DWORD SleepEx( DWORD dwMilliseconds,BOOL bAlertable )
@@ -3266,26 +3132,14 @@ int CryCreateDirectory( const char *lpPathName,void *lpSecurityAttributes )
 {
 #ifdef LINUX
 	int res = mkdir(lpPathName, S_IRWXU);
-
-
-
-
-
-
-
 #else
 	int res = _mkdir(lpPathName);
 #endif
-
-//todo: check if makedir failed for cafe
-#ifndef CAFE
 	if (res != 0)
 	{
 		SetLastError( ERROR_PATH_NOT_FOUND );
 		return -1;
 	}
-#endif
-
 	return 0;
 }
 
@@ -3411,40 +3265,9 @@ void CryDebugBreak()
 
 
 
-
-
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////////
 uint32 CryGetFileAttributes(const char *lpFileName)
 {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -3465,7 +3288,6 @@ uint32 CryGetFileAttributes(const char *lpFileName)
 		return FILE_ATTRIBUTE_NORMAL;
   }
 	return (fsErr == FS_EISDIR)? FILE_ATTRIBUTE_DIRECTORY : INVALID_FILE_ATTRIBUTES;
-
 }
 
 #if !defined(PS3)
@@ -3626,27 +3448,6 @@ static void WrappedF_Break(long op_counter)
 
 
 
-#if defined(USE_FILE_HANDLE_CACHE)
-// undef the define overloads
-#undef fopen
-#undef stat
-#undef fclose
-#undef fseek
-#undef ftell
-#undef fread
-#undef fileno
-#undef fwrite
-#undef vfprintf
-#undef fgets
-#undef feof
-#undef ferror
-#undef getc
-#undef ungetc
-#undef fputs
-#undef fflush
-#undef fprintf
-#undef fscanf
-#undef vfscanf
 
 
 
@@ -3659,883 +3460,851 @@ static void WrappedF_Break(long op_counter)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-// LRU cache for filehandles
-// The PS3 only allows up to 31 files opened on gamedata
-// thus we cache them, reuse older filedescriptors, and close
-// files in case we ran out of file descriptors
-// to prevent problems with streaming/direct file access, these get their LRU
-// value modified, so that they have a higher priority
-class CFileHandleCache
-{
-	enum { nFILEENTRIES = 64 };							// number of supported entries in the cache
-	enum { nFILEHANDLESALT = 0xFF000000 };	// special salt to build FILE* look alikes
-	enum { nMAXOPENFILES = 26 };						// maximum of simultanius opened files
-	enum { nFILEIOBUFFERSIZE = 32 *1024 };		// size of the buffer used for file io
-
-public:
-
-	static CFileHandleCache& Instance()
-	{
-		static CFileHandleCache singleton;
-		return singleton;
-	}
-
-	~CFileHandleCache() {}
-
-	// wrapped std file interface
-	inline FILE* FOpen(const char* name, const char *mode, FileIoWrapper::FileAccessType type = FileIoWrapper::GENERAL);
-	inline int FClose(FILE* pHandle );	
-	inline size_t Fileno(FILE *pHandle );
-	inline size_t FRead( void *ptr, size_t size, size_t count, FILE *pHandle);
-	inline size_t FWrite( const void * ptr, size_t size, size_t count, FILE * stream );
-	inline size_t FTell(FILE* pHandle);
-	inline size_t FSeek(FILE* pHandle, size_t offset, size_t origin);
-	inline int VFprintf ( FILE * stream, const char * format, va_list arg );
-	inline char* FGets ( char * str, int num, FILE * stream );
-	inline int Feof ( FILE * stream );
-	inline int Ferror ( FILE * stream );
-	inline int Getc ( FILE * stream );
-	inline int Ungetc ( int character, FILE * stream );
-	inline int Fputs( const char * str, FILE * stream );
-	inline int Fflush(FILE *stream );
-	inline int VFscanf( FILE * stream, const char * format, va_list arg );
-
-	// wrapper utils for cellfs functions(they work on fds)
-	void OpenFromFileHandleCacheAsFD( const char *adjustedFilename, int flags, int &fd, int &err);
-	void CloseFromFileHandleCacheAsFD( int fd );
-
-	// util functions
-	void DumpCacheContent();
-private:
-	CFileHandleCache();
-
-	void TestDiscEjection(FILE *pHandle) 
-	{
-#if !defined(CAFE)
-		if( errno != 0 )
-		{
-			//For robustness, follow the documented procedure described in "libfs Overview - Handling Disc Ejections"
-			FILE *pRealHandle = GetRealFileHandle(pHandle);
-			if(pRealHandle)
-			{
-				int fileNumber = ::fileno(pRealHandle);
-				CellFsStat sb;
-				CellFsErrno statError = cellFsFstat(fileNumber, &sb);
-				if( statError == CELL_FS_EBADF )
-				{
-					SetDiscIsEjectedFlag(pHandle);
-				}
-			}
-		}
-#endif
-	}
-
-	void SetDiscIsEjectedFlag(FILE *pHandle )
-	{
-		uint32 nCachePos = GetCachePos(pHandle);
-		SCacheEntry& rEntry = m_Cache[nCachePos];
-		rEntry.m_bDiscIsEjected = true;
-	}
-
-	// md5 key for fast search of open files
-	typedef union
-	{
-		unsigned char c16[16];		
-		uint64 u64[2];
-	} TPakNameKey;								
-
-	// entry holding all file handle informations per file for the cache
-	struct SCacheEntry
-	{
-		enum States { Open,					// file handle is open and in use
-									Cached,				// file not in use, but file descriptor still open for re-use
-									Parked,				// file in use, but file descriptor closed
-									Closed  };		// File and file descriptor closed
-
-		// members for LRU-cache
-		uint32 m_lru;									//lru counter last set op
-		TPakNameKey m_pakNameKey;			//md5 of file name (full path)
-
-		// FILE informations
-		FILE* m_pHandle;							//cached pak file handle
-		char m_filename[MAX_PATH];		// file-name, in case the file needs to be re-opened
-		char m_mode[16];							// access mode used for file io
-		uint32 m_nSeekPos;						// store seek position, in case files needs to be reopened
-		States m_state;								// state of the cache entrie
-		FileIoWrapper::FileAccessType m_type;	// type of access to this file
-		char* m_fileIoBuf;						// the allocated file io buffer, only valid when Open or Cached
-		bool m_bDiscIsEjected;				// remember per file if the disc was ejected
-
-		SCacheEntry();
-	};
-
-	uint32 GetCachePos(FILE*pHandle) const				{ return (uint32)(pHandle) & ~nFILEHANDLESALT; }
-	FILE* GetFileHandle(uint32 nCachePos ) const	{ return (FILE*)((uint32)nCachePos | nFILEHANDLESALT); }
-
-	FILE* GetRealFileHandle(FILE* pHandle); 
-	
-	inline void CloseFile(uint32 nCachePos );
-	inline FILE* OpenFile(uint32 nCachePos, const char *sName, const char*op, FileIoWrapper::FileAccessType type);
-	inline void ReOpenFile(uint32 nCachePos);
-
-	void ActivateEntry( uint32 nCachePos );
-	void FreeUpFD( uint32 nCachePosKeep );
-
-	uint32 FindOpenSlot();
-
-	char* AllocateFileIoBuffer() { char *buf = m_FileIoBufferPtrs.back(); m_FileIoBufferPtrs.pop_back(); return buf; }
-	void FreeFileIoBuffer(char *buf) { m_FileIoBufferPtrs.push_back(buf); }
-
-	typedef std::map< int, FILE*> FDMap;
-	
-	uint32 m_LRU;														//current lru counter to replace slots properly
-	uint32 m_nFileCount;										// number of open files	
-	FDMap	m_FdToFileMap;										// map to find FILE* from fd used by cellfsio
-	CryCriticalSection m_Lock;							// Lock to protected the cache against parallel access
-	CryCriticalSection m_mapLock;						// Lock to protect the FILE*->fd map from parallel access		
-	std::vector<char*> m_FileIoBufferPtrs;	// nMAXOPENFILES pointers into m_FileIoBuffer, wrapped in a vector for convenience
-
-	SCacheEntry m_Cache[nFILEENTRIES];			//file handle cache
-	char m_FileIoBuffer[nMAXOPENFILES][nFILEIOBUFFERSIZE]; // static buffer for all file ios
-};
-
-CFileHandleCache::CFileHandleCache() :
-m_LRU(0),
-m_nFileCount(0)
-{
-	m_FileIoBufferPtrs.reserve(nMAXOPENFILES);
-
-	for (uint32 i=0; i<nMAXOPENFILES; i++)
-	{
-		m_FileIoBufferPtrs.push_back(&m_FileIoBuffer[i][0]);
-	}
-}
-
-CFileHandleCache::SCacheEntry::SCacheEntry() : 
-m_pHandle(NULL),
-m_lru(0),
-m_nSeekPos(0),
-m_state(Closed),
-m_type(FileIoWrapper::GENERAL),
-m_fileIoBuf(NULL)
-{
-	m_pakNameKey.u64[0] = 0;
-	m_pakNameKey.u64[1] = 0;	
-	m_filename[0] = '\0';
-	m_mode[0] = '\0';
-}
-
-//retrieve cache one if existing, otherwise open new one
-FILE* CFileHandleCache::FOpen(const char *name, const char *mode, FileIoWrapper::FileAccessType type)
-{	
-	AUTO_LOCK_T(CryCriticalSection, m_Lock);
-	// create md5 hash as a search key
-	TPakNameKey	key;
-	MD5Context context;
-	MD5Init(&context);
-	MD5Update(&context, (unsigned char*)name, strlen(name) );
-	MD5Final(key.c16, &context);
-
-	// check for a matching closed file
-	for( uint32 nCachePos = 0 ;nCachePos<nFILEENTRIES;++nCachePos)
-	{		
-		SCacheEntry& rEntry = m_Cache[nCachePos];
-		
-		// try to find a cached handle for this file
-		if( rEntry.m_state == SCacheEntry::Cached &&
-			rEntry.m_pakNameKey.u64[0] == key.u64[0] && rEntry.m_pakNameKey.u64[1] == key.u64[1])
-		{			
-			// if different mode then, close it first. We never want 2 files open with different modes
-			if (strcmp(rEntry.m_mode, mode) == 0)
-			{
-				ActivateEntry(nCachePos);			
-				return GetFileHandle(nCachePos);
-			} else {
-				CloseFile(nCachePos);
-				break;
-			}
-		}
-		
-	}
-	uint32 nOpenSlot = FindOpenSlot();
-	return OpenFile(nOpenSlot, name, mode, type);
-}
-
-uint32 CFileHandleCache::FindOpenSlot()
-{
-	uint32 curLowestCachedSlot		= 0xFFFFFFFF; //invalid slot id
-	uint32 curLowestCachedSlotLRU = 0xFFFFFFFF;
-	uint32 curLowestClosedSlot		= 0xFFFFFFFF; // invalid slot id
-	uint32 curLowestClosedSlotLRU = 0xFFFFFFFF;
-
-
-	// find slot where we could close an fd
-	for( uint32 nCachePos = 0;nCachePos<nFILEENTRIES;++nCachePos)
-	{			
-		SCacheEntry& rEntry = m_Cache[nCachePos];
-
-		if( rEntry.m_state == SCacheEntry::Cached && rEntry.m_lru < curLowestCachedSlotLRU )
-		{
-			curLowestCachedSlotLRU = rEntry.m_lru;
-			curLowestCachedSlot = nCachePos;
-		}
-
-		if( rEntry.m_state == SCacheEntry::Closed && rEntry.m_lru < curLowestClosedSlotLRU )
-		{
-			curLowestClosedSlotLRU = rEntry.m_lru;
-			curLowestClosedSlot = nCachePos;
-		}
-	}
-
-	if(curLowestClosedSlot != 0xFFFFFFFF ) return curLowestClosedSlot;
-	if( curLowestCachedSlot != 0xFFFFFFFF ) return curLowestCachedSlot;
-
-	gEnv->pLog->LogError("[FileHandleCache] Could not find a slot in state Cache or Closed to reused");
-	DumpCacheContent();
-	snPause();
-	return -1;
-}
-
-int CFileHandleCache::FClose(FILE* pHandle)
-{	
-	AUTO_LOCK_T(CryCriticalSection, m_Lock);
-	uint32 nCachePos = GetCachePos(pHandle);
-
-	SCacheEntry& rEntry = m_Cache[nCachePos];
-	switch(rEntry.m_state )
-	{
-	case SCacheEntry::Open:
-		rEntry.m_state = SCacheEntry::Cached;
-		if (strchr(rEntry.m_mode, 'w') == NULL)
-		{
-			::fflush(rEntry.m_pHandle);		
-		} else {
-			// fully close the file if it was opened for writing
-			CloseFile(nCachePos);
-		}
-		break;
-	case SCacheEntry::Parked:
-		rEntry.m_state = SCacheEntry::Closed;
-		rEntry.m_nSeekPos = 0;
-		rEntry.m_filename[0] = '\0';
-		rEntry.m_bDiscIsEjected = false;
-		break;
-	default:
-		gEnv->pLog->LogError("[FileHandleCache] Tried to close a file not in state Open or Parked, nCachePos = %d", nCachePos);
-		DumpCacheContent();
-		snPause();
-	}
-	
-	return 0; 
-}
-
-FILE* CFileHandleCache::GetRealFileHandle(FILE *pHandle)
-{	
-	// handle stdout and stderr :/
-	IF(pHandle == stdout || pHandle == stderr, 0 )
-		return pHandle;
-
-	AUTO_LOCK_T(CryCriticalSection, m_Lock);
-	uint32 nCachePos = GetCachePos(pHandle);
-
-	ActivateEntry(nCachePos);
-	SCacheEntry& rEntry = m_Cache[nCachePos];
-
-	if( rEntry.m_bDiscIsEjected )
-		return NULL;
-
-	return rEntry.m_pHandle;
-}
-
-size_t CFileHandleCache::Fileno(FILE *pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	size_t nRes = pRealHandle ? ::fileno(pRealHandle) : 0;
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-size_t CFileHandleCache::FRead( void *ptr, size_t size, size_t count, FILE *pHandle)
-{	
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	size_t nRes = pRealHandle ? ::fread(ptr, size, count, pRealHandle) : 0;
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-size_t CFileHandleCache::FWrite( const void * ptr, size_t size, size_t count, FILE * pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	size_t nRes = pRealHandle ? ::fwrite(ptr, size, count, pRealHandle) : 0;
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-size_t CFileHandleCache::FTell(FILE *pHandle)
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	size_t nRes = pRealHandle ? ::ftell(pRealHandle) : (size_t)(-1L);
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-size_t CFileHandleCache::FSeek(FILE* pHandle, size_t offset, size_t origin)
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	size_t nRes = pRealHandle ? ::fseek(pRealHandle,offset, origin) : (size_t)(-1L);
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-int CFileHandleCache::VFprintf( FILE * pHandle, const char * format, va_list arg )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	int nRes = pRealHandle ? ::vfprintf (pRealHandle,format, arg) : -1;
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-int CFileHandleCache::VFscanf( FILE * pHandle, const char * format, va_list arg )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	int nRes = pRealHandle ? ::vfscanf( pRealHandle,format, arg): -1;
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-
-char* CFileHandleCache::FGets( char * str, int num, FILE * pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	char* nRes = pRealHandle ? ::fgets (str,num, pRealHandle) : NULL;	
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-int CFileHandleCache::Feof ( FILE * pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	int nRes = pRealHandle ? ::feof (pRealHandle) : 0;	
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-int CFileHandleCache::Ferror ( FILE * pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	int nRes = pRealHandle ? ::ferror (pRealHandle) : 0;
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-int CFileHandleCache::Getc ( FILE * pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	int nRes = pRealHandle ? ::getc (pRealHandle) : EOF;	
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-int CFileHandleCache::Ungetc ( int character, FILE * pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	int nRes = pRealHandle ? ::ungetc (character, pRealHandle): EOF;	
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-int CFileHandleCache::Fputs( const char * str, FILE * pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	int nRes = pRealHandle ? ::fputs (str, pRealHandle) : EOF;	
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-int CFileHandleCache::Fflush(FILE *pHandle )
-{
-	FILE *pRealHandle = GetRealFileHandle(pHandle);
-	errno = 0; // reset erno to not get wrong results
-	int nRes = pRealHandle ? ::fflush(pRealHandle) : EOF;	
-	TestDiscEjection(pHandle);
-	return nRes;
-}
-
-// === cellfs wrapper utils
-void CFileHandleCache::OpenFromFileHandleCacheAsFD( const char *adjustedFilename, int flags, int &fd, int &err)
-{
-	AUTO_LOCK_T(CryCriticalSection, m_mapLock);
-
-	FILE* f = FOpen(adjustedFilename,"rb", FileIoWrapper::STREAMING);
-	if(f)
-	{
-		fd = Fileno(f);
-		m_FdToFileMap.insert( std::make_pair( fd,f ) );		
-		err=0;
-	}
-	else
-	{
-		fd = -1;
-		err = errno;
-	}	
-}
-
-void CFileHandleCache::CloseFromFileHandleCacheAsFD( int fd )
-{
-	AUTO_LOCK_T(CryCriticalSection, m_mapLock);	
-	
-	FDMap::iterator it = m_FdToFileMap.find( fd );
-	if(it != m_FdToFileMap.end() )
-	{
-		FILE *f = it->second;
-		FClose(f);
-		m_FdToFileMap.erase(it);
-		return;
-	}
-
-	gEnv->pLog->LogError("[FileHandleCache] Tried to close invalid FileDescriptor %d",fd);	
-}
-
-// === intern FILEHandleCache functions
-void CFileHandleCache::ActivateEntry( uint32 nCachePos )
-{
-	// make sure we can really open the file
-	if( m_nFileCount == nMAXOPENFILES )
-	{		
-		FreeUpFD(nCachePos);		
-	}
-
-	SCacheEntry& rEntry = m_Cache[nCachePos];
-	
-	rEntry.m_lru = ++m_LRU;
-	if(m_LRU == 0)
-	{
-		gEnv->pLog->LogError("[FileHandleCache] LRU OverFlow!");
-		snPause();
-	}
-	
-	switch(rEntry.m_state)
-	{
-	case SCacheEntry::Open:
-		return;
-	case SCacheEntry::Cached:
-		::fseek(rEntry.m_pHandle,0, SEEK_SET);		
-		rEntry.m_state = SCacheEntry::Open;
-		rEntry.m_bDiscIsEjected = false;
-		return;
-	case SCacheEntry::Parked:
-		ReOpenFile(nCachePos);
-		return;
-	case SCacheEntry::Closed:
-		gEnv->pLog->LogError("[FileHandleCache Error] Tried to activate a closed entry, nCachePos = %d",nCachePos);
-		DumpCacheContent();
-		snPause();
-		return;
-	}
-
-	gEnv->pLog->LogError("[FileHandleCache] Data corruption!");
-	DumpCacheContent();
-	snPause();
-}
-
-void CFileHandleCache::FreeUpFD( uint32 nCachePosKeep )
-{
-
-	uint32 curLowestCachedSlot		= 0xFFFFFFFF; //invalid slot id
-	uint32 curLowestCachedSlotLRU = 0xFFFFFFFF;
-	uint32 curLowestOpenSlot		= 0xFFFFFFFF; // invalid slot id
-	uint32 curLowestOpenSlotLRU = 0xFFFFFFFF;
-	
-
-	// find slot where we could close an fd
-	for( uint32 nCachePos = 0;nCachePos<nFILEENTRIES;++nCachePos)
-	{	
-		// don't free the slot we want to use
-		if(nCachePos==nCachePosKeep) 
-			continue;
-
-		SCacheEntry& rEntry = m_Cache[nCachePos];
-		
-		if( rEntry.m_state == SCacheEntry::Cached && rEntry.m_lru < curLowestCachedSlotLRU )
-		{
-			curLowestCachedSlotLRU = rEntry.m_lru;
-			curLowestCachedSlot = nCachePos;
-		}
-
-		if( rEntry.m_state == SCacheEntry::Open && rEntry.m_lru < curLowestOpenSlotLRU )
-		{
-			curLowestOpenSlotLRU = rEntry.m_lru;
-			curLowestOpenSlot = nCachePos;
-		}
-	}
-
-	// first close Cached files
-	if( curLowestCachedSlot != 0xFFFFFFFF )
-	{
-		CloseFile(curLowestCachedSlot);
-		return;
-	}
-
-	// we we didn't find a cached one, park an opened one
-	if( curLowestOpenSlot != 0xFFFFFFFF )
-	{
-		CloseFile(curLowestOpenSlot);
-		return;
-	}
-
-	gEnv->pLog->LogError("[FileHandleCache] Could not find a slot in state Cached or Open to close");
-	DumpCacheContent();
-	snPause();
-}
-
-void CFileHandleCache::CloseFile(uint32 nCachePos )
-{
-	SCacheEntry& rEntry = m_Cache[nCachePos];
-	
-	switch(rEntry.m_state)
-	{	
-	case SCacheEntry::Cached:		
-		::fclose(rEntry.m_pHandle);		
-		rEntry.m_pHandle = NULL;
-		rEntry.m_filename[0] = '\0';
-		rEntry.m_state = SCacheEntry::Closed;	
-		rEntry.m_nSeekPos = 0;
-		rEntry.m_type = FileIoWrapper::GENERAL;
-		FreeFileIoBuffer(rEntry.m_fileIoBuf);
-		rEntry.m_fileIoBuf = NULL;
-		rEntry.m_bDiscIsEjected = false;
-		memset( &rEntry.m_pakNameKey, 0, sizeof(rEntry.m_pakNameKey));
-		break;	
-	case SCacheEntry::Open:	
-		rEntry.m_nSeekPos = ::ftell(rEntry.m_pHandle);
-		::fclose(rEntry.m_pHandle);		
-		rEntry.m_pHandle = NULL;		 
-		rEntry.m_state = SCacheEntry::Parked;	
-		FreeFileIoBuffer(rEntry.m_fileIoBuf);
-		rEntry.m_fileIoBuf = NULL;
-		rEntry.m_bDiscIsEjected = false;
-		break;
-	default:
-		gEnv->pLog->LogError("[FileHandleCache] Tried to close a file not in state Cached or Opened, nCachePos = %d",nCachePos);
-		DumpCacheContent();
-		snPause();
-	}	
-	
-	m_nFileCount -= 1;
-}
-
-FILE* CFileHandleCache::OpenFile(uint32 nCachePos, const char *sName, const char*op, FileIoWrapper::FileAccessType type)
-{	
-	SCacheEntry& rEntry = m_Cache[nCachePos];		
-
-	// in case we are opening a non cached file, make sure we can open it
-	if( m_nFileCount == nMAXOPENFILES && rEntry.m_state != SCacheEntry::Cached)
-	{
-		FreeUpFD(nCachePos);
-	}
-		
-	// if we use a cached file, close it before
-	if( rEntry.m_state == SCacheEntry::Cached )
-	{
-		CloseFile(nCachePos);
-	}
-	
-	{
-		ScopedSwitchToGlobalHeap useGlobalHeap;
-
-
-
-		rEntry.m_pHandle = ::fopen(sName, op );	
-
-	}
-
-	if ( errno == EMFILE )
-	{
-		gEnv->pLog->LogError("[FileHandleCache] Opened more than 31 files on gamedata");
-		DumpCacheContent();
-		snPause();
-	}
-
-	if( rEntry.m_pHandle == NULL
-
-
-
-		)
-		return NULL;
-	
-	rEntry.m_bDiscIsEjected = false;
-	rEntry.m_fileIoBuf = AllocateFileIoBuffer();
-
-	//setvbuf not supported on CAFE
-#if !defined(CAFE)
-	setvbuf( rEntry.m_pHandle, rEntry.m_fileIoBuf, _IOFBF, nFILEIOBUFFERSIZE );
-#endif
-		
-	rEntry.m_state = SCacheEntry::Open;
-	strcpy_s(rEntry.m_filename, sName);
-	strcpy_s(rEntry.m_mode, op);
-
-	rEntry.m_type = type;
-	// create md5 hash as a search key
-	TPakNameKey	key;
-	MD5Context context;
-	MD5Init(&context);
-	MD5Update(&context, (unsigned char*)sName, strlen(sName));
-	MD5Final(rEntry.m_pakNameKey.c16, &context);
-
-	rEntry.m_lru = ++m_LRU;
-	rEntry.m_lru |= type;
-
-	if(m_LRU == 0)
-	{
-		gEnv->pLog->LogError("[FileHandleCache] LRU Overflow!");
-		snPause();
-	}
-	
-	m_nFileCount += 1;
-	
-	return GetFileHandle(nCachePos);
-}
-
-void CFileHandleCache::ReOpenFile(uint32 nCachePos)
-{
-	ScopedSwitchToGlobalHeap useGlobalHeap;
-	SCacheEntry& rEntry = m_Cache[nCachePos];
-
-
-
-
-	rEntry.m_pHandle = ::fopen(rEntry.m_filename, rEntry.m_mode);
-
-
-	if ( errno == EMFILE )
-	{
-		gEnv->pLog->LogError("[FileHandleCache] Opened more than 31 files on gamedata");
-		DumpCacheContent();
-		snPause();
-		return;
-	}
-
-	if(rEntry.m_pHandle == NULL ) 
-	{
-		gEnv->pLog->LogError("[FileHandleCache] Re-opening a file failed");
-		DumpCacheContent();
-		snPause();
-		return;
-	}
-	
-	rEntry.m_fileIoBuf = AllocateFileIoBuffer();
-	setvbuf( rEntry.m_pHandle, rEntry.m_fileIoBuf, _IOFBF, nFILEIOBUFFERSIZE );
-	::fseek(rEntry.m_pHandle,rEntry.m_nSeekPos, SEEK_SET);
-	rEntry.m_state = SCacheEntry::Open;
-	rEntry.m_nSeekPos = 0;
-	rEntry.m_bDiscIsEjected = false;
-	m_nFileCount += 1;
-}
-
-void CFileHandleCache::DumpCacheContent()
-{	
-	uint32 nOpen = 0;
-	uint32 nClosed = 0;
-	uint32 nParked = 0;
-	uint32 nCached = 0;
-
-	gEnv->pLog->Log("\n==== FileDescriptor Cache Dump ===\n");
-	for( uint32 nCachePos = 0 ; nCachePos < nFILEENTRIES ; ++nCachePos)
-	{
-		SCacheEntry& rEntry = m_Cache[nCachePos];
-		char buffer[1024] = {0};
-		char *pDst = &buffer[0];
-		pDst += sprintf(pDst,"Pos %d.\tName \"%s\"\t n, State: ",nCachePos, rEntry.m_filename );
-				
-		switch(rEntry.m_state)
-		{
-		case SCacheEntry::Open:		pDst += sprintf(pDst,"Open"); nOpen++; break;
-		case SCacheEntry::Closed: pDst += sprintf(pDst,"Closed"); nClosed++; break;
-		case SCacheEntry::Parked:	pDst += sprintf(pDst,"Parked"); nParked++; break;
-		case SCacheEntry::Cached: pDst += sprintf(pDst,"Cached"); nCached++; break;
-		}
-		pDst += sprintf(pDst, "\tType: ");
-		if(rEntry.m_type & FileIoWrapper::DIRECT) 
-			pDst += sprintf(pDst, "Direct");
-		else if(rEntry.m_type & FileIoWrapper::STREAMING) 
-			pDst += sprintf(pDst, "Streaming");
-		else
-			pDst += sprintf(pDst, "General");
-
-		pDst += sprintf(pDst, "\tLRU %d",rEntry.m_lru);
-		gEnv->pLog->Log(buffer);
-	}
-
-	gEnv->pLog->Log("FileDescriptors open %d (Open %d, Closed %d, Parked %d, Cached %d)", m_nFileCount, nOpen, nClosed, nParked, nCached);	
-}
-void LogOpenFiles(struct IConsoleCmdArgs*)
-{
-	CFileHandleCache::Instance().DumpCacheContent();
-}
-
-void OpenFromFileHandleCacheAsFD( const char *adjustedFilename, int flags, int &fd, int dummy, int &err)
-{
-	CFileHandleCache::Instance().OpenFromFileHandleCacheAsFD(adjustedFilename,flags, fd, err );	
-}
-
-void CloseFromFileHandleCacheAsFD( int fd )
-{	
-	CFileHandleCache::Instance().CloseFromFileHandleCacheAsFD(fd);
-}
-#endif // defined(USE_FILE_HANDLE_CACHE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 namespace std
 {
 // ==== file io wrapper ==== //
-#if defined(USE_FILE_HANDLE_CACHE)
-// non-ps3 versions are below
-FILE *WrappedFopen(const char *__restrict filename,	const char *__restrict mode, FileIoWrapper::FileAccessType type, bool bSysAppHome )
-{		
-	char buf[512];
-			
 
 
 
-	FILE *fp = CFileHandleCache::Instance().FOpen( bSysAppHome ? filename : ConvertFileName(buf, filename), (const char*)mode, type);	
-
-	return fp;
-}
-
-int WrappedStat(const char * _Filename, struct stat * _Stat)
-{
-	if (strchr(_Filename, '*'))
-	{
-		return -1; // Wildcards should always fail a 'stat'
-	}
-	char buf[512];
 
 
 
-	return ::stat(ConvertFileName(buf, _Filename), _Stat);
-
-}
-
-int WrappedFclose(FILE *fp)			
-{			
-	return CFileHandleCache::Instance().FClose(fp);
-}
-
-size_t WrappedFileno(FILE *fp)
-{
-	return CFileHandleCache::Instance().Fileno(fp);
-}
-
-size_t WrappedFtell( FILE *pHandle )
-{
-	return CFileHandleCache::Instance().FTell(pHandle);	
-}
-
-size_t WrappedFSeek(FILE *pHandle, size_t offset, size_t origin)
-{
-	return CFileHandleCache::Instance().FSeek(pHandle, offset, origin);
-}
-
-size_t WrappedFRead(void *ptr, size_t size , size_t count, FILE *pHandle)
-{
-	return CFileHandleCache::Instance().FRead(ptr, size, count, pHandle);
-}
-
-size_t WrappedFWrite( const void * ptr, size_t size, size_t count, FILE * pHandle )
-{
-	return CFileHandleCache::Instance().FWrite(ptr, size, count, pHandle);
-}
-
-int WrappedVFprintf ( FILE * stream, const char * format, va_list arg )
-{
-	return CFileHandleCache::Instance().VFprintf(stream, format, arg );
-}
-
-char * WrappedFGets ( char * str, int num, FILE * stream )
-{
-	return  CFileHandleCache::Instance().FGets(str,num,stream);
-}
-
-int WrappedFeof ( FILE * stream )
-{
-	return  CFileHandleCache::Instance().Feof(stream);
-}
-
-int WrappedFerror ( FILE * stream )
-{
-	return  CFileHandleCache::Instance().Ferror(stream);
-}
-
-int WrappedGetc ( FILE * stream )
-{
-	return  CFileHandleCache::Instance().Getc(stream);
-}
-
-int WrappedUngetc ( int character, FILE * stream )
-{
-	return CFileHandleCache::Instance().Ungetc(character,stream);
-}
-
-int WrappedFputs( const char * str, FILE * stream )
-{
-	return CFileHandleCache::Instance().Fputs(str,stream);
-}
-
-int WrappedFflush( FILE *stream )
-{
-	return CFileHandleCache::Instance().Fflush(stream);
-}
-
-int WrappedFprintf ( FILE * stream, const char * format, ... )
-{
-	va_list args;
-	va_start(args, format);
-	int ret = CFileHandleCache::Instance().VFprintf(stream, format, args );
-	va_end(args);
-	return ret;
-}
-
-int WrappedVFscanf ( FILE * stream, const char * format, va_list arg )
-{
-	return CFileHandleCache::Instance().VFscanf(stream, format, arg );
-}
-
-int WrappedFscanf ( FILE * stream, const char * format, ... )
-{
-	va_list args;
-	va_start(args, format);
-	int ret = CFileHandleCache::Instance().VFscanf(stream, format, args );
-	va_end(args);
-	return ret;
-}
 
 
-// ==== non PS3 fopen/fclose wrapper
-#else 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 extern "C" FILE *WrappedFopen(const char *__restrict filename,	const char *__restrict mode)
 {
@@ -4639,6 +4408,6 @@ extern "C" int WrappedFclose(FILE *fp)
 	}
 	return err;
 }
-#endif
+
 } // namespace std
 

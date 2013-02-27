@@ -284,7 +284,7 @@ SER_NO_INLINE void CBitArray::WriteBits(const unsigned char* in, int numBits)
 
 inline uint32 CBitArray::bitsneeded(uint32 v)
 {
-	// See bit twiddling hacks
+	// See bit twiddling workarounds
 	static const int MultiplyDeBruijnBitPosition[32] = 
 	{
 		0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30,

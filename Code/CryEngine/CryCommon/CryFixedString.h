@@ -269,7 +269,7 @@ public:
 	CryStackStringT( const _Self& str,size_type nOff,size_type nCount );
 	explicit CryStackStringT( value_type ch, size_type nRepeat = 1 );
 	CryStackStringT( const_str str );
-#if defined(PS3) || defined(LINUX) || defined(CAFE)
+#if defined(PS3) || defined(LINUX)
 	CryStackStringT( const CryStringT<T> &str );
 #endif
 	CryStackStringT( const_str str, size_type nLength );
@@ -399,7 +399,7 @@ public:
 	_Self& operator=( const _Self& str );
 	_Self& operator=( value_type ch );
 	_Self& operator=( const_str str );
-#if defined(PS3) || defined(LINUX) || defined(CAFE)
+#if defined(PS3) || defined(LINUX)
 	_Self& operator=( const CryStringT<T> &str );
 #endif
 
@@ -418,7 +418,7 @@ public:
 	_Self& operator+=( const _Self& str );
 	_Self& operator+=( value_type ch );
 	_Self& operator+=( const_str str );
-#if defined(PS3) || defined(LINUX) || defined(CAFE)
+#if defined(PS3) || defined(LINUX)
 	_Self& operator+=( const CryStringT<T> &str );
 #endif	
 	//template <class TT> friend CryStackStringT<TT> operator+( const CryStackStringT<TT>& str1, const CryStackStringT<TT>& str2 );
@@ -690,7 +690,7 @@ inline CryStackStringT<T,S>::CryStackStringT( const_str str )
 }
 
 //////////////////////////////////////////////////////////////////////////
-#if defined(PS3) || defined(LINUX) || defined(CAFE)
+#if defined(PS3) || defined(LINUX)
 template <class T, size_t S>
 inline CryStackStringT<T,S>::CryStackStringT( const CryStringT<T> &str )
 {
@@ -1214,7 +1214,7 @@ inline CryStackStringT<T,S>& CryStackStringT<T,S>::operator=( const_str str )
 	return *this;
 }
 
-#if defined(PS3) || defined(LINUX) || defined(CAFE)
+#if defined(PS3) || defined(LINUX)
 template <class T, size_t S> 
 inline CryStackStringT<T,S>& CryStackStringT<T,S>::operator=( const CryStringT<T> &str )
 {

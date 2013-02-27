@@ -106,6 +106,7 @@
     <Compile Include="Entities\Collectibles\HasteCollectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />
     <Compile Include="Entities\MyEntity.cs" />
+    <Compile Include="Entities\Others\SpectatorPoint.cs" />
     <Compile Include="Entities\Projectiles\AutocannonRocket.cs" />
     <Compile Include="Entities\Projectiles\ChaingunBullet.cs" />
     <Compile Include="Entities\Tanks\Cursor.cs" />
@@ -120,7 +121,7 @@
     <Compile Include="Entities\Tanks\Input\InputFlags.cs" />
     <Compile Include="Entities\Tanks\TankDamage.cs" />
     <Compile Include="Entities\Tanks\TankCamera.cs" />
-    <Compile Include="Entities\Tanks\Input\TankInput.cs" />
+    <Compile Include="Entities\Tanks\Input\PlayerInput.cs" />
     <Compile Include="GameCVars.cs" />
     <Compile Include="Entities\Tanks\TankMovement.cs" />
     <Compile Include="Entities\Tanks\Turrets\Autocannon.cs" />
@@ -134,7 +135,7 @@
     <Compile Include="Entities\Lights\Light.cs" />
     <Compile Include="Entities\Physics\DestroyableEntity.cs" />
     <Compile Include="Entities\Physics\Rigidbody.cs" />
-    <Compile Include="Entities\SpawnPoint.cs" />
+    <Compile Include="Entities\Others\SpawnPoint.cs" />
     <Compile Include="Entities\Tanks\Turret.cs" />
     <Compile Include="GameRules\DeathMatch.cs" />
     <Compile Include="GameRules\Native\DisconnectionCause.cs" />

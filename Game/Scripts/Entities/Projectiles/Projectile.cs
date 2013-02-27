@@ -18,10 +18,23 @@ namespace CryGameCode.Projectiles
 
         protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
         {
-            var pos = Position;
-            var rot = Rotation;
+            Vec3 pos = Vec3.Zero;
+            Quat rot = Quat.Identity;
+
+            if (serialize.IsWriting)
+            {
+                pos = Position;
+                rot = Rotation;
+            }
+
             serialize.Value("pos", ref pos, "wrld");
             serialize.Value("rot", ref rot, "ori1");
+
+            if (serialize.IsReading)
+            {
+                Position = pos;
+                Rotation = rot;
+            }
         }
 
 		public virtual void Launch()

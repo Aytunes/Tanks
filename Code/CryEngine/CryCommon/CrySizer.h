@@ -37,9 +37,7 @@
 #ifdef LINUX
 #include <tr1/unordered_map>
 #else
-#ifndef CAFE
 #include <unordered_map>
-#endif
 #endif
 
 // forward declarations for overloads
@@ -490,7 +488,6 @@ public:
 		return false;
 	}
 
-#ifndef CAFE
 	// Specialization of the AddContainer for the std::tr1::unordered_map
 	template <typename KEY, typename TYPE, class HASH, class EQUAL, class ALLOCATOR>
 	bool AddContainer(const std::tr1::unordered_map<KEY, TYPE, HASH, EQUAL, ALLOCATOR> &rContainer)
@@ -504,20 +501,6 @@ public:
 			return false;
 		}
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
 
 	void Test()
 	{

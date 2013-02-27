@@ -16,7 +16,7 @@
 //	between the system and the CryFile.  Atm I have no aim to completely mirror all functionaly of cryfile,
 //	or 'properly' make this wrap an existing instance of CryFile java style.  Feel free to expand the functionality
 //	to do that in the future.  But at least this leaves a recorded explanation of why this file probably sucks
-//	(in addition the many hacks made by god knows who in between) for whoever is reading it 20 years from now and cursing
+//	(in addition the many workarounds made by god knows who in between) for whoever is reading it 20 years from now and cursing
 //	up a storm about it's idiocy which is adding to their stress as they crunch their balls (or ovaries) off. ;-)
 ////////////////////////////////////////////////////////////////////////////
 

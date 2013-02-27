@@ -16,7 +16,7 @@
 #include "CrySizer.h"
 #include "Endian.h"
 
-#if defined(PS3) || defined(LINUX) || defined(CAFE)
+#if defined(PS3) || defined(LINUX)
 
 #undef CVTDIGITHEX
 #undef CVTDIGITDEC
@@ -173,18 +173,6 @@ TYPE_INFO_BASIC(double)
 
 TYPE_INFO_BASIC(string)
 
-
-
-
-
-
-
-
-
-
-
-
-
 const CTypeInfo& PtrTypeInfo()
 {
 	static CTypeInfo Info(TYPE_INFO_NAME(void*), sizeof(void*), alignof(void*));
@@ -233,22 +221,6 @@ string ToString(uint64 const& val)
 	return buffer;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #ifndef LINUX64
 // long
 string ToString(long const& val)
@@ -265,22 +237,6 @@ string ToString(unsigned long const& val)
 	ultoa(val, buffer, 10);
 	return buffer;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #endif
 // Universal int conversion, clamping to range type.
 template<class T>
@@ -355,23 +311,6 @@ bool FromString(signed char& val, const char* s)			{	return ClampedIntFromString
 string ToString(unsigned char const& val)							{ return ToString((unsigned long)(val)); }
 bool FromString(unsigned char& val, const char* s)		{	return ClampedIntFromString(val, s); }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 float NumToFromString(float val, int digits, bool floating, char buffer[], int buf_size)
 {
 	assert(buf_size >= 32);
@@ -419,39 +358,11 @@ bool FromString(float& val, const char* s)
 	return sscanf_s(s, "%g", &val) == 1;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // string override.
 template <>
 void TTypeInfo<string>::GetMemoryUsage(ICrySizer* pSizer, void const* data) const
 {
-// CRAIG: just a temp hack to try and get things working
+// CRAIG: just a temp workaround to try and get things working
 #ifndef LINUX
 	pSizer->AddString(*(string*)data);
 #endif

@@ -197,7 +197,7 @@ enum EMessageParallelFlags
 	eMPF_DecodeInSync        = 0x0002,
 	// lock the network thread and get this message sent as quickly as possible
 	eMPF_NoSendDelay         = 0x0004, 
-	// message makes no sense if the entity is not bound, so discard it in that case (a bit hacky!)
+	// message makes no sense if the entity is not bound, so discard it in that case (a bit workaround!)
 	eMPF_DiscardIfNoEntity   = 0x0008,
 	// message represents part of a context state change
 	// PROBABLY SHOULD BE DEALT WITH BY MESSAGE DEPENDENCIES

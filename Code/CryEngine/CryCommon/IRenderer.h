@@ -48,13 +48,6 @@ UNIQUE_IFACE struct ICaptureFrameListener
 };
 
 
-
-
-
-#define SUPPORT_RENDER_TO_CONTROLLER 0
-
-
-
 // Forward declarations.
 //////////////////////////////////////////////////////////////////////
 typedef void* WIN_HWND;
@@ -2064,11 +2057,6 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual IRenderAuxGeom* GetIRenderAuxGeom() = 0;
 	//////////////////////////////////////////////////////////////////////
 
-#if SUPPORT_RENDER_TO_CONTROLLER
-	virtual IRenderToScreenOnController * GetRenderToScreenOnController() = 0;
-	virtual void RenderToController() = 0;
-#endif
-
 	virtual IColorGradingController* GetIColorGradingController() = 0;
 	virtual IStereoRenderer* GetIStereoRenderer() = 0;
 
@@ -2103,6 +2091,7 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual bool DXTDecompress(byte *srcData, const size_t srcFileSize, byte *dstData, int nWidth,int nHeight,int nMips,ETEX_Format eSrcTF, bool bUseHW, int nDstBytesPerPix)=0;
 	virtual void RemoveTexture(unsigned int TextureId)=0;
 	virtual void DXTCompress_FastOnCPU( byte * pInData, byte * pOutData, const int width, const int height, const bool isDXT5 )=0;
+
 
 
 
@@ -2183,6 +2172,7 @@ struct IRenderer//: public IRendererCallbackServer
 	// Returns : None
 	//
 	virtual void CloseCaptureFrameBufferFast(void)=0;
+
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	// This routine checks for any frame buffer callbacks that are needed and calls them
@@ -2450,8 +2440,6 @@ struct IRenderer//: public IRendererCallbackServer
 	virtual std::vector<STexturePoolAllocation*> * GetTexturePoolAllocationList() = 0;
 	virtual void ClearTexturePoolAllocationList(int threadid = -1) = 0;
 #endif
-
-	virtual void OffsetPosition(const Vec3 &delta) = 0;
 };
 
 struct SShaderCacheStatistics
@@ -2581,6 +2569,7 @@ enum ERenderQueryTypes
 
 	EFQ_GetFogCullDistance,
 	EFQ_GetMaxRenderObjectsNum,
+
 	EFQ_IsRenderLoadingThreadActive,
 
 	EFQ_GetParticleVertexBufferSize,

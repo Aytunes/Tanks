@@ -1,10 +1,8 @@
 ﻿using CryEngine;
 
-using CryGameCode.Tanks;
-
 namespace CryGameCode
 {
-	[Entity(Category = "Others", EditorHelper = "Objects/Tanks/tank_chassis.cgf", Icon = "", Flags = EntityClassFlags.Default)]
+	[Entity(Category = "Others", EditorHelper = "Objects/Tanks/tank_chassis.cgf")]
 	public class SpawnPoint : Entity
 	{
 		public SpawnPoint()
@@ -12,15 +10,24 @@ namespace CryGameCode
 			LastSpawned = -1;
 		}
 
+        public bool CanSpawn
+        {
+            get
+            {
+                return (Time.FrameStartTime - LastSpawned) > SpawnDelay * 1000 || LastSpawned == -1;
+            }
+        }
+
 		public bool TrySpawn(EntityBase entity)
 		{
 			if(entity == null)
 				throw new System.ArgumentNullException("entity");
+            if (!Network.IsServer)
+                return false;
 
-			var frameStartTime = Time.FrameStartTime;
-			if((frameStartTime - LastSpawned) > SpawnDelay * 1000 || LastSpawned == -1)
+            if (CanSpawn)
 			{
-				LastSpawned = frameStartTime;
+				LastSpawned = Time.FrameStartTime;
 
                 var pos = Position;
                 var rot = Rotation;
@@ -28,15 +35,7 @@ namespace CryGameCode
 				entity.Position = pos;
 				entity.Rotation = rot;
 
-                if (entity is Tank && Team != null)
-                {
-                    var tank = entity as Tank;
-                    tank.Team = Team;
-
-                    tank.OnRevive();
-
-                    RemoteInvocation(NetSpawn, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, tank.Id, pos);
-                }
+                RemoteInvocation(NetSpawn, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, entity.Id, pos);
 
 				return true;
 			}
@@ -47,11 +46,9 @@ namespace CryGameCode
         [RemoteInvocation]
         public void NetSpawn(EntityId targetId, Vec3 pos)
         {
-            var tank = Entity.Get<Tank>(targetId);
+            var tank = Entity.Get(targetId);
 
             tank.Position = pos;
-
-            tank.OnRevive();
         }
 
 		public float LastSpawned { get; private set; }

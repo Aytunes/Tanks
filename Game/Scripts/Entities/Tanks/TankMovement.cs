@@ -12,7 +12,7 @@ namespace CryGameCode.Tanks
 
 		protected override void OnPrePhysicsUpdate()
 		{
-            if (IsDestroyed || m_tankInput == null)
+            if (IsDestroyed || IsDead)
 				return;
 
             var frameTime = Time.DeltaTime;
@@ -77,7 +77,7 @@ namespace CryGameCode.Tanks
 
 			AddMovement(ref moveRequest);
 
-            if(!m_leftTrack.IsDestroyed)
+    if(!m_leftTrack.IsDestroyed)
                 m_leftTrack.Material = GetTrackMaterial(m_acceleration.X);
             if(!m_rightTrack.IsDestroyed)
                 m_rightTrack.Material = GetTrackMaterial(m_acceleration.Y);
@@ -95,6 +95,9 @@ namespace CryGameCode.Tanks
 
         void UpdateAcceleration(float frameTime)
         {
+            if (m_tankInput == null)
+                return;
+
             var accelerationSpeed = GameCVars.tank_accelerationSpeed * frameTime;
             var accelerationSpeedRotation = GameCVars.tank_accelerationSpeedRotation * frameTime;
 

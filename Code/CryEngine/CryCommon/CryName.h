@@ -57,7 +57,7 @@ UNIQUE_IFACE struct INameTable
 		const char* GetStr() { return (char*)(this+1); }
 		void  AddRef() { nRefCount++; /*InterlockedIncrement(&_header()->nRefCount);*/};
 		int   Release() { return --nRefCount; };
-    int   GetMemoryUsage() { return (int) (sizeof(SNameEntry)+strlen(GetStr())); }
+    int   GetMemoryUsage() { return sizeof(SNameEntry)+strlen(GetStr()); }
 		int		GetLength(){return nLength;}
 	};
 #endif
@@ -313,7 +313,7 @@ public:
 		if (!pEntry)
 		{
 			// Create a new entry.
-			unsigned int nLen = (unsigned int) strlen(str);
+			unsigned int nLen = strlen(str);
 			unsigned int allocLen = sizeof(SNameEntry) + (nLen+1)*sizeof(char);
 			pEntry = (SNameEntry*)malloc( allocLen );
 			assert(pEntry!=NULL);
@@ -344,7 +344,7 @@ public:
     int n = 0;
     for (it=m_nameMap.begin(); it!=m_nameMap.end(); it++)
     {
-      nSize += (int) strlen(it->first);
+      nSize += strlen(it->first);
       nSize += it->second->GetMemoryUsage();
       n++;
     }
@@ -359,7 +359,7 @@ public:
 	}
   VIRTUAL int GetNumberOfEntries()
   {
-    return (int) m_nameMap.size();
+    return m_nameMap.size();
   }
 
 	// Log all names inside CryName table.

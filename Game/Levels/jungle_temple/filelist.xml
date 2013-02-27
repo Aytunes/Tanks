@@ -2,6 +2,6 @@
  <index src="filelist.xml" dest="filelist.xml"/>
  <files>
   <file src="jungle_temple.xml" dest="jungle_temple.xml" size="252" md5="28fb196a5fb47c2fb76d910bbffadd08"/>
-  <file src="level.pak" dest="level.pak" size="8959852" md5="212257ee844da3d04e003157d02d6f16"/>
+  <file src="level.pak" dest="level.pak" size="8956277" md5="e813753124aec863ca750f77f4cb41ec"/>
  </files>
 </download>

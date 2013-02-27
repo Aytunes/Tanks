@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+
 //
 //  Crytek Engine Source File.
 //  Copyright (C), Crytek Studios, 2002.
@@ -29,7 +29,7 @@
 // Alignment support.
 #if defined(_MSC_VER)
 	#define alignof _alignof
-#elif defined(__GNUC__) || defined(CAFE)
+#elif defined(__GNUC__)
 	#define alignof __alignof__
 #endif
 
@@ -41,7 +41,7 @@
 #endif
 
 // Compile with unit testing enabled
-#if !defined(PS3) && !defined(_XBOX_VER) && !defined(LINUX) && !defined(CAFE)
+#if !defined(PS3) && !defined(_XBOX_VER) && !defined(LINUX)
 #define CRY_UNIT_TESTING
 #endif
 
@@ -49,7 +49,7 @@
 	#define __FUNC__ __FUNCTION__
 #endif
 
-#if defined(_DEBUG) && !defined(PS3) && !defined(LINUX) && !defined(CAFE)
+#if defined(_DEBUG) && !defined(PS3) && !defined(LINUX)
 	#include <crtdbg.h>
 #endif
 
@@ -176,7 +176,7 @@ enum ETunerIDs
 
 
 
-
+// Gringo target.
 
 
 
@@ -228,7 +228,7 @@ enum ETunerIDs
 	#define __passinreg_vec
 
 
-#if defined(LINUX) || defined(PS3) || defined(CAFE)
+#if defined(LINUX) || defined(PS3)
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #define PLATFORM_I64(x) x##ll
@@ -239,12 +239,6 @@ enum ETunerIDs
 #define PRIu64 "I64u"
 #define PLATFORM_I64(x) x##i64
 #endif
-
-
-
-
-
-
 
 #include "ProjectDefines.h"							// to get some defines available in every CryEngine project 
 
@@ -273,7 +267,7 @@ enum ETunerIDs
 //
 // Note that 'this' is counted as a method argument. For non-static methods,
 // add 1 to the indices.
-#if (defined(CAFE) || defined(__GNUC__)) && !defined(__SPU__) && !defined(_RELEASE)
+#if defined(__GNUC__) && !defined(__SPU__) && !defined(_RELEASE)
   #define PRINTF_PARAMS(...) __attribute__ ((format (printf, __VA_ARGS__)))
   #define SCANF_PARAMS(...) __attribute__ ((format (scanf, __VA_ARGS__)))
 #else
@@ -282,19 +276,12 @@ enum ETunerIDs
 #endif
 
 // Storage class modifier for thread local storage.
-
-
 #if defined(__GNUC__)
 	#define THREADLOCAL __thread
 #else
 	#define THREADLOCAL __declspec(thread)
 #endif
 
-#if defined(__GNUC__)
-#define GCC_WEAK __attribute__((weak))
-#else
-#define GCC_WEAK
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 // define Read Write Barrier macro needed for lockless programming
@@ -351,9 +338,9 @@ enum ETunerIDs
 		#define DLL_EXPORT __attribute__ ((visibility("default")))
 		#define DLL_IMPORT __attribute__ ((visibility("default")))
 
-#elif (defined(XENON) || defined(CAFE)) && !defined(SOFTCODE_ENABLED)
-	#define DLL_EXPORT 
-	#define DLL_IMPORT 
+
+
+
 #else
 	#ifdef _LIB
 		#define DLL_EXPORT
@@ -418,10 +405,6 @@ enum ETunerIDs
 #if defined(LINUX32)
 #include "Linux32Specific.h"
 #endif
-
-
-
-
 
 
 
@@ -634,7 +617,7 @@ unsigned int CryGetFileAttributes( const char *lpFileName );
 
 inline void CryHeapCheck()
 {
-#if !defined(LINUX) && !defined (PS3) && !defined (GRINGO) && !defined(CAFE) // todo: this might be readded with later xdks?
+#if !defined(LINUX) && !defined (PS3) && !defined (GRINGO) // todo: this might be readded with later xdks?
   int Result = _heapchk();
   assert(Result!=_HEAPBADBEGIN);
   assert(Result!=_HEAPBADNODE);
@@ -800,11 +783,6 @@ bool IsAligned(T nData, size_t nAlign)
 	return (size_t(nData) & (nAlign-1)) == 0;
 }
 
-
-
-
-
-
 #if !defined(_SPU_JOB)
 #if !defined(NOT_USE_CRY_STRING) 
   #include "CryString.h"
@@ -884,10 +862,6 @@ enum type_identity { IDENTITY };
 #if defined(LINUX)
 	#include "Linux_Win32Wrapper.h"
 #endif
-
-
-
-
 
 
 
@@ -986,9 +960,7 @@ enum ETriState
 
 
 
-
-
-	#if defined(__GNUC__)
+	#ifdef __GNUC__
 		#define NO_INLINE __attribute__ ((noinline))
 	#else
 		#define NO_INLINE _declspec(noinline)
@@ -1033,20 +1005,6 @@ enum ETriState
 	Init##var g_init##var;
 	#define TLS_GET(type,var) (type)TlsGetValue(var##idx)
 	#define TLS_SET(var,val) TlsSetValue(var##idx,(void*)(val))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #else
 #if defined(LINUX)
 	#define TLS_DECLARE(type,var) extern __thread type var;
@@ -1064,7 +1022,7 @@ enum ETriState
 #endif
 
 	//provide empty macros for non-ps3 systems which don't need these
-#if !defined(PS3) && !defined(CAFE)
+#if !defined(PS3)
 	#define FILE_IO_WRAPPER_NO_PATH_ADJUSTMENT
 	#define FILE_IO_WRAPPER_STREAMING_FILE
 	#define FILE_IO_WRAPPER_DIRECT_ACCESS_FILE
