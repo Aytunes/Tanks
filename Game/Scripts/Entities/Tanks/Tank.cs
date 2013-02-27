@@ -85,6 +85,9 @@ namespace CryGameCode.Tanks
             Turret = Activator.CreateInstance(Type.GetType(TurretTypeName), this) as TankTurret;
 
             Hide(false);
+
+            if (IsLocalClient)
+                Entity.Spawn<Cursor>("Cursor");
         }
 
 		protected override void OnEditorReset(bool enteringGame)
