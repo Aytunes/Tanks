@@ -27,7 +27,7 @@ namespace CryGameCode.Tanks
             if (IsLocalClient)
             {
                 // Set team & turret type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
-                Team = gameMode.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameMode.Teams.Length - 1));
+                Team = gameMode.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameMode.Teams.Length));
 
                 if (string.IsNullOrEmpty(GameCVars.ForceTankType))
                     TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
@@ -150,7 +150,7 @@ namespace CryGameCode.Tanks
                 if (CurrentSpectatorPoint >= spectatorPointCount)
                     CurrentSpectatorPoint = 0;
 
-                var iSpectatorPoint = SinglePlayer.Selector.Next(CurrentSpectatorPoint, spectatorPointCount - 1);
+                var iSpectatorPoint = SinglePlayer.Selector.Next(CurrentSpectatorPoint, spectatorPointCount);
                 var spectatorPoint = spectatorPoints.ElementAt(iSpectatorPoint);
 
                 Position = spectatorPoint.Position;

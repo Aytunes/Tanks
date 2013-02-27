@@ -157,8 +157,11 @@ namespace CryGameCode.Tanks
 
                 var jointAbsolute = Attachment.GetJointAbsolute(helper);
 				jointAbsolute.T = Attachment.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
-				Entity.Spawn("pain", ProjectileType, jointAbsolute.T, Attachment.Rotation.Normalized);
-				OnFire(jointAbsolute.T);
+
+                var gameMode = GameRules.Current as SinglePlayer;
+                Owner.RemoteInvocation(gameMode.RequestEntitySpawn, NetworkTarget.ToServer, ProjectileType.FullName, jointAbsolute.T, Attachment.Rotation.Normalized);
+
+				//OnFire(jointAbsolute.T);
 			}
 		}
 
