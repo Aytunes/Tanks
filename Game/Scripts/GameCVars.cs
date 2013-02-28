@@ -33,8 +33,8 @@ namespace CryGameCode.Tanks
             CVar.RegisterInt("cam_type", ref cam_type);
         }
 
-        public static float cam_minDistZ = 25;
-		public static float cam_maxDistZ = 40;
+        public static float cam_minDistZ = 37;
+		public static float cam_maxDistZ = 60;
 
         public static float cam_distY = -5;
 
