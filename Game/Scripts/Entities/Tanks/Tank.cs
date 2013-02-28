@@ -36,25 +36,22 @@ namespace CryGameCode.Tanks
             }
 
             ZoomLevel = 1;
-
-            OnDestroyed += (e) =>
-            {
-                if(m_tankInput != null)
-                    m_tankInput.Destroy();
-
-                if (Turret != null)
-                {
-                    Turret.Destroy();
-                    Turret = null;
-                }
-            };
-
             Health = 0;
-
             Hide(true);
-
             ReceiveUpdates = true;
         }
+
+		public void OnLeftGame()
+		{
+			if (m_tankInput != null)
+				m_tankInput.Destroy();
+
+			if (Turret != null)
+			{
+				Turret.Destroy();
+				Turret = null;
+			}
+		}
 
         protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
         {

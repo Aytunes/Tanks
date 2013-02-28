@@ -36,6 +36,9 @@ namespace CryGameCode
 
 		public override void OnClientDisconnect(int channelId)
 		{
+			var tank = Actor.Get<Tank>(channelId);
+			tank.OnLeftGame();
+
 			Actor.Remove(channelId);
 		}
 
