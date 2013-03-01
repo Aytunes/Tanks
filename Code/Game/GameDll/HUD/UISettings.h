@@ -83,7 +83,7 @@ private:
 	void OnSetSoundSettings( float music, float sfx, float video );
 	void OnSetGameSettings( float sensitivity, bool invertMouse, bool invertController );
 
-	void OnGetResolutions();
+	void OnGetResolutions(const SUIArguments& args);
 	void OnGetCurrGraphicsSettings();
 	void OnGetCurrSoundSettings();
 	void OnGetCurrGameSettings();

@@ -220,6 +220,11 @@ void CUILobbyMP::HostGame(bool bLan, string sMapPath, string sGameRules)
 	{
 		CGameLobby::SetLobbyService(bLan ? eCLS_LAN : eCLS_Online);
 				
+		if(!gEnv->pGameFramework->GetIGameRulesSystem()->HaveGameRules(sGameRules))
+		{
+			 sGameRules = "DeathMatch";
+		}
+
 		pGameLobby->CreateSessionFromSettings(sGameRules, sMapPath);
 	}
 }

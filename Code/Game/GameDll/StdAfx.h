@@ -31,6 +31,8 @@
 #define RWI_NAME_TAG "RayWorldIntersection(Game)"
 #define PWI_NAME_TAG "PrimitiveWorldIntersection(Game)"
 
+#define DISABLE_OM 1
+
 // Insert your headers here
 #include <platform.h>
 #include <algorithm>

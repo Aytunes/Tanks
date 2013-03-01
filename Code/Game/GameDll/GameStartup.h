@@ -18,7 +18,7 @@ History:
 # pragma once
 #endif
 
-
+#include <CryLibrary.h>
 #include <IGameFramework.h>
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -94,6 +94,10 @@ private:
 
 	static HMODULE				m_systemDll;
 	static HWND						m_hWnd;
+
+	// store the mouse move coords inhere, when the mousewheel is used send these coords to prevent sending invalid coords
+	static int						m_lastMoveX;
+	static int						m_lastMoveY;
 };
 
 

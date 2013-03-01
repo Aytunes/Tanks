@@ -14,7 +14,7 @@ History:
 #ifndef __NETINPUTCHAINDEBUG_H__
 #define __NETINPUTCHAINDEBUG_H__
 
-#if !defined(LINUX) && !defined(PS3)
+#if !defined(LINUX) && !defined(PS3) && !defined(CAFE)
 	#define ENABLE_NETINPUTCHAINDEBUG 1
 #endif
 

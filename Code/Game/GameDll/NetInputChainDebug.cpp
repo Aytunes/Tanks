@@ -68,7 +68,9 @@ static void Put( const char * name, const TNetInputValue& value )
 		if (pTMC)
 			pTMC->PutText( 0, ypos/20, buf );
 		if (fout)
+		{
 			fprintf(fout, "%I64d %s %s %f %f %f\n", tstamp, GetEntityName(), name, pVec->x, pVec->y, pVec->z);
+		}
 	}
 	else if (const float * pFloat = value.GetPtr<float>())
 	{
@@ -77,10 +79,14 @@ static void Put( const char * name, const TNetInputValue& value )
 		if (pTMC)
 			pTMC->PutText( 0, ypos/20, buf );
 		if (fout)
+		{
 			fprintf(fout, "%I64d %s %s %f\n", tstamp, GetEntityName(), name, *pFloat);
+		}
 	}
 	if (fout)
+	{
 		fclose(fout);
+	}
 }
 
 static void OnChangeEntity( ICVar * pVar )

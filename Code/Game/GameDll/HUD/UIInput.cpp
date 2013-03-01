@@ -146,7 +146,7 @@ bool CUIInput::OnActionTogglePause(EntityId entityId, const ActionId& actionId, 
 bool CUIInput::OnActionStartPause(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
 	CUIMenuEvents* pMenuEvents = UIEvents::Get<CUIMenuEvents>();
-	if ( g_pGame->GetIGameFramework()->IsGameStarted() && pMenuEvents && !pMenuEvents->IsIngameMenuStarted())
+	if ((g_pGame->GetIGameFramework()->IsGameStarted() && !gEnv->IsEditor()) && pMenuEvents && !pMenuEvents->IsIngameMenuStarted())
 	{
 			pMenuEvents->DisplayIngameMenu(true);
 	}

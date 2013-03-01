@@ -42,6 +42,8 @@ History:
 
 #include "Network/GameNetworkUtils.h"
 #include "GameRules.h"
+#include "HUD/UIManager.h"
+#include "HUD/UILobbyMP.h"
 
 #define SQUADMGR_CREATE_SQUAD_RETRY_TIMER		10.f
 

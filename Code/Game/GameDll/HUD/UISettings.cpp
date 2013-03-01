@@ -297,7 +297,7 @@ void CUISettings::OnSetGameSettings( float sensitivity, bool invertMouse, bool i
 }
 
 ////////////////////////////////////////////////////////////////////////////
-void CUISettings::OnGetResolutions()
+void CUISettings::OnGetResolutions(const SUIArguments& args)
 {
 	SendResolutions();
 }
@@ -363,7 +363,10 @@ void CUISettings::SendResolutions()
 		resolutions.AddArgument(m_Resolutions[i].first);
 		resolutions.AddArgument(m_Resolutions[i].second);
 	}
+
+#ifndef CAFE
  	m_eventSender.SendEvent<eUIE_OnGetResolutions>(resolutions);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////
