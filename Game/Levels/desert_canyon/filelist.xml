@@ -1,6 +1,6 @@
 <download name="desert_canyon" type="Map">
  <index src="filelist.xml" dest="filelist.xml"/>
  <files>
-  <file src="level.pak" dest="level.pak" size="718619" md5="3ce5af7356e55b53199edc9ccd4621f7"/>
+  <file src="level.pak" dest="level.pak" size="719209" md5="3c20299c15e115553432d0f515dc9721"/>
  </files>
 </download>
