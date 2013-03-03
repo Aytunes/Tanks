@@ -289,12 +289,6 @@
             </summary>
             <param name="forceRemoveNow"></param>
         </member>
-        <member name="M:CryEngine.ActorBase.InternalSpawn(CryEngine.ActorInfo)">
-            <summary>
-            Initializes the player.
-            </summary>
-            <param name="actorInfo"></param>
-        </member>
         <member name="P:CryEngine.ActorBase.IsLocalClient">
             <summary>
             Gets a value indicating whether this actor is controlled by the local client. See <see cref="P:CryEngine.Actor.LocalClient"/>.
@@ -895,11 +889,11 @@
             <param name="flags"></param>
             <returns></returns>
         </member>
-        <member name="M:CryEngine.Entity.InternalSpawn(CryEngine.EntityInfo)">
+        <member name="M:CryEngine.Entity.InternalInitialize(CryEngine.IScriptInitializationParams)">
             <summary>
             Initializes the entity, not recommended to set manually.
             </summary>
-            <param name="entInfo">Struct containing the IEntity pointer and EntityId.</param>
+            <param name="initParams">Struct containing the IEntity pointer and EntityId.</param>
             <returns>IsEntityFlowNode</returns>
         </member>
         <member name="M:CryEngine.Entity.OnSpawn">
