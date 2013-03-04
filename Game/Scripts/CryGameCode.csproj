@@ -95,8 +95,6 @@
   <ItemGroup>
     <Folder Include="FlowNodes\" />
     <Folder Include="Properties\" />
-    <Folder Include="UI\HUD\" />
-    <Folder Include="UI\Main Menu\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Buildings\AutoTurret.cs" />
@@ -105,7 +103,6 @@
     <Compile Include="Entities\Collectibles\CollectibleHolder.cs" />
     <Compile Include="Entities\Collectibles\HasteCollectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />
-    <Compile Include="Entities\MyEntity.cs" />
     <Compile Include="Entities\Others\SpectatorPoint.cs" />
     <Compile Include="Entities\Projectiles\AutocannonRocket.cs" />
     <Compile Include="Entities\Projectiles\ChaingunBullet.cs" />
