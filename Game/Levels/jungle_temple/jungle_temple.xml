@@ -1,5 +1,4 @@
 <MetaData>
- <GameRules name="DeathMatch"/>
  <Attributes>
   <loading_video value=""/>
   <loading_image value="textures/loadscreens/jungleloadscreen.dds"/>
