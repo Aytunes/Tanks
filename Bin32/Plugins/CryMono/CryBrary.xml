@@ -241,6 +241,11 @@
             Gets or sets the entity name.
             </summary>
         </member>
+        <member name="P:CryEngine.EntityBase.ClassName">
+            <summary>
+            Gets this entity's class name.
+            </summary>
+        </member>
         <member name="P:CryEngine.EntityBase.Flags">
             <summary>
             Gets or sets the entity flags.
@@ -323,6 +328,12 @@
         <member name="M:CryEngine.Actor.UpdateView(CryEngine.ViewParams@)">
             <summary>
             Called to update the view associated to this actor.
+            </summary>
+            <param name="viewParams"></param>
+        </member>
+        <member name="M:CryEngine.Actor.PostUpdateView(CryEngine.ViewParams@)">
+            <summary>
+            Called after updating the view associated to this actor.
             </summary>
             <param name="viewParams"></param>
         </member>
@@ -776,6 +787,39 @@
             Defines the list of supported editor types.
             </summary>
         </member>
+        <member name="M:CryEngine.Advanced.GameObject.QueryExtension(System.String)">
+            <summary>
+            Query extension. returns 0 if extension is not there.
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CryEngine.Advanced.GameObject.AcquireExtension(System.String)">
+            <summary>
+            Forcefully get a pointer to an extension (may instantiate if needed)
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CryEngine.Advanced.GameObject.ReleaseExtension(System.String)">
+            <summary>
+            Release a previously acquired extension
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:CryEngine.Advanced.GameObject.ActivateExtension(System.String)">
+            <summary>
+            Turn an extension on
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CryEngine.Advanced.GameObject.DeactivateExtension(System.String)">
+            <summary>
+            Turn an extension off
+            </summary>
+            <param name="name"></param>
+        </member>
         <member name="F:CryEngine.EntityMoveFlags.FromParent">
             <summary>
             When parent changes his transformation.
@@ -896,6 +940,11 @@
             <param name="initParams">Struct containing the IEntity pointer and EntityId.</param>
             <returns>IsEntityFlowNode</returns>
         </member>
+        <member name="M:CryEngine.Entity.InvalidateTrigger">
+            <summary>
+            Invalidate the TriggerBounds, so it gets recalculated and catches things which are already inside when it gets enabled.
+            </summary>
+        </member>
         <member name="M:CryEngine.Entity.OnSpawn">
             <summary>
             This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
@@ -993,11 +1042,6 @@
             <param name="memberInfo"></param>
             <param name="propertyType"></param>
             <param name="newValue"></param>
-        </member>
-        <member name="M:CryEngine.Entity.InvalidateTrigger">
-            <summary>
-            Invalidate the TriggerBounds, so it gets recalculated and catches things which are already inside when it gets enabled.
-            </summary>
         </member>
         <member name="P:CryEngine.Entity.TriggerBounds">
             <summary>
