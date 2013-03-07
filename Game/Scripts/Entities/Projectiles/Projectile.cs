@@ -16,7 +16,7 @@ namespace CryGameCode.Projectiles
 			Launch();
 		}
 
-        protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
+        /*protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
         {
             Vec3 pos = Vec3.Zero;
             Quat rot = Quat.Identity;
@@ -35,7 +35,7 @@ namespace CryGameCode.Projectiles
                 Position = pos;
                 Rotation = rot;
             }
-        }
+        }*/
 
 		public virtual void Launch()
 		{
@@ -46,7 +46,8 @@ namespace CryGameCode.Projectiles
 		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
 		{
 			var effect = ParticleEffect.Get(Effect);
-			effect.Spawn(hitPos, contactNormal, EffectScale);
+            if(effect != null)
+			    effect.Spawn(hitPos, contactNormal, EffectScale);
 
 			// Id 0 is the terrain
 			if(targetEntityId != 0)

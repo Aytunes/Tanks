@@ -30,16 +30,16 @@ namespace CryGameCode.Tanks
             if (Turret == null || !Turret.IsActive)
                 return;
 
-            if (m_tankInput != null)
+            if (m_playerInput != null)
             {
-                if (m_tankInput.HasFlag(InputFlags.ZoomOut) && ZoomLevel > 1)
+                if (m_playerInput.HasFlag(InputFlags.ZoomOut) && ZoomLevel > 1)
                 {
 
                     ZoomLevel -= GameCVars.cam_zoomSpeed;
                     if (ZoomLevel < 1)
                         ZoomLevel = 1;
                 }
-                else if (m_tankInput.HasFlag(InputFlags.ZoomIn) && ZoomLevel < GameCVars.cam_maxZoomLevel)
+                else if (m_playerInput.HasFlag(InputFlags.ZoomIn) && ZoomLevel < GameCVars.cam_maxZoomLevel)
                 {
                     ZoomLevel += GameCVars.cam_zoomSpeed;
                     if (ZoomLevel > GameCVars.cam_maxZoomLevel)

@@ -76,16 +76,6 @@ namespace CryGameCode.Tanks
                 Attachment.Remove();
 		}
 
-        public void OnRotateYaw(float value)
-        {
-
-        }
-
-        public void OnRotatePitch(float value)
-        {
-
-        }
-
 		private void ProcessMouseEvents(MouseEventArgs e)
 		{
 			switch(e.MouseEvent)
@@ -151,6 +141,9 @@ namespace CryGameCode.Tanks
 
 		private void Fire(ref float shotTime, string helper)
 		{
+            if (Attachment.IsDestroyed)
+                return;
+
 			if(Time.FrameStartTime > shotTime + (TimeBetweenShots * 1000))
 			{
 				shotTime = Time.FrameStartTime;

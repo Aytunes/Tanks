@@ -22,7 +22,10 @@ namespace CryGameCode.Tanks
         {
             var gameMode = GameRules.Current as SinglePlayer;
 
-            m_tankInput = new PlayerInput(this);
+            //if (IsLocalClient)
+                m_playerInput = new PlayerInput(this);
+            //else
+                //m_playerInput = new RemotePlayerInput(this);
 
             if (IsLocalClient)
             {
@@ -35,6 +38,11 @@ namespace CryGameCode.Tanks
                     TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
             }
 
+            GameObject.EnableAspect(PlayerInput.Aspect, true);
+
+            PrePhysicsUpdateMode = PrePhysicsUpdateMode.Always;
+            ReceivePostUpdates = true;
+
             ZoomLevel = 1;
             Health = 0;
             Hide(true);
@@ -43,8 +51,8 @@ namespace CryGameCode.Tanks
 
 		public void OnLeftGame()
 		{
-			if (m_tankInput != null)
-				m_tankInput.Destroy();
+			if (m_playerInput != null)
+				m_playerInput.Destroy();
 
 			if (Turret != null)
 			{
@@ -57,8 +65,14 @@ namespace CryGameCode.Tanks
         {
             serialize.BeginGroup("TankActor");
 
-            if(m_tankInput != null)
-                m_tankInput.NetSerialize(serialize);
+            // input aspect
+            if (aspect == PlayerInput.Aspect)
+            {
+                Debug.LogAlways("NetSerialize input");
+                if(m_playerInput != null)
+                    m_playerInput.NetSerialize(serialize);
+                Debug.LogAlways("~NetSerialize input");
+            }
 
             serialize.EndGroup();
         }
@@ -122,6 +136,9 @@ namespace CryGameCode.Tanks
             if (IsDead)
                 return;
 
+            if (m_playerInput != null)
+                m_playerInput.Update();
+
 			Turret.Update();
 
             if (Physics.Status != null)
@@ -130,6 +147,14 @@ namespace CryGameCode.Tanks
                 GroundNormal = (GroundNormal + blend * (Physics.Status.Living.GroundNormal - GroundNormal));
             }
 		}
+
+        protected override void OnPrePhysicsUpdate()
+        {
+            if (m_playerInput != null)
+                m_playerInput.PreUpdate();
+
+            UpdateMovement();
+        }
 
         public void ToggleSpectatorPoint(bool increment = false)
         {
@@ -176,7 +201,7 @@ namespace CryGameCode.Tanks
 
         public string TurretTypeName { get; set; }
 
-        private PlayerInput m_tankInput;
+        private IPlayerInput m_playerInput;
 
         public TankTurret Turret { get; set; }
 

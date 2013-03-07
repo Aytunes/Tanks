@@ -21,7 +21,7 @@
         </member>
         <member name="M:CryEngine.CryScriptInstance.OnUpdate">
             <summary>
-            Called each frame if script has been set to be regularly updated (See Updated property)
+            Called each frame if script has been set to be regularly updated (See <see cref="P:CryEngine.CryScriptInstance.ReceiveUpdates"/>)
             </summary>
         </member>
         <member name="P:CryEngine.CryScriptInstance.ScriptId">
@@ -31,7 +31,7 @@
         </member>
         <member name="P:CryEngine.CryScriptInstance.ReceiveUpdates">
             <summary>
-            Controls whether the entity receives an update per frame.
+            Controls whether the entity receives an update per frame. (See <see cref="M:CryEngine.CryScriptInstance.OnUpdate"/>
             </summary>
         </member>
         <member name="P:CryEngine.CryScriptInstance.IsDestroyed">
@@ -185,6 +185,12 @@
             <param name="jointName">Name of the joint</param>
             <param name="characterSlot">Slot containing the character</param>
             <returns>Default relative of the specified joint</returns>
+        </member>
+        <member name="P:CryEngine.EntityBase.Camera">
+            <summary>
+            Attempts to retrieve the camera linked to this entity.
+            </summary>
+            <returns>The camera, otherwise null if not found.</returns>
         </member>
         <member name="P:CryEngine.EntityBase.ScriptTable">
             <summary>
@@ -1058,6 +1064,18 @@
             <summary>
             Called after level has been loaded, is not called on serialization.
             Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
+            </summary>
+        </member>
+        <member name="M:CryEngine.FlowSystem.FlowNode.OnNodeUpdate">
+            <summary>
+            Called each frame if node has been set to be regularly updated (See <see cref="P:CryEngine.FlowSystem.FlowNode.ReceiveNodeUpdates"/>)
+            Preferred over <see cref="M:CryEngine.FlowSystem.FlowNode.OnUpdate"/> due to supporting <see cref="M:CryEngine.FlowSystem.FlowNode.GetPortValue``1(System.Action{``0})"/> within the update loop.
+            </summary>
+        </member>
+        <member name="M:CryEngine.FlowSystem.FlowNode.OnUpdate">
+            <summary>
+            Called each frame if script has been set to be regularly updated. (See <see cref="P:CryEngine.CryScriptInstance.ReceiveUpdates"/>)
+            Warning: FlowNode logic such as <see cref="M:CryEngine.FlowSystem.FlowNode.GetPortValue``1(System.Action{``0})"/> is not supported within this update loop, see <see cref="M:CryEngine.FlowSystem.FlowNode.OnNodeUpdate"/>.
             </summary>
         </member>
         <member name="P:CryEngine.EntityLink.Handle">

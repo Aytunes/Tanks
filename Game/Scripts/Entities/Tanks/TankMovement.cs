@@ -10,7 +10,7 @@ namespace CryGameCode.Tanks
             return (float)Math.Atan2(Math.Sqrt(normal.X * normal.X + normal.Y * normal.Y), normal.Z);
         }
 
-		protected override void OnPrePhysicsUpdate()
+        protected void UpdateMovement()
 		{
             if (IsDestroyed || IsDead)
 				return;
@@ -77,7 +77,7 @@ namespace CryGameCode.Tanks
 
 			AddMovement(ref moveRequest);
 
-    if(!m_leftTrack.IsDestroyed)
+            if(!m_leftTrack.IsDestroyed)
                 m_leftTrack.Material = GetTrackMaterial(m_acceleration.X);
             if(!m_rightTrack.IsDestroyed)
                 m_rightTrack.Material = GetTrackMaterial(m_acceleration.Y);
@@ -95,41 +95,41 @@ namespace CryGameCode.Tanks
 
         void UpdateAcceleration(float frameTime)
         {
-            if (m_tankInput == null)
+            if (m_playerInput == null)
                 return;
 
             var accelerationSpeed = GameCVars.tank_accelerationSpeed * frameTime;
             var accelerationSpeedRotation = GameCVars.tank_accelerationSpeedRotation * frameTime;
 
             var maxAcceleration = GameCVars.tank_maxAcceleration;
-            if (m_tankInput.HasFlag(InputFlags.Boost))
+            if (m_playerInput.HasFlag(InputFlags.Boost))
                 maxAcceleration = GameCVars.tank_maxAccelerationBoosting;
 
             // in order to make the tank feel heavy, hinder forward / backwards movement when attempting to turn.
-            if (m_tankInput.HasFlag(InputFlags.MoveLeft))
+            if (m_playerInput.HasFlag(InputFlags.MoveLeft))
             {
                 m_acceleration.X += accelerationSpeedRotation;
                 m_acceleration.Y -= accelerationSpeedRotation;
             }
-            else if (m_tankInput.HasFlag(InputFlags.MoveRight))
+            else if (m_playerInput.HasFlag(InputFlags.MoveRight))
             {
                 m_acceleration.X -= accelerationSpeedRotation;
                 m_acceleration.Y += accelerationSpeedRotation;
             }
-            else if (m_tankInput.HasFlag(InputFlags.MoveForward))
+            else if (m_playerInput.HasFlag(InputFlags.MoveForward))
             {
                 m_acceleration.X += accelerationSpeed;
                 m_acceleration.Y += accelerationSpeed;
             }
-            else if (m_tankInput.HasFlag(InputFlags.MoveBack))
+            else if (m_playerInput.HasFlag(InputFlags.MoveBack))
             {
                 m_acceleration.X -= accelerationSpeed;
                 m_acceleration.Y -= accelerationSpeed;
             }
             else
             {
-                MathHelpers.Interpolate(ref m_acceleration.X, 0, GameCVars.tank_decelerationSpeed * frameTime);
-                MathHelpers.Interpolate(ref m_acceleration.Y, 0, GameCVars.tank_decelerationSpeed * frameTime);
+                MathHelpers.Interpolate(ref m_acceleration.X, 0, GameCVars.tank_decelerationSpeed);
+                MathHelpers.Interpolate(ref m_acceleration.Y, 0, GameCVars.tank_decelerationSpeed);
             }
 
             m_acceleration.X = MathHelpers.Clamp(m_acceleration.X, -maxAcceleration, maxAcceleration);
