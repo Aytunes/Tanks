@@ -2601,6 +2601,11 @@
             Stores all instances of this class.
             </summary>
         </member>
+        <member name="P:CryEngine.Initialization.CryScript.Registered">
+            <summary>
+            True when the script has been registered in native code, e.g. entity system registration.
+            </summary>
+        </member>
         <member name="F:CryEngine.Initialization.ScriptType.Any">
             <summary>
             All scripts have this flag applied.
@@ -2653,17 +2658,10 @@
             the contents of this method with the code editor.
             </summary>
         </member>
-        <member name="T:CryEngine.Initialization.ScriptCompiler">
+        <member name="T:CryEngine.Initialization.ICryMonoPlugin">
             <summary>
-            Represents a custom script compiler.
+            Represents a CryMono plugin.
             </summary>
-        </member>
-        <member name="M:CryEngine.Initialization.ScriptCompiler.ValidateCompilation(System.CodeDom.Compiler.CompilerResults)">
-            <summary>
-            Validates that a compilation has been successful.
-            </summary>
-            <param name="results">The results of the compilation that you wish to validate</param>
-            <returns>The resulting assembly, if no errors are found.</returns>
         </member>
         <member name="T:CryEngine.Material">
             <summary>
@@ -5971,6 +5969,11 @@
         <member name="F:CryEngine.Initialization.ScriptManager.LastScriptId">
             <summary>
             Last assigned ScriptId, next = + 1
+            </summary>
+        </member>
+        <member name="P:CryEngine.Initialization.ScriptManager.PluginTypes">
+            <summary>
+            Temporary storage for scripts before they are registered.
             </summary>
         </member>
         <member name="T:CryEngine.Initialization.ScriptNotFoundException">

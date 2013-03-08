@@ -42,7 +42,7 @@ namespace CryGameCode.Tanks
                                 if (Network.IsServer)
                                     gameRules.RequestRevive(tank.Id, tank.Team, tank.TurretTypeName);
                                 else
-                                
+                                {
                                     Debug.LogAlways("Requesting revive ({0}, {1}, {2})", tank.Id, tank.Team, tank.TurretTypeName);
                                     Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, tank.Id, tank.Team, tank.TurretTypeName);
                                 }

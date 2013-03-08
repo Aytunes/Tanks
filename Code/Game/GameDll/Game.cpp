@@ -51,6 +51,8 @@
 #include "CryPath.h"
 #include <IPathfinder.h>
 
+#include <IMonoScriptSystem.h>
+
 #include "HUD/BitmapUi.h"
 #include "HUD/UIManager.h"
 // #include "HUD/UIWarnings.h"
@@ -420,7 +422,6 @@ bool CGame::CompleteInit()
 	return true;
 }
 
-#include <IMonoScriptSystem.h>
 void CGame::RegisterGameFlowNodes()
 {
 	// Initialize Game02 flow nodes
@@ -435,7 +436,7 @@ void CGame::RegisterGameFlowNodes()
 		}
 	}
 
-	//GetMonoScriptSystem()->RegisterFlownodes();
+	GetMonoScriptSystem()->RegisterFlownodes();
 }
 
 void CGame::ResetServerGameTokenSynch()
