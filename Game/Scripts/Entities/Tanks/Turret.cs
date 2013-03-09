@@ -126,7 +126,7 @@ namespace CryGameCode.Tanks
 
 		public void Update()
 		{
-			if (Destroyed)
+			if (Destroyed || Entity == null)
 				return;
 
 			if (m_leftFiring)
