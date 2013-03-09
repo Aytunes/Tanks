@@ -52,16 +52,17 @@ namespace CryGameCode.Tanks
             ///////////////////////////
             // Velocity
             ///////////////////////////
+            var terminalVelocity = (float)Math.Sqrt(Math.Abs(2 * 500 * Math.Abs(CVar.Get("p_gravity_z").FVal) * (Math.Sin(slopeAngle) - groundFriction * Math.Cos(slopeAngle))) / (1.27f * 0.9f * 20.6));
+            var velocityRatio = prevVelocity.Length / terminalVelocity;
 
             var acceleration = m_acceleration.X + m_acceleration.Y;
             var forwardAcceleration = forwardDir * acceleration * GameCVars.tank_movementSpeedMult;
 
-            var frictionDeceleration = normalizedVelocity * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle));
+            var frictionDeceleration = (normalizedVelocity * velocityRatio) * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle));
 
-            var dragDeceleration = (1.2f * 0.588f * 1.27f * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / Physics.Status.Dynamics.Mass;
+            var dragDeceleration = (0.9f * 20.6f * 1.27f * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / 500;
 
             moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration);
-            moveRequest.velocity.ClampLength(GameCVars.tank_movementMaxSpeed);
 
             ///////////////////////////
             // Rotation
