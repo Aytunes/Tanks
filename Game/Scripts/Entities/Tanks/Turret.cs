@@ -14,11 +14,17 @@ namespace CryGameCode.Tanks
 	[Entity(Flags = EntityClassFlags.Invisible)]
 	public class TurretEntity : Entity
 	{
-		public override void OnPostSpawn(object[] args)
+		public override void OnSpawn()
 		{
-			Debug.LogAlways("Turret {0} spawned with params:", Name);
-			foreach (var arg in args)
-				Debug.LogAlways("{0}", arg);
+			if (!Network.IsServer)
+			{
+				var tankName = Name.Split('.').First();
+
+				Debug.LogAlways(tankName);
+				var owner = Entity.Find(tankName) as Tank;
+
+				owner.Turret.Initialize(this);
+			}
 		}
 	}
 
@@ -29,8 +35,6 @@ namespace CryGameCode.Tanks
 		public TankTurret(Tank owner)
 		{
 			Owner = owner;
-
-			Attachment = Owner.GetAttachment("turret");
 
 			if (Owner.IsLocalClient)
 			{
@@ -61,14 +65,18 @@ namespace CryGameCode.Tanks
 
 		public void Initialize(EntityBase entity)
 		{
+			Attachment = Owner.GetAttachment("turret");
+
 			Attachment.SwitchToEntityObject(entity.Id);
 
 			Entity = entity;
 
 			entity.LoadObject(Model);
+
 			entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
 
 			entity.OnDestroyed += (x) => { Destroy(); };
+
 		}
 
 		void Serialize(CrySerialize serialize)
