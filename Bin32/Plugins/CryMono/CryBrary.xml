@@ -836,7 +836,7 @@
             Represents an entity created via CryMono.
             </summary>
         </member>
-        <member name="M:CryEngine.Entity.Spawn(System.String,System.Type,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
+        <member name="M:CryEngine.Entity.Spawn(System.String,System.Type,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags,System.Object[])">
             <summary>
             Spawns a new entity
             </summary>
@@ -849,7 +849,7 @@
             <param name="flags"></param>
             <returns></returns>
         </member>
-        <member name="M:CryEngine.Entity.Spawn``1(System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
+        <member name="M:CryEngine.Entity.Spawn``1(System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags,System.Object[])">
             <summary>
             Spawns a new entity
             </summary>
@@ -862,7 +862,7 @@
             <param name="flags"></param>
             <returns></returns>
         </member>
-        <member name="M:CryEngine.Entity.Spawn(System.String,System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags)">
+        <member name="M:CryEngine.Entity.Spawn(System.String,System.String,System.Nullable{CryEngine.Vec3},System.Nullable{CryEngine.Quat},System.Nullable{CryEngine.Vec3},System.Boolean,CryEngine.EntityFlags,System.Object[])">
             <summary>
             Spawns a new entity
             </summary>
@@ -954,6 +954,11 @@
         <member name="M:CryEngine.Entity.OnSpawn">
             <summary>
             This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
+            </summary>
+        </member>
+        <member name="M:CryEngine.Entity.OnPostSpawn(System.Object[])">
+            <summary>
+            Called after spawning, with the parameters supplied to Entity.Spawn.
             </summary>
         </member>
         <member name="M:CryEngine.Entity.OnRemove">
