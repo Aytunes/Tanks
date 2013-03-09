@@ -8,12 +8,12 @@ namespace CryGameCode
 {
 	public class DeathMatch : SinglePlayer
 	{
-        public override string[] Teams
-        {
-            get
-            {
-                return new string[] { "red", "blue" };
-            }
-        }
-    }
+		public override string[] Teams
+		{
+			get
+			{
+				return new string[] { "red", "blue" };
+			}
+		}
+	}
 }

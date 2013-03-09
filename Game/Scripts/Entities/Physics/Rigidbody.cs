@@ -8,13 +8,13 @@ namespace CryGameCode.Entities
 		[EditorProperty(Type = EditorPropertyType.Object)]
 		public string Model { get { return GetObjectFilePath(); } set { LoadObject(value); } }
 
-        float mass;
+		float mass;
 		[EditorProperty]
-        public float Mass 
-        { 
-            get { return mass; }
-            set { Physics.Mass = mass = value; }
-        }
+		public float Mass
+		{
+			get { return mass; }
+			set { Physics.Mass = mass = value; }
+		}
 
 		public override void OnSpawn()
 		{

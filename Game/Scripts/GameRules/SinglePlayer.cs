@@ -21,17 +21,17 @@ namespace CryGameCode
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
-			if(!Network.IsServer)
+			if (!Network.IsServer)
 				return;
 
 			var tank = Actor.Create<Tank>(channelId, playerName);
-			if(tank == null)
+			if (tank == null)
 			{
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
 				return;
 			}
 
-            tank.ToggleSpectatorPoint();
+			tank.ToggleSpectatorPoint();
 		}
 
 		public override void OnClientDisconnect(int channelId)
@@ -44,117 +44,117 @@ namespace CryGameCode
 
 		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
 		{
-            var actor = Actor.Get<Tank>(playerId);  
+			var actor = Actor.Get<Tank>(playerId);
 
-            actor.OnEnteredGame();
-            actor.RemoteInvocation(OnEnteredGame, NetworkTarget.ToRemoteClients, channelId, playerId);
+			actor.OnEnteredGame();
+			actor.RemoteInvocation(OnEnteredGame, NetworkTarget.ToRemoteClients, channelId, playerId);
 		}
 
-        [RemoteInvocation]
-        void OnEnteredGame(int channelId, EntityId playerId)
-        {
-            var actor = Actor.Get<Tank>(playerId);
+		[RemoteInvocation]
+		void OnEnteredGame(int channelId, EntityId playerId)
+		{
+			var actor = Actor.Get<Tank>(playerId);
 
-            actor.OnEnteredGame();
-        }
+			actor.OnEnteredGame();
+		}
 
-        /// <summary>
-        /// Sent to server when a remote actor wishes to be revived, change team and / or change turret type.
-        /// </summary>
-        /// <param name="actorId"></param>
-        /// <param name="team"></param>
-        /// <param name="turretTypeName"></param>
-        [RemoteInvocation]
-        public void RequestRevive(EntityId actorId, string team, string turretTypeName)
-        {
-            if (!Network.IsServer)
-                return;
+		/// <summary>
+		/// Sent to server when a remote actor wishes to be revived, change team and / or change turret type.
+		/// </summary>
+		/// <param name="actorId"></param>
+		/// <param name="team"></param>
+		/// <param name="turretTypeName"></param>
+		[RemoteInvocation]
+		public void RequestRevive(EntityId actorId, string team, string turretTypeName)
+		{
+			if (!Network.IsServer)
+				return;
 
-            Debug.LogAlways("Received revival request");
-            var tank = Actor.Get<Tank>(actorId);
+			Debug.LogAlways("Received revival request");
+			var tank = Actor.Get<Tank>(actorId);
 
-            if (tank.IsDead && !tank.IsDestroyed)
-            {
-                if (IsTeamValid(team))
-                    tank.Team = team;
+			if (tank.IsDead && !tank.IsDestroyed)
+			{
+				if (IsTeamValid(team))
+					tank.Team = team;
 
-                tank.TurretTypeName = turretTypeName;
+				tank.TurretTypeName = turretTypeName;
 
-                Debug.LogAlways("Reviving!");
+				Debug.LogAlways("Reviving!");
 
-                var spawnPoint = FindSpawnPoint();
-                if (spawnPoint != null)
-                    spawnPoint.TrySpawn(tank);
+				var spawnPoint = FindSpawnPoint();
+				if (spawnPoint != null)
+					spawnPoint.TrySpawn(tank);
 
-                var turretEntity = Entity.Spawn(tank.Name + "." + turretTypeName, "Default");
+				var turretEntity = Entity.Spawn<TurretEntity>(tank.Name + "." + turretTypeName, null, null, null, true, EntityFlags.CastShadow);
 
-                tank.OnRevived();
+				tank.OnRevived();
 
-                // TODO: Do this on the remote client too.
-                // Not possible to send its Id via the OnRevivedPlayer RMI due to the entity not having spawned on remote clients at that point.
-                tank.Turret.Initialize(turretEntity);
+				// TODO: Do this on the remote client too.
+				// Not possible to send its Id via the OnRevivedPlayer RMI due to the entity not having spawned on remote clients at that point.
+				tank.Turret.Initialize(turretEntity);
 
-                Debug.LogAlways("Invoking RMI OnRevivedPlayer");
-                tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, tank.Rotation, team, turretTypeName);
-            }
-        }
+				Debug.LogAlways("Invoking RMI OnRevivedPlayer");
+				tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, tank.Rotation, team, turretTypeName);
+			}
+		}
 
-        [RemoteInvocation]
-        void OnRevivedPlayer(EntityId actorId, Vec3 position, Quat rotation, string team, string turretTypeName)
-        {
-            Debug.LogAlways("OnRevivedPlayer");
-            var tank = Actor.Get<Tank>(actorId);
+		[RemoteInvocation]
+		void OnRevivedPlayer(EntityId actorId, Vec3 position, Quat rotation, string team, string turretTypeName)
+		{
+			Debug.LogAlways("OnRevivedPlayer");
+			var tank = Actor.Get<Tank>(actorId);
 
-            tank.Team = team;
-            tank.TurretTypeName = turretTypeName;
+			tank.Team = team;
+			tank.TurretTypeName = turretTypeName;
 
-            tank.Position = position;
-            tank.Rotation = rotation;
+			tank.Position = position;
+			tank.Rotation = rotation;
 
-            tank.OnRevived();
-        }
+			tank.OnRevived();
+		}
 
-        [RemoteInvocation]
-        public void RequestEntitySpawn(string entityTypeName, Vec3 position, Quat rotation)
-        {
-            if (!Network.IsServer)
-                return;
+		[RemoteInvocation]
+		public void RequestEntitySpawn(string entityTypeName, Vec3 position, Quat rotation)
+		{
+			if (!Network.IsServer)
+				return;
 
-            var type = Type.GetType(entityTypeName);
-            if (type == null)
-                return;
+			var type = Type.GetType(entityTypeName);
+			if (type == null)
+				return;
 
-            Entity.Spawn("pain", type, position, rotation);
-        }
+			Entity.Spawn("pain", type, position, rotation);
+		}
 
-        protected virtual SpawnPoint FindSpawnPoint(string team = null)
-        {
-            var spawnpoints = Entity.GetByClass<SpawnPoint>();
-            if (spawnpoints.Count() > 0)
-            {
-                spawnpoints = spawnpoints.Where(x =>
-                    {
-                        return x.CanSpawn && (team == null || x.Team == team);
-                    });
+		protected virtual SpawnPoint FindSpawnPoint(string team = null)
+		{
+			var spawnpoints = Entity.GetByClass<SpawnPoint>();
+			if (spawnpoints.Count() > 0)
+			{
+				spawnpoints = spawnpoints.Where(x =>
+					{
+						return x.CanSpawn && (team == null || x.Team == team);
+					});
 
-                if (spawnpoints.Count() > 0)
-                    return spawnpoints.ElementAt(Selector.Next(0, spawnpoints.Count()));
-            }
+				if (spawnpoints.Count() > 0)
+					return spawnpoints.ElementAt(Selector.Next(0, spawnpoints.Count()));
+			}
 
-            return null;
-        }
+			return null;
+		}
 
-        public virtual string[] Teams
-        {
-            get
-            {
-                return new string[] { "red" };
-            }
-        }
+		public virtual string[] Teams
+		{
+			get
+			{
+				return new string[] { "red" };
+			}
+		}
 
-        public bool IsTeamValid(string team)
-        {
-            return Teams.Contains(team);
-        }
+		public bool IsTeamValid(string team)
+		{
+			return Teams.Contains(team);
+		}
 	}
 }

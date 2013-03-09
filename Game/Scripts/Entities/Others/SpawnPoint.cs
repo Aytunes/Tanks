@@ -10,32 +10,32 @@ namespace CryGameCode
 			LastSpawned = -1;
 		}
 
-        public bool CanSpawn
-        {
-            get
-            {
-                return (Time.FrameStartTime - LastSpawned) > SpawnDelay * 1000 || LastSpawned == -1;
-            }
-        }
+		public bool CanSpawn
+		{
+			get
+			{
+				return (Time.FrameStartTime - LastSpawned) > SpawnDelay * 1000 || LastSpawned == -1;
+			}
+		}
 
 		public bool TrySpawn(EntityBase entity)
 		{
-			if(entity == null)
+			if (entity == null)
 				throw new System.ArgumentNullException("entity");
-            if (!Network.IsServer)
-                return false;
+			if (!Network.IsServer)
+				return false;
 
-            if (CanSpawn)
+			if (CanSpawn)
 			{
 				LastSpawned = Time.FrameStartTime;
 
-                var pos = Position;
-                var rot = Rotation;
+				var pos = Position;
+				var rot = Rotation;
 
 				entity.Position = pos;
 				entity.Rotation = rot;
 
-                RemoteInvocation(NetSpawn, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, entity.Id, pos);
+				RemoteInvocation(NetSpawn, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, entity.Id, pos);
 
 				return true;
 			}
@@ -43,13 +43,13 @@ namespace CryGameCode
 			return false;
 		}
 
-        [RemoteInvocation]
-        public void NetSpawn(EntityId targetId, Vec3 pos)
-        {
-            var tank = Entity.Get(targetId);
+		[RemoteInvocation]
+		public void NetSpawn(EntityId targetId, Vec3 pos)
+		{
+			var tank = Entity.Get(targetId);
 
-            tank.Position = pos;
-        }
+			tank.Position = pos;
+		}
 
 		public float LastSpawned { get; private set; }
 

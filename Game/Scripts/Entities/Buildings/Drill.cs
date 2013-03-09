@@ -39,7 +39,7 @@ namespace CryGameCode.Entities.Buildings
 			Material = Material.Find("objects/tank_env_assets/scifi/drill_" + m_team);
 		}
 
-        public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
 			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
 			StopAnimation(blendOutTime: 1);
@@ -54,7 +54,7 @@ namespace CryGameCode.Entities.Buildings
 			get { return m_team; }
 			set
 			{
-				if(string.IsNullOrEmpty(value))
+				if (string.IsNullOrEmpty(value))
 					return;
 
 				m_team = value;

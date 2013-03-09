@@ -2,7 +2,7 @@
 
 namespace CryGameCode.Entities.Lights
 {
-	[Entity(Category = "Lights", Icon="Light.bmp")]
+	[Entity(Category = "Lights", Icon = "Light.bmp")]
 	public class Light : Entity
 	{
 		const int LightSlot = 1;
@@ -18,14 +18,14 @@ namespace CryGameCode.Entities.Lights
 			Activate(Activated);
 		}
 
-        protected override void OnPropertyChanged(System.Reflection.MemberInfo memberInfo, EditorPropertyType propertyType, object newValue)
+		protected override void OnPropertyChanged(System.Reflection.MemberInfo memberInfo, EditorPropertyType propertyType, object newValue)
 		{
 			Activate(Activated, true);
 		}
 
 		public void Activate(bool activate, bool force = false)
 		{
-			if((activate && !Activated) || force)
+			if ((activate && !Activated) || force)
 			{
 				Activated = true;
 
@@ -57,7 +57,7 @@ namespace CryGameCode.Entities.Lights
 		public bool Activated { get; set; }
 
 		[EditorProperty]
-        public float Radius = 10;
+		public float Radius = 10;
 
 		#region Style
 		[EditorProperty]
@@ -67,14 +67,14 @@ namespace CryGameCode.Entities.Lights
 		public float CoronaScale = 1;
 		[EditorProperty]
 		public float CoronaIntensity = 1;
-        [EditorProperty]
-        public float CoronaDistSizeFactor = 1;
+		[EditorProperty]
+		public float CoronaDistSizeFactor = 1;
 		[EditorProperty]
 		public float CoronaDistIntensityFactor = 1;
 		#endregion
 
 		#region Color
-        [EditorProperty(Type = EditorPropertyType.Color)]
+		[EditorProperty(Type = EditorPropertyType.Color)]
 		public Vec3 DiffuseColor { get; set; }
 		[EditorProperty]
 		public float DiffuseMultiplier = 1;

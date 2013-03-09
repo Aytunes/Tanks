@@ -9,108 +9,108 @@ using CryGameCode.Tanks;
 
 namespace CryGameCode.Entities.Buildings
 {
-    [Entity(Category = "Buildings")]
-    public class AutoTurret : DamageableEntity
-    {
-        protected override void OnEditorReset(bool enteringGame)
-        {
-            Reset();
-        }
+	[Entity(Category = "Buildings")]
+	public class AutoTurret : DamageableEntity
+	{
+		protected override void OnEditorReset(bool enteringGame)
+		{
+			Reset();
+		}
 
-        public override void OnSpawn()
-        {
-            Reset();
-        }
+		public override void OnSpawn()
+		{
+			Reset();
+		}
 
-        protected override void PostSerialize()
-        {
-            Reset();
-        }
+		protected override void PostSerialize()
+		{
+			Reset();
+		}
 
-        void Reset()
-        {
-            ReceiveUpdates = true;
+		void Reset()
+		{
+			ReceiveUpdates = true;
 
-            LoadObject(Model);
+			LoadObject(Model);
 
-            Physics.Mass = 100;
-            Physics.Resting = false;
-            Physics.Type = PhysicalizationType.Rigid;
+			Physics.Mass = 100;
+			Physics.Resting = false;
+			Physics.Type = PhysicalizationType.Rigid;
 
-            Physics.AddImpulse(new Vec3(0, 0, -1));
+			Physics.AddImpulse(new Vec3(0, 0, -1));
 
-            Health = MaxHealth = 100;
+			Health = MaxHealth = 100;
 
-            Hidden = false;
+			Hidden = false;
 
-            Range = 500;
-        }
+			Range = 500;
+		}
 
-        protected override void OnCollision(EntityId colliderId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
-        {
-            // collided with terrain
-            if (colliderId == 0)
-            {
-                Physics.Type = PhysicalizationType.Static;
-            }
-        }
+		protected override void OnCollision(EntityId colliderId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
+		{
+			// collided with terrain
+			if (colliderId == 0)
+			{
+				Physics.Type = PhysicalizationType.Static;
+			}
+		}
 
-        public override void OnUpdate()
-        {
-            if (IsDead)
-                return;
+		public override void OnUpdate()
+		{
+			if (IsDead)
+				return;
 
-            var position = Position;
+			var position = Position;
 
-            var bbox = new BoundingBox(new Vec3(position.X - Range, position.Y - Range, position.Z - Range), new Vec3(position.X + Range, position.Y + Range, position.Z + Range));
+			var bbox = new BoundingBox(new Vec3(position.X - Range, position.Y - Range, position.Z - Range), new Vec3(position.X + Range, position.Y + Range, position.Z + Range));
 
-            var possibleTargets = Entity.QueryProximity<Tank>(bbox);
+			var possibleTargets = Entity.QueryProximity<Tank>(bbox);
 
-            float closestDistanceSquared = Range * Range;
-            Tank closestTank = null;
+			float closestDistanceSquared = Range * Range;
+			Tank closestTank = null;
 
-            foreach(var tank in possibleTargets)
-            {
-                var tankPosition = tank.Position;
-                Vec3 deltaDist = tankPosition - position;
+			foreach (var tank in possibleTargets)
+			{
+				var tankPosition = tank.Position;
+				Vec3 deltaDist = tankPosition - position;
 
-                float distanceSquared = deltaDist.LengthSquared;
+				float distanceSquared = deltaDist.LengthSquared;
 
-                if (distanceSquared < closestDistanceSquared)
-                {
-                    closestTank = tank;
-                    closestDistanceSquared = distanceSquared;
-                }
-            }
+				if (distanceSquared < closestDistanceSquared)
+				{
+					closestTank = tank;
+					closestDistanceSquared = distanceSquared;
+				}
+			}
 
-            if(closestTank != null)
-                FireAt(closestTank);
-        }
+			if (closestTank != null)
+				FireAt(closestTank);
+		}
 
-        void FireAt(EntityBase target)
-        {
-            if (Time.FrameStartTime > lastShot + (TimeBetweenShots * 1000))
-            {
-                lastShot = Time.FrameStartTime;
+		void FireAt(EntityBase target)
+		{
+			if (Time.FrameStartTime > lastShot + (TimeBetweenShots * 1000))
+			{
+				lastShot = Time.FrameStartTime;
 
-                var turretPos = Position + Rotation * new Vec3(2, 0, 1); // temporary offset, remove when we have helpers.
-                Vec3 direction = target.Position - Position;
-                direction.Normalize();
+				var turretPos = Position + Rotation * new Vec3(2, 0, 1); // temporary offset, remove when we have helpers.
+				Vec3 direction = target.Position - Position;
+				direction.Normalize();
 
-                Entity.Spawn<Projectiles.Bullet>("pain", turretPos, Quat.CreateRotationVDir(direction));
-            }
-        }
+				Entity.Spawn<Projectiles.Bullet>("pain", turretPos, Quat.CreateRotationVDir(direction));
+			}
+		}
 
-        public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
-        {
-            Hidden = true;
-        }
+		public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		{
+			Hidden = true;
+		}
 
-        public string Model { get { return "Objects/tank_gameplay_assets/droppod_turret/turretblock.cgf"; } }
+		public string Model { get { return "Objects/tank_gameplay_assets/droppod_turret/turretblock.cgf"; } }
 
-        float lastShot;
-        float TimeBetweenShots { get { return 0.1f; } }
+		float lastShot;
+		float TimeBetweenShots { get { return 0.1f; } }
 
-        public float Range { get; set; }
-    }
+		public float Range { get; set; }
+	}
 }
