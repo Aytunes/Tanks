@@ -9,6 +9,8 @@ namespace CryGameCode.Tanks
 {
     public interface IPlayerInput
     {
+        void RegisterInputs();
+
         void PreUpdate();
         void Update();
         void PostUpdate();
@@ -19,7 +21,11 @@ namespace CryGameCode.Tanks
 
         bool HasFlag(InputFlags flag);
 
-        InputFlags Flags { get; set; }
+        InputFlags Flags { get; }
+
+        int MouseX { get; }
+        int MouseY { get; }
+
         Actor Owner { get; }
     }
 }

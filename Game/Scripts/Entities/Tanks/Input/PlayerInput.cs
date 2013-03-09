@@ -17,51 +17,61 @@ namespace CryGameCode.Tanks
         public PlayerInput(Tank tank)
         {
             Owner = tank;
+        }
 
-            if (tank.IsLocalClient)
+        public void RegisterInputs()
+        {
+            AddEvent("zoom_in", InputFlags.ZoomIn);
+            AddEvent("zoom_out", InputFlags.ZoomOut);
+
+            AddEvent("moveright", InputFlags.MoveRight);
+            AddEvent("moveleft", InputFlags.MoveLeft);
+
+            AddEvent("moveforward", InputFlags.MoveForward);
+            AddEvent("moveback", InputFlags.MoveBack);
+
+            AddEvent("sprint", InputFlags.Boost);
+
+            Input.ActionmapEvents.Add("attack1", (e) =>
             {
-                AddEvent("zoom_in", InputFlags.ZoomIn);
-                AddEvent("zoom_out", InputFlags.ZoomOut);
+                if (e.KeyEvent == KeyEvent.OnRelease)
+                {
+                    var gameRules = GameRules.Current as SinglePlayer;
 
-                AddEvent("moveright", InputFlags.MoveRight);
-                AddEvent("moveleft", InputFlags.MoveLeft);
-
-                AddEvent("moveforward", InputFlags.MoveForward);
-                AddEvent("moveback", InputFlags.MoveBack);
-
-                AddEvent("sprint", InputFlags.Boost);
-
-                Input.ActionmapEvents.Add("attack1", (e) =>
+                    if (Owner != null && Owner.IsDead)
                     {
-                        if (e.KeyEvent == KeyEvent.OnRelease)
-                        {
-                            var gameRules = GameRules.Current as SinglePlayer;
+                        var tank = Owner as Tank;
 
-                            if (tank != null && tank.IsDead)
-                            {
-                                if (Network.IsServer)
-                                    gameRules.RequestRevive(tank.Id, tank.Team, tank.TurretTypeName);
-                                else
-                                {
-                                    Debug.LogAlways("Requesting revive ({0}, {1}, {2})", tank.Id, tank.Team, tank.TurretTypeName);
-                                    Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, tank.Id, tank.Team, tank.TurretTypeName);
-                                }
-                            }
-                            else if (Owner == null)
-                                Debug.LogAlways("Could not request revive, owner as null");
-                            else if (Owner.IsDead)
-                                Debug.LogAlways("Could not request revive, owner was alive.");
-                        }
-                    });
-
-                Input.ActionmapEvents.Add("cycle_view", (e) =>
-                    {
-                        if (GameCVars.cam_type < (int)CameraType.Last - 1)
-                            GameCVars.cam_type++;
+                        if (Network.IsServer)
+                            gameRules.RequestRevive(tank.Id, tank.Team, tank.TurretTypeName);
                         else
-                            GameCVars.cam_type = 0;
-                    });
-            }
+                        {
+                            Debug.LogAlways("Requesting revive ({0}, {1}, {2})", tank.Id, tank.Team, tank.TurretTypeName);
+                            Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, tank.Id, tank.Team, tank.TurretTypeName);
+                        }
+                    }
+                    else if (Owner == null)
+                        Debug.LogAlways("Could not request revive, owner as null");
+                    else if (Owner.IsDead)
+                        Debug.LogAlways("Could not request revive, owner was alive.");
+                }
+            });
+
+            Input.ActionmapEvents.Add("cycle_view", (e) =>
+            {
+                if (GameCVars.cam_type < (int)CameraType.Last - 1)
+                    GameCVars.cam_type++;
+                else
+                    GameCVars.cam_type = 0;
+            });
+
+            Input.MouseEvents += (mouseArgs => 
+            {
+                m_mousePositionX = mouseArgs.X;
+                m_mousePositionY = mouseArgs.Y;
+
+                Owner.GameObject.NotifyNetworkStateChange(Aspect);
+            });
         }
 
         public void PreUpdate() { }
@@ -72,11 +82,12 @@ namespace CryGameCode.Tanks
         {
             serialize.BeginGroup("PlayerInput");
 
-            Debug.LogAlways("Flags was {0}", Flags);
             int flags = (int)m_flags;
             serialize.Value("m_flags", ref flags);
             m_flags = (InputFlags)flags;
-            Debug.LogAlways("Flags is {0}", Flags);
+
+            serialize.Value("m_mousePositionX", ref m_mousePositionX);
+            serialize.Value("m_mousePositionY", ref m_mousePositionY);
 
             serialize.EndGroup();
         }
@@ -131,6 +142,12 @@ namespace CryGameCode.Tanks
 
         InputFlags m_flags;
         public InputFlags Flags { get { return m_flags; } set { m_flags = value; } }
+
+        int m_mousePositionX;
+        public int MouseX { get { return m_mousePositionX; } }
+        int m_mousePositionY;
+        public int MouseY { get { return m_mousePositionY; } }
+
         public Actor Owner { get; private set; }
     }
 }

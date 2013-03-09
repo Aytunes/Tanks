@@ -117,7 +117,6 @@
     <Compile Include="Entities\Projectiles\Projectile.cs" />
     <Compile Include="Entities\Tanks\Input\InputFlags.cs" />
     <Compile Include="Entities\Tanks\Input\IPlayerInput.cs" />
-    <Compile Include="Entities\Tanks\Input\RemotePlayerInput.cs" />
     <Compile Include="Entities\Tanks\TankDamage.cs" />
     <Compile Include="Entities\Tanks\TankCamera.cs" />
     <Compile Include="Entities\Tanks\Input\PlayerInput.cs" />

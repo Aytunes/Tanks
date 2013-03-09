@@ -1,20 +1,26 @@
 <EntityScheduler>
 	<!-- game rules -->
+	<Class name="SinglePlayer" policy="rule"/>
 	<Class name="DeathMatch" policy="rule"/>
 		
 	<!-- actors -->
 	<Class name="Tank" policy="dude" own="own"/>
 	<Class name="MonoActor" policy="dude" own="own"/>
 	
+	<!-- projectiles -->
 	<Class name="AutocannonRocket" policy="phys"/>
 	<Class name="Bullet" policy="phys"/>
 	<Class name="Heavy" policy="phys"/>
 	<Class name="MGBullet" policy="phys"/>
 	<Class name="Rocket" policy="phys"/>
 	
+	<!-- game elements -->
 	<Class name="Rigidbody" policy="phys"/>
 	<Class name="Drill" policy="phys"/>
 	<Class name="CollectibleHolder" policy="phys"/>
+	
+	<Class name="HealthCollectible" policy="obj"/>
+	<Class name="HasteCollectible" policy="obj"/>
 	
 	<Class name="Grunt" policy="dude" />
 	

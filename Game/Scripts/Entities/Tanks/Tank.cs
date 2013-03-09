@@ -13,6 +13,8 @@ namespace CryGameCode.Tanks
             MaxHealth = 100;
 
             m_acceleration = new Vec2();
+
+            Input = new PlayerInput(this);
         }
 
         /// <summary>
@@ -22,13 +24,10 @@ namespace CryGameCode.Tanks
         {
             var gameMode = GameRules.Current as SinglePlayer;
 
-            //if (IsLocalClient)
-                m_playerInput = new PlayerInput(this);
-            //else
-                //m_playerInput = new RemotePlayerInput(this);
-
             if (IsLocalClient)
             {
+                Input.RegisterInputs();
+
                 // Set team & turret type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
                 Team = gameMode.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameMode.Teams.Length));
 
@@ -37,8 +36,6 @@ namespace CryGameCode.Tanks
                 else
                     TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
             }
-
-            GameObject.EnableAspect(PlayerInput.Aspect, true);
 
             PrePhysicsUpdateMode = PrePhysicsUpdateMode.Always;
             ReceivePostUpdates = true;
@@ -51,8 +48,8 @@ namespace CryGameCode.Tanks
 
 		public void OnLeftGame()
 		{
-			if (m_playerInput != null)
-				m_playerInput.Destroy();
+			if (Input != null)
+				Input.Destroy();
 
 			if (Turret != null)
 			{
@@ -69,8 +66,11 @@ namespace CryGameCode.Tanks
             if (aspect == PlayerInput.Aspect)
             {
                 Debug.LogAlways("NetSerialize input");
-                if(m_playerInput != null)
-                    m_playerInput.NetSerialize(serialize);
+                if (Input != null)
+                    Input.NetSerialize(serialize);
+                else
+                    serialize.FlagPartialRead();
+
                 Debug.LogAlways("~NetSerialize input");
             }
 
@@ -136,8 +136,8 @@ namespace CryGameCode.Tanks
             if (IsDead)
                 return;
 
-            if (m_playerInput != null)
-                m_playerInput.Update();
+            if (Input != null)
+                Input.Update();
 
 			Turret.Update();
 
@@ -150,8 +150,8 @@ namespace CryGameCode.Tanks
 
         protected override void OnPrePhysicsUpdate()
         {
-            if (m_playerInput != null)
-                m_playerInput.PreUpdate();
+            if (Input != null)
+                Input.PreUpdate();
 
             UpdateMovement();
         }
@@ -201,7 +201,7 @@ namespace CryGameCode.Tanks
 
         public string TurretTypeName { get; set; }
 
-        private IPlayerInput m_playerInput;
+        public IPlayerInput Input { get; set; }
 
         public TankTurret Turret { get; set; }
 
