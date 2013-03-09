@@ -81,9 +81,6 @@ namespace CryGameCode.Tanks
         {
             LoadObject("objects/tanks/tank_generic_" + Team + ".cdf");
 
-            m_leftTrack = GetAttachment("track_left");
-            m_rightTrack = GetAttachment("track_right");
-
             Physicalize();
         }
 
@@ -204,9 +201,6 @@ namespace CryGameCode.Tanks
         public IPlayerInput Input { get; set; }
 
         public TankTurret Turret { get; set; }
-
-		private Attachment m_leftTrack;
-		private Attachment m_rightTrack;
 
         public Vec3 GroundNormal { get; set; }
 

@@ -77,11 +77,6 @@ namespace CryGameCode.Tanks
             moveRequest.rotation.Normalize();
 
 			AddMovement(ref moveRequest);
-
-            if(!m_leftTrack.IsDestroyed)
-                m_leftTrack.Material = GetTrackMaterial(m_acceleration.X);
-            if(!m_rightTrack.IsDestroyed)
-                m_rightTrack.Material = GetTrackMaterial(m_acceleration.Y);
 		}
 
         private Material GetTrackMaterial(float moveDirection)
