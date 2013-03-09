@@ -5,6 +5,8 @@ namespace CryGameCode.Tanks
 {
 	public partial class Tank
 	{
+		const int MovementAspect = 128;
+
 		float NormalToAngle(Vec3 normal)
 		{
 			return (float)Math.Atan2(Math.Sqrt(normal.X * normal.X + normal.Y * normal.Y), normal.Z);
@@ -77,6 +79,7 @@ namespace CryGameCode.Tanks
 			moveRequest.rotation.Normalize();
 
 			AddMovement(ref moveRequest);
+			GameObject.NotifyNetworkStateChange(MovementAspect);
 		}
 
 		private Material GetTrackMaterial(float moveDirection)

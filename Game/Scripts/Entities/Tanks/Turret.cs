@@ -129,8 +129,6 @@ namespace CryGameCode.Tanks
 			if (Destroyed)
 				return;
 
-			Entity.Position = Owner.Position + Owner.Rotation * new Vec3(0, 0.69252968f, 2.05108f);
-
 			if (m_leftFiring)
 				FireLeft();
 

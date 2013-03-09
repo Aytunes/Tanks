@@ -64,6 +64,21 @@ namespace CryGameCode.Tanks
 				Debug.LogAlways("~NetSerialize input");
 			}
 
+			if (aspect == MovementAspect)
+			{
+				var pos = Position;
+				var rot = Rotation;
+
+				serialize.Value("pos", ref pos, "wrld");
+				serialize.Value("rot", ref rot);
+
+				Position = Vec3.CreateLerp(Position, pos, Time.DeltaTime * 10);
+				Rotation = Quat.CreateNlerp(Rotation, rot, Time.DeltaTime * 10);
+
+				if (Turret != null && Turret.Entity != null)
+					Turret.Entity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
+			}
+
 			serialize.EndGroup();
 		}
 
@@ -141,7 +156,8 @@ namespace CryGameCode.Tanks
 			if (Input != null)
 				Input.PreUpdate();
 
-			UpdateMovement();
+			if (Network.IsServer)
+				UpdateMovement();
 		}
 
 		public void ToggleSpectatorPoint(bool increment = false)
