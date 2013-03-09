@@ -2097,6 +2097,17 @@
             Thrown when an error related to a remote invocation (see <see cref="T:CryEngine.RemoteInvocationAttribute"/>) is caught.
             </summary>
         </member>
+        <member name="M:CryEngine.Serialization.CrySerialize.BeginGroup(System.String)">
+            <summary>
+            Begins a serialization group - must be matched by an <see cref="M:CryEngine.Serialization.CrySerialize.EndGroup"/> call.
+            </summary>
+            <param name="name">Preferably as short as possible for performance reasons, cannot contain spaces.</param>
+        </member>
+        <member name="M:CryEngine.Serialization.CrySerialize.FlagPartialRead">
+            <summary>
+            For network updates: Notify the network engine that this value was only partially read and we should re-request an update from the server soon.
+            </summary>
+        </member>
         <member name="F:CryEngine.Utilities.ProjectSettings.BugReportLink">
             <summary>
             Designates what link will be opened when the user presses 'Report Bug' in the exception form.
