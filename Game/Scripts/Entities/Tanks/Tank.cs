@@ -25,17 +25,7 @@ namespace CryGameCode.Tanks
             var gameMode = GameRules.Current as SinglePlayer;
 
             if (IsLocalClient)
-            {
                 Input.RegisterInputs();
-
-                // Set team & turret type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
-                Team = gameMode.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameMode.Teams.Length));
-
-                if (string.IsNullOrEmpty(GameCVars.ForceTankType))
-                    TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
-                else
-                    TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
-            }
 
             PrePhysicsUpdateMode = PrePhysicsUpdateMode.Always;
             ReceivePostUpdates = true;
@@ -86,11 +76,11 @@ namespace CryGameCode.Tanks
 
         public void OnRevived()
         {
+            Turret = Activator.CreateInstance(Type.GetType(TurretTypeName), this) as TankTurret;
+
             Health = MaxHealth;
 
             ResetModel();
-
-            Turret = Activator.CreateInstance(Type.GetType(TurretTypeName), this) as TankTurret;
 
             Hide(false);
 
@@ -116,8 +106,9 @@ namespace CryGameCode.Tanks
             Physics.UseCapsule = false;
             Physics.SizeCollider = new Vec3(2.2f, 2.2f, 0.2f);
             Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
-            Physics.MaxClimbAngle = MathHelpers.DegreesToRadians(30);
-            Physics.AirControl = 0.0f;
+
+            Physics.Gravity = Vec3.Zero;
+            Physics.AirControl = 0;
             Physics.Save();
         }
 

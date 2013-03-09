@@ -47,9 +47,11 @@ namespace CryGameCode
             var actor = Actor.Get<Tank>(playerId);  
 
             actor.OnEnteredGame();
+            actor.RemoteInvocation(OnEnteredGame, NetworkTarget.ToRemoteClients, channelId, playerId);
 		}
 
-        public override void OnPlayerJoined(string playerName, EntityId playerId)
+        [RemoteInvocation]
+        void OnEnteredGame(int channelId, EntityId playerId)
         {
             var actor = Actor.Get<Tank>(playerId);
 
@@ -84,7 +86,13 @@ namespace CryGameCode
                 if (spawnPoint != null)
                     spawnPoint.TrySpawn(tank);
 
+                var turretEntity = Entity.Spawn(tank.Name + "." + turretTypeName, "Default");
+
                 tank.OnRevived();
+
+                // TODO: Do this on the remote client too.
+                // Not possible to send its Id via the OnRevivedPlayer RMI due to the entity not having spawned on remote clients at that point.
+                tank.Turret.Initialize(turretEntity);
 
                 Debug.LogAlways("Invoking RMI OnRevivedPlayer");
                 tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, tank.Rotation, team, turretTypeName);

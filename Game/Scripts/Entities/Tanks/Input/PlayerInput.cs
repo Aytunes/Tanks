@@ -17,6 +17,8 @@ namespace CryGameCode.Tanks
         public PlayerInput(Tank tank)
         {
             Owner = tank;
+
+            Owner.OnDestroyed += (x) => { Destroy(); };
         }
 
         public void RegisterInputs()
@@ -38,9 +40,17 @@ namespace CryGameCode.Tanks
                 {
                     var gameRules = GameRules.Current as SinglePlayer;
 
-                    if (Owner != null && Owner.IsDead)
+                    if (Owner != null && Owner.IsDead && !Owner.IsDestroyed)
                     {
                         var tank = Owner as Tank;
+
+                        // Set team &  type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
+                        tank.Team = gameRules.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameRules.Teams.Length));
+
+                        if (string.IsNullOrEmpty(GameCVars.ForceTankType))
+                            tank.TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
+                        else
+                            tank.TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
 
                         if (Network.IsServer)
                             gameRules.RequestRevive(tank.Id, tank.Team, tank.TurretTypeName);

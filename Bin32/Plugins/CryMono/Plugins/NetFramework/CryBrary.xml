@@ -1123,27 +1123,7 @@
             Represents a character attachment, obtained via <see cref="M:CryEngine.EntityBase.GetAttachment(System.Int32,System.Int32)"/> and <see cref="M:CryEngine.EntityBase.GetAttachment(System.String,System.Int32)"/>.
             </summary>
         </member>
-        <member name="P:CryEngine.Attachment.Owner">
-            <summary>
-            Gets the entity this attachment is attached to.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Attachment.UseEntityPosition">
-            <summary>
-            Gets or sets a value indicating whether to automatically position the attachment object.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Attachment.UseEntityRotation">
-            <summary>
-            Gets or sets a value indicating whether to automatically rotate the attachment object.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Attachment.EntityAttachmentHandle">
-            <summary>
-            Gets or sets CMonoEntityAttachment *
-            </summary>
-        </member>
-        <member name="P:CryEngine.Attachment.AttachmentHandle">
+        <member name="P:CryEngine.Attachment.Handle">
             <summary>
             Gets or sets IAttachment *
             </summary>

@@ -62,14 +62,14 @@ namespace CryGameCode.Tanks
         {
             var distZ = GameCVars.cam_minDistZ + (GameCVars.cam_minDistZ - GameCVars.cam_maxDistZ) * ZoomRatio;
 
-            viewParams.Position = Turret.Attachment.Position + new Vec3(0, GameCVars.cam_distY, distZ);
+            viewParams.Position = Position + new Vec3(0, GameCVars.cam_distY, distZ);
             viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(GameCVars.cam_minAngleX + (GameCVars.cam_minAngleX - GameCVars.cam_maxAngleX) * ZoomRatio), 0, 0));
         }
 
         void ViewFirstPerson(ref ViewParams viewParams)
         {
-            viewParams.Rotation = Turret.Attachment.Rotation;
-            viewParams.Position = Turret.Attachment.Position + viewParams.Rotation * new Vec3(0, -5, 1.5f);
+            viewParams.Rotation = Turret.Entity.Rotation;
+            viewParams.Position = Turret.Entity.Position + viewParams.Rotation * new Vec3(0, -5, 1.5f);
         }
 
 		float ZoomLevel;

@@ -20,12 +20,6 @@ namespace CryGameCode.Tanks
 			Owner = owner;
 
             Attachment = Owner.GetAttachment("turret");
-            Attachment.UseEntityRotation = true;
-
-            Attachment.LoadObject(Model);
-            Attachment.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
-
-            Attachment.OnDestroyed += (x) => { Destroy(); };
 
             if (Owner.IsLocalClient)
             {
@@ -50,7 +44,21 @@ namespace CryGameCode.Tanks
 
                 Input.MouseEvents += ProcessMouseEvents;
             }
+
+            owner.OnDestroyed += (x) => { Destroy(); };
 		}
+
+        public void Initialize(EntityBase entity)
+        {
+            Attachment.SwitchToEntityObject(entity.Id);
+
+            Entity = entity;
+
+            entity.LoadObject(Model);
+            entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
+
+            entity.OnDestroyed += (x) => { Destroy(); };
+        }
 
         void Serialize(CrySerialize serialize)
         {
@@ -67,8 +75,10 @@ namespace CryGameCode.Tanks
 				Input.ActionmapEvents.RemoveAll(this);
 			}
 
-            if (!Attachment.IsDestroyed)
-                Attachment.Remove();
+            if (!Entity.IsDestroyed)
+                Entity.Remove();
+
+            Destroyed = true;
 		}
 
 		private void ProcessMouseEvents(MouseEventArgs e)
@@ -97,8 +107,10 @@ namespace CryGameCode.Tanks
 
 		public void Update()
 		{
-            if (Attachment.IsDestroyed)
+            if (Destroyed)
                 return;
+
+            Entity.Position = Owner.Position + Owner.Rotation * new Vec3(0, 0.69252968f, 2.05108f);
 
 			if(m_leftFiring)
 				FireLeft();
@@ -108,17 +120,17 @@ namespace CryGameCode.Tanks
 
             var tankInput = Owner.Input;
 
-            var dir = Renderer.ScreenToWorld(tankInput.MouseX, tankInput.MouseY) - Attachment.Position;
+            var dir = Renderer.ScreenToWorld(tankInput.MouseX, tankInput.MouseY) - Entity.Position;
 
             var ownerRotation = Owner.Rotation;
-            var attachmentRotation = Attachment.Rotation;
+            var attachmentRotation = Entity.Rotation;
 
             rotationZ = Quat.CreateSlerp(rotationZ, Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)), Time.DeltaTime * 10);
 
             attachmentRotation = rotationZ;
             attachmentRotation.Normalize();
 
-            Attachment.Rotation = attachmentRotation;
+            Entity.Rotation = attachmentRotation;
 		}
 
         Quat rotationZ;
@@ -128,18 +140,18 @@ namespace CryGameCode.Tanks
 
 		private void Fire(ref float shotTime, string helper)
 		{
-            if (Attachment.IsDestroyed)
+            if (Entity.IsDestroyed)
                 return;
 
 			if(Time.FrameStartTime > shotTime + (TimeBetweenShots * 1000))
 			{
 				shotTime = Time.FrameStartTime;
 
-                var jointAbsolute = Attachment.GetJointAbsolute(helper);
-				jointAbsolute.T = Attachment.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
+                var jointAbsolute = Entity.GetJointAbsolute(helper);
+                jointAbsolute.T = Entity.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
 
                 var gameMode = GameRules.Current as SinglePlayer;
-                Owner.RemoteInvocation(gameMode.RequestEntitySpawn, NetworkTarget.ToServer, ProjectileType.FullName, jointAbsolute.T, Attachment.Rotation.Normalized);
+                Owner.RemoteInvocation(gameMode.RequestEntitySpawn, NetworkTarget.ToServer, ProjectileType.FullName, jointAbsolute.T, Entity.Rotation.Normalized);
 
 				//OnFire(jointAbsolute.T);
 			}
@@ -174,20 +186,23 @@ namespace CryGameCode.Tanks
 
 		public void Hide(bool hide)
 		{
-			if(!Attachment.IsDestroyed)
-				Attachment.Hidden = hide;
+            if (Entity != null && !Entity.IsDestroyed)
+                Entity.Hidden = hide;
 		}
 
         public bool IsActive
         {
             get
             {
-                return Attachment != null && !Attachment.IsDestroyed;
+                return Attachment != null && !Entity.IsDestroyed;
             }
         }
 
 		public Tank Owner { get; private set; }
 		public Attachment Attachment { get; private set; }
+        public EntityBase Entity { get; private set; }
+
+        public bool Destroyed { get; set; }
 
 		public abstract string Model { get; }
 	}
