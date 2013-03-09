@@ -22,8 +22,6 @@ namespace CryGameCode.Tanks
 		/// </summary>
 		public void OnEnteredGame()
 		{
-			var gameMode = GameRules.Current as SinglePlayer;
-
 			if (IsLocalClient)
 				Input.RegisterInputs();
 
@@ -55,13 +53,10 @@ namespace CryGameCode.Tanks
 			// input aspect
 			if (aspect == PlayerInput.Aspect)
 			{
-				Debug.LogAlways("NetSerialize input");
 				if (Input != null)
 					Input.NetSerialize(serialize);
 				else
 					serialize.FlagPartialRead();
-
-				Debug.LogAlways("~NetSerialize input");
 			}
 
 			if (aspect == MovementAspect)

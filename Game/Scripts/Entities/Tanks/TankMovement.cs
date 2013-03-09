@@ -42,9 +42,6 @@ namespace CryGameCode.Tanks
 			else
 				normalizedVelocity = forwardDir;
 
-			// Used to determine whether the side of the tank is facing the current velocity direction.
-			var travelDirectionDot = normalizedVelocity.Dot(forwardDir);
-
 			var groundFriction = Physics.Status.Living.GroundSurfaceType.Parameters.Friction;
 
 			var onGround = !Physics.Status.Living.IsFlying;
