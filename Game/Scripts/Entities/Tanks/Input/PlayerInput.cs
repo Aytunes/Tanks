@@ -77,6 +77,9 @@ namespace CryGameCode.Tanks
 
 			Input.MouseEvents += (mouseArgs =>
 			{
+				if (Owner == null || Owner.IsDestroyed)
+					return;
+
 				m_mousePositionX = mouseArgs.X;
 				m_mousePositionY = mouseArgs.Y;
 
