@@ -191,6 +191,16 @@
             <param name="characterSlot">Slot containing the character</param>
             <returns>Default relative of the specified joint</returns>
         </member>
+        <member name="P:CryEngine.EntityBase.ViewDistanceRatio">
+            <summary>
+            Gets or sets the entity view distance ratio.
+            </summary>
+        </member>
+        <member name="P:CryEngine.EntityBase.LodRatio">
+            <summary>
+            Gets or sets the entity lod ratio.
+            </summary>
+        </member>
         <member name="P:CryEngine.EntityBase.Camera">
             <summary>
             Attempts to retrieve the camera linked to this entity.
