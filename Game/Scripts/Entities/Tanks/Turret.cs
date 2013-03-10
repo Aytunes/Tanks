@@ -36,31 +36,51 @@ namespace CryGameCode.Tanks
 		{
 			Owner = owner;
 
-			if (Owner.IsLocalClient)
+			if (Network.IsServer)
+				owner.Input.OnInputChanged += OnInput;
+
+			owner.OnDestroyed += (x) => { Destroy(); };
+		}
+
+		void OnInput(InputFlags flags, KeyEvent keyEvent)
+		{
+			switch (flags)
 			{
-				// Temp hax for right mouse events not working
-				Input.ActionmapEvents.Add("attack2", (e) =>
-				{
-					switch (e.KeyEvent)
+				case InputFlags.LeftMouseButton:
 					{
-						case KeyEvent.OnPress:
+						if (keyEvent == KeyEvent.OnPress)
+						{
+							if (AutomaticFire)
+								m_leftFiring = true;
+
+							ChargeWeapon();
+						}
+						else if (keyEvent == KeyEvent.OnRelease)
+						{
+							if (AutomaticFire)
+								m_leftFiring = false;
+							else
+								FireLeft();
+						}
+					}
+					break;
+				case InputFlags.RightMouseButton:
+					{
+						if (keyEvent == KeyEvent.OnPress)
+						{
 							if (AutomaticFire)
 								m_rightFiring = true;
-							break;
-
-						case KeyEvent.OnRelease:
+						}
+						else if (keyEvent == KeyEvent.OnRelease)
+						{
 							if (AutomaticFire)
 								m_rightFiring = false;
 							else
 								FireRight();
-							break;
+						}
 					}
-				});
-
-				Input.MouseEvents += ProcessMouseEvents;
+					break;
 			}
-
-			owner.OnDestroyed += (x) => { Destroy(); };
 		}
 
 		public void Initialize(EntityBase entity)
@@ -88,40 +108,10 @@ namespace CryGameCode.Tanks
 
 		public void Destroy()
 		{
-			if (Owner.IsLocalClient)
-			{
-				Input.MouseEvents -= ProcessMouseEvents;
-				Input.ActionmapEvents.RemoveAll(this);
-			}
-
 			if (!Entity.IsDestroyed)
 				Entity.Remove();
 
 			Destroyed = true;
-		}
-
-		private void ProcessMouseEvents(MouseEventArgs e)
-		{
-			switch (e.MouseEvent)
-			{
-				case MouseEvent.LeftButtonDown:
-					{
-						if (AutomaticFire)
-							m_leftFiring = true;
-
-						ChargeWeapon();
-					}
-					break;
-
-				case MouseEvent.LeftButtonUp:
-					{
-						if (AutomaticFire)
-							m_leftFiring = false;
-						else
-							FireLeft();
-					}
-					break;
-			}
 		}
 
 		public void Update()
@@ -129,11 +119,14 @@ namespace CryGameCode.Tanks
 			if (Destroyed || Entity == null)
 				return;
 
-			if (m_leftFiring)
-				FireLeft();
+			if (Network.IsServer)
+			{
+				if (m_leftFiring)
+					FireLeft();
 
-			if (m_rightFiring)
-				FireRight();
+				if (m_rightFiring)
+					FireRight();
+			}
 
 			var tankInput = Owner.Input;
 

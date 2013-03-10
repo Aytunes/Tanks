@@ -207,7 +207,7 @@ namespace CryGameCode.Tanks
 
 		public string TurretTypeName { get; set; }
 
-		public IPlayerInput Input { get; set; }
+		public PlayerInput Input { get; set; }
 
 		public TankTurret Turret { get; set; }
 
