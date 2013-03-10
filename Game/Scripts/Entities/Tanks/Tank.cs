@@ -74,8 +74,8 @@ namespace CryGameCode.Tanks
 				var posDelta = pos - oldPos;
 				var rotDelta = rot / oldRot;
 
-				Position = Vec3.CreateLerp(Position, pos, posDelta.Length);
-				Rotation = Quat.CreateSlerp(Rotation, rot, rotDelta.Length);
+				Position = Vec3.CreateLerp(oldPos, pos, posDelta.Length);
+				Rotation = Quat.CreateSlerp(oldRot, rot, rotDelta.Length);
 
 				if (Turret != null && Turret.TurretEntity != null)
 					Turret.TurretEntity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
