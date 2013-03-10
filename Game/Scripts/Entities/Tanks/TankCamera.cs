@@ -68,8 +68,8 @@ namespace CryGameCode.Tanks
 
 		void ViewFirstPerson(ref ViewParams viewParams)
 		{
-			viewParams.Rotation = Turret.Entity.Rotation;
-			viewParams.Position = Turret.Entity.Position + viewParams.Rotation * new Vec3(0, -5, 1.5f);
+			viewParams.Rotation = Turret.TurretEntity.Rotation;
+			viewParams.Position = Turret.TurretEntity.Position + viewParams.Rotation * new Vec3(0, -5, 1.5f);
 		}
 
 		float ZoomLevel;

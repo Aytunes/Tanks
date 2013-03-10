@@ -77,8 +77,8 @@ namespace CryGameCode.Tanks
 				Position = Vec3.CreateLerp(Position, pos, posDelta.Length);
 				Rotation = Quat.CreateSlerp(Rotation, rot, rotDelta.Length);
 
-				if (Turret != null && Turret.Entity != null)
-					Turret.Entity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
+				if (Turret != null && Turret.TurretEntity != null)
+					Turret.TurretEntity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
 			}
 
 			serialize.EndGroup();
