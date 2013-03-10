@@ -1065,27 +1065,27 @@
             See OnEnterArea, OnMoveInsideArea, OnLeaveArea, OnEnterNearArea, OnLeaveNearArea and OnMoveNearArea
             </summary>
         </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.OnPortActivated(System.Int32,System.Object)">
+        <member name="M:CryEngine.Flowgraph.FlowNode.OnPortActivated(System.Int32,System.Object)">
             <summary>
             Called if one or more input ports have been activated.
             </summary>
         </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.OnInit">
+        <member name="M:CryEngine.Flowgraph.FlowNode.OnInit">
             <summary>
             Called after level has been loaded, is not called on serialization.
             Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
             </summary>
         </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.OnNodeUpdate">
+        <member name="M:CryEngine.Flowgraph.FlowNode.OnNodeUpdate">
             <summary>
-            Called each frame if node has been set to be regularly updated (See <see cref="P:CryEngine.FlowSystem.FlowNode.ReceiveNodeUpdates"/>)
-            Preferred over <see cref="M:CryEngine.FlowSystem.FlowNode.OnUpdate"/> due to supporting <see cref="M:CryEngine.FlowSystem.FlowNode.GetPortValue``1(System.Action{``0})"/> within the update loop.
+            Called each frame if node has been set to be regularly updated (See <see cref="P:CryEngine.Flowgraph.FlowNode.ReceiveNodeUpdates"/>)
+            Preferred over <see cref="M:CryEngine.Flowgraph.FlowNode.OnUpdate"/> due to supporting <see cref="M:CryEngine.Flowgraph.FlowNode.GetPortValue``1(System.Action{``0})"/> within the update loop.
             </summary>
         </member>
-        <member name="M:CryEngine.FlowSystem.FlowNode.OnUpdate">
+        <member name="M:CryEngine.Flowgraph.FlowNode.OnUpdate">
             <summary>
             Called each frame if script has been set to be regularly updated. (See <see cref="P:CryEngine.CryScriptInstance.ReceiveUpdates"/>)
-            Warning: FlowNode logic such as <see cref="M:CryEngine.FlowSystem.FlowNode.GetPortValue``1(System.Action{``0})"/> is not supported within this update loop, see <see cref="M:CryEngine.FlowSystem.FlowNode.OnNodeUpdate"/>.
+            Warning: FlowNode logic such as <see cref="M:CryEngine.Flowgraph.FlowNode.GetPortValue``1(System.Action{``0})"/> is not supported within this update loop, see <see cref="M:CryEngine.Flowgraph.FlowNode.OnNodeUpdate"/>.
             </summary>
         </member>
         <member name="P:CryEngine.EntityLink.Handle">
@@ -1143,68 +1143,68 @@
             Thrown when an entity is attempted to be removed improperly.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeFilter.Approved">
+        <member name="F:CryEngine.Flowgraph.FlowNodeFilter.Approved">
             <summary>
             This node is approved for designers
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeFilter.Advanced">
+        <member name="F:CryEngine.Flowgraph.FlowNodeFilter.Advanced">
             <summary>
             This node is slightly advanced and approved.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeFilter.Debug">
+        <member name="F:CryEngine.Flowgraph.FlowNodeFilter.Debug">
             <summary>
             This node is for debug purpose only.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeFilter.Obsolete">
+        <member name="F:CryEngine.Flowgraph.FlowNodeFilter.Obsolete">
             <summary>
             This node is obsolete and is not available in the editor.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeFlags.TargetEntity">
+        <member name="F:CryEngine.Flowgraph.FlowNodeFlags.TargetEntity">
             <summary>
             This node targets an entity, entity id must be provided.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeFlags.HideUI">
+        <member name="F:CryEngine.Flowgraph.FlowNodeFlags.HideUI">
             <summary>
             This node cannot be selected by user for placement in flow graph UI.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeFlags.DynamicOutput">
+        <member name="F:CryEngine.Flowgraph.FlowNodeFlags.DynamicOutput">
             <summary>
             This node is setup for dynamic output port growth in runtime.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeFlags.Unremovable">
+        <member name="F:CryEngine.Flowgraph.FlowNodeFlags.Unremovable">
             <summary>
             This node cannot be deleted by the user.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeType.Singleton">
+        <member name="F:CryEngine.Flowgraph.FlowNodeType.Singleton">
             <summary>
             Node has only one instance, never cloned.
             </summary>
         </member>
-        <member name="F:CryEngine.FlowSystem.FlowNodeType.Instanced">
+        <member name="F:CryEngine.Flowgraph.FlowNodeType.Instanced">
             <summary>
             New instance of node will be created each time it is requested.
             </summary>
         </member>
-        <member name="T:CryEngine.FlowSystem.OutputPort">
+        <member name="T:CryEngine.Flowgraph.OutputPort">
             <summary>
             Used to declare flownode output ports that can output any or no value.
             </summary>
         </member>
-        <member name="T:CryEngine.FlowSystem.OutputPort`1">
+        <member name="T:CryEngine.Flowgraph.OutputPort`1">
             <summary>
             Used to declare flownode output ports of a specified type.
             </summary>
             <typeparam name="T">Int, Float, EntityId, String, Bool or Vec3.</typeparam>
         </member>
-        <member name="P:CryEngine.FlowSystem.PortAttribute.StringPortType">
+        <member name="P:CryEngine.Flowgraph.PortAttribute.StringPortType">
             <summary>
             Only to be used for string ports
             </summary>
@@ -2408,34 +2408,34 @@
             Gets or sets the raw engine time.
             </summary>
         </member>
-        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Name">
+        <member name="P:CryEngine.Flowgraph.FlowNodeAttribute.Name">
             <summary>
             Gets or sets the name of the node, if not set will use the node class name.
             </summary>
         </member>
-        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Category">
+        <member name="P:CryEngine.Flowgraph.FlowNodeAttribute.Category">
             <summary>
             Gets or sets the category in which the node will appear when right-clicking in the Flowgraph Editor.
             </summary>
         </member>
-        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Filter">
+        <member name="P:CryEngine.Flowgraph.FlowNodeAttribute.Filter">
             <summary>
             Gets or sets the Sandbox filtering category
             </summary>
         </member>
-        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Type">
+        <member name="P:CryEngine.Flowgraph.FlowNodeAttribute.Type">
             <summary>
             Gets or sets how the node is cloned.
             </summary>
         </member>
-        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.Description">
+        <member name="P:CryEngine.Flowgraph.FlowNodeAttribute.Description">
             <summary>
             Gets or sets the node description
             </summary>
         </member>
-        <member name="P:CryEngine.FlowSystem.FlowNodeAttribute.TargetsEntity">
+        <member name="P:CryEngine.Flowgraph.FlowNodeAttribute.TargetsEntity">
             <summary>
-            Gets or sets whether this node targets an entity. See <see cref="P:CryEngine.FlowSystem.FlowNode.TargetEntity"/>
+            Gets or sets whether this node targets an entity. See <see cref="P:CryEngine.Flowgraph.FlowNode.TargetEntity"/>
             </summary>
         </member>
         <member name="M:CryEngine.DelayedFunc`10.#ctor(System.Action{`0,`1,`2,`3,`4,`5,`6,`7,`8,`9},System.Single,`0,`1,`2,`3,`4,`5,`6,`7,`8,`9)">
