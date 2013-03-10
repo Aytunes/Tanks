@@ -44,6 +44,11 @@
             Gets the instance script, set in <see cref="M:CryEngine.Initialization.ScriptManager.CreateScriptInstance(CryEngine.Initialization.CryScript,System.Object[],System.Boolean)"/>.
             </summary>
         </member>
+        <member name="P:CryEngine.CryScriptInstance.InstanceHandle">
+            <summary>
+            CCryScriptInstance handle.
+            </summary>
+        </member>
         <member name="E:CryEngine.CryScriptInstance.OnDestroyed">
             <summary>
             Event that is invoked when this script is destroyed from <see cref="T:CryEngine.Initialization.ScriptManager"/>.
@@ -5948,7 +5953,7 @@
             Called once per frame.
             </summary>
         </member>
-        <member name="M:CryEngine.Initialization.ScriptManager.CreateScriptInstance(System.String,CryEngine.Initialization.ScriptType,System.Object[],System.Boolean)">
+        <member name="M:CryEngine.Initialization.ScriptManager.CreateScriptInstance(System.String,CryEngine.Initialization.ScriptType,System.IntPtr,System.Object[],System.Boolean)">
             <summary>
             Instantiates a script using its name and interface.
             </summary>
