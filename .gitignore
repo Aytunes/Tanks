@@ -52,3 +52,6 @@ Bin64/
 
 user.cfg
 USER(*)/*
+Bin32/Plugins/CryMono/CryBrary.dll.mdb
+Bin32/Plugins/CryMono/Plugins/NetFramework/Compiler.dll.mdb
+Bin32/Plugins/CryMono/Plugins/NetFramework/CryBrary.dll.mdb
