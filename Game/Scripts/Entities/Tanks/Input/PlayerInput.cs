@@ -39,7 +39,7 @@ namespace CryGameCode.Tanks
 
 			OnInputChanged += (flags, keyEvent) =>
 			{
-				if (keyEvent == KeyEvent.OnRelease)
+				if (flags == InputFlags.LeftMouseButton && keyEvent == KeyEvent.OnRelease)
 				{
 					var gameRules = GameRules.Current as SinglePlayer;
 
