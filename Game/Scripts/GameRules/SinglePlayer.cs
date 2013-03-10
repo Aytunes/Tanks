@@ -114,19 +114,6 @@ namespace CryGameCode
 			tank.OnRevived();
 		}
 
-		[RemoteInvocation]
-		public void RequestEntitySpawn(string entityTypeName, Vec3 position, Quat rotation)
-		{
-			if (!Network.IsServer)
-				return;
-
-			var type = Type.GetType(entityTypeName);
-			if (type == null)
-				return;
-
-			Entity.Spawn("pain", type, position, rotation);
-		}
-
 		protected virtual SpawnPoint FindSpawnPoint(string team = null)
 		{
 			var spawnpoints = Entity.GetByClass<SpawnPoint>();

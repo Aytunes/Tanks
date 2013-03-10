@@ -36,31 +36,51 @@ namespace CryGameCode.Tanks
 		{
 			Owner = owner;
 
-			if (Owner.IsLocalClient)
+			if (Network.IsServer)
+				owner.Input.OnInputChanged += OnInput;
+
+			owner.OnDestroyed += (x) => { Destroy(); };
+		}
+
+		void OnInput(InputFlags flags, KeyEvent keyEvent)
+		{
+			switch (flags)
 			{
-				// Temp hax for right mouse events not working
-				Input.ActionmapEvents.Add("attack2", (e) =>
-				{
-					switch (e.KeyEvent)
+				case InputFlags.LeftMouseButton:
 					{
-						case KeyEvent.OnPress:
+						if (keyEvent == KeyEvent.OnPress)
+						{
+							if (AutomaticFire)
+								m_leftFiring = true;
+
+							ChargeWeapon();
+						}
+						else if (keyEvent == KeyEvent.OnRelease)
+						{
+							if (AutomaticFire)
+								m_leftFiring = false;
+							else
+								FireLeft();
+						}
+					}
+					break;
+				case InputFlags.RightMouseButton:
+					{
+						if (keyEvent == KeyEvent.OnPress)
+						{
 							if (AutomaticFire)
 								m_rightFiring = true;
-							break;
-
-						case KeyEvent.OnRelease:
+						}
+						else if (keyEvent == KeyEvent.OnRelease)
+						{
 							if (AutomaticFire)
 								m_rightFiring = false;
 							else
 								FireRight();
-							break;
+						}
 					}
-				});
-
-				Input.MouseEvents += ProcessMouseEvents;
+					break;
 			}
-
-			owner.OnDestroyed += (x) => { Destroy(); };
 		}
 
 		public void Initialize(EntityBase entity)
@@ -69,7 +89,7 @@ namespace CryGameCode.Tanks
 
 			Attachment.SwitchToEntityObject(entity.Id);
 
-			Entity = entity;
+			TurretEntity = entity;
 
 			entity.LoadObject(Model);
 
@@ -88,66 +108,39 @@ namespace CryGameCode.Tanks
 
 		public void Destroy()
 		{
-			if (Owner.IsLocalClient)
-			{
-				Input.MouseEvents -= ProcessMouseEvents;
-				Input.ActionmapEvents.RemoveAll(this);
-			}
-
-			if (!Entity.IsDestroyed)
-				Entity.Remove();
+			if (!TurretEntity.IsDestroyed)
+				TurretEntity.Remove();
 
 			Destroyed = true;
 		}
 
-		private void ProcessMouseEvents(MouseEventArgs e)
-		{
-			switch (e.MouseEvent)
-			{
-				case MouseEvent.LeftButtonDown:
-					{
-						if (AutomaticFire)
-							m_leftFiring = true;
-
-						ChargeWeapon();
-					}
-					break;
-
-				case MouseEvent.LeftButtonUp:
-					{
-						if (AutomaticFire)
-							m_leftFiring = false;
-						else
-							FireLeft();
-					}
-					break;
-			}
-		}
-
 		public void Update()
 		{
-			if (Destroyed || Entity == null)
+			if (Destroyed || TurretEntity == null)
 				return;
 
-			if (m_leftFiring)
-				FireLeft();
+			if (Network.IsServer)
+			{
+				if (m_leftFiring)
+					FireLeft();
 
-			if (m_rightFiring)
-				FireRight();
+				if (m_rightFiring)
+					FireRight();
+			}
 
 			var tankInput = Owner.Input;
 
-			var dir = Renderer.ScreenToWorld(tankInput.MouseX, tankInput.MouseY) - Entity.Position;
+			var dir = Renderer.ScreenToWorld(tankInput.MouseX, tankInput.MouseY) - TurretEntity.Position;
 
 			var ownerRotation = Owner.Rotation;
-			var attachmentRotation = Entity.Rotation;
+			var attachmentRotation = TurretEntity.Rotation;
 
 			rotationZ = Quat.CreateSlerp(rotationZ, Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)), Time.DeltaTime * 10);
 
 			attachmentRotation = rotationZ;
 			attachmentRotation.Normalize();
 
-			Entity.Rotation = attachmentRotation;
+			TurretEntity.Rotation = attachmentRotation;
 		}
 
 		Quat rotationZ;
@@ -157,18 +150,18 @@ namespace CryGameCode.Tanks
 
 		private void Fire(ref float shotTime, string helper)
 		{
-			if (Entity.IsDestroyed)
+			if (TurretEntity.IsDestroyed || !Network.IsServer)
 				return;
 
 			if (Time.FrameStartTime > shotTime + (TimeBetweenShots * 1000))
 			{
 				shotTime = Time.FrameStartTime;
 
-				var jointAbsolute = Entity.GetJointAbsolute(helper);
-				jointAbsolute.T = Entity.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
+				var jointAbsolute = TurretEntity.GetJointAbsolute(helper);
+				jointAbsolute.T = TurretEntity.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
 
 				var gameMode = GameRules.Current as SinglePlayer;
-				Owner.RemoteInvocation(gameMode.RequestEntitySpawn, NetworkTarget.ToServer, ProjectileType.FullName, jointAbsolute.T, Entity.Rotation.Normalized);
+				CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, TurretEntity.Rotation.Normalized);
 
 				//OnFire(jointAbsolute.T);
 			}
@@ -203,21 +196,21 @@ namespace CryGameCode.Tanks
 
 		public void Hide(bool hide)
 		{
-			if (Entity != null && !Entity.IsDestroyed)
-				Entity.Hidden = hide;
+			if (TurretEntity != null && !TurretEntity.IsDestroyed)
+				TurretEntity.Hidden = hide;
 		}
 
 		public bool IsActive
 		{
 			get
 			{
-				return Attachment != null && !Entity.IsDestroyed;
+				return Attachment != null && !TurretEntity.IsDestroyed;
 			}
 		}
 
 		public Tank Owner { get; private set; }
 		public Attachment Attachment { get; private set; }
-		public EntityBase Entity { get; private set; }
+		public EntityBase TurretEntity { get; private set; }
 
 		public bool Destroyed { get; set; }
 

@@ -9,7 +9,7 @@ using CryEngine.Serialization;
 
 namespace CryGameCode.Tanks
 {
-	public class PlayerInput : IPlayerInput
+	public class PlayerInput
 	{
 		// Default constructor for realtime scripting 
 		PlayerInput() { }
@@ -34,9 +34,12 @@ namespace CryGameCode.Tanks
 
 			AddEvent("sprint", InputFlags.Boost);
 
-			Input.ActionmapEvents.Add("attack1", (e) =>
+			AddEvent("attack1", InputFlags.LeftMouseButton);
+			AddEvent("attack2", InputFlags.RightMouseButton);
+
+			OnInputChanged += (flags, keyEvent) =>
 			{
-				if (e.KeyEvent == KeyEvent.OnRelease)
+				if (flags == InputFlags.LeftMouseButton && keyEvent == KeyEvent.OnRelease)
 				{
 					var gameRules = GameRules.Current as SinglePlayer;
 
@@ -65,7 +68,7 @@ namespace CryGameCode.Tanks
 					else if (Owner.IsDead)
 						Debug.LogAlways("Could not request revive, owner was alive.");
 				}
-			});
+			};
 
 			Input.ActionmapEvents.Add("cycle_view", (e) =>
 			{
@@ -96,7 +99,18 @@ namespace CryGameCode.Tanks
 			serialize.BeginGroup("PlayerInput");
 
 			var flags = (uint)m_flags;
-			serialize.Value("m_flags", ref flags);
+			serialize.EnumValue("m_flags", ref flags, (uint)InputFlags.First, (uint)InputFlags.Last);
+
+			if (Network.IsServer && OnInputChanged != null)
+			{
+				var changedFlags = (InputFlags)flags & m_flags;
+				if (changedFlags != 0)
+					OnInputChanged(changedFlags, KeyEvent.OnPress);
+				changedFlags = (InputFlags)flags | m_flags;
+				if (changedFlags != 0)
+					OnInputChanged(changedFlags, KeyEvent.OnRelease);
+			}
+
 			m_flags = (InputFlags)flags;
 
 			serialize.Value("m_mousePositionX", ref m_mousePositionX);
@@ -104,6 +118,9 @@ namespace CryGameCode.Tanks
 
 			serialize.EndGroup();
 		}
+
+		public delegate void OnInputChangedDelegate(InputFlags flags, KeyEvent keyEvent);
+		public event OnInputChangedDelegate OnInputChanged;
 
 		void AddEvent(string actionMapName, InputFlags flag)
 		{
@@ -118,6 +135,9 @@ namespace CryGameCode.Tanks
 
 		void SetFlag(InputFlags flag, KeyEvent keyEvent)
 		{
+			if (Owner == null || Owner.IsDestroyed)
+				return;
+
 			var hasFlag = HasFlag(flag);
 
 			switch (keyEvent)
@@ -129,6 +149,9 @@ namespace CryGameCode.Tanks
 							Flags |= flag;
 
 							Owner.GameObject.NotifyNetworkStateChange(Aspect);
+
+							if (OnInputChanged != null && !Network.IsServer)
+								OnInputChanged(flag, keyEvent);
 						}
 					}
 					break;
@@ -139,6 +162,9 @@ namespace CryGameCode.Tanks
 							Flags &= ~flag;
 
 							Owner.GameObject.NotifyNetworkStateChange(Aspect);
+
+							if (OnInputChanged != null && !Network.IsServer)
+								OnInputChanged(flag, keyEvent);
 						}
 					}
 					break;

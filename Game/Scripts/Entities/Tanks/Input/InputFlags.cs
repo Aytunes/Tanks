@@ -23,6 +23,9 @@ namespace CryGameCode.Tanks
 
 		CycleView = 1 << 8,
 
-		Last = 1 << 9,
+		LeftMouseButton = 1 << 9,
+		RightMouseButton = 1 << 10,
+
+		Last = 1 << 11,
 	}
 }
