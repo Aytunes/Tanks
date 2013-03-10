@@ -28,6 +28,7 @@ namespace CryGameCode.Tanks
 			PrePhysicsUpdateMode = PrePhysicsUpdateMode.Always;
 			ReceivePostUpdates = true;
 
+			Flags |= EntityFlags.CastShadow;
 			ZoomLevel = 1;
 			Health = 0;
 			Hide(true);
