@@ -6,7 +6,7 @@ using System.Text;
 namespace CryGameCode.Tanks
 {
 	[Flags]
-	public enum InputFlags
+	public enum InputFlags : uint
 	{
 		First = 1 << 0,
 

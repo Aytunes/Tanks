@@ -92,7 +92,7 @@ namespace CryGameCode.Tanks
 		{
 			serialize.BeginGroup("PlayerInput");
 
-			int flags = (int)m_flags;
+			var flags = (uint)m_flags;
 			serialize.Value("m_flags", ref flags);
 			m_flags = (InputFlags)flags;
 

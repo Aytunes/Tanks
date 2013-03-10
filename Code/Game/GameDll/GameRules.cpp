@@ -96,8 +96,6 @@ CGameRules::CGameRules()
 //------------------------------------------------------------------------
 CGameRules::~CGameRules()
 {
-	SAFE_RELEASE(m_pScript);
-
 	SAFE_DELETE_ARRAY(m_pMigratingPlayerInfo)
 	SAFE_DELETE_ARRAY(m_pHostMigrationItemInfo);
 
