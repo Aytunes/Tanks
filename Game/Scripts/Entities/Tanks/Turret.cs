@@ -130,7 +130,7 @@ namespace CryGameCode.Tanks
 
 			var tankInput = Owner.Input;
 
-			var dir = Renderer.ScreenToWorld(tankInput.MouseX, tankInput.MouseY) - TurretEntity.Position;
+			var dir = tankInput.MouseWorldPosition - TurretEntity.Position;
 
 			var ownerRotation = Owner.Rotation;
 			var attachmentRotation = TurretEntity.Rotation;

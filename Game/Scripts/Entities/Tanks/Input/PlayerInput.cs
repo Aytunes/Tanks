@@ -17,6 +17,7 @@ namespace CryGameCode.Tanks
 		public PlayerInput(Tank tank)
 		{
 			Owner = tank;
+			m_mouseWorldPos = Vec3.Zero;
 
 			Owner.OnDestroyed += (x) => { Destroy(); };
 		}
@@ -88,6 +89,7 @@ namespace CryGameCode.Tanks
 				m_mousePositionX = mouseArgs.X;
 				m_mousePositionY = mouseArgs.Y;
 
+				m_mouseWorldPos = Renderer.ScreenToWorld(m_mousePositionX, m_mousePositionY);
 
 				if(changed)
 					Owner.GameObject.NotifyNetworkStateChange(Aspect);
@@ -119,6 +121,8 @@ namespace CryGameCode.Tanks
 
 			serialize.Value("m_mousePositionX", ref m_mousePositionX);
 			serialize.Value("m_mousePositionY", ref m_mousePositionY);
+
+			serialize.Value("m_mouseWorldPos", ref m_mouseWorldPos, "wrld");
 
 			serialize.EndGroup();
 		}
@@ -190,6 +194,9 @@ namespace CryGameCode.Tanks
 		public int MouseX { get { return m_mousePositionX; } }
 		int m_mousePositionY;
 		public int MouseY { get { return m_mousePositionY; } }
+
+		Vec3 m_mouseWorldPos;
+		public Vec3 MouseWorldPosition { get { return m_mouseWorldPos; } }
 
 		public Actor Owner { get; private set; }
 	}
