@@ -1,8 +1,8 @@
-﻿using CryEngine;
-using CryGameCode.Entities;
-
-using System;
+﻿using System;
 using System.Linq;
+using CryEngine;
+using CryEngine.Serialization;
+using CryGameCode.Entities;
 
 namespace CryGameCode.Tanks
 {
@@ -47,7 +47,7 @@ namespace CryGameCode.Tanks
 			}
 		}
 
-		protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
+		protected override void NetSerialize(CrySerialize serialize, int aspect, byte profile, int flags)
 		{
 			serialize.BeginGroup("TankActor");
 
@@ -73,6 +73,8 @@ namespace CryGameCode.Tanks
 
 				var posDelta = pos - oldPos;
 				var rotDelta = rot / oldRot;
+
+				Debug.LogAlways("[Delta] Pos length: {0} (new target: {1})", posDelta.Length, pos);
 
 				Position = Vec3.CreateLerp(oldPos, pos, posDelta.Length);
 				Rotation = Quat.CreateSlerp(oldRot, rot, rotDelta.Length);
