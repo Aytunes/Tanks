@@ -62,25 +62,43 @@ namespace CryGameCode.Tanks
 
 			if (aspect == MovementAspect)
 			{
-				var pos = Position;
-				var rot = Rotation;
+				if (Network.IsServer)
+				{
+					var pos = Position;
+					var rot = Rotation;
 
-				var oldPos = pos;
-				var oldRot = rot;
+					serialize.Value("pos", ref pos, "wrld");
+					serialize.Value("rot", ref rot);
+				}
+				else
+				{
+					var pos = Position;
+					var rot = Rotation;
 
-				serialize.Value("pos", ref pos, "wrld");
-				serialize.Value("rot", ref rot);
+					var oldPos = pos;
+					var oldRot = rot;
 
-				var posDelta = pos - oldPos;
-				var rotDelta = rot / oldRot;
+					serialize.Value("pos", ref pos, "wrld");
+					serialize.Value("rot", ref rot);
 
-				Debug.LogAlways("[Delta] Pos length: {0} (new target: {1})", posDelta.Length, pos);
+					var posDelta = pos - oldPos;
+					var rotDelta = rot / oldRot;
+					var magnitude = posDelta.Length;
 
-				Position = Vec3.CreateLerp(oldPos, pos, posDelta.Length);
-				Rotation = Quat.CreateSlerp(oldRot, rot, rotDelta.Length);
+					Debug.LogAlways("[Delta] Pos length: {0} (from {1} | to {2})", magnitude, oldPos, pos);
 
-				if (Turret != null && Turret.TurretEntity != null)
-					Turret.TurretEntity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
+					if (magnitude > 3)
+					{
+						Debug.LogWarning("[Delta] Exceeded safe movement, aborting");
+						return;
+					}
+
+					Position = Vec3.CreateLerp(oldPos, pos, posDelta.Length);
+					Rotation = Quat.CreateSlerp(oldRot, rot, rotDelta.Length);
+
+					if (Turret != null && Turret.TurretEntity != null)
+						Turret.TurretEntity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
+				}
 			}
 
 			serialize.EndGroup();
