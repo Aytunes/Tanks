@@ -64,41 +64,12 @@ namespace CryGameCode.Tanks
 			{
 				if (Network.IsServer)
 				{
-					var pos = Position;
-					var rot = Rotation;
-
-					serialize.Value("pos", ref pos, "wrld");
-					serialize.Value("rot", ref rot);
+					m_serverPos = Position;
+					m_serverRot = Rotation;
 				}
-				else
-				{
-					var pos = Position;
-					var rot = Rotation;
-
-					var oldPos = pos;
-					var oldRot = rot;
-
-					serialize.Value("pos", ref pos, "wrld");
-					serialize.Value("rot", ref rot);
-
-					var posDelta = pos - oldPos;
-					var rotDelta = rot / oldRot;
-					var magnitude = posDelta.Length;
-
-					Debug.LogAlways("[Delta] Pos length: {0} (from {1} | to {2})", magnitude, oldPos, pos);
-
-					if (magnitude > 3)
-					{
-						Debug.LogWarning("[Delta] Exceeded safe movement, aborting");
-						return;
-					}
-
-					Position = Vec3.CreateLerp(oldPos, pos, posDelta.Length);
-					Rotation = Quat.CreateSlerp(oldRot, rot, rotDelta.Length);
-
-					if (Turret != null && Turret.TurretEntity != null)
-						Turret.TurretEntity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
-				}
+				
+				serialize.Value("pos", ref m_serverPos, "wrld");
+				serialize.Value("rot", ref m_serverRot);
 			}
 
 			serialize.EndGroup();
@@ -171,6 +142,21 @@ namespace CryGameCode.Tanks
 				float blend = MathHelpers.Clamp(Time.DeltaTime / 0.15f, 0, 1.0f);
 				GroundNormal = (GroundNormal + blend * (Physics.Status.Living.GroundNormal - GroundNormal));
 			}
+
+			if (Network.IsClient)
+			{
+				var oldPos = Position;
+				var oldRot = Rotation;
+
+				var moveDelta = m_serverPos - oldPos;
+				var length = Math.Abs(moveDelta.Length / 3);
+
+				Position = Vec3.CreateLerp(oldPos, m_serverPos, Time.DeltaTime * 5);
+				Rotation = Quat.CreateNlerp(oldRot, m_serverRot, Time.DeltaTime * 20);
+			}
+
+			if (Turret != null && Turret.TurretEntity != null)
+				Turret.TurretEntity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
 		}
 
 		protected override void OnPrePhysicsUpdate()
@@ -224,6 +210,9 @@ namespace CryGameCode.Tanks
 				}
 			}
 		}
+
+		private Vec3 m_serverPos;
+		private Quat m_serverRot;
 
 		public string TurretTypeName { get; set; }
 
