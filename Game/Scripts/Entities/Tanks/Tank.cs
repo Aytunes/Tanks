@@ -143,7 +143,7 @@ namespace CryGameCode.Tanks
 				GroundNormal = (GroundNormal + blend * (Physics.Status.Living.GroundNormal - GroundNormal));
 			}
 
-			if (Network.IsClient)
+			if (Network.IsClient && !Network.IsServer)
 			{
 				var oldPos = Position;
 				var oldRot = Rotation;
