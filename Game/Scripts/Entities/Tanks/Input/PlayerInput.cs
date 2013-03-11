@@ -109,12 +109,15 @@ namespace CryGameCode.Tanks
 
 			if (Network.IsServer && OnInputChanged != null)
 			{
-				var changedFlags = (InputFlags)flags & m_flags;
-				if (changedFlags != 0)
-					OnInputChanged(changedFlags, KeyEvent.OnPress);
-				changedFlags = (InputFlags)flags | m_flags;
-				if (changedFlags != 0)
-					OnInputChanged(changedFlags, KeyEvent.OnRelease);
+				var changedKeys = (InputFlags)flags ^ m_flags;
+
+				var pressedKeys = changedKeys & (InputFlags)flags;
+				if (pressedKeys != 0)
+					OnInputChanged(pressedKeys, KeyEvent.OnPress);
+
+				var releasedKeys = changedKeys & m_flags;
+				if (releasedKeys != 0)
+					OnInputChanged(releasedKeys, KeyEvent.OnRelease);
 			}
 
 			m_flags = (InputFlags)flags;
