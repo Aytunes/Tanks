@@ -148,9 +148,6 @@ namespace CryGameCode.Tanks
 				var oldPos = Position;
 				var oldRot = Rotation;
 
-				var moveDelta = m_serverPos - oldPos;
-				var length = Math.Abs(moveDelta.Length / 3);
-
 				Position = Vec3.CreateLerp(oldPos, m_serverPos, Time.DeltaTime * 5);
 				Rotation = Quat.CreateNlerp(oldRot, m_serverRot, Time.DeltaTime * 20);
 			}
