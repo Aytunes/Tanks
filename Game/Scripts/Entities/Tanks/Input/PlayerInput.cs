@@ -83,10 +83,14 @@ namespace CryGameCode.Tanks
 				if (Owner == null || Owner.IsDestroyed)
 					return;
 
+				bool changed = m_mousePositionX != mouseArgs.X || m_mousePositionY != mouseArgs.Y;
+
 				m_mousePositionX = mouseArgs.X;
 				m_mousePositionY = mouseArgs.Y;
 
-				Owner.GameObject.NotifyNetworkStateChange(Aspect);
+
+				if(changed)
+					Owner.GameObject.NotifyNetworkStateChange(Aspect);
 			});
 		}
 
