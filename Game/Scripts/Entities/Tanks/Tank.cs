@@ -145,11 +145,15 @@ namespace CryGameCode.Tanks
 
 			if (Game.IsPureClient)
 			{
-				var oldPos = Position;
-				var oldRot = Rotation;
+				var currentPos = Position;
+				var currentRot = Rotation;
 
-				Position = Vec3.CreateLerp(oldPos, m_serverPos, Time.DeltaTime * 5);
-				Rotation = Quat.CreateNlerp(oldRot, m_serverRot, Time.DeltaTime * 20);
+				var posDelta = m_serverPos - currentPos;
+
+				if (posDelta.Length > 3)
+					Position = m_serverPos;
+
+				Rotation = Quat.CreateNlerp(currentRot, m_serverRot, Time.DeltaTime * 20);
 			}
 
 			if (Turret != null && Turret.TurretEntity != null)
@@ -161,8 +165,7 @@ namespace CryGameCode.Tanks
 			if (Input != null)
 				Input.PreUpdate();
 
-			if (Game.IsServer)
-				UpdateMovement();
+			UpdateMovement();
 		}
 
 		public void ToggleSpectatorPoint(bool increment = false)

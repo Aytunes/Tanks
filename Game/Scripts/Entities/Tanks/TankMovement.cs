@@ -76,7 +76,9 @@ namespace CryGameCode.Tanks
 			moveRequest.rotation.Normalize();
 
 			AddMovement(ref moveRequest);
-			GameObject.NotifyNetworkStateChange(MovementAspect);
+
+			if (Game.IsServer)
+				GameObject.NotifyNetworkStateChange(MovementAspect);
 		}
 
 		private Material GetTrackMaterial(float moveDirection)
