@@ -16,7 +16,7 @@ namespace CryGameCode.Tanks
 	{
 		public override void OnSpawn()
 		{
-			if (!Network.IsServer)
+			if (!Game.IsServer)
 			{
 				var tankName = Name.Split('.').First();
 
@@ -36,7 +36,7 @@ namespace CryGameCode.Tanks
 		{
 			Owner = owner;
 
-			if (Network.IsServer)
+			if (Game.IsServer)
 				owner.Input.OnInputChanged += OnInput;
 
 			owner.OnDestroyed += (x) => { Destroy(); };
@@ -119,7 +119,7 @@ namespace CryGameCode.Tanks
 			if (Destroyed || TurretEntity == null)
 				return;
 
-			if (Network.IsServer)
+			if (Game.IsServer)
 			{
 				if (m_leftFiring)
 					FireLeft();
@@ -150,7 +150,7 @@ namespace CryGameCode.Tanks
 
 		private void Fire(ref float shotTime, string helper)
 		{
-			if (TurretEntity.IsDestroyed || !Network.IsServer)
+			if (TurretEntity.IsDestroyed || !Game.IsServer)
 				return;
 
 			if (Time.FrameStartTime > shotTime + (TimeBetweenShots * 1000))

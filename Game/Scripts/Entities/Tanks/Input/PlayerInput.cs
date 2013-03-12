@@ -56,7 +56,7 @@ namespace CryGameCode.Tanks
 						else
 							tank.TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
 
-						if (Network.IsServer)
+						if (Game.IsServer)
 							gameRules.RequestRevive(tank.Id, tank.Team, tank.TurretTypeName);
 						else
 						{
@@ -107,7 +107,7 @@ namespace CryGameCode.Tanks
 			var flags = (uint)m_flags;
 			serialize.EnumValue("m_flags", ref flags, (uint)InputFlags.First, (uint)InputFlags.Last);
 
-			if (Network.IsServer && OnInputChanged != null)
+			if (Game.IsServer && OnInputChanged != null)
 			{
 				var changedKeys = (InputFlags)flags ^ m_flags;
 
@@ -161,7 +161,7 @@ namespace CryGameCode.Tanks
 
 							Owner.GameObject.NotifyNetworkStateChange(Aspect);
 
-							if (OnInputChanged != null && (!Network.IsServer || !Network.IsMultiplayer))
+							if (OnInputChanged != null && (!Game.IsServer || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
 						}
 					}
@@ -174,7 +174,7 @@ namespace CryGameCode.Tanks
 
 							Owner.GameObject.NotifyNetworkStateChange(Aspect);
 
-							if (OnInputChanged != null && (!Network.IsServer || !Network.IsMultiplayer))
+							if (OnInputChanged != null && (!Game.IsServer || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
 						}
 					}

@@ -62,7 +62,7 @@ namespace CryGameCode.Tanks
 
 			if (aspect == MovementAspect)
 			{
-				if (Network.IsServer)
+				if (Game.IsServer)
 				{
 					m_serverPos = Position;
 					m_serverRot = Rotation;
@@ -143,7 +143,7 @@ namespace CryGameCode.Tanks
 				GroundNormal = (GroundNormal + blend * (Physics.Status.Living.GroundNormal - GroundNormal));
 			}
 
-			if (Network.IsClient && !Network.IsServer)
+			if (Game.IsClient && !Game.IsServer)
 			{
 				var oldPos = Position;
 				var oldRot = Rotation;
@@ -161,7 +161,7 @@ namespace CryGameCode.Tanks
 			if (Input != null)
 				Input.PreUpdate();
 
-			if (Network.IsServer)
+			if (Game.IsServer)
 				UpdateMovement();
 		}
 

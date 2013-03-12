@@ -5528,12 +5528,44 @@
             Gets the height of the screen in pixels.
             </summary>
         </member>
-        <member name="M:CryEngine.Network.InitializeNetworkStatics(System.Boolean,System.Boolean)">
+        <member name="M:CryEngine.Game.InitializeGameStatics(System.Boolean,System.Boolean)">
             <summary>
             Initializes static variables which never change, i.e. IsEditor.
             </summary>
             <param name="isEditor"></param>
             <param name="isDedicated"></param>
+        </member>
+        <member name="P:CryEngine.Game.IsMultiplayer">
+            <summary>
+            Gets a boolean indicating whether we're currently running a Multiplayer game.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Game.IsServer">
+            <summary>
+            Gets a boolean indicating whether we're currently running the server.
+            </summary>
+            <remarks><see cref="P:CryEngine.Game.IsClient"/> can be set at th same time as <see cref="P:CryEngine.Game.IsServer"/>, if hosting via the Launcher or Editor.</remarks>
+        </member>
+        <member name="P:CryEngine.Game.IsClient">
+            <summary>
+            Gets a boolean indicating whether we're currently running the server.
+            </summary>
+            /// <remarks><see cref="P:CryEngine.Game.IsServer"/> can be set at th same time as <see cref="P:CryEngine.Game.IsClient"/>, if hosting via the Launcher or Editor.</remarks>
+        </member>
+        <member name="P:CryEngine.Game.IsPureClient">
+            <summary>
+            Gets a boolean indicating whether we're a client on a remote server.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Game.IsEditor">
+            <summary>
+            Gets a boolean indicating whether we're currently running via the Editor.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Game.IsDedicated">
+            <summary>
+            Gets a boolean indicating whether we're currently running via the Dedicated Server.
+            </summary>
         </member>
         <member name="F:CryEngine.Quat.V">
             <summary>

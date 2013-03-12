@@ -22,7 +22,7 @@ namespace CryGameCode
 		{
 			if (entity == null)
 				throw new System.ArgumentNullException("entity");
-			if (!Network.IsServer)
+			if (!Game.IsServer)
 				return false;
 
 			if (CanSpawn)

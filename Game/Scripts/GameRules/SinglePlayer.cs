@@ -21,7 +21,7 @@ namespace CryGameCode
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
-			if (!Network.IsServer)
+			if (!Game.IsServer)
 				return;
 
 			var tank = Actor.Create<Tank>(channelId, playerName);
@@ -67,7 +67,7 @@ namespace CryGameCode
 		[RemoteInvocation]
 		public void RequestRevive(EntityId actorId, string team, string turretTypeName)
 		{
-			if (!Network.IsServer)
+			if (!Game.IsServer)
 				return;
 
 			Debug.LogAlways("Received revival request");
