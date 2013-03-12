@@ -87,7 +87,7 @@ public:
 
 		CryFixedStringT<256> logString;
 		logString.Format(">>>>> Start: %s", m_sz);
-		gEnv->pConsole->PrintLine(logString.c_str());
+		CryLogAlways(logString.c_str());
 	}
 
 	~CScopedTimeLogger()
@@ -97,7 +97,7 @@ public:
 		
 		CryFixedStringT<256> logString;
 		logString.Format(">>>>> End: %s (%f ms)", m_sz, double(li.QuadPart - m_start) / m_freq);
-		gEnv->pConsole->PrintLine(logString.c_str());
+		CryLogAlways(logString.c_str());
 	}
 };
 
