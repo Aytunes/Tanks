@@ -6,6 +6,8 @@ namespace CryGameCode.Tanks
 	public partial class Tank
 	{
 		const int MovementAspect = 128;
+		const float MaxDelta = 2;
+		const float MinDelta = 0.2f;
 
 		float NormalToAngle(Vec3 normal)
 		{
@@ -62,6 +64,9 @@ namespace CryGameCode.Tanks
 			var dragDeceleration = (0.9f * 20.6f * 1.27f * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / 500;
 
 			moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration);
+
+			if (IsLocalClient && m_currentDelta.Length > MinDelta)
+				moveRequest.velocity += m_currentDelta / 10;
 
 			///////////////////////////
 			// Rotation

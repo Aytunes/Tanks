@@ -152,10 +152,24 @@ namespace CryGameCode.Tanks
 				var currentPos = Position;
 				var currentRot = Rotation;
 
-				var posDelta = m_serverPos - currentPos;
+				m_currentDelta = m_serverPos - currentPos;
 
-				if (posDelta.Length > 3)
-					Position = m_serverPos;
+				if (IsLocalClient)
+				{
+					Renderer.DrawTextToScreen(10, 10, 2, Color.White, "Client pos: {0}", currentPos);
+					Renderer.DrawTextToScreen(10, 30, 2, Color.White, "Server pos: {0}", m_serverPos);
+					Renderer.DrawTextToScreen(10, 50, 2, Color.White, "Delta: {0}", m_currentDelta.Length);
+				}
+
+				// Start forcing sync if we have to
+				// TODO: Tweak based on connection
+				if (m_currentDelta.Length > MaxDelta)
+				{
+					var newPos = Vec3.CreateLerp(currentPos, m_serverPos, Math.Min(1, Time.DeltaTime * 5 * m_currentDelta.Length));
+					Position = newPos;
+
+					m_currentDelta = m_serverPos - newPos;
+				}
 
 				Rotation = Quat.CreateNlerp(currentRot, m_serverRot, Time.DeltaTime * 20);
 			}
@@ -215,6 +229,7 @@ namespace CryGameCode.Tanks
 			}
 		}
 
+		private Vec3 m_currentDelta;
 		private Vec3 m_serverPos;
 		private Quat m_serverRot;
 
