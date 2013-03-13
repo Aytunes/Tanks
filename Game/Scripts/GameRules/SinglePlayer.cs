@@ -19,6 +19,8 @@ namespace CryGameCode
 	{
 		public static Random Selector = new Random();
 
+		private List<EntityId> m_playerBuffer = new List<EntityId>();
+
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
 			if (!Game.IsServer)
@@ -44,15 +46,25 @@ namespace CryGameCode
 
 		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
 		{
+			Debug.LogAlways("[Enter] SinglePlayer.OnClientEnteredGame: channel {0}, player {1}", channelId, playerId);
 			var actor = Actor.Get<Tank>(playerId);
 
 			actor.OnEnteredGame();
 			actor.RemoteInvocation(OnEnteredGame, NetworkTarget.ToRemoteClients, channelId, playerId);
+
+			foreach (var player in m_playerBuffer)
+			{
+				var tank = Actor.Get<Tank>(player);
+				tank.RemoteInvocation(OnEnteredGame, NetworkTarget.ToClientChannel, channelId, player, channelId: channelId);
+			}
+
+			m_playerBuffer.Add(playerId);
 		}
 
 		[RemoteInvocation]
 		void OnEnteredGame(int channelId, EntityId playerId)
 		{
+			Debug.LogAlways("[Enter] SinglePlayer.OnEnteredGame: channel {0}, player {1}", channelId, playerId);
 			var actor = Actor.Get<Tank>(playerId);
 
 			actor.OnEnteredGame();

@@ -10,6 +10,8 @@ namespace CryGameCode.Tanks
 	{
 		public Tank()
 		{
+			Debug.LogAlways("[Enter] Tank.ctor: actor {0}", Id);
+
 			MaxHealth = 100;
 
 			m_acceleration = new Vec2();
@@ -24,6 +26,8 @@ namespace CryGameCode.Tanks
 		{
 			if (IsLocalClient)
 				Input.RegisterInputs();
+
+			Debug.LogAlways("[Enter] Tank.OnEnteredGame: actor {0}", Id);
 
 			PrePhysicsUpdateMode = PrePhysicsUpdateMode.Always;
 			ReceivePostUpdates = true;
