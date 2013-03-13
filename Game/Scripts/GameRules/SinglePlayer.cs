@@ -18,8 +18,7 @@ namespace CryGameCode
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
 		public static Random Selector = new Random();
-
-		private List<EntityId> m_playerBuffer = new List<EntityId>();
+		private List<Tank> m_playerBuffer = new List<Tank>();
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
@@ -52,13 +51,15 @@ namespace CryGameCode
 			actor.OnEnteredGame();
 			actor.RemoteInvocation(OnEnteredGame, NetworkTarget.ToRemoteClients, channelId, playerId);
 
+			// TODO: Find a neater solution to buffered calls
 			foreach (var player in m_playerBuffer)
 			{
-				var tank = Actor.Get<Tank>(player);
-				tank.RemoteInvocation(OnEnteredGame, NetworkTarget.ToClientChannel, channelId, player, channelId: channelId);
+				player.RemoteInvocation(OnEnteredGame, NetworkTarget.ToClientChannel, channelId, player.Id, channelId: channelId);
+				player.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToClientChannel, player.Id, player.Position, player.Rotation,
+					player.Team, player.TurretTypeName, channelId: channelId);
 			}
 
-			m_playerBuffer.Add(playerId);
+			m_playerBuffer.Add(actor);
 		}
 
 		[RemoteInvocation]
