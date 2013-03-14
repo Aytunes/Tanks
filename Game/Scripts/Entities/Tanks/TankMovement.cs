@@ -53,10 +53,14 @@ namespace CryGameCode.Tanks
 			///////////////////////////
 			// Velocity
 			///////////////////////////
-			const float mass = 500;
-			const float frontalArea = 20.6f;
+			const float tankMass = 500;
+			const float tankFrontalArea = 20.6f;
+			const float tankDragCoefficient = 0.9f;
 
-			const float dragCoefficient = 0.9f;
+			float mass = tankMass + Turret.Mass;
+			float frontalArea = tankFrontalArea + Turret.FrontalArea;
+			float dragCoefficient = tankDragCoefficient + Turret.DragCoefficient;
+
 			const float airDensity = 1.27f;
 
 			var terminalVelocity = (float)Math.Sqrt(Math.Abs(2 * mass * Math.Abs(CVar.Get("p_gravity_z").FVal) * (Math.Sin(slopeAngle) - groundFriction * Math.Cos(slopeAngle))) / (airDensity * dragCoefficient * frontalArea));

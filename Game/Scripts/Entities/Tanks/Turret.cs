@@ -194,6 +194,15 @@ namespace CryGameCode.Tanks
 		private bool m_leftFiring;
 		#endregion
 
+		#region Config
+		public abstract string Model { get; }
+
+		// The values below add to that of the tank, so some turrets might move slower / have a lower terminal velocity than that of other tanks.
+		public virtual float Mass { get { return 0; } }
+		public virtual float FrontalArea { get { return 0; } }
+		public virtual float DragCoefficient { get { return 0; } }
+		#endregion
+
 		public void Hide(bool hide)
 		{
 			if (TurretEntity != null && !TurretEntity.IsDestroyed)
@@ -213,7 +222,5 @@ namespace CryGameCode.Tanks
 		public EntityBase TurretEntity { get; private set; }
 
 		public bool Destroyed { get; set; }
-
-		public abstract string Model { get; }
 	}
 }
