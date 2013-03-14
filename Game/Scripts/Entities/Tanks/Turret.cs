@@ -14,16 +14,24 @@ namespace CryGameCode.Tanks
 	[Entity(Flags = EntityClassFlags.Invisible)]
 	public class TurretEntity : Entity
 	{
+		private string m_tankName;
+
 		public override void OnSpawn()
 		{
 			if (!Game.IsServer)
 			{
-				var tankName = Name.Split('.').First();
+				ReceiveUpdates = true;
+				m_tankName = Name.Split('.').First();		
+			}
+		}
 
-				Debug.LogAlways(tankName);
-				var owner = Entity.Find(tankName) as Tank;
-
+		public override void OnUpdate()
+		{
+			var owner = Entity.Find(m_tankName) as Tank;
+			if (owner != null && owner.Turret != null)
+			{
 				owner.Turret.Initialize(this);
+				ReceiveUpdates = false;
 			}
 		}
 	}
