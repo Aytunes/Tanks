@@ -53,7 +53,13 @@ namespace CryGameCode.Tanks
 			///////////////////////////
 			// Velocity
 			///////////////////////////
-			var terminalVelocity = (float)Math.Sqrt(Math.Abs(2 * 500 * Math.Abs(CVar.Get("p_gravity_z").FVal) * (Math.Sin(slopeAngle) - groundFriction * Math.Cos(slopeAngle))) / (1.27f * 0.9f * 20.6));
+			const float mass = 500;
+			const float frontalArea = 20.6f;
+
+			const float dragCoefficient = 0.9f;
+			const float airDensity = 1.27f;
+
+			var terminalVelocity = (float)Math.Sqrt(Math.Abs(2 * mass * Math.Abs(CVar.Get("p_gravity_z").FVal) * (Math.Sin(slopeAngle) - groundFriction * Math.Cos(slopeAngle))) / (airDensity * dragCoefficient * frontalArea));
 			var velocityRatio = prevVelocity.Length / terminalVelocity;
 
 			var acceleration = m_acceleration.X + m_acceleration.Y;
@@ -61,7 +67,7 @@ namespace CryGameCode.Tanks
 
 			var frictionDeceleration = (normalizedVelocity * velocityRatio) * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle));
 
-			var dragDeceleration = (0.9f * 20.6f * 1.27f * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / 500;
+			var dragDeceleration = (dragCoefficient * frontalArea * airDensity * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / mass;
 
 			moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration);
 
