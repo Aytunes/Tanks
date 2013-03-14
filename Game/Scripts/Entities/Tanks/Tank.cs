@@ -165,10 +165,7 @@ namespace CryGameCode.Tanks
 				// TODO: Tweak based on connection
 				if (m_currentDelta.Length > MaxDelta)
 				{
-					var newPos = Vec3.CreateLerp(currentPos, m_serverPos, Math.Min(1, Time.DeltaTime * 5 * m_currentDelta.Length));
-					Position = newPos;
-
-					m_currentDelta = m_serverPos - newPos;
+					Position = m_serverPos;
 				}
 
 				Rotation = Quat.CreateNlerp(currentRot, m_serverRot, Time.DeltaTime * 20);
