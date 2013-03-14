@@ -8,6 +8,7 @@ namespace CryGameCode.Tanks
 		const int MovementAspect = 128;
 		const float MaxDelta = 2;
 		const float MinDelta = 0.2f;
+		const float DeltaMult = 2f;
 
 		float NormalToAngle(Vec3 normal)
 		{
@@ -75,8 +76,8 @@ namespace CryGameCode.Tanks
 
 			moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration);
 
-			if (IsLocalClient && m_currentDelta.Length > MinDelta)
-				moveRequest.velocity += m_currentDelta / 10;
+			if (Game.IsPureClient && m_currentDelta.Length > MinDelta)
+				moveRequest.velocity += m_currentDelta * DeltaMult * m_currentDelta.LengthSquared;
 
 			///////////////////////////
 			// Rotation
