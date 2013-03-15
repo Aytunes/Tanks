@@ -116,8 +116,15 @@ namespace CryGameCode.Tanks
 
 		public void Destroy()
 		{
-			if (!TurretEntity.IsDestroyed)
-				TurretEntity.Remove();
+			if (Destroyed)
+				return;
+
+			TurretEntity.Remove();
+
+			foreach (var projectile in ProjectileStorage)
+				projectile.Remove();
+
+			ProjectileStorage.Clear();
 
 			Destroyed = true;
 		}
@@ -169,7 +176,20 @@ namespace CryGameCode.Tanks
 				jointAbsolute.T = TurretEntity.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
 
 				var gameMode = GameRules.Current as SinglePlayer;
-				CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, TurretEntity.Rotation.Normalized);
+
+				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
+				if (projectile == null)
+				{
+					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, TurretEntity.Rotation.Normalized) as Projectile;
+					ProjectileStorage.Add(projectile);
+				}
+				else
+				{
+					projectile.Position = jointAbsolute.T;
+					projectile.Rotation = TurretEntity.Rotation.Normalized;
+				}
+
+				projectile.Launch();
 
 				//OnFire(jointAbsolute.T);
 			}
@@ -200,6 +220,12 @@ namespace CryGameCode.Tanks
 		private float m_lastRightShot;
 		private bool m_rightFiring;
 		private bool m_leftFiring;
+
+		/// <summary>
+		/// Storage of projectiles that can be fired by this turret.
+		/// This way we don't have to spawn new ones all the time.
+		/// </summary>
+		public HashSet<Projectile> ProjectileStorage = new HashSet<Projectile>();
 		#endregion
 
 		#region Config

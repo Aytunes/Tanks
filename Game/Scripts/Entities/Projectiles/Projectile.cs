@@ -12,8 +12,6 @@ namespace CryGameCode.Projectiles
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Mass = Mass;
 			Physics.Slot = 0;
-
-			Launch();
 		}
 
 		/*protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
@@ -41,10 +39,16 @@ namespace CryGameCode.Projectiles
 		{
 			var dir = Rotation.Column1;
 			Physics.AddImpulse(dir * Speed);
+
+			Fired = true;
 		}
 
 		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
 		{
+			// In standby waiting to be fired, don't track collisions.
+			if (!Fired)
+				return;
+
 			var effect = ParticleEffect.Get(Effect);
 			if (effect != null)
 				effect.Spawn(hitPos, contactNormal, EffectScale);
@@ -74,7 +78,7 @@ namespace CryGameCode.Projectiles
 				explosion.Explode();
 			}
 
-			Remove();
+			Fired = false;
 		}
 
 		public abstract string Model { get; }
@@ -90,5 +94,11 @@ namespace CryGameCode.Projectiles
 		public virtual float ExplosionRadius { get { return 15; } }
 		public virtual float MaximumExplosionRadius { get { return 30; } }
 		public virtual float ExplosionPressure { get { return 200; } }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether this projectile was fired.
+		/// If false, this projectile is ready for re-use.
+		/// </summary>
+		public bool Fired { get; set; }
 	}
 }
