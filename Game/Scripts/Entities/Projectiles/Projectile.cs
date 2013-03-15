@@ -12,6 +12,7 @@ namespace CryGameCode.Projectiles
 			Physics.Type = PhysicalizationType.Rigid;
 			Physics.Mass = Mass;
 			Physics.Slot = 0;
+			ViewDistanceRatio = 255;
 
 			Launch();
 		}
