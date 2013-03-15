@@ -28,7 +28,7 @@ namespace CryGameCode.Entities
 
 		void Reset()
 		{
-			Physics.Type = PhysicalizationType.Rigid;
+			Physics.Type = PhysicalizationType.Static;
 		}
 	}
 }
