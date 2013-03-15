@@ -153,12 +153,15 @@ namespace CryGameCode.Tanks
 				var currentRot = Rotation;
 
 				m_currentDelta = m_serverPos - currentPos;
+				var deltaLength = m_currentDelta.Length;
 
 				if (IsLocalClient)
 				{
 					Renderer.DrawTextToScreen(10, 10, 2, Color.White, "Client pos: {0}", currentPos);
 					Renderer.DrawTextToScreen(10, 30, 2, Color.White, "Server pos: {0}", m_serverPos);
-					Renderer.DrawTextToScreen(10, 50, 2, Color.White, "Delta: {0}", m_currentDelta.Length);
+
+					var clr = deltaLength > 2 ? Color.Red : Color.White;
+					Renderer.DrawTextToScreen(10, 50, 2, clr, "Delta: {0}", deltaLength);
 				}
 
 				// Start forcing sync if we have to
