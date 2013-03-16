@@ -40,6 +40,8 @@ namespace CryGameCode
 			var tank = Actor.Get<Tank>(channelId);
 			tank.OnLeftGame();
 
+			m_playerBuffer.Remove(tank);
+
 			Actor.Remove(channelId);
 		}
 
