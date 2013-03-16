@@ -103,8 +103,20 @@ namespace CryGameCode.Tanks
 
 			entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
 
+			Physicalize();
+
 			entity.OnDestroyed += (x) => { Destroy(); };
 
+		}
+
+		void Physicalize()
+		{
+			TurretEntity.Physics.AutoUpdate = false;
+
+			TurretEntity.Physics.Type = PhysicalizationType.Static;
+			TurretEntity.Physics.Mass = Mass;
+
+			TurretEntity.Physics.Save();
 		}
 
 		void Serialize(CrySerialize serialize)
