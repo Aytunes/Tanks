@@ -45,6 +45,8 @@ namespace CryGameCode.Projectiles
 			RemoteInvocation(RemoteLaunch, NetworkTarget.ToAllClients, Position, Rotation);
 		}
 
+		private Vec3 m_firePos;
+
 		[RemoteInvocation]
 		private void RemoteLaunch(Vec3 pos, Quat rot)
 		{
@@ -52,9 +54,19 @@ namespace CryGameCode.Projectiles
 			Hidden = false;
 
 			Position = pos;
+			m_firePos = pos;
+
 			Rotation = rot;
-			var dir = Rotation.Column1;
+			var dir = rot.Column1;
 			Physics.AddImpulse(dir * Speed);
+			Debug.DrawDirection(Position, 1, dir * Speed, Color.White, 1);
+		}
+
+		[RemoteInvocation]
+		private void RemoteHit(Vec3 pos, Vec3 original)
+		{
+			Debug.DrawLine(original, pos, Color.White, 1);
+			Debug.DrawSphere(pos, 1, Color.White, 1f);
 		}
 
 		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
@@ -63,8 +75,8 @@ namespace CryGameCode.Projectiles
 			if (!Fired)
 				return;
 
-			Debug.LogAlways("{0} {1}: OnCollision at {2} with {3}", System.DateTime.Now, Id, hitPos, targetEntityId);
-			Debug.DrawSphere(hitPos, 1, Color.White, 1f);
+			if (Game.IsServer)
+				RemoteInvocation(RemoteHit, NetworkTarget.ToAllClients, hitPos, m_firePos);
 
 			var effect = ParticleEffect.Get(Effect);
 			if (effect != null)
