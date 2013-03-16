@@ -36,12 +36,16 @@ namespace CryGameCode.Projectiles
 			}
 		}*/
 
-		public virtual void Launch()
+		[RemoteInvocation]
+		public virtual void Launch(Vec3 pos, Quat rot)
 		{
+			Fired = true;
+			Hidden = false;
+
+			Position = pos;
+			Rotation = rot;
 			var dir = Rotation.Column1;
 			Physics.AddImpulse(dir * Speed);
-
-			Fired = true;
 		}
 
 		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
@@ -49,6 +53,9 @@ namespace CryGameCode.Projectiles
 			// In standby waiting to be fired, don't track collisions.
 			if (!Fired)
 				return;
+
+			Debug.LogAlways("{0} {1}: OnCollision at {2} with {3}", System.DateTime.Now, Id, hitPos, targetEntityId);
+			Debug.DrawSphere(hitPos, 1, Color.White, 1f);
 
 			var effect = ParticleEffect.Get(Effect);
 			if (effect != null)
@@ -79,6 +86,7 @@ namespace CryGameCode.Projectiles
 				explosion.Explode();
 			}
 
+			Hidden = true;
 			Fired = false;
 		}
 
