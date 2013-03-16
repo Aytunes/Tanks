@@ -190,7 +190,7 @@ namespace CryGameCode.Tanks
 					projectile.Rotation = TurretEntity.Rotation.Normalized;
 				}
 
-				projectile.RemoteInvocation(projectile.Launch, NetworkTarget.ToAllClients, projectile.Position, projectile.Rotation);
+				projectile.Launch();
 
 				//OnFire(jointAbsolute.T);
 			}

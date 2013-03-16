@@ -36,8 +36,17 @@ namespace CryGameCode.Projectiles
 			}
 		}*/
 
+		public void Launch()
+		{
+			if (!Game.IsServer)
+				return;
+
+			RemoteLaunch(Position, Rotation);
+			RemoteInvocation(RemoteLaunch, NetworkTarget.ToAllClients, Position, Rotation);
+		}
+
 		[RemoteInvocation]
-		public virtual void Launch(Vec3 pos, Quat rot)
+		private void RemoteLaunch(Vec3 pos, Quat rot)
 		{
 			Fired = true;
 			Hidden = false;
