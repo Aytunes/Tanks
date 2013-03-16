@@ -41,7 +41,18 @@ namespace CryGameCode.Entities.Buildings
 
 		public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
-			Debug.DrawText("Drill destroyed!", 3, Color.Red, 5);
+			if (!Game.IsServer)
+				return;
+
+			RemoteInvocation(RemoteOnDeath, NetworkTarget.ToAllClients);
+		}
+
+		[RemoteInvocation]
+		private void RemoteOnDeath()
+		{
+			var msg = string.Format("{0}'s drill was destroyed!", Team);
+			Debug.DrawText(msg, 3, Color.White, 5);
+
 			StopAnimation(blendOutTime: 1);
 
 			m_destroyedEffect = ParticleEffect.Get("smoke_and_fire.Vehicle_fires.large2");
