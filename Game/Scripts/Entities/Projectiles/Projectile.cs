@@ -5,6 +5,14 @@ namespace CryGameCode.Projectiles
 {
 	public abstract class Projectile : Entity
 	{
+		static int debugProjectiles = 0;
+		static Projectile()
+		{
+			CVar.RegisterInt("tank_debugProjectiles", ref debugProjectiles, flags: CVarFlags.ReadOnly);
+		}
+
+		public bool DebugEnabled { get { return debugProjectiles != 0; } }
+
 		public override void OnSpawn()
 		{
 			LoadObject(Model);
@@ -14,27 +22,6 @@ namespace CryGameCode.Projectiles
 			Physics.Slot = 0;
 			ViewDistanceRatio = 255;
 		}
-
-		/*protected override void NetSerialize(CryEngine.Serialization.CrySerialize serialize, int aspect, byte profile, int flags)
-		{
-			Vec3 pos = Vec3.Zero;
-			Quat rot = Quat.Identity;
-
-			if (serialize.IsWriting)
-			{
-				pos = Position;
-				rot = Rotation;
-			}
-
-			serialize.Value("pos", ref pos, "wrld");
-			serialize.Value("rot", ref rot, "ori1");
-
-			if (serialize.IsReading)
-			{
-				Position = pos;
-				Rotation = rot;
-			}
-		}*/
 
 		public void Launch()
 		{
@@ -59,7 +46,9 @@ namespace CryGameCode.Projectiles
 			Rotation = rot;
 			var dir = rot.Column1;
 			Physics.AddImpulse(dir * Speed);
-			Debug.DrawDirection(Position, 1, dir * Speed, Color.White, 1);
+
+			if (DebugEnabled)
+				Debug.DrawDirection(Position, 1, dir * Speed, Color.White, 1);
 		}
 
 		[RemoteInvocation]
@@ -75,7 +64,7 @@ namespace CryGameCode.Projectiles
 			if (!Fired)
 				return;
 
-			if (Game.IsServer)
+			if (Game.IsServer && DebugEnabled)
 				RemoteInvocation(RemoteHit, NetworkTarget.ToAllClients, hitPos, m_firePos);
 
 			var effect = ParticleEffect.Get(Effect);
