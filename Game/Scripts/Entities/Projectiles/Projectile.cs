@@ -107,7 +107,9 @@ namespace CryGameCode.Projectiles
 				explosion.Explode();
 			}
 
-			Hidden = true;
+			if (Game.IsClient)
+				Hidden = true;
+
 			Fired = false;
 		}
 
