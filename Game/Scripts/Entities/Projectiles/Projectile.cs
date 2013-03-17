@@ -6,12 +6,16 @@ namespace CryGameCode.Projectiles
 	public abstract class Projectile : Entity
 	{
 		static int debugProjectiles = 0;
+		static int recyleProjectiles = 1;
+
 		static Projectile()
 		{
 			CVar.RegisterInt("tank_debugProjectiles", ref debugProjectiles, flags: CVarFlags.ReadOnly);
+			CVar.RegisterInt("tank_recycleProjectiles", ref recyleProjectiles, flags: CVarFlags.ReadOnly);
 		}
 
-		public bool DebugEnabled { get { return debugProjectiles != 0; } }
+		public static bool DebugEnabled { get { return debugProjectiles != 0; } }
+		public static bool RecyclingEnabled { get { return recyleProjectiles != 0; } }
 
 		public override void OnSpawn()
 		{
