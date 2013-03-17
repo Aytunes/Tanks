@@ -84,7 +84,7 @@ namespace CryGameCode.Tanks
 
 		public void Update() 
 		{
-			if (!Game.IsClient)
+			if (!Game.IsClient || !Owner.IsLocalClient)
 				return;
 
 			m_mousePositionX = Input.MouseX;
