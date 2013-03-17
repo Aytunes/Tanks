@@ -36,14 +36,19 @@ namespace CryGameCode.Entities.Collectibles
 		{
 			TriggerBounds = new BoundingBox(Minimum, Maximum);
 
+			SpawnCollectible();
 			Activate();
 		}
 
-		void Activate()
+		void SpawnCollectible()
 		{
 			var collectibleType = CollectibleTypes[SinglePlayer.Selector.Next(CollectibleTypes.Count)];
 
 			Collectible = Entity.Spawn("Collectible", collectibleType) as Collectible;
+		}
+
+		void Activate()
+		{	
 			if (Collectible != null)
 			{
 				// TODO: Make base model seperate, in order to change pickup model based on collectible type.
@@ -83,8 +88,14 @@ namespace CryGameCode.Entities.Collectibles
 
 					//Debug.DrawText("nom nom nom", 3.0f, Color.Blue, 5.0f);
 				}
+				else if (entity is Projectile)
+				{
+					Debug.DrawText(string.Format("{0} DENIED A {1} COLLECTIBLE!", entity.Name.ToUpper(), Collectible.TypeName.ToUpper()), 3.0f, Color.Red, 2.0f);
+				}
 				else
 					return;
+
+				SpawnCollectible();
 
 				LastUsage = Time.FrameStartTime;
 

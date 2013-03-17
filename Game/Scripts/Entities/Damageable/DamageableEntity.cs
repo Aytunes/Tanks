@@ -14,9 +14,11 @@ namespace CryGameCode.Entities
 			var wasDead = IsDead;
 
 			Health = MathHelpers.Max(healthAfter, 0);
-			OnDamage(damage, type, pos, dir);
 
-			if (!wasDead && healthAfter <= 0)
+			if (OnDamaged != null)
+				OnDamaged(damage, type, pos, dir);
+
+			if (!wasDead && healthAfter <= 0 && OnDeath != null)
 				OnDeath(damage, type, pos, dir);
 		}
 
@@ -30,14 +32,7 @@ namespace CryGameCode.Entities
 			Health = MaxHealth = amount;
 		}
 
-		/// <summary>
-		/// Reports entity death with info on the hit that killed it.
-		/// </summary>
-		/// <param name="damage"></param>
-		/// <param name="type"></param>
-		/// <param name="pos"></param>
-		/// <param name="dir"></param>
-		public virtual void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir) { }
-		public virtual void OnDamage(float damage, DamageType type, Vec3 pos, Vec3 dir) { }
+		public event OnDamagedDelegate OnDamaged;
+		public event OnDamagedDelegate OnDeath;
 	}
 }

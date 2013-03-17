@@ -31,15 +31,12 @@ namespace CryGameCode.Entities.Buildings
 
 			InitHealth(100);
 
-			//if(m_destroyedEffect != null)
-			//	m_destroyedEffect.Remove();
-
-			OnDamage(0, DamageType.None, Vec3.Zero, Vec3.Zero);
+			OnDeath += OnDied;
 
 			Material = Material.Find("objects/tank_env_assets/scifi/drill_" + m_team);
 		}
 
-		public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void OnDied(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
 			if (!Game.IsServer)
 				return;

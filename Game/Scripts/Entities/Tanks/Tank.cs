@@ -17,6 +17,8 @@ namespace CryGameCode.Tanks
 			m_acceleration = new Vec2();
 
 			Input = new PlayerInput(this);
+
+			OnDeath += OnDied;
 		}
 
 		/// <summary>
@@ -175,7 +177,7 @@ namespace CryGameCode.Tanks
 				Rotation = Quat.CreateNlerp(currentRot, m_serverRot, Time.DeltaTime * 20);
 			}
 
-			if (Turret != null && Turret.TurretEntity != null)
+			if (Turret != null && Turret.TurretEntity != null && !Turret.TurretEntity.IsDestroyed)
 				Turret.TurretEntity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
 		}
 

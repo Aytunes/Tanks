@@ -23,7 +23,7 @@ namespace CryGameCode.Entities.Physics
 			InitHealth(100);
 		}
 
-		public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void OnDied(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
 			var breakageParams = new BreakageParameters();
 			breakageParams.type = BreakageType.Destroy;

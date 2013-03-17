@@ -20,6 +20,8 @@ namespace CryGameCode.Entities.Buildings
 		public override void OnSpawn()
 		{
 			Reset();
+
+			OnDeath += OnDied;
 		}
 
 		protected override void PostSerialize()
@@ -101,7 +103,7 @@ namespace CryGameCode.Entities.Buildings
 			}
 		}
 
-		public override void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void OnDied(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
 			Hidden = true;
 		}

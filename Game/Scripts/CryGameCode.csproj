@@ -101,8 +101,13 @@
     <Compile Include="Entities\Buildings\Drill.cs" />
     <Compile Include="Entities\Collectibles\Collectible.cs" />
     <Compile Include="Entities\Collectibles\CollectibleHolder.cs" />
-    <Compile Include="Entities\Collectibles\HasteCollectible.cs" />
+    <Compile Include="Entities\Collectibles\InvisibilityCollectible.cs" />
+    <Compile Include="Entities\Collectibles\TimeScaleCollectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />
+    <Compile Include="GameRules\Game Modifiers\HealthModifier.cs" />
+    <Compile Include="GameRules\Game Modifiers\InvisibilityModifier.cs" />
+    <Compile Include="GameRules\Game Modifiers\TimeScaleModifier.cs" />
+    <Compile Include="GameRules\Game Modifiers\IGameModifier.cs" />
     <Compile Include="Entities\Others\SpectatorPoint.cs" />
     <Compile Include="Entities\Projectiles\AutocannonRocket.cs" />
     <Compile Include="Entities\Projectiles\ChaingunBullet.cs" />
