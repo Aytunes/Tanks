@@ -7,6 +7,8 @@ using CryEngine;
 
 namespace CryGameCode.Entities
 {
+	public delegate void OnDamagedDelegate(float damage, DamageType type, Vec3 pos, Vec3 dir);
+
 	public interface IDamageable
 	{
 		float Health { get; }
@@ -18,7 +20,7 @@ namespace CryGameCode.Entities
 
 		void InitHealth(float amount);
 
-		void OnDeath(float damage, DamageType type, Vec3 pos, Vec3 dir);
-		void OnDamage(float damage, DamageType type, Vec3 pos, Vec3 dir);
+		event OnDamagedDelegate OnDamaged;
+		event OnDamagedDelegate OnDeath;
 	}
 }

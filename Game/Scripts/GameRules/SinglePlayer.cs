@@ -17,6 +17,11 @@ namespace CryGameCode
 	[GameRules(Default = true)]
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
+		public SinglePlayer()
+		{
+			ReceiveUpdates = true;
+		}
+
 		public static Random Selector = new Random();
 		private List<Tank> m_playerBuffer = new List<Tank>();
 
@@ -146,6 +151,25 @@ namespace CryGameCode
 			return null;
 		}
 
+		public override void OnUpdate()
+		{
+			var removedModifiers = new List<IGameModifier>();
+
+			foreach(var gameModifier in m_activeGameModifiers)
+			{
+				if (!gameModifier.Update())
+					removedModifiers.Add(gameModifier);
+			}
+
+			foreach (var gameModifier in removedModifiers)
+				m_activeGameModifiers.Remove(gameModifier);
+		}
+
+		public void AddGameModifier(IGameModifier modifier)
+		{
+			m_activeGameModifiers.Add(modifier);
+		}
+
 		public virtual string[] Teams
 		{
 			get
@@ -158,5 +182,7 @@ namespace CryGameCode
 		{
 			return Teams.Contains(team);
 		}
+
+		List<IGameModifier> m_activeGameModifiers = new List<IGameModifier>();
 	}
 }

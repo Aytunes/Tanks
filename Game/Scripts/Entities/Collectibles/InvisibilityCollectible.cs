@@ -4,13 +4,13 @@ using CryGameCode.Tanks;
 
 namespace CryGameCode.Entities.Collectibles
 {
-	public class HealthCollectible : Collectible
+	/*public class InvisibilityCollectible : Collectible
 	{
 		public override void OnCollected(Tank tank)
 		{
 			var singlePlayer = GameRules.Current as SinglePlayer;
 
-			var modifier = new HealthModifier(tank, HealthRestoration, RestorationTime);
+			var modifier = new InvisibilityModifier(tank, Duration);
 			modifier.Begin();
 
 			singlePlayer.AddGameModifier(modifier);
@@ -25,14 +25,9 @@ namespace CryGameCode.Entities.Collectibles
 
 		public override string TypeName
 		{
-			get { return "Regeneration"; }
+			get { return "Invisibility"; }
 		}
 
-		public static float HealthRestoration = 35;
-
-		/// <summary>
-		/// Time in seconds to restore health, aborted it entity is attacked.
-		/// </summary>
-		public static float RestorationTime = 2;
-	}
+		public static float Duration = 10;
+	}*/
 }
