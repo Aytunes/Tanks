@@ -28,8 +28,8 @@ namespace CryGameCode.Entities.Collectibles
 			get { return "Bullet time"; }
 		}
 
-		public static float TimeScale = 0.1f;
+		public static float TimeScale = 0.2f;
 
-		public static float Duration = 5.0f;
+		public static float Duration = 10.0f;
 	}
 }
