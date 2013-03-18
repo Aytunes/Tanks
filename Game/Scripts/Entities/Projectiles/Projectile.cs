@@ -78,10 +78,23 @@ namespace CryGameCode.Projectiles
 			// Id 0 is the terrain
 			if (targetEntityId != 0)
 			{
-				var target = Entity.Get(targetEntityId) as IDamageable;
+				var target = Entity.Get(targetEntityId);
+                if (target != null)
+                {
+                    var damageableTarget = target as IDamageable;
+                    if (damageableTarget != null)
+                        damageableTarget.Damage(Damage, DamageType, hitPos, dir);
+                }
 
-				if (target != null)
-					target.Damage(Damage, DamageType, hitPos, dir);
+                if (TargetModifier != null)
+                {
+                    TargetModifier.Target = target;
+
+                    var singlePlayer = GameRules.Current as SinglePlayer;
+                    singlePlayer.AddGameModifier(TargetModifier);
+
+                    TargetModifier.Begin();
+                }
 			}
 
 			if (ShouldExplode)
@@ -119,6 +132,8 @@ namespace CryGameCode.Projectiles
 		public virtual float ExplosionRadius { get { return 15; } }
 		public virtual float MaximumExplosionRadius { get { return 30; } }
 		public virtual float ExplosionPressure { get { return 200; } }
+
+        public IGameModifier TargetModifier { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this projectile was fired.

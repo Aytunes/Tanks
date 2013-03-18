@@ -12,7 +12,7 @@ namespace CryGameCode
 	{
 		InvisibilityModifier() { }
 
-		public InvisibilityModifier(IDamageable target, float duration)
+		public InvisibilityModifier(EntityBase target, float duration)
 		{
 			m_timeRemaining = duration;
 
@@ -23,7 +23,8 @@ namespace CryGameCode
 		{
 			m_active = true;
 
-			Target.OnDamaged += (damage, type, pos, dir) =>
+            var damageableTarget = Target as IDamageable;
+            damageableTarget.OnDamaged += (damage, type, pos, dir) =>
 			{
 				// cancel heal if target took damage
 				End();
@@ -59,7 +60,7 @@ namespace CryGameCode
 
 		public event Action OnEnd;
 
-		public IDamageable Target { get; set; }
+		public EntityBase Target { get; set; }
 
 		float m_timeRemaining;
 

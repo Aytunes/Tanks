@@ -20,6 +20,8 @@ namespace CryGameCode
 		/// <returns>false if the game modifier is done, and should be removed</returns>
 		bool Update();
 
+        EntityBase Target { get; set; }
+
 		event Action OnEnd;
 	}
 }
