@@ -3,13 +3,8 @@
   <Node Id="1" Class="UI:Action:Start" pos="-340,-60,0" flags="0">
    <Inputs UseAsState="1"/>
   </Node>
-  <Node Id="5" Class="UI:Functions:MainMenu:SetupScreen" pos="-30,-60,0" flags="1">
+  <Node Id="5" Class="UI:Functions:MainMenu:SetupScreen" pos="-30,-60,0" flags="0">
    <Inputs instanceID="-1" Caption="CryMono Tanks" ShowLine="1" MaxButtons="2" ButtonXPos="-500" ButtonYPos="0" ButtonOffset="40"/>
-  </Node>
-  <Node Id="33" Name="Setup_page" Class="_commentbox" pos="-349,-99.999428,0" flags="0">
-   <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
-   <ResizeBorder X="0" Y="0" Width="595" Height="381.50543"/>
-   <NodeSize Width="595" Height="408.89606"/>
   </Node>
   <Node Id="35" Class="UI:Functions:MainMenu:AddButton" pos="-30,80,0" flags="0">
    <Inputs instanceID="-1" caption="@ui_HostLan" tooltip="@ui_HostLanTT" id="MM_HostMP"/>
@@ -17,32 +12,52 @@
   <Node Id="36" Class="UI:Functions:MainMenu:AddButton" pos="-30,180,0" flags="0">
    <Inputs instanceID="-1" caption="@ui_JoinLan" tooltip="@ui_JoinLanTT" id="MM_JoinMP"/>
   </Node>
-  <Node Id="40" Name="Handle_events" Class="_commentbox" pos="-349.23459,412.98764,0" flags="0">
-   <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
-   <ResizeBorder X="0" Y="0" Width="613.87012" Height="171.55054"/>
-   <NodeSize Width="613.87012" Height="198.94116"/>
-  </Node>
-  <Node Id="83" Class="UI:Action:Control" pos="-120,500,0" flags="0">
+  <Node Id="83" Class="UI:Action:Control" pos="-150,570,0" flags="0">
    <Inputs uiActions_UIAction="MM_DefaultEvents" Strict="0" Args=""/>
   </Node>
-  <Node Id="91" Class="UI:Action:End" pos="130,500,0" flags="0">
+  <Node Id="91" Class="UI:Action:End" pos="100,570,0" flags="0">
    <Inputs UseAsState="1" Args=""/>
   </Node>
-  <Node Id="93" Class="UI:Action:Start" pos="-330,500,0" flags="0">
+  <Node Id="93" Class="UI:Action:Start" pos="-360,570,0" flags="0">
    <Inputs UseAsState="1"/>
   </Node>
-  <Node Id="94" Name="Use_default_event_state_as_well" Class="_comment" pos="-330,460,0" flags="0"/>
   <Node Id="101" Class="UI:Functions:LobbyMP:SetMultiplayer" pos="-310,20,0" flags="0">
    <Inputs isMultiplayer="1"/>
+  </Node>
+  <Node Id="107" Class="UI:Functions:MainMenu:AddQuitButton" pos="-30,280,0" flags="0">
+   <Inputs instanceID="-1" caption="Quit" tooltip="" id="MM_Quit"/>
+  </Node>
+  <Node Id="109" Class="UI:Functions:Game:ExitGame" pos="410,460,0" flags="0">
+   <Inputs />
+  </Node>
+  <Node Id="111" Class="UI:Events:MainMenu:OnButton" pos="-620,370,0" flags="0">
+   <Inputs instanceID="-1" Port="0" Idx="MM_Quit"/>
+  </Node>
+  <Node Id="117" Class="UI:Functions:MainMenu:ShowConfirmation" pos="-390,370,0" flags="0">
+   <Inputs instanceID="-1" message="Are you sure you want to quit? :&apos;(" btn1Caption="Yes" btn2Caption="No" id="MM_QuitConfirm"/>
+  </Node>
+  <Node Id="119" Class="UI:Events:MainMenu:OnConfirm" pos="0,410,0" flags="0">
+   <Inputs instanceID="-1" Port="0" Idx="MM_QuitConfirm"/>
+  </Node>
+  <Node Id="121" Class="Math:FromBoolean" pos="240,440,0" flags="0">
+   <Inputs Value="0"/>
+  </Node>
+  <Node Id="123" Class="UI:Functions:MainMenu:HideConfirmation" pos="410,410,0" flags="0">
+   <Inputs instanceID="-1"/>
   </Node>
  </Nodes>
  <Edges>
   <Edge nodeIn="101" nodeOut="1" portIn="send" portOut="StartAction" enabled="1"/>
   <Edge nodeIn="35" nodeOut="5" portIn="Call" portOut="OnCall" enabled="1"/>
   <Edge nodeIn="36" nodeOut="35" portIn="Call" portOut="OnCall" enabled="1"/>
+  <Edge nodeIn="107" nodeOut="36" portIn="Call" portOut="OnCall" enabled="1"/>
   <Edge nodeIn="91" nodeOut="83" portIn="EndAction" portOut="OnEnd" enabled="1"/>
   <Edge nodeIn="83" nodeOut="93" portIn="Start" portOut="StartAction" enabled="1"/>
   <Edge nodeIn="5" nodeOut="101" portIn="Call" portOut="OnEvent" enabled="1"/>
+  <Edge nodeIn="117" nodeOut="111" portIn="Call" portOut="onEvent" enabled="1"/>
+  <Edge nodeIn="121" nodeOut="119" portIn="Value" portOut="Accepted" enabled="1"/>
+  <Edge nodeIn="109" nodeOut="121" portIn="send" portOut="True" enabled="1"/>
+  <Edge nodeIn="123" nodeOut="121" portIn="Call" portOut="False" enabled="1"/>
  </Edges>
  <GraphTokens />
 </Graph>
