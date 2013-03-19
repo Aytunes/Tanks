@@ -1,5 +1,4 @@
 ﻿using CryEngine;
-using CryEngine.Extensions;
 
 namespace CryGameCode.Tanks
 {
@@ -33,14 +32,14 @@ namespace CryGameCode.Tanks
 
 			if (Input != null)
 			{
-				if (Input.Flags.ContainsFlag(InputFlags.ZoomOut) && ZoomLevel > 1)
+				if (Input.HasFlag(InputFlags.ZoomOut) && ZoomLevel > 1)
 				{
 
 					ZoomLevel -= GameCVars.cam_zoomSpeed;
 					if (ZoomLevel < 1)
 						ZoomLevel = 1;
 				}
-                else if (Input.Flags.ContainsFlag(InputFlags.ZoomIn) && ZoomLevel < GameCVars.cam_maxZoomLevel)
+				else if (Input.HasFlag(InputFlags.ZoomIn) && ZoomLevel < GameCVars.cam_maxZoomLevel)
 				{
 					ZoomLevel += GameCVars.cam_zoomSpeed;
 					if (ZoomLevel > GameCVars.cam_maxZoomLevel)

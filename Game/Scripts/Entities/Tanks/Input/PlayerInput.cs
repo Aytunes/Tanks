@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 
 using CryEngine;
-using CryEngine.Extensions;
 using CryEngine.Serialization;
 
 namespace CryGameCode.Tanks
@@ -40,7 +39,7 @@ namespace CryGameCode.Tanks
 
 			OnInputChanged += (flags, keyEvent) =>
 			{
-				if (flags.ContainsFlag(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease)
+				if (flags.IsSet(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease)
 				{
 					var gameRules = GameRules.Current as SinglePlayer;
 
@@ -144,7 +143,7 @@ namespace CryGameCode.Tanks
 			if (Owner == null || Owner.IsDestroyed)
 				return;
 
-            var hasFlag = Flags.ContainsFlag(flag);
+			var hasFlag = HasFlag(flag);
 
 			switch (keyEvent)
 			{
@@ -175,6 +174,11 @@ namespace CryGameCode.Tanks
 					}
 					break;
 			}
+		}
+
+		public bool HasFlag(InputFlags target)
+		{
+			return Flags.IsSet(target);
 		}
 
 		public static int Aspect = 256;

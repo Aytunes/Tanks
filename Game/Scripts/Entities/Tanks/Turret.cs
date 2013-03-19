@@ -54,7 +54,7 @@ namespace CryGameCode.Tanks
 
 		void OnInput(InputFlags flags, KeyEvent keyEvent)
 		{
-            if (flags.ContainsFlag(InputFlags.LeftMouseButton))
+			if (flags.IsSet(InputFlags.LeftMouseButton))
             {
                 if (keyEvent == KeyEvent.OnPress)
                 {
@@ -72,7 +72,7 @@ namespace CryGameCode.Tanks
                 }
             }
 
-            if (flags.ContainsFlag(InputFlags.RightMouseButton))
+			if (flags.IsSet(InputFlags.RightMouseButton))
             {
                 if (keyEvent == KeyEvent.OnPress)
                 {

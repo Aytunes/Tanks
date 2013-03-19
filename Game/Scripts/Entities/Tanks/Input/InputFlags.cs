@@ -28,4 +28,12 @@ namespace CryGameCode.Tanks
 
 		Last = 1 << 11,
 	}
+
+	public static class InputFlagEx
+	{
+		public static bool IsSet(this InputFlags source, InputFlags target)
+		{
+			return (source & target) == target;
+		}
+	}
 }

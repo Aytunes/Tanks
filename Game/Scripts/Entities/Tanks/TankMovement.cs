@@ -1,7 +1,6 @@
 ﻿using System;
 
 using CryEngine;
-using CryEngine.Extensions;
 
 namespace CryGameCode.Tanks
 {
@@ -118,26 +117,26 @@ namespace CryGameCode.Tanks
 			var accelerationSpeedRotation = GameCVars.tank_accelerationSpeedRotation * frameTime;
 
 			var maxAcceleration = GameCVars.tank_maxAcceleration;
-            if (Input.Flags.ContainsFlag(InputFlags.Boost))
+            if (Input.HasFlag(InputFlags.Boost))
 				maxAcceleration = GameCVars.tank_maxAccelerationBoosting;
 
 			// in order to make the tank feel heavy, hinder forward / backwards movement when attempting to turn.
-            if (Input.Flags.ContainsFlag(InputFlags.MoveLeft))
+            if (Input.HasFlag(InputFlags.MoveLeft))
 			{
 				m_acceleration.X += accelerationSpeedRotation;
 				m_acceleration.Y -= accelerationSpeedRotation;
 			}
-            else if (Input.Flags.ContainsFlag(InputFlags.MoveRight))
+            else if (Input.HasFlag(InputFlags.MoveRight))
 			{
 				m_acceleration.X -= accelerationSpeedRotation;
 				m_acceleration.Y += accelerationSpeedRotation;
 			}
-            else if (Input.Flags.ContainsFlag(InputFlags.MoveForward))
+            else if (Input.HasFlag(InputFlags.MoveForward))
 			{
 				m_acceleration.X += accelerationSpeed;
 				m_acceleration.Y += accelerationSpeed;
 			}
-            else if (Input.Flags.ContainsFlag(InputFlags.MoveBack))
+            else if (Input.HasFlag(InputFlags.MoveBack))
 			{
 				m_acceleration.X -= accelerationSpeed;
 				m_acceleration.Y -= accelerationSpeed;
