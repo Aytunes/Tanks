@@ -42,7 +42,9 @@ namespace CryGameCode.Projectiles
 		private void RemoteLaunch(Vec3 pos, Quat rot)
 		{
 			Fired = true;
-			Hidden = false;
+
+			if (Game.IsPureClient)
+				Hidden = false;
 
 			Position = pos;
 			m_firePos = pos;
@@ -113,7 +115,7 @@ namespace CryGameCode.Projectiles
 				explosion.Explode();
 			}
 
-			if (Game.IsClient)
+			if (Game.IsPureClient)
 				Hidden = true;
 
 			Fired = false;
