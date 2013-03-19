@@ -5612,7 +5612,7 @@
             <param name="command">console command e.g. "map testy" - no leading slash</param>
             <param name="silent">suppresses log in error case and logging the command to the console</param>
         </member>
-        <member name="M:CryEngine.ConsoleCommand.Register(System.String,CryEngine.ConsoleCommandDelegate,System.String,CryEngine.CVarFlags)">
+        <member name="M:CryEngine.ConsoleCommand.Register(System.String,CryEngine.ConsoleCommandDelegate,System.String,CryEngine.CVarFlags,System.Boolean)">
             <summary>
             Register a new console command.
             </summary>

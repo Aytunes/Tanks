@@ -84,36 +84,20 @@ namespace CryGameCode.Tanks
 		#region Console commands
 		static void RegisterConsoleCommands()
 		{
-			try
-			{
-				ConsoleCommand.Register("spawn", (e) =>
-				{
-					//Entity.Spawn<AutocannonTank>("spawnedTank", (Actor.LocalClient as CameraProxy).TargetEntity.Position);
-				});
-			}
-			catch (DuplicateConsoleCommandException) { }
-
 			TurretTypes = (from type in Assembly.GetExecutingAssembly().GetTypes()
 						   where type.Implements<TankTurret>()
 						   select type).ToList();
 
-			try
+			ConsoleCommand.Register("SetTurretType", (e) =>
 			{
-				ConsoleCommand.Register("SetTankType", (e) =>
-				{
-					ForceTankType = e.Args[0];
-				});
-			}
-			catch (DuplicateConsoleCommandException) { }
+                if(e.Args.Length > 0)
+				    ForceTankType = e.Args[0];
+			}, "Sets the turret type", CVarFlags.Cheat, true);
 
-			try
+			ConsoleCommand.Register("ResetTurretType", (e) =>
 			{
-				ConsoleCommand.Register("ResetTankType", (e) =>
-				{
-					ForceTankType = string.Empty;
-				});
-			}
-			catch (DuplicateConsoleCommandException) { }
+				ForceTankType = string.Empty;
+            }, "Resets the forced turret type, set via SetTurretType.", CVarFlags.Cheat, true);
 		}
 
 		public static string ForceTankType;
