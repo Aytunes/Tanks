@@ -40,7 +40,7 @@ namespace CryGameCode.Tanks
 
 			OnInputChanged += (flags, keyEvent) =>
 			{
-				if (flags == InputFlags.LeftMouseButton && keyEvent == KeyEvent.OnRelease)
+				if (flags.ContainsFlag(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease)
 				{
 					var gameRules = GameRules.Current as SinglePlayer;
 
@@ -107,12 +107,12 @@ namespace CryGameCode.Tanks
 				var changedKeys = (InputFlags)flags ^ m_flags;
 
 				var pressedKeys = changedKeys & (InputFlags)flags;
-				if (pressedKeys != 0)
-					OnInputChanged(pressedKeys, KeyEvent.OnPress);
+                if (pressedKeys != 0)
+                    OnInputChanged(pressedKeys, KeyEvent.OnPress);
 
 				var releasedKeys = changedKeys & m_flags;
-				if (releasedKeys != 0)
-					OnInputChanged(releasedKeys, KeyEvent.OnRelease);
+                if (releasedKeys != 0)
+                    OnInputChanged(releasedKeys, KeyEvent.OnRelease);
 			}
 
 			m_flags = (InputFlags)flags;
@@ -144,7 +144,7 @@ namespace CryGameCode.Tanks
 			if (Owner == null || Owner.IsDestroyed)
 				return;
 
-			var hasFlag = HasFlag(flag);
+            var hasFlag = Flags.ContainsFlag(flag);
 
 			switch (keyEvent)
 			{
@@ -156,7 +156,7 @@ namespace CryGameCode.Tanks
 
 							Owner.GameObject.NotifyNetworkStateChange(Aspect);
 
-							if (OnInputChanged != null && (!Game.IsServer || !Game.IsMultiplayer))
+                            if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
 						}
 					}
@@ -169,18 +169,12 @@ namespace CryGameCode.Tanks
 
 							Owner.GameObject.NotifyNetworkStateChange(Aspect);
 
-							if (OnInputChanged != null && (!Game.IsServer || !Game.IsMultiplayer))
+                            if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
 						}
 					}
 					break;
 			}
-		}
-
-		public bool HasFlag(InputFlags flag)
-		{
-			// Enum.HasFlag is very slow, avoid usage.
-			return ((Flags & flag) == flag);
 		}
 
 		public static int Aspect = 256;
