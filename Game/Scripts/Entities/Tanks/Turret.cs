@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using CryEngine;
+using CryEngine.Extensions;
+
 using CryEngine.Physics;
 using CryEngine.Serialization;
 
@@ -52,43 +54,39 @@ namespace CryGameCode.Tanks
 
 		void OnInput(InputFlags flags, KeyEvent keyEvent)
 		{
-			switch (flags)
-			{
-				case InputFlags.LeftMouseButton:
-					{
-						if (keyEvent == KeyEvent.OnPress)
-						{
-							if (AutomaticFire)
-								m_leftFiring = true;
+            if (flags.ContainsFlag(InputFlags.LeftMouseButton))
+            {
+                if (keyEvent == KeyEvent.OnPress)
+                {
+                    if (AutomaticFire)
+                        m_leftFiring = true;
 
-							ChargeWeapon();
-						}
-						else if (keyEvent == KeyEvent.OnRelease)
-						{
-							if (AutomaticFire)
-								m_leftFiring = false;
-							else
-								FireLeft();
-						}
-					}
-					break;
-				case InputFlags.RightMouseButton:
-					{
-						if (keyEvent == KeyEvent.OnPress)
-						{
-							if (AutomaticFire)
-								m_rightFiring = true;
-						}
-						else if (keyEvent == KeyEvent.OnRelease)
-						{
-							if (AutomaticFire)
-								m_rightFiring = false;
-							else
-								FireRight();
-						}
-					}
-					break;
-			}
+                    ChargeWeapon();
+                }
+                else if (keyEvent == KeyEvent.OnRelease)
+                {
+                    if (AutomaticFire)
+                        m_leftFiring = false;
+                    else
+                        FireLeft();
+                }
+            }
+
+            if (flags.ContainsFlag(InputFlags.RightMouseButton))
+            {
+                if (keyEvent == KeyEvent.OnPress)
+                {
+                    if (AutomaticFire)
+                        m_rightFiring = true;
+                }
+                else if (keyEvent == KeyEvent.OnRelease)
+                {
+                    if (AutomaticFire)
+                        m_rightFiring = false;
+                    else
+                        FireRight();
+                }
+            }
 		}
 
 		public void Initialize(EntityBase entity)
