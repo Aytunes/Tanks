@@ -28,11 +28,14 @@ History:
 #include <ILocalizationManager.h>
 
 #include <IJobManager.h>
-#include <IPluginManager_impl.h>
 
 #if defined(WIN32) && !defined(XENON)
 #include <WindowsX.h> // for SubclassWindow()
 #endif
+
+#include <IMonoScriptSystem.h>
+
+
 
 #if defined(ENABLE_STATS_AGENT)
 #include "StatsAgent.h"
@@ -109,7 +112,7 @@ public:
 			break;
 		case ESYSTEM_EVENT_LEVEL_LOAD_START:
 			{
-				// workaround for needed for Crysis - to reset cvar set in level.cfg
+				// hack for needed for Crysis - to reset cvar set in level.cfg
 				ICVar *pCVar = gEnv->pConsole->GetCVar("r_EyeAdaptationBase");		assert(pCVar);
 
 				float fOldVal = pCVar->GetFVal();
@@ -137,6 +140,7 @@ IGameFramework* CGameStartup::m_pFramework = NULL;
 HMODULE CGameStartup::m_modDll = 0;
 HMODULE CGameStartup::m_frameworkDll = 0;
 HMODULE CGameStartup::m_systemDll = 0;
+HMODULE CGameStartup::m_cryMonoDll = 0;
 
 string CGameStartup::m_rootDir;
 string CGameStartup::m_binDir;
@@ -146,6 +150,7 @@ int CGameStartup::m_lastMoveX = 0;
 int CGameStartup::m_lastMoveY = 0;
 
 bool CGameStartup::m_initWindow = false;
+bool CGameStartup::m_fullScreenCVarSetup = false;
 
 CGameStartup::CGameStartup()
 {
@@ -154,6 +159,18 @@ CGameStartup::CGameStartup()
 
 CGameStartup::~CGameStartup()
 {
+	if(gEnv->pMonoScriptSystem)
+	{
+		gEnv->pMonoScriptSystem->Release();
+		gEnv->pMonoScriptSystem = nullptr;
+	}
+
+	if(m_cryMonoDll)
+	{
+		CryFreeLibrary(m_cryMonoDll);
+		m_cryMonoDll = 0;
+	}
+
 	if (m_pMod)
 	{
 		m_pMod->Shutdown();
@@ -196,10 +213,23 @@ IGameRef CGameStartup::Init(SSystemInitParams &startupParams)
 	CStatsAgent::CreatePipe( pPipeArg );
 #endif
 
-	PluginManager::InitPluginManager(startupParams);
-    PluginManager::InitPluginsBeforeFramework();
+	m_cryMonoDll = CryLoadLibrary("CryMono.dll");
+	if(!m_cryMonoDll)
+	{
+		CryFatalError("Could not locate CryMono DLL!");
+		return false;
+	}
 
-	REGISTER_COMMAND("g_loadMod", RequestLoadMod,VF_NULL,"");
+	IMonoScriptSystem::TEntryFunction InitMonoFunc = (IMonoScriptSystem::TEntryFunction)CryGetProcAddress(m_cryMonoDll, "InitCryMono");
+	if(!InitMonoFunc)
+	{
+		CryFatalError("Specified CryMono DLL is not valid!");
+		return false;
+	}
+
+	InitMonoFunc(gEnv->pSystem);
+
+    REGISTER_COMMAND("g_loadMod", RequestLoadMod,VF_NULL,""); // <--
 
 	// load the appropriate game/mod
 	const ICmdLineArg *pModArg = pSystem->GetICmdLine()->FindArg(eCLAT_Pre,"MOD");
@@ -245,7 +275,6 @@ IGameRef CGameStartup::Init(SSystemInitParams &startupParams)
 		assert(0);
 	}
 
-	PluginManager::InitPluginsLast();
 	return pOut;
 }
 
@@ -381,8 +410,6 @@ int CGameStartup::Update(bool haveFocus, unsigned int updateFlags)
 	gEnv->GetJobManager()->SetFrameStartTime(gEnv->pTimer->GetAsyncTime());
 #endif
 
-
-
 	int returnCode = 0;
 
 	if (gEnv && gEnv->pSystem && gEnv->pConsole)
@@ -410,31 +437,47 @@ int CGameStartup::Update(bool haveFocus, unsigned int updateFlags)
 		returnCode = m_pMod->Update(haveFocus, updateFlags);
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #if defined(ENABLE_STATS_AGENT)
 	CStatsAgent::Update();
 #endif
 
-	// ghetto fullscreen detection, because renderer does not provide any kind of listener
-	if (gEnv && gEnv->pSystem && gEnv->pConsole)
+		if (!m_fullScreenCVarSetup && gEnv && gEnv->pSystem && gEnv->pConsole)
 	{
 		ICVar *pVar = gEnv->pConsole->GetCVar("r_Fullscreen");
 		if (pVar)
 		{
-			static int fullscreen = pVar->GetIVal();
-			if (fullscreen != pVar->GetIVal())
-			{
-				if(gEnv->pSystem->GetISystemEventDispatcher())
-				{
-					gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_TOGGLE_FULLSCREEN, pVar->GetIVal(), 0);
-				}
-				fullscreen = pVar->GetIVal();
-			}
+			pVar->SetOnChangeCallback(FullScreenCVarChanged);
+			m_fullScreenCVarSetup = true;
 		}
 	}
 
 	GCOV_FLUSH_UPDATE;
 
 	return returnCode;
+}
+
+void CGameStartup::FullScreenCVarChanged( ICVar *pVar )
+{
+	if(gEnv->pSystem->GetISystemEventDispatcher())
+	{
+		gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_TOGGLE_FULLSCREEN, pVar->GetIVal(), 0);
+	}
 }
 
 bool CGameStartup::GetRestartLevel(char** levelName)
@@ -605,7 +648,7 @@ int CGameStartup::Run( const char * autoStartLevelName )
 		gEnv->pHardwareMouse->DecrementCounter();
 
 #ifndef GRINGO
-	// we do the mainloop directly in the gringo launcher for proper metro style event dispatching
+	
 	for(;;)
 	{
 		if (!Update(true, 0))
@@ -696,6 +739,19 @@ void CGameStartup::ShutdownFramework()
 	ShutdownWindow();
 }
 
+#include <resource.h>
+
+HMODULE GetCurrentModule()
+{ // NB: XP+ solution!
+  HMODULE hModule = NULL;
+  GetModuleHandleEx(
+    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+    (LPCTSTR)GetCurrentModule,
+    &hModule);
+
+  return hModule;
+}
+
 bool CGameStartup::InitWindow(SSystemInitParams &startupParams)
 {
 #ifdef WIN32
@@ -710,7 +766,7 @@ bool CGameStartup::InitWindow(SSystemInitParams &startupParams)
 	wc.hInstance     = GetModuleHandle(0);
 	// FIXME: Very bad way of getting the Icon and Cursor from the Launcher project
 	wc.hIcon         = LoadIcon((HINSTANCE)startupParams.hInstance, MAKEINTRESOURCE(101));
-	wc.hCursor       = LoadCursor((HINSTANCE)startupParams.hInstance, MAKEINTRESOURCE(DEFAULT_CURSOR_RESOURCE_ID));
+	wc.hCursor       = LoadCursor(GetCurrentModule(), MAKEINTRESOURCE(IDC_CURSOR1));
 	wc.hbrBackground =(HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszMenuName  = 0;
 	wc.lpszClassName = GAME_WINDOW_CLASSNAME;
@@ -831,7 +887,7 @@ LRESULT CALLBACK CGameStartup::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 	case WM_SETCURSOR:
 		if(g_pGame)
 		{
-			HCURSOR hCursor = LoadCursor(GetModuleHandle(0),MAKEINTRESOURCE(DEFAULT_CURSOR_RESOURCE_ID));
+			HCURSOR hCursor = LoadCursor(GetCurrentModule(), MAKEINTRESOURCE(IDC_CURSOR1));
 			::SetCursor(hCursor);
 		}
 		return 0;
@@ -939,6 +995,7 @@ LRESULT CALLBACK CGameStartup::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
+
 //////////////////////////////////////////////////////////////////////////
 #endif //WIN32
 

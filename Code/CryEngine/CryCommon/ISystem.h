@@ -828,6 +828,8 @@ private:
 
 public:
 	SSystemGlobalEnvironment() : szCmdLine("") {};
+
+	struct IMonoScriptSystem *pMonoScriptSystem;
 };
 
 UNIQUE_IFACE struct IProfilingSystem

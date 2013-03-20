@@ -18,7 +18,7 @@ History:
 # pragma once
 #endif
 
-#include <CryLibrary.h>
+
 #include <IGameFramework.h>
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -61,7 +61,7 @@ public:
 	static void AllowAccessibilityShortcutKeys(bool bAllowKeys);
 
 private:
-
+	static void FullScreenCVarChanged( ICVar *pVar );
 	static bool IsModAvailable(const string& modName);
 	static string GetModPath(const string modName);
 
@@ -98,6 +98,10 @@ private:
 	// store the mouse move coords inhere, when the mousewheel is used send these coords to prevent sending invalid coords
 	static int						m_lastMoveX;
 	static int						m_lastMoveY;
+
+	static bool						m_fullScreenCVarSetup;
+
+	static HMODULE				m_cryMonoDll;
 };
 
 
