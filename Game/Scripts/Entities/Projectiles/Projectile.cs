@@ -109,7 +109,7 @@ namespace CryGameCode.Projectiles
 					MinRadius = MinimumExplosionRadius,
 					Radius = ExplosionRadius,
 					MaxRadius = MaximumExplosionRadius,
-					ImpulsePressure = ExplosionPressure
+					ImpulsePressure = 0.0f//ExplosionPressure Disabled for now causes movement bugs
 				};
 
 				explosion.Explode();
