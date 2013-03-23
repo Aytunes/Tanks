@@ -11,10 +11,10 @@ namespace CryGameCode.Tanks
 		public Tank()
 		{
 			Debug.LogAlways("[Enter] Tank.ctor: actor {0}", Id);
+            m_threads[0] = new TankThread(this, new Vec2(1.1f, 0));
+            m_threads[1] = new TankThread(this, new Vec2(-1.1f, 0));
 
 			MaxHealth = 100;
-
-			m_acceleration = new Vec2();
 
 			Input = new PlayerInput(this);
 
@@ -51,6 +51,11 @@ namespace CryGameCode.Tanks
 				Turret.Destroy();
 				Turret = null;
 			}
+            if (m_threads[0] != null)
+                m_threads[0] = null;
+            if (m_threads[1] != null)
+                m_threads[1] = null;
+
 		}
 
 		protected override void NetSerialize(CrySerialize serialize, int aspect, byte profile, int flags)
@@ -235,6 +240,8 @@ namespace CryGameCode.Tanks
 		private Vec3 m_currentDelta;
 		private Vec3 m_serverPos;
 		private Quat m_serverRot;
+
+        private TankThread[] m_threads = new TankThread[2];
 
 		public string TurretTypeName { get; set; }
 

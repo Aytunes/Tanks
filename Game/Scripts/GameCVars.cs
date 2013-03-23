@@ -55,30 +55,13 @@ namespace CryGameCode.Tanks
 		#region Tank movement
 		static void RegisterTankMovementCVars()
 		{
-			CVar.RegisterFloat("tank_movementSpeedMult", ref tank_movementSpeedMult);
-			CVar.RegisterFloat("tank_movementMaxSpeed", ref tank_movementMaxSpeed);
-
-			CVar.RegisterFloat("tank_rotationSpeed", ref tank_rotationSpeed);
-
-			CVar.RegisterFloat("tank_maxAcceleration", ref tank_maxAcceleration);
-			CVar.RegisterFloat("tank_maxAccelerationBoosting", ref tank_maxAcceleration);
-
-			CVar.RegisterFloat("tank_accelerationSpeed", ref tank_accelerationSpeed);
-			CVar.RegisterFloat("tank_accelerationSpeedRotation", ref tank_accelerationSpeedRotation);
-			CVar.RegisterFloat("tank_decelerationSpeed", ref tank_decelerationSpeed);
+            CVar.RegisterFloat("tank_maxThreadForce", ref tank_threadMaxForce, "Max force per thread in N");
+            CVar.RegisterFloat("tank_threadTurnMult", ref tank_threadTurnMult, "Wheen steering at full speed the slower thread is running at this percentage");
+            CVar.RegisterFloat("tank_maxTurnReductionSpeed", ref tank_maxTurnReductionSpeed, "Speed at which steering doesn't get any \"softer\"");
 		}
-
-		public static float tank_movementSpeedMult = 6.0f;
-		public static float tank_movementMaxSpeed = 8.0f;
-
-		public static float tank_rotationSpeed = 3.0f;
-
-		public static float tank_maxAcceleration = 1.25f;
-		public static float tank_maxAccelerationBoosting = 1.5f;
-
-		public static float tank_accelerationSpeed = 5.0f;
-		public static float tank_accelerationSpeedRotation = 1.0f;
-		public static float tank_decelerationSpeed = 500.0f;
+        public static float tank_threadMaxForce = 150000.0f; //Force in N
+        public static float tank_threadTurnMult = 0.3f;
+        public static float tank_maxTurnReductionSpeed = 4.0f;
 		#endregion
 
 		#region Console commands

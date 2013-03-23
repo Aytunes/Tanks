@@ -21,10 +21,15 @@ namespace CryGameCode.Tanks
 			if (IsDestroyed || IsDead)
 				return;
 
+            if (m_threads[0] == null || m_threads[1] == null)
+            {
+                return;
+            }
+
 			var frameTime = Time.DeltaTime;
 
-			// update desired m_acceleration based on input.
-			UpdateAcceleration(frameTime);
+			// update desired movement changes based on input.
+			UpdateThreads(frameTime, Velocity);
 
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
@@ -44,7 +49,7 @@ namespace CryGameCode.Tanks
 			if (!prevVelocity.IsZero())
 				normalizedVelocity = prevVelocity.Normalized;
 			else
-				normalizedVelocity = forwardDir;
+				normalizedVelocity = forwardDir.Normalized;
 
 			var groundFriction = Physics.Status.Living.GroundSurfaceType.Parameters.Friction;
 
@@ -52,45 +57,64 @@ namespace CryGameCode.Tanks
 
 			var slopeAngle = onGround ? NormalToAngle(GroundNormal) : MathHelpers.DegreesToRadians(90);
 
+            var totalForce = m_threads[0].Force + m_threads[1].Force;
+
+            ///////////////////////////
+            // Rotation
+            ///////////////////////////
+            var totalMomentum = m_threads[0].Force * m_threads[0].LocalPos.X + m_threads[1].Force * m_threads[1].LocalPos.X;
+            var momentumIntertia = 500.0f * 200.0f; // kg*m²
+            // M = I * a
+            var angularAcceleration =  totalMomentum / momentumIntertia;
+
+            var turnRot = Quat.CreateRotationZ((angularAcceleration * frameTime));
+            moveRequest.rotation = turnRot;
+            moveRequest.rotation.Normalize();
+
+
 			///////////////////////////
 			// Velocity
 			///////////////////////////
+            //TODO: remove magic numbers
 			const float tankMass = 500;
 			const float tankFrontalArea = 20.6f;
 			const float tankDragCoefficient = 0.9f;
+            const float airDensity = 1.27f;
 
 			float mass = tankMass + Turret.Mass;
 			float frontalArea = tankFrontalArea + Turret.FrontalArea;
 			float dragCoefficient = tankDragCoefficient + Turret.DragCoefficient;
 
-			const float airDensity = 1.27f;
-
 			var terminalVelocity = (float)Math.Sqrt(Math.Abs(2 * mass * Math.Abs(CVar.Get("p_gravity_z").FVal) * (Math.Sin(slopeAngle) - groundFriction * Math.Cos(slopeAngle))) / (airDensity * dragCoefficient * frontalArea));
 			var velocityRatio = prevVelocity.Length / terminalVelocity;
 
-			var acceleration = m_acceleration.X + m_acceleration.Y;
-			var forwardAcceleration = forwardDir * acceleration * GameCVars.tank_movementSpeedMult;
+            //F = m*a
+            var acceleration = (totalForce / mass) * frameTime;
+            var forwardAcceleration = forwardDir * acceleration;// *GameCVars.tank_movementSpeedMult;
 
+            //TODO: Do proper thread-dependant friction and calculation
 			var frictionDeceleration = (normalizedVelocity * velocityRatio) * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle));
 
-			var dragDeceleration = (dragCoefficient * frontalArea * airDensity * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / mass;
+            //Is this even relevant for a massive tank driving at 12 km/h?
+			var dragDeceleration = (dragCoefficient * frontalArea * airDensity * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / (4 * mass);
 
 			moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration);
 
 			if (Game.IsPureClient && m_currentDelta.Length > MinDelta)
 				moveRequest.velocity += m_currentDelta * DeltaMult * m_currentDelta.LengthSquared;
 
-			///////////////////////////
-			// Rotation
-			///////////////////////////
 
-			// turning
-			float angleChange = ((m_acceleration.X - m_acceleration.Y) / 2) * Time.DeltaTime * GameCVars.tank_rotationSpeed;
-
-			var turnRot = Quat.CreateRotationZ(angleChange);
-
-			moveRequest.rotation = turnRot;
-			moveRequest.rotation.Normalize();
+            if (m_debug)
+            {
+                Renderer.DrawTextToScreen(100, 80, 1.3f, Color.White, "TerminalVel: {0}", terminalVelocity);
+                Renderer.DrawTextToScreen(100, 90, 1.3f, Color.White, "Speed: {0}", moveRequest.velocity.Length);
+                Renderer.DrawTextToScreen(100, 100, 1.3f, Color.White, "angularVel: {0}", angularAcceleration);
+                Renderer.DrawTextToScreen(100, 110, 1.2f, Color.White, "angleChange: {0}", turnRot.Column1);
+                Renderer.DrawTextToScreen(100, 120, 1.2f, Color.White, "acceleration: {0}", forwardAcceleration - frictionDeceleration - dragDeceleration);
+                Renderer.DrawTextToScreen(100, 130, 1.2f, Color.Red, "forceLeft: {0}", Math.Floor(m_threads[1].Force));
+                Renderer.DrawTextToScreen(100, 140, 1.2f, Color.Red, "forceRight: {0}", Math.Floor(m_threads[0].Force));
+                Renderer.DrawTextToScreen(100, 150, 1.3f, Color.Green, "totalMomentum: {0}", Math.Floor(totalMomentum));
+            }
 
 			AddMovement(ref moveRequest);
 
@@ -108,49 +132,66 @@ namespace CryGameCode.Tanks
 			return Material.Find("objects/tanks/tracksmoving_forward");
 		}
 
-		void UpdateAcceleration(float frameTime)
+		void UpdateThreads(float frameTime, Vec3 velocity)
 		{
 			if (Input == null)
 				return;
 
-			var accelerationSpeed = GameCVars.tank_accelerationSpeed * frameTime;
-			var accelerationSpeedRotation = GameCVars.tank_accelerationSpeedRotation * frameTime;
+            var maxForce = GameCVars.tank_threadMaxForce;
+            var maxTurnReductionSpeed = GameCVars.tank_maxTurnReductionSpeed;
+            var turnMult = GameCVars.tank_threadTurnMult;
+            var speed = velocity.Length;
+            
+            m_threads[0].Force = 0.0f;
+            m_threads[1].Force = 0.0f;
 
-			var maxAcceleration = GameCVars.tank_maxAcceleration;
-            if (Input.HasFlag(InputFlags.Boost))
-				maxAcceleration = GameCVars.tank_maxAccelerationBoosting;
-
-			// in order to make the tank feel heavy, hinder forward / backwards movement when attempting to turn.
             if (Input.HasFlag(InputFlags.MoveLeft))
 			{
-				m_acceleration.X += accelerationSpeedRotation;
-				m_acceleration.Y -= accelerationSpeedRotation;
+                m_threads[0].Force = 1.0f;
+                m_threads[1].Force = -1.0f;
 			}
             else if (Input.HasFlag(InputFlags.MoveRight))
 			{
-				m_acceleration.X -= accelerationSpeedRotation;
-				m_acceleration.Y += accelerationSpeedRotation;
+                m_threads[1].Force = 1.0f;
+                m_threads[0].Force = -1.0f;
 			}
-            else if (Input.HasFlag(InputFlags.MoveForward))
+            if (Input.HasFlag(InputFlags.MoveForward))
 			{
-				m_acceleration.X += accelerationSpeed;
-				m_acceleration.Y += accelerationSpeed;
+                m_threads[0].Force = 1.0f;
+                m_threads[1].Force = 1.0f;
+
+                if (Input.HasFlag(InputFlags.MoveLeft))
+                {
+                    m_threads[0].Force = 1.0f;
+                    m_threads[1].Force = MathHelpers.Clamp(turnMult * (speed / maxTurnReductionSpeed), 0, turnMult);
+                }
+                if (Input.HasFlag(InputFlags.MoveRight))
+                {
+                    m_threads[1].Force = 1.0f;
+                    m_threads[0].Force = MathHelpers.Clamp(turnMult * (speed / maxTurnReductionSpeed), 0, turnMult);
+                }
 			}
             else if (Input.HasFlag(InputFlags.MoveBack))
 			{
-				m_acceleration.X -= accelerationSpeed;
-				m_acceleration.Y -= accelerationSpeed;
-			}
-			else
-			{
-				MathHelpers.Interpolate(ref m_acceleration.X, 0, GameCVars.tank_decelerationSpeed);
-				MathHelpers.Interpolate(ref m_acceleration.Y, 0, GameCVars.tank_decelerationSpeed);
+                m_threads[0].Force = -1.0f;
+                m_threads[1].Force = -1.0f;
+
+                if (Input.HasFlag(InputFlags.MoveLeft))
+                {
+                    m_threads[0].Force = -1.0f;
+                    m_threads[1].Force = MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0); ;
+                }
+                if (Input.HasFlag(InputFlags.MoveRight))
+                {
+                    m_threads[1].Force = -1.0f;
+                    m_threads[0].Force = MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0); ;
+                }
 			}
 
-			m_acceleration.X = MathHelpers.Clamp(m_acceleration.X, -maxAcceleration, maxAcceleration);
-			m_acceleration.Y = MathHelpers.Clamp(m_acceleration.Y, -maxAcceleration, maxAcceleration);
+            m_threads[0].Force *= maxForce;
+            m_threads[1].Force *= maxForce;
 		}
 
-		Vec2 m_acceleration = new Vec2();
+        bool m_debug = true;
 	}
 }
