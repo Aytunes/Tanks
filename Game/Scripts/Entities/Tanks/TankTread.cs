@@ -7,10 +7,10 @@ using CryEngine;
 
 namespace CryGameCode.Tanks
 {
-    class TankThread
+    class TankTread
     {
 
-        public TankThread(Tank owner, Vec2 pos, float maxForce = 150000.0f)
+        public TankTread(Tank owner, Vec2 pos, float maxForce = 150000.0f)
         {
             Owner = owner;
             LocalPos = pos;

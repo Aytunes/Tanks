@@ -55,10 +55,10 @@ namespace CryGameCode.Tanks
 		#region Tank movement
 		static void RegisterTankMovementCVars()
 		{
-            CVar.RegisterFloat("tank_threadTurnMult", ref tank_threadTurnMult, "Wheen steering at full speed the slower thread is running at this percentage of full throttle");
+            CVar.RegisterFloat("tank_treadTurnMult", ref tank_treadTurnMult, "Wheen steering at full speed the slower tread is running at this percentage of full throttle");
             CVar.RegisterFloat("tank_maxTurnReductionSpeed", ref tank_maxTurnReductionSpeed, "Speed at which steering doesn't get any \"softer\"");
 		}
-        public static float tank_threadTurnMult = 0.3f;
+        public static float tank_treadTurnMult = 0.3f;
         public static float tank_maxTurnReductionSpeed = 4.0f;
 		#endregion
 

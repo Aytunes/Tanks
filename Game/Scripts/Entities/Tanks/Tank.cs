@@ -11,10 +11,10 @@ namespace CryGameCode.Tanks
 		public Tank()
 		{
 			Debug.LogAlways("[Enter] Tank.ctor: actor {0}", Id);
-            //0 - right thread
-            //1 - left thread
-            m_threads[0] = new TankThread(this, new Vec2(1.5f, 0), 150000.0f);
-            m_threads[1] = new TankThread(this, new Vec2(-1.5f, 0), 150000.0f);
+            //0 - right tread
+            //1 - left tread
+            m_treads[0] = new TankTread(this, new Vec2(1.5f, 0), 150000.0f);
+            m_treads[1] = new TankTread(this, new Vec2(-1.5f, 0), 150000.0f);
 
 			MaxHealth = 100;
 
@@ -53,10 +53,10 @@ namespace CryGameCode.Tanks
 				Turret.Destroy();
 				Turret = null;
 			}
-            if (m_threads[0] != null)
-                m_threads[0] = null;
-            if (m_threads[1] != null)
-                m_threads[1] = null;
+            if (m_treads[0] != null)
+                m_treads[0] = null;
+            if (m_treads[1] != null)
+                m_treads[1] = null;
 
 		}
 
@@ -243,7 +243,7 @@ namespace CryGameCode.Tanks
 		private Vec3 m_serverPos;
 		private Quat m_serverRot;
 
-        private TankThread[] m_threads = new TankThread[2];
+        private TankTread[] m_treads = new TankTread[2];
 
 		public string TurretTypeName { get; set; }
 

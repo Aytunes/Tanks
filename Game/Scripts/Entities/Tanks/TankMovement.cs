@@ -36,7 +36,7 @@ namespace CryGameCode.Tanks
 			if (IsDestroyed || IsDead)
 				return;
 
-            if (m_threads[0] == null || m_threads[1] == null)
+            if (m_treads[0] == null || m_treads[1] == null)
             {
                 return;
             }
@@ -44,7 +44,7 @@ namespace CryGameCode.Tanks
 			var frameTime = Time.DeltaTime;
 
 			// update desired movement changes based on input.
-			UpdateThreads(frameTime, Velocity);
+			UpdateTreads(frameTime, Velocity);
 
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
@@ -70,12 +70,12 @@ namespace CryGameCode.Tanks
 
 			var slopeAngle = onGround ? NormalToAngle(GroundNormal) : MathHelpers.DegreesToRadians(90);
 
-            var totalForce = m_threads[0].Force + m_threads[1].Force;
+            var totalForce = m_treads[0].Force + m_treads[1].Force;
 
             ///////////////////////////
             // Rotation
             ///////////////////////////
-            var totalMomentum = m_threads[0].Force * m_threads[0].LocalPos.X + m_threads[1].Force * m_threads[1].LocalPos.X;
+            var totalMomentum = m_treads[0].Force * m_treads[0].LocalPos.X + m_treads[1].Force * m_treads[1].LocalPos.X;
             // M = I * a
             var angularAcceleration =  totalMomentum / momentumIntertia;
 
@@ -99,7 +99,7 @@ namespace CryGameCode.Tanks
             var acceleration = (totalForce / mass) * frameTime;
             var forwardAcceleration = forwardDir * acceleration;// *GameCVars.tank_movementSpeedMult;
 
-            //TODO: Do proper thread-dependant friction and calculation
+            //TODO: Do proper tread-dependant friction and calculation
             var frictionDeceleration = (normalizedVelocity * velocityRatio) * (float)(groundFriction * Math.Abs(CVar.Get("p_gravity_z").FVal) * Math.Cos(slopeAngle));
 
             var dragDeceleration = (dragCoefficient * frontalArea * AirDensity * (normalizedVelocity * (float)Math.Pow(prevVelocity.Length, 2))) / (2 * mass);
@@ -117,10 +117,10 @@ namespace CryGameCode.Tanks
                 Renderer.DrawTextToScreen(100, 100, 1.3f, Color.White, "angularVel: {0}", angularAcceleration);
                 Renderer.DrawTextToScreen(100, 110, 1.2f, Color.White, "angleChange: {0}", turnRot.Column1);
                 Renderer.DrawTextToScreen(100, 120, 1.2f, Color.White, "acceleration: {0}", forwardAcceleration - frictionDeceleration - dragDeceleration);
-                Renderer.DrawTextToScreen(100, 130, 1.2f, Color.Red, "forceLeft: {0}", Math.Floor(m_threads[1].Force));
-                Renderer.DrawTextToScreen(100, 140, 1.2f, Color.Red, "forceRight: {0}", Math.Floor(m_threads[0].Force));
+                Renderer.DrawTextToScreen(100, 130, 1.2f, Color.Red, "forceLeft: {0}", Math.Floor(m_treads[1].Force));
+                Renderer.DrawTextToScreen(100, 140, 1.2f, Color.Red, "forceRight: {0}", Math.Floor(m_treads[0].Force));
                 Renderer.DrawTextToScreen(100, 150, 1.3f, Color.Green, "totalMomentum: {0}", Math.Floor(totalMomentum));
-                Renderer.DrawTextToScreen(100, 160, 1.3f, Color.Blue, "lThrottle: {0} rThrottle: {1}", m_threads[1].GetThrottle(), m_threads[0].GetThrottle());
+                Renderer.DrawTextToScreen(100, 160, 1.3f, Color.Blue, "lThrottle: {0} rThrottle: {1}", m_treads[1].GetThrottle(), m_treads[0].GetThrottle());
             }
 
 			AddMovement(ref moveRequest);
@@ -139,39 +139,39 @@ namespace CryGameCode.Tanks
 			return Material.Find("objects/tanks/tracksmoving_forward");
 		}
 
-		void UpdateThreads(float frameTime, Vec3 velocity)
+		void UpdateTreads(float frameTime, Vec3 velocity)
 		{
 			if (Input == null)
 				return;
 
-            m_threads[0].Update();
-            m_threads[1].Update();
+            m_treads[0].Update();
+            m_treads[1].Update();
 
             var maxTurnReductionSpeed = GameCVars.tank_maxTurnReductionSpeed;
-            var turnMult = GameCVars.tank_threadTurnMult;
+            var turnMult = GameCVars.tank_treadTurnMult;
             var speed = velocity.Length;
 
             var hardcore = false;
             if (hardcore)
             {
-                m_threads[0].SetThrottle(0.0f);
-                m_threads[1].SetThrottle(0.0f);
+                m_treads[0].SetThrottle(0.0f);
+                m_treads[1].SetThrottle(0.0f);
 
                 if (Input.HasFlag(InputFlags.MoveForward))
                 {
-                    m_threads[1].SetThrottle(1.0f);
+                    m_treads[1].SetThrottle(1.0f);
                 }
                 if (Input.HasFlag(InputFlags.MoveLeft))
                 {
-                    m_threads[1].SetThrottle(-1.0f);
+                    m_treads[1].SetThrottle(-1.0f);
                 }
                 if (Input.HasFlag(InputFlags.MoveBack))
                 {
-                    m_threads[0].SetThrottle(1.0f);
+                    m_treads[0].SetThrottle(1.0f);
                 }
                 if (Input.HasFlag(InputFlags.MoveRight))
                 {
-                    m_threads[0].SetThrottle(-1.0f);
+                    m_treads[0].SetThrottle(-1.0f);
                 }
             }
             else
@@ -179,50 +179,50 @@ namespace CryGameCode.Tanks
                 if (Input.HasFlag(InputFlags.MoveForward))
                 {
 
-                    m_threads[0].SetThrottle(1.0f);
-                    m_threads[1].SetThrottle(1.0f);
+                    m_treads[0].SetThrottle(1.0f);
+                    m_treads[1].SetThrottle(1.0f);
 
                     if (Input.HasFlag(InputFlags.MoveLeft))
                     {
-                        m_threads[0].SetThrottle(1.0f);
-                        m_threads[1].SetThrottle(MathHelpers.Clamp(turnMult * (speed / maxTurnReductionSpeed), 0, turnMult));
+                        m_treads[0].SetThrottle(1.0f);
+                        m_treads[1].SetThrottle(MathHelpers.Clamp(turnMult * (speed / maxTurnReductionSpeed), 0, turnMult));
                     }
                     if (Input.HasFlag(InputFlags.MoveRight))
                     {
-                        m_threads[1].SetThrottle(1.0f);
-                        m_threads[0].SetThrottle(MathHelpers.Clamp(turnMult * (speed / maxTurnReductionSpeed), 0, turnMult));
+                        m_treads[1].SetThrottle(1.0f);
+                        m_treads[0].SetThrottle(MathHelpers.Clamp(turnMult * (speed / maxTurnReductionSpeed), 0, turnMult));
                     }
                 }
                 else if (Input.HasFlag(InputFlags.MoveBack))
                 {
-                    m_threads[0].SetThrottle(-1.0f);
-                    m_threads[1].SetThrottle(-1.0f);
+                    m_treads[0].SetThrottle(-1.0f);
+                    m_treads[1].SetThrottle(-1.0f);
 
                     if (Input.HasFlag(InputFlags.MoveLeft))
                     {
-                        m_threads[0].SetThrottle(-1.0f);
-                        m_threads[1].SetThrottle(MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0));
+                        m_treads[0].SetThrottle(-1.0f);
+                        m_treads[1].SetThrottle(MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0));
                     }
                     if (Input.HasFlag(InputFlags.MoveRight))
                     {
-                        m_threads[1].SetThrottle(-1.0f);
-                        m_threads[0].SetThrottle(MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0));
+                        m_treads[1].SetThrottle(-1.0f);
+                        m_treads[0].SetThrottle(MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0));
                     }
                 }
                 else if (Input.HasFlag(InputFlags.MoveLeft))
                 {
-                    m_threads[0].SetThrottle(1.0f);
-                    m_threads[1].SetThrottle(-1.0f);
+                    m_treads[0].SetThrottle(1.0f);
+                    m_treads[1].SetThrottle(-1.0f);
                 }
                 else if (Input.HasFlag(InputFlags.MoveRight))
                 {
-                    m_threads[1].SetThrottle(1.0f);
-                    m_threads[0].SetThrottle(-1.0f);
+                    m_treads[1].SetThrottle(1.0f);
+                    m_treads[0].SetThrottle(-1.0f);
                 }
                 else
                 {
-                    m_threads[0].SetThrottle(0.0f);
-                    m_threads[1].SetThrottle(0.0f);
+                    m_treads[0].SetThrottle(0.0f);
+                    m_treads[1].SetThrottle(0.0f);
                 }
             }
 		}
