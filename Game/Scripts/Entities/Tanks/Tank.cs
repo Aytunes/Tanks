@@ -11,8 +11,10 @@ namespace CryGameCode.Tanks
 		public Tank()
 		{
 			Debug.LogAlways("[Enter] Tank.ctor: actor {0}", Id);
-            m_threads[0] = new TankThread(this, new Vec2(1.1f, 0));
-            m_threads[1] = new TankThread(this, new Vec2(-1.1f, 0));
+            //0 - right thread
+            //1 - left thread
+            m_threads[0] = new TankThread(this, new Vec2(1.5f, 0), 150000.0f);
+            m_threads[1] = new TankThread(this, new Vec2(-1.5f, 0), 150000.0f);
 
 			MaxHealth = 100;
 
