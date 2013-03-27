@@ -110,7 +110,7 @@ namespace CryGameCode.Tanks
 				moveRequest.velocity += m_currentDelta * DeltaMult * m_currentDelta.LengthSquared;
 
 
-            if (m_debug)
+            if ( GameCVars.tank_debugMovement != 0 )
             {
                 Renderer.DrawTextToScreen(100, 80, 1.3f, Color.White, "TerminalVel: {0}", terminalVelocity);
                 Renderer.DrawTextToScreen(100, 90, 1.3f, Color.White, "Speed: {0}", moveRequest.velocity.Length);
@@ -226,7 +226,5 @@ namespace CryGameCode.Tanks
                 }
             }
 		}
-
-        bool m_debug = true;
 	}
 }
