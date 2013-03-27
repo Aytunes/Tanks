@@ -2120,6 +2120,11 @@
             For network updates: Notify the network engine that this value was only partially read and we should re-request an update from the server soon.
             </summary>
         </member>
+        <member name="F:CryEngine.Serialization.SerializationType.ReferenceTypes">
+            <summary>
+            Not actually used, but signifies that any SerializationType higher than this value is a reference type.
+            </summary>
+        </member>
         <member name="F:CryEngine.Utilities.ProjectSettings.BugReportLink">
             <summary>
             Designates what link will be opened when the user presses 'Report Bug' in the exception form.
