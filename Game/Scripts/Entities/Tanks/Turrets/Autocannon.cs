@@ -9,7 +9,6 @@ namespace CryGameCode.Tanks
 		static float impulseStrength = 5;
 
 		public Autocannon(Tank tank) : base(tank) { }
-		private Autocannon() { }
 
 		protected override void OnFire(Vec3 firePos)
 		{

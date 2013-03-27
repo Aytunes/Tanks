@@ -10,9 +10,6 @@ namespace CryGameCode.Tanks
 {
 	public class PlayerInput
 	{
-		// Default constructor for realtime scripting 
-		PlayerInput() { }
-
 		public PlayerInput(Tank tank)
 		{
 			Owner = tank;

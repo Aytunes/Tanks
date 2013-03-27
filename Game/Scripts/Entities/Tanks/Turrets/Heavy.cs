@@ -16,7 +16,6 @@ namespace CryGameCode.Tanks
 		#endregion
 
 		public Heavy(Tank tank) : base(tank) { }
-		private Heavy() { }
 
 		protected override void OnFire(Vec3 firePos)
 		{

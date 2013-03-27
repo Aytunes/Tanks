@@ -8,7 +8,6 @@ namespace CryGameCode.Tanks
 	public class Chaingun : TankTurret
 	{
 		public Chaingun(Tank tank) : base(tank) { }
-		private Chaingun() { }
 
 		protected override void OnFire(Vec3 firePos)
 		{
