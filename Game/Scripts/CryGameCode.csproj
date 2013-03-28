@@ -104,7 +104,7 @@
     <Compile Include="Entities\Collectibles\InvisibilityCollectible.cs" />
     <Compile Include="Entities\Collectibles\TimeScaleCollectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />
-    <Compile Include="Entities\Tanks\TankThread.cs" />
+    <Compile Include="Entities\Tanks\TankTread.cs" />
     <Compile Include="GameRules\Game Modifiers\HealthModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\InvisibilityModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\TimeScaleModifier.cs" />

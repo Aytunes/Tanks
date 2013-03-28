@@ -55,13 +55,13 @@ namespace CryGameCode.Tanks
 		#region Tank movement
 		static void RegisterTankMovementCVars()
 		{
-            CVar.RegisterFloat("tank_treadTurnMult", ref tank_treadTurnMult, "Wheen steering at full speed the slower tread is running at this percentage of full throttle");
-            CVar.RegisterFloat("tank_maxTurnReductionSpeed", ref tank_maxTurnReductionSpeed, "Speed at which steering doesn't get any \"softer\"");
-            CVar.RegisterInt("tank_debugMovement", ref tank_debugMovement);
+			CVar.RegisterFloat("tank_treadTurnMult", ref tank_treadTurnMult, "Wheen steering at full speed the slower tread is running at this percentage of full throttle");
+			CVar.RegisterFloat("tank_maxTurnReductionSpeed", ref tank_maxTurnReductionSpeed, "Speed at which steering doesn't get any \"softer\"");
+			CVar.RegisterInt("tank_debugMovement", ref tank_debugMovement);
 		}
-        public static float tank_treadTurnMult = 0.3f;
-        public static float tank_maxTurnReductionSpeed = 4.0f;
-        public static int tank_debugMovement = 0;
+		public static float tank_treadTurnMult = 0.3f;
+		public static float tank_maxTurnReductionSpeed = 4.0f;
+		public static int tank_debugMovement = 0;
 		#endregion
 
 		#region Console commands
@@ -73,14 +73,14 @@ namespace CryGameCode.Tanks
 
 			ConsoleCommand.Register("SetTurretType", (e) =>
 			{
-                if(e.Args.Length > 0)
-				    ForceTankType = e.Args[0];
+				if (e.Args.Length > 0)
+					ForceTankType = e.Args[0];
 			}, "Sets the turret type", CVarFlags.Cheat, true);
 
 			ConsoleCommand.Register("ResetTurretType", (e) =>
 			{
 				ForceTankType = string.Empty;
-            }, "Resets the forced turret type, set via SetTurretType.", CVarFlags.Cheat, true);
+			}, "Resets the forced turret type, set via SetTurretType.", CVarFlags.Cheat, true);
 		}
 
 		public static string ForceTankType;
