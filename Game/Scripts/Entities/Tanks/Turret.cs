@@ -186,7 +186,7 @@ namespace CryGameCode.Tanks
 				var gameMode = GameRules.Current as SinglePlayer;
 
 				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
-                if (projectile.IsDestroyed)
+                if (projectile != null && projectile.IsDestroyed)
                 {
                     ProjectileStorage.Remove(projectile);
                     projectile = null;
