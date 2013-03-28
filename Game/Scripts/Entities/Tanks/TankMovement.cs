@@ -22,7 +22,7 @@ namespace CryGameCode.Tanks
         const float TankFrontalArea = 20.6f;
         const float TankDragCoefficient = 0.8f;
         const float AirDensity = 1.27f;
-        const float momentumIntertia = 550.0f * 200.0f; // kg*m²
+        const float momentumIntertia = 2000.0f; // kg*m²
 
         #endregion
 
@@ -77,10 +77,14 @@ namespace CryGameCode.Tanks
             ///////////////////////////
             var totalMomentum = m_treads[0].Force * m_treads[0].LocalPos.X + m_treads[1].Force * m_treads[1].LocalPos.X;
             // M = I * a
-            var angularAcceleration =  totalMomentum / momentumIntertia;
+            var angularAcceleration = totalMomentum / momentumIntertia;
 
-            var turnRot = Quat.CreateRotationZ((angularAcceleration * frameTime));
+            var turnRot = Quat.CreateRotationZ(angularAcceleration*frameTime);
             moveRequest.rotation = turnRot;
+            var slopeProjection = Vec3.CreateProjection(prevRotation.Column1, GroundNormal);
+            slopeProjection.Normalize();
+
+            moveRequest.rotation *= prevRotation.Inverted * Quat.CreateRotationVDir(slopeProjection);
             moveRequest.rotation.Normalize();
 
 
@@ -96,7 +100,7 @@ namespace CryGameCode.Tanks
 			var velocityRatio = prevVelocity.Length / terminalVelocity;
 
             //F = m*a
-            var acceleration = (totalForce / mass) * frameTime;
+            var acceleration = (totalForce / mass);
             var forwardAcceleration = forwardDir * acceleration;// *GameCVars.tank_movementSpeedMult;
 
             //TODO: Do proper tread-dependant friction and calculation
@@ -114,8 +118,7 @@ namespace CryGameCode.Tanks
             {
                 Renderer.DrawTextToScreen(100, 80, 1.3f, Color.White, "TerminalVel: {0}", terminalVelocity);
                 Renderer.DrawTextToScreen(100, 90, 1.3f, Color.White, "Speed: {0}", moveRequest.velocity.Length);
-                Renderer.DrawTextToScreen(100, 100, 1.3f, Color.White, "angularVel: {0}", angularAcceleration);
-                Renderer.DrawTextToScreen(100, 110, 1.2f, Color.White, "angleChange: {0}", turnRot.Column1);
+                Renderer.DrawTextToScreen(100, 100, 1.3f, Color.Red, "angularAcceleration: {0}", angularAcceleration);
                 Renderer.DrawTextToScreen(100, 120, 1.2f, Color.White, "acceleration: {0}", forwardAcceleration - frictionDeceleration - dragDeceleration);
                 Renderer.DrawTextToScreen(100, 130, 1.2f, Color.Red, "forceLeft: {0}", Math.Floor(m_treads[1].Force));
                 Renderer.DrawTextToScreen(100, 140, 1.2f, Color.Red, "forceRight: {0}", Math.Floor(m_treads[0].Force));
