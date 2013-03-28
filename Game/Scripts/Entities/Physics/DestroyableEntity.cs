@@ -16,9 +16,12 @@ namespace CryGameCode.Entities.Physics
 
 			LoadObject(Model);
 
-			Physics.Mass = 5000;
-			Physics.Type = PhysicalizationType.Rigid;
-			Physics.Stiffness = 70;
+            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Rigid);
+
+            physicalizationParams.mass = 5000;
+            physicalizationParams.stiffnessScale = 70;
+
+            Physicalize(physicalizationParams);
 
 			InitHealth(100);
 		}

@@ -35,10 +35,14 @@ namespace CryGameCode.Entities.Buildings
 
 			LoadObject(Model);
 
-			Physics.Mass = 100;
-			Physics.Resting = false;
-			Physics.Type = PhysicalizationType.Rigid;
+            // Physicalize
+            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Rigid);
 
+            physicalizationParams.mass = 100;
+
+            Physicalize(physicalizationParams);
+
+            Physics.Resting = false;
 			Physics.AddImpulse(new Vec3(0, 0, -1));
 
 			Health = MaxHealth = 100;
@@ -53,7 +57,9 @@ namespace CryGameCode.Entities.Buildings
 			// collided with terrain
 			if (colliderId == 0)
 			{
-				Physics.Type = PhysicalizationType.Static;
+                DePhysicalize();
+
+                Physicalize(new PhysicalizationParams(PhysicalizationType.Static));
 			}
 		}
 
