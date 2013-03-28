@@ -6,17 +6,12 @@ namespace CryGameCode.Tanks
 {
 	public class MG : TankTurret
 	{
-
-		static float impulseStrength = 5;
-
 		public MG(Tank tank) : base(tank) { }
 
 		protected override void OnFire(Vec3 firePos)
 		{
 			var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash_small");
 			muzzleFlash.Spawn(firePos, TurretEntity.Rotation.Column1, 0.35f);
-
-			Owner.Physics.AddImpulse(-TurretEntity.Rotation.Column1 * impulseStrength);
 		}
 
 		public override string Model { get { return "objects/tanks/turret_mg.chr"; } }

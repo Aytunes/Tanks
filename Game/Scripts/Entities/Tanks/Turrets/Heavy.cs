@@ -21,8 +21,6 @@ namespace CryGameCode.Tanks
 		{
 			var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash");
 			muzzleFlash.Spawn(firePos, TurretEntity.Rotation.Column1, 0.5f);
-
-			Owner.Physics.AddImpulse(-TurretEntity.Rotation.Column1 * impulseStrength);
 		}
 
 		public override string Model { get { return "objects/tanks/turret_heavy.chr"; } }
