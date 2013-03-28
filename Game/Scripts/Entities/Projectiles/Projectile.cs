@@ -21,9 +21,48 @@ namespace CryGameCode.Projectiles
 		{
 			LoadObject(Model);
 
-			Physics.Type = PhysicalizationType.Rigid;
-			Physics.Mass = Mass;
-			Physics.Slot = 0;
+            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Particle);
+
+            physicalizationParams.mass = Mass;
+            physicalizationParams.slot = 0;
+
+            float radius = 0.005f;
+            physicalizationParams.particleParameters.thickness = radius * 2;
+            physicalizationParams.particleParameters.size = radius * 2;
+
+            physicalizationParams.particleParameters.kAirResistance = 0;
+            physicalizationParams.particleParameters.kWaterResistance = 0.5f;
+            physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
+            physicalizationParams.particleParameters.accThrust = 0;
+            physicalizationParams.particleParameters.accLift = 0;
+
+            physicalizationParams.particleParameters.iPierceability = 8;
+
+            physicalizationParams.particleParameters.heading = Velocity.Normalized;
+            physicalizationParams.particleParameters.velocity = Velocity.Length;
+
+            var singleContact = true;
+            if (singleContact)
+                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
+
+            var noRoll = false;
+            if (noRoll)
+                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoRoll;
+
+            var noSpin = false;
+            if (noSpin)
+                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoSpin;
+
+            var noPathAlignment = false;
+            if (noPathAlignment)
+                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
+
+            // TODO: Set projectile surface type.
+            //physicalizationParams.particleParameters.surface_idx = 0;
+
+
+            Physicalize(physicalizationParams);
+
 			ViewDistanceRatio = 255;
 		}
 
@@ -72,10 +111,6 @@ namespace CryGameCode.Projectiles
 
 			if (Game.IsServer && DebugEnabled)
 				RemoteInvocation(RemoteHit, NetworkTarget.ToAllClients, hitPos, m_firePos);
-
-			var effect = ParticleEffect.Get(Effect);
-			if (effect != null)
-				effect.Spawn(hitPos, contactNormal, EffectScale);
 
 			// Id 0 is the terrain
 			if (targetEntityId != 0)
