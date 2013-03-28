@@ -5,7 +5,6 @@ namespace CryGameCode.Entities.Buildings
 	[Entity(Category = "Buildings")]
 	public class Drill : DamageableEntity
 	{
-		private ParticleEffect m_destroyedEffect;
 		private string m_team = "red";
 
 		private const string Model = "objects/tank_env_assets/scifi/drill.cga";
@@ -25,9 +24,13 @@ namespace CryGameCode.Entities.Buildings
 			LoadObject(Model);
 			PlayAnimation("Default", AnimationFlags.Loop);
 
-			Physics.Type = PhysicalizationType.Rigid;
-			Physics.Mass = -1;
-			Physics.Slot = 0;
+            // Physicalize
+            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Rigid);
+
+            physicalizationParams.mass = -1;
+            physicalizationParams.slot = 0;
+
+            Physicalize(physicalizationParams);
 
 			InitHealth(100);
 
@@ -51,9 +54,6 @@ namespace CryGameCode.Entities.Buildings
 			Debug.DrawText(msg, 3, Color.White, 5);
 
 			StopAnimation(blendOutTime: 1);
-
-			m_destroyedEffect = ParticleEffect.Get("smoke_and_fire.Vehicle_fires.large2");
-			m_destroyedEffect.Spawn(Position);
 		}
 
 		[EditorProperty]

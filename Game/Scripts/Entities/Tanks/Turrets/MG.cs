@@ -10,8 +10,6 @@ namespace CryGameCode.Tanks
 
 		protected override void OnFire(Vec3 firePos)
 		{
-			var muzzleFlash = ParticleEffect.Get("weapon_fx.tank.tank125.muzzle_flash.muzzle_flash_small");
-			muzzleFlash.Spawn(firePos, TurretEntity.Rotation.Column1, 0.35f);
 		}
 
 		public override string Model { get { return "objects/tanks/turret_mg.chr"; } }

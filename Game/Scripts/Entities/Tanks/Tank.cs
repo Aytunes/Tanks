@@ -119,19 +119,20 @@ namespace CryGameCode.Tanks
 
 		void Physicalize()
 		{
-			Physics.AutoUpdate = false;
-			Physics.Type = PhysicalizationType.Living;
-			Physics.Mass = 500;
-			Physics.HeightCollider = 2.5f;
-			Physics.Slot = 0;
-			Physics.UseCapsule = false;
-			Physics.SizeCollider = new Vec3(2.2f, 2.2f, 1.2f);
-			Physics.HeightPivot = 0;
-			Physics.FlagsOR = PhysicalizationFlags.MonitorPostStep;
+            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Living);
 
-			Physics.Gravity = Vec3.Zero;
-			Physics.AirControl = 0;
-			Physics.Save();
+            physicalizationParams.mass = 500;
+            physicalizationParams.slot = 0;
+            physicalizationParams.flagsOR = PhysicalizationFlags.MonitorPostStep;
+
+            physicalizationParams.livingDimensions.heightCollider = 2.5f;
+            physicalizationParams.livingDimensions.sizeCollider = new Vec3(2.2f, 2.2f, 1.2f);
+            physicalizationParams.livingDimensions.heightPivot = 0;
+
+            physicalizationParams.livingDynamics.gravity = Vec3.Zero;
+            physicalizationParams.livingDynamics.kAirControl = 0;
+
+            Physicalize(physicalizationParams);
 		}
 
 		/*private void Reset(bool enteringGame)
@@ -143,7 +144,7 @@ namespace CryGameCode.Tanks
 
 		public override void OnUpdate()
 		{
-			if (IsDead)
+			if (IsDead) 
 				return;
 
 			if (Input != null)

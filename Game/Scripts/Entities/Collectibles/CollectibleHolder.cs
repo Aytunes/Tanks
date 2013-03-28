@@ -54,8 +54,8 @@ namespace CryGameCode.Entities.Collectibles
 				// TODO: Make base model seperate, in order to change pickup model based on collectible type.
 				LoadObject(Collectible.Model);
 
-				Physics.Type = PhysicalizationType.Rigid;
-				Physics.Mass = -1;
+                var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Rigid);
+                Physicalize(physicalizationParams);
 
 				Material = Material.Find("objects/tank_gameplay_assets/pickup_hologram/pickups");
 

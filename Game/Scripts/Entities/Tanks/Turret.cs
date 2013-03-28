@@ -107,12 +107,11 @@ namespace CryGameCode.Tanks
 
 		void Physicalize()
 		{
-			TurretEntity.Physics.AutoUpdate = false;
+            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Static);
 
-			TurretEntity.Physics.Type = PhysicalizationType.Static;
-			TurretEntity.Physics.Mass = Mass;
+            physicalizationParams.mass = Mass;
 
-			TurretEntity.Physics.Save();
+            TurretEntity.Physicalize(physicalizationParams);
 		}
 
 		void Serialize(CrySerialize serialize)
