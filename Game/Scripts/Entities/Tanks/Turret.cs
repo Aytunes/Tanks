@@ -186,6 +186,12 @@ namespace CryGameCode.Tanks
 				var gameMode = GameRules.Current as SinglePlayer;
 
 				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
+                if (projectile != null && projectile.IsDestroyed)
+                {
+                    ProjectileStorage.Remove(projectile);
+                    projectile = null;
+                }
+
 				if (projectile == null || !Projectile.RecyclingEnabled)
 				{
 					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, TurretEntity.Rotation.Normalized) as Projectile;
