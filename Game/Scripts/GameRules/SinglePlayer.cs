@@ -25,6 +25,8 @@ namespace CryGameCode
 		public static Random Selector = new Random();
 		private List<Tank> m_playerBuffer = new List<Tank>();
 
+		public IEnumerable<Tank> Players { get { return m_playerBuffer; } }
+
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
 			if (!Game.IsServer)
