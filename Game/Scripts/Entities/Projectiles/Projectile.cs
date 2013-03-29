@@ -21,46 +21,7 @@ namespace CryGameCode.Projectiles
 		{
 			LoadObject(Model);
 
-            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Particle);
-
-            physicalizationParams.mass = Mass;
-            physicalizationParams.slot = 0;
-
-            float radius = 0.005f;
-            physicalizationParams.particleParameters.thickness = radius * 2;
-            physicalizationParams.particleParameters.size = radius * 2;
-
-            physicalizationParams.particleParameters.kAirResistance = 0;
-            physicalizationParams.particleParameters.kWaterResistance = 0.5f;
-            physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
-            physicalizationParams.particleParameters.accThrust = 0;
-            physicalizationParams.particleParameters.accLift = 0;
-
-            physicalizationParams.particleParameters.iPierceability = 8;
-
-            var singleContact = true;
-            if (singleContact)
-                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
-
-            var noRoll = false;
-            if (noRoll)
-                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoRoll;
-
-            var noSpin = false;
-            if (noSpin)
-                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoSpin;
-
-            var noPathAlignment = false;
-            if (noPathAlignment)
-                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
-
-            // TODO: Set projectile surface type.
-            //physicalizationParams.particleParameters.surface_idx = 0;
-
-
-            Physicalize(physicalizationParams);
-
-			ViewDistanceRatio = 255;
+			GameObject.SetAspectProfile(EntityAspects.Physics, (ushort)PhysicalizationType.Particle);
 		}
 
 		public void Launch()
@@ -69,7 +30,7 @@ namespace CryGameCode.Projectiles
 				return;
 
 			RemoteLaunch(Position, Rotation, Speed);
-			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, Position, Rotation,  Speed);
+			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, Position, Rotation, Speed);
 		}
 
 		private Vec3 m_firePos;
@@ -88,13 +49,48 @@ namespace CryGameCode.Projectiles
 			Rotation = rot;
 			var dir = rot.Column1;
 
-            var physicalEntity = Physics as CryEngine.Physics.PhysicalEntityParticle;
+			var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Particle);
 
-            var particleParams = new CryEngine.Physics.ParticleParameters();
-			particleParams.velocity = speed;
-            particleParams.heading = dir;
+			physicalizationParams.mass = Mass;
+			physicalizationParams.slot = 0;
 
-            physicalEntity.SetParameters(ref particleParams);
+			float radius = 0.005f;
+			physicalizationParams.particleParameters.thickness = radius * 2;
+			physicalizationParams.particleParameters.size = radius * 2;
+
+			physicalizationParams.particleParameters.kAirResistance = 0;
+			physicalizationParams.particleParameters.kWaterResistance = 0.5f;
+			physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
+			physicalizationParams.particleParameters.accThrust = 0;
+			physicalizationParams.particleParameters.accLift = 0;
+
+			physicalizationParams.particleParameters.iPierceability = 8;
+
+			physicalizationParams.particleParameters.velocity = speed;
+			physicalizationParams.particleParameters.heading = dir;
+
+			var singleContact = true;
+			if (singleContact)
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
+
+			var noRoll = false;
+			if (noRoll)
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoRoll;
+
+			var noSpin = false;
+			if (noSpin)
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoSpin;
+
+			var noPathAlignment = false;
+			if (noPathAlignment)
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
+
+			// TODO: Set projectile surface type.
+			//physicalizationParams.particleParameters.surface_idx = 0;
+
+			Physicalize(physicalizationParams);
+
+			ViewDistanceRatio = 255;
 
 			if (DebugEnabled)
 				Debug.DrawDirection(Position, 1, dir * Speed, Color.White, 1);
