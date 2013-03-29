@@ -34,39 +34,6 @@ namespace CryGameCode.Tanks
 			AddEvent("attack1", InputFlags.LeftMouseButton);
 			AddEvent("attack2", InputFlags.RightMouseButton);
 
-			OnInputChanged += (flags, keyEvent) =>
-			{
-				if (flags.IsSet(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease)
-				{
-					var gameRules = GameRules.Current as SinglePlayer;
-
-					if (Owner != null && Owner.IsDead && !Owner.IsDestroyed)
-					{
-						var tank = Owner as Tank;
-
-						// Set team &  type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
-						tank.Team = gameRules.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameRules.Teams.Length));
-
-						if (string.IsNullOrEmpty(GameCVars.ForceTankType))
-							tank.TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
-						else
-							tank.TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
-
-						if (Game.IsServer)
-							gameRules.RequestRevive(tank.Id, tank.Team, tank.TurretTypeName);
-						else
-						{
-							Debug.LogAlways("Requesting revive ({0}, {1}, {2})", tank.Id, tank.Team, tank.TurretTypeName);
-							Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, tank.Id, tank.Team, tank.TurretTypeName);
-						}
-					}
-					else if (Owner == null)
-						Debug.LogAlways("Could not request revive, owner as null");
-					else if (Owner.IsDead)
-						Debug.LogAlways("Could not request revive, owner was alive.");
-				}
-			};
-
 			Input.ActionmapEvents.Add("cycle_view", (e) =>
 			{
 				if (GameCVars.cam_type < (int)CameraType.Last - 1)
