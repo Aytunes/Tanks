@@ -74,22 +74,26 @@ namespace CryGameCode.Tanks
 				else
 					GameCVars.cam_type = 0;
 			});
+
+            Input.MouseEvents += OnMouseEvent;
 		}
 
 		public void PreUpdate() { }
 
-		public void Update() 
-		{
-			if (!Game.IsClient || !Owner.IsLocalClient)
-				return;
-
-			m_mousePositionX = Input.MouseX;
-			m_mousePositionY = Input.MouseY;
-			m_mouseWorldPos = Renderer.ScreenToWorld(m_mousePositionX, m_mousePositionY);
-			Owner.GameObject.NotifyNetworkStateChange(Aspect);
-		}
-
 		public void PostUpdate() { }
+
+        public void OnMouseEvent(MouseEventArgs e)
+        {
+            if(e.MouseEvent == MouseEvent.Move)
+            {
+                m_mousePositionX = e.X;
+                m_mousePositionY = e.Y;
+
+                m_mouseWorldPos = Renderer.ScreenToWorld(m_mousePositionX, m_mousePositionY);
+
+                Owner.GameObject.NotifyNetworkStateChange(Aspect);
+            }
+        }
 
 		public void NetSerialize(CryEngine.Serialization.CrySerialize serialize)
 		{

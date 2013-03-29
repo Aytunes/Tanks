@@ -147,9 +147,6 @@ namespace CryGameCode.Tanks
 			if (IsDead) 
 				return;
 
-			if (Input != null)
-				Input.Update();
-
 			Turret.Update();
 
 			if (Physics.Status != null)
