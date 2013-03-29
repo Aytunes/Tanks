@@ -52,6 +52,10 @@ namespace CryGameCode.Tanks
 
 		void OnInput(InputFlags flags, KeyEvent keyEvent)
 		{
+			// Workaround for firing directly after the user requested revival.
+			if (Owner.SpawnTime == -1 || Time.FrameStartTime - Owner.SpawnTime < 100)
+				return;
+
 			if (flags.IsSet(InputFlags.LeftMouseButton))
             {
                 if (keyEvent == KeyEvent.OnPress)
