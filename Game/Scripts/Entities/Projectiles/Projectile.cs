@@ -65,9 +65,13 @@ namespace CryGameCode.Projectiles
 			physicalizationParams.particleParameters.accLift = 0;
 
 			physicalizationParams.particleParameters.iPierceability = 8;
+			physicalizationParams.particleParameters.surface_idx = Material.SurfaceType.Id;
 
 			physicalizationParams.particleParameters.velocity = speed;
 			physicalizationParams.particleParameters.heading = dir;
+
+			physicalizationParams.particleParameters.flags |= PhysicalizationFlags.LogCollisions;
+			physicalizationParams.particleParameters.flags |= PhysicalizationFlags.MonitorCollisions;
 
 			var singleContact = true;
 			if (singleContact)
@@ -84,9 +88,6 @@ namespace CryGameCode.Projectiles
 			var noPathAlignment = false;
 			if (noPathAlignment)
 				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
-
-			// TODO: Set projectile surface type.
-			//physicalizationParams.particleParameters.surface_idx = 0;
 
 			Physicalize(physicalizationParams);
 
@@ -134,6 +135,13 @@ namespace CryGameCode.Projectiles
                 }
 			}
 
+			if (Game.IsClient)
+			{
+				var effect = ParticleEffect.Get(Effect);
+				if (effect != null)
+					effect.Spawn(hitPos, contactNormal, EffectScale);
+			}
+
 			if (ShouldExplode)
 			{
 				var explosion = new Explosion
@@ -150,7 +158,7 @@ namespace CryGameCode.Projectiles
 				explosion.Explode();
 			}
 
-			if (Game.IsPureClient)
+			if (Game.IsPureClient || Game.IsEditor)
 				Hidden = true;
 
 			Fired = false;
