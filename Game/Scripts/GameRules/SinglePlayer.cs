@@ -155,7 +155,7 @@ namespace CryGameCode
 		{
 			var removedModifiers = new List<IGameModifier>();
 
-			foreach(var gameModifier in m_activeGameModifiers)
+			foreach (var gameModifier in m_activeGameModifiers)
 			{
 				if (!gameModifier.Update())
 					removedModifiers.Add(gameModifier);

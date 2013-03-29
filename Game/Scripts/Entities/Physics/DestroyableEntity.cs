@@ -16,12 +16,12 @@ namespace CryGameCode.Entities.Physics
 
 			LoadObject(Model);
 
-            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Rigid);
+			var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Rigid);
 
-            physicalizationParams.mass = 5000;
-            physicalizationParams.stiffnessScale = 70;
+			physicalizationParams.mass = 5000;
+			physicalizationParams.stiffnessScale = 70;
 
-            Physicalize(physicalizationParams);
+			Physicalize(physicalizationParams);
 
 			InitHealth(100);
 		}
