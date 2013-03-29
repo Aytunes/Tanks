@@ -135,9 +135,12 @@ namespace CryGameCode.Projectiles
                 }
 			}
 
-			var effect = ParticleEffect.Get(Effect);
-			if (effect != null)
-				effect.Spawn(hitPos, contactNormal, EffectScale);
+			if (Game.IsClient)
+			{
+				var effect = ParticleEffect.Get(Effect);
+				if (effect != null)
+					effect.Spawn(hitPos, contactNormal, EffectScale);
+			}
 
 			if (ShouldExplode)
 			{
