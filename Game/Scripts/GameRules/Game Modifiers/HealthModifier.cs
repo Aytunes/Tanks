@@ -24,8 +24,8 @@ namespace CryGameCode
 		{
 			m_remainingHeal = HealthRestoration;
 
-            var damageableTarget = Target as IDamageable;
-            damageableTarget.OnDamaged += (damage, type, pos, dir) =>
+			var damageableTarget = Target as IDamageable;
+			damageableTarget.OnDamaged += (damage, type, pos, dir) =>
 			{
 				// cancel heal if target took damage
 				End();
@@ -40,7 +40,7 @@ namespace CryGameCode
 				OnEnd();
 		}
 
-		public bool Update() 
+		public bool Update()
 		{
 			var heal = HealthRestoration * Time.DeltaTime * (1 / RestorationTime);
 			m_remainingHeal -= heal;
@@ -56,7 +56,7 @@ namespace CryGameCode
 
 		public event Action OnEnd;
 
-        public EntityBase Target { get; set; }
+		public EntityBase Target { get; set; }
 
 		/// <summary>
 		/// Amount of health restored.

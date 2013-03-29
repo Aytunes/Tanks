@@ -24,13 +24,13 @@ namespace CryGameCode.Entities.Buildings
 			LoadObject(Model);
 			PlayAnimation("Default", AnimationFlags.Loop);
 
-            // Physicalize
-            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Rigid);
+			// Physicalize
+			var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Rigid);
 
-            physicalizationParams.mass = -1;
-            physicalizationParams.slot = 0;
+			physicalizationParams.mass = -1;
+			physicalizationParams.slot = 0;
 
-            Physicalize(physicalizationParams);
+			Physicalize(physicalizationParams);
 
 			InitHealth(100);
 

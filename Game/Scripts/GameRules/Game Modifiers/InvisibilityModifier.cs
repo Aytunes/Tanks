@@ -23,8 +23,8 @@ namespace CryGameCode
 		{
 			m_active = true;
 
-            var damageableTarget = Target as IDamageable;
-            damageableTarget.OnDamaged += (damage, type, pos, dir) =>
+			var damageableTarget = Target as IDamageable;
+			damageableTarget.OnDamaged += (damage, type, pos, dir) =>
 			{
 				// cancel heal if target took damage
 				End();

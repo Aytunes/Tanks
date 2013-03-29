@@ -13,7 +13,7 @@ namespace CryGameCode.Entities
 		public float Mass
 		{
 			get { return mass; }
-            set { mass = value; Reset(); }
+			set { mass = value; Reset(); }
 		}
 
 		public override void OnSpawn()
@@ -27,13 +27,13 @@ namespace CryGameCode.Entities
 		}
 
 		void Reset()
-        {
-            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Static);
+		{
+			var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Static);
 
-            physicalizationParams.mass = Mass;
-            physicalizationParams.stiffnessScale = 70;
+			physicalizationParams.mass = Mass;
+			physicalizationParams.stiffnessScale = 70;
 
-            Physicalize(physicalizationParams);
+			Physicalize(physicalizationParams);
 		}
 	}
 }
