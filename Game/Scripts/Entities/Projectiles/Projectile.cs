@@ -38,9 +38,6 @@ namespace CryGameCode.Projectiles
 
             physicalizationParams.particleParameters.iPierceability = 8;
 
-            physicalizationParams.particleParameters.heading = Velocity.Normalized;
-            physicalizationParams.particleParameters.velocity = Velocity.Length;
-
             var singleContact = true;
             if (singleContact)
                 physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
