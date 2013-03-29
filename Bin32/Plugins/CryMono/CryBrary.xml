@@ -2001,6 +2001,16 @@
             The object is intersecting the plane.
             </summary>
         </member>
+        <member name="F:CryEngine.PhysicalEntityFlagsParameters.flagsOR">
+            <summary>
+            when settin
+            </summary>
+        </member>
+        <member name="F:CryEngine.PhysicalEntityFlagsParameters.flagsAND">
+            <summary>
+             when getting
+            </summary>
+        </member>
         <member name="T:CryEngine.Physics.PhysicalEntity">
             <summary>
             Physical entity present in the physics system.
@@ -6019,6 +6029,11 @@
             </summary>
             <returns>The filepath to the Scripts folder as a string, ex:
             <example>"C:\CryENGINE3\Game\Scripts"</example></returns>
+        </member>
+        <member name="P:CryEngine.Utilities.PathUtils.CryMonoScriptsFolder">
+            <summary>
+            Directory from which CryMono loads scripts, e.g. *.cs files.
+            </summary>
         </member>
         <member name="P:CryEngine.Utilities.PathUtils.TempFolder">
             <summary>
