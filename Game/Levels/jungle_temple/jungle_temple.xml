@@ -1,5 +1,5 @@
 <MetaData>
- <GameRules MP1="SinglePlayer" MP2="DeathMatch"/>
+ <GameRules MP1="DestroyTheDrill" MP2="DeathMatch" MP3="SinglePlayer" />
  <Attributes>
   <loading_video value=""/>
   <loading_image value="textures/loadscreens/jungleloadscreen.dds"/>
