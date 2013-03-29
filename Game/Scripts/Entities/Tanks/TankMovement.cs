@@ -203,13 +203,13 @@ namespace CryGameCode.Tanks
 
 					if (Input.HasFlag(InputFlags.MoveLeft))
 					{
-						m_treads[0].SetThrottle(-1.0f);
-						m_treads[1].SetThrottle(MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0));
+						m_treads[1].SetThrottle(-1.0f);
+						m_treads[0].SetThrottle(MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0));
 					}
 					if (Input.HasFlag(InputFlags.MoveRight))
 					{
-						m_treads[1].SetThrottle(-1.0f);
-						m_treads[0].SetThrottle(MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0));
+						m_treads[0].SetThrottle(-1.0f);
+						m_treads[1].SetThrottle(MathHelpers.Clamp(-turnMult * (speed / maxTurnReductionSpeed), -turnMult, 0));
 					}
 				}
 				else if (Input.HasFlag(InputFlags.MoveLeft))
