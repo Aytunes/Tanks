@@ -70,6 +70,9 @@ namespace CryGameCode.Projectiles
 			physicalizationParams.particleParameters.velocity = speed;
 			physicalizationParams.particleParameters.heading = dir;
 
+			physicalizationParams.particleParameters.flags |= PhysicalizationFlags.LogCollisions;
+			physicalizationParams.particleParameters.flags |= PhysicalizationFlags.MonitorCollisions;
+
 			var singleContact = true;
 			if (singleContact)
 				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
@@ -131,6 +134,10 @@ namespace CryGameCode.Projectiles
                     TargetModifier.Begin();
                 }
 			}
+
+			var effect = ParticleEffect.Get(Effect);
+			if (effect != null)
+				effect.Spawn(hitPos, contactNormal, EffectScale);
 
 			if (ShouldExplode)
 			{

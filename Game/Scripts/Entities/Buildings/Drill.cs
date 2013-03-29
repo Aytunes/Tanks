@@ -34,26 +34,7 @@ namespace CryGameCode.Entities.Buildings
 
 			InitHealth(100);
 
-			OnDeath += OnDied;
-
 			Material = Material.Find("objects/tank_env_assets/scifi/drill_" + m_team);
-		}
-
-		public void OnDied(float damage, DamageType type, Vec3 pos, Vec3 dir)
-		{
-			if (!Game.IsServer)
-				return;
-
-			RemoteInvocation(RemoteOnDeath, NetworkTarget.ToAllClients);
-		}
-
-		[RemoteInvocation]
-		private void RemoteOnDeath()
-		{
-			var msg = string.Format("{0}'s drill was destroyed!", Team);
-			Debug.DrawText(msg, 3, Color.White, 5);
-
-			StopAnimation(blendOutTime: 1);
 		}
 
 		[EditorProperty]
