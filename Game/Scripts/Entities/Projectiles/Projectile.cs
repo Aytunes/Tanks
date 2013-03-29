@@ -68,14 +68,14 @@ namespace CryGameCode.Projectiles
 			if (!Game.IsServer)
 				return;
 
-			RemoteLaunch(Position, Rotation);
-			RemoteInvocation(RemoteLaunch, NetworkTarget.ToAllClients, Position, Rotation);
+			RemoteLaunch(Position, Rotation, Speed);
+			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, Position, Rotation,  Speed);
 		}
 
 		private Vec3 m_firePos;
 
 		[RemoteInvocation]
-		private void RemoteLaunch(Vec3 pos, Quat rot)
+		private void RemoteLaunch(Vec3 pos, Quat rot, float speed)
 		{
 			Fired = true;
 
@@ -87,7 +87,14 @@ namespace CryGameCode.Projectiles
 
 			Rotation = rot;
 			var dir = rot.Column1;
-			Physics.AddImpulse(dir * Speed);
+
+            var physicalEntity = Physics as CryEngine.Physics.PhysicalEntityParticle;
+
+            var particleParams = new CryEngine.Physics.ParticleParameters();
+			particleParams.velocity = speed;
+            particleParams.heading = dir;
+
+            physicalEntity.SetParameters(ref particleParams);
 
 			if (DebugEnabled)
 				Debug.DrawDirection(Position, 1, dir * Speed, Color.White, 1);
