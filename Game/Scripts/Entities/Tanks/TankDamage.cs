@@ -9,6 +9,8 @@ namespace CryGameCode.Tanks
 		{
 			Debug.DrawText("Died!", 3, Color.Red, 5);
 
+			SpawnTime = -1;
+
 			Turret.Destroy();
 			Turret = null;
 

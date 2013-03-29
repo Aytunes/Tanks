@@ -34,39 +34,6 @@ namespace CryGameCode.Tanks
 			AddEvent("attack1", InputFlags.LeftMouseButton);
 			AddEvent("attack2", InputFlags.RightMouseButton);
 
-			OnInputChanged += (flags, keyEvent) =>
-			{
-				if (flags.IsSet(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease)
-				{
-					var gameRules = GameRules.Current as SinglePlayer;
-
-					if (Owner != null && Owner.IsDead && !Owner.IsDestroyed)
-					{
-						var tank = Owner as Tank;
-
-						// Set team &  type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
-						tank.Team = gameRules.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameRules.Teams.Length));
-
-						if (string.IsNullOrEmpty(GameCVars.ForceTankType))
-							tank.TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
-						else
-							tank.TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
-
-						if (Game.IsServer)
-							gameRules.RequestRevive(tank.Id, tank.Team, tank.TurretTypeName);
-						else
-						{
-							Debug.LogAlways("Requesting revive ({0}, {1}, {2})", tank.Id, tank.Team, tank.TurretTypeName);
-							Owner.RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, tank.Id, tank.Team, tank.TurretTypeName);
-						}
-					}
-					else if (Owner == null)
-						Debug.LogAlways("Could not request revive, owner as null");
-					else if (Owner.IsDead)
-						Debug.LogAlways("Could not request revive, owner was alive.");
-				}
-			};
-
 			Input.ActionmapEvents.Add("cycle_view", (e) =>
 			{
 				if (GameCVars.cam_type < (int)CameraType.Last - 1)
@@ -75,25 +42,35 @@ namespace CryGameCode.Tanks
 					GameCVars.cam_type = 0;
 			});
 
-            Input.MouseEvents += OnMouseEvent;
+			Input.MouseEvents += OnMouseEvent;
+		}
+
+		public void OnMouseEvent(MouseEventArgs e)
+		{
+			if (e.MouseEvent == MouseEvent.Move)
+				UpdatePos(e.X, e.Y);
+		}
+
+		private void UpdatePos(int x, int y)
+		{
+			m_mousePositionX = x;
+			m_mousePositionY = y;
+
+			m_mouseWorldPos = Renderer.ScreenToWorld(m_mousePositionX, m_mousePositionY);
+
+			if (Owner != null && Owner.GameObject != null)
+				Owner.GameObject.NotifyNetworkStateChange(Aspect);
+		}
+
+		public void Update()
+		{
+			if (HasAnyFlag(InputFlags.MoveBack, InputFlags.MoveForward, InputFlags.MoveLeft, InputFlags.MoveRight))
+				UpdatePos(Input.MouseX, Input.MouseY);
 		}
 
 		public void PreUpdate() { }
 
 		public void PostUpdate() { }
-
-        public void OnMouseEvent(MouseEventArgs e)
-        {
-            if(e.MouseEvent == MouseEvent.Move)
-            {
-                m_mousePositionX = e.X;
-                m_mousePositionY = e.Y;
-
-                m_mouseWorldPos = Renderer.ScreenToWorld(m_mousePositionX, m_mousePositionY);
-
-                Owner.GameObject.NotifyNetworkStateChange(Aspect);
-            }
-        }
 
 		public void NetSerialize(CryEngine.Serialization.CrySerialize serialize)
 		{
@@ -107,12 +84,12 @@ namespace CryGameCode.Tanks
 				var changedKeys = (InputFlags)flags ^ m_flags;
 
 				var pressedKeys = changedKeys & (InputFlags)flags;
-                if (pressedKeys != 0)
-                    OnInputChanged(pressedKeys, KeyEvent.OnPress);
+				if (pressedKeys != 0)
+					OnInputChanged(pressedKeys, KeyEvent.OnPress);
 
 				var releasedKeys = changedKeys & m_flags;
-                if (releasedKeys != 0)
-                    OnInputChanged(releasedKeys, KeyEvent.OnRelease);
+				if (releasedKeys != 0)
+					OnInputChanged(releasedKeys, KeyEvent.OnRelease);
 			}
 
 			m_flags = (InputFlags)flags;
@@ -136,7 +113,10 @@ namespace CryGameCode.Tanks
 		public void Destroy()
 		{
 			if (Owner.IsLocalClient)
+			{
+				Input.MouseEvents -= OnMouseEvent;
 				Input.ActionmapEvents.RemoveAll(this);
+			}
 		}
 
 		void SetFlag(InputFlags flag, KeyEvent keyEvent)
@@ -156,7 +136,7 @@ namespace CryGameCode.Tanks
 
 							Owner.GameObject.NotifyNetworkStateChange(Aspect);
 
-                            if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
+							if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
 						}
 					}
@@ -169,7 +149,7 @@ namespace CryGameCode.Tanks
 
 							Owner.GameObject.NotifyNetworkStateChange(Aspect);
 
-                            if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
+							if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
 						}
 					}
@@ -180,6 +160,17 @@ namespace CryGameCode.Tanks
 		public bool HasFlag(InputFlags target)
 		{
 			return Flags.IsSet(target);
+		}
+
+		public bool HasAnyFlag(params InputFlags[] targets)
+		{
+			foreach (var target in targets)
+			{
+				if (HasFlag(target))
+					return true;
+			}
+
+			return false;
 		}
 
 		public static int Aspect = 256;

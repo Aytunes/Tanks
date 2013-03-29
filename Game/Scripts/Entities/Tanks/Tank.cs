@@ -19,8 +19,35 @@ namespace CryGameCode.Tanks
 			MaxHealth = 100;
 
 			Input = new PlayerInput(this);
-
+			Input.OnInputChanged += OnInputChanged;
+			
 			OnDeath += OnDied;
+		}
+
+		public void OnInputChanged(InputFlags flags, KeyEvent keyEvent)
+		{
+			if (flags.IsSet(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease)
+			{
+				var gameRules = GameRules.Current as SinglePlayer;
+
+				if (IsDead)
+				{
+					// Set team &  type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
+					Team = gameRules.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameRules.Teams.Length));
+
+					if (string.IsNullOrEmpty(GameCVars.ForceTankType))
+						TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
+					else
+						TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
+
+					if (Game.IsServer)
+						gameRules.RequestRevive(Id, Team, TurretTypeName);
+					else
+						RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Id, Team, TurretTypeName);
+				}
+				else if (IsDead)
+					Debug.LogAlways("Can not request revive on living actor.");
+			}
 		}
 
 		/// <summary>
@@ -107,6 +134,8 @@ namespace CryGameCode.Tanks
 
 			if (IsLocalClient)
 				Entity.Spawn<Cursor>("Cursor");
+
+			SpawnTime = Time.FrameStartTime;
 		}
 
 		protected override void OnEditorReset(bool enteringGame)
@@ -146,6 +175,9 @@ namespace CryGameCode.Tanks
 		{
 			if (IsDead) 
 				return;
+
+			if (Input != null)
+				Input.Update();
 
 			Turret.Update();
 
@@ -252,5 +284,10 @@ namespace CryGameCode.Tanks
 		public Vec3 GroundNormal { get; set; }
 
 		public int CurrentSpectatorPoint { get; set; }
+
+		/// <summary>
+		/// Time at which the player was last spawned.
+		/// </summary>
+		public float SpawnTime { get; set; }
 	}
 }
