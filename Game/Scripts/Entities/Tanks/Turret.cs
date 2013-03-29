@@ -23,7 +23,7 @@ namespace CryGameCode.Tanks
 			if (!Game.IsServer)
 			{
 				ReceiveUpdates = true;
-				m_tankName = Name.Split('.').First();		
+				m_tankName = Name.Split('.').First();
 			}
 		}
 
@@ -57,38 +57,38 @@ namespace CryGameCode.Tanks
 				return;
 
 			if (flags.IsSet(InputFlags.LeftMouseButton))
-            {
-                if (keyEvent == KeyEvent.OnPress)
-                {
-                    if (AutomaticFire)
-                        m_leftFiring = true;
+			{
+				if (keyEvent == KeyEvent.OnPress)
+				{
+					if (AutomaticFire)
+						m_leftFiring = true;
 
-                    ChargeWeapon();
-                }
-                else if (keyEvent == KeyEvent.OnRelease)
-                {
-                    if (AutomaticFire)
-                        m_leftFiring = false;
-                    else
-                        FireLeft();
-                }
-            }
+					ChargeWeapon();
+				}
+				else if (keyEvent == KeyEvent.OnRelease)
+				{
+					if (AutomaticFire)
+						m_leftFiring = false;
+					else
+						FireLeft();
+				}
+			}
 
 			if (flags.IsSet(InputFlags.RightMouseButton))
-            {
-                if (keyEvent == KeyEvent.OnPress)
-                {
-                    if (AutomaticFire)
-                        m_rightFiring = true;
-                }
-                else if (keyEvent == KeyEvent.OnRelease)
-                {
-                    if (AutomaticFire)
-                        m_rightFiring = false;
-                    else
-                        FireRight();
-                }
-            }
+			{
+				if (keyEvent == KeyEvent.OnPress)
+				{
+					if (AutomaticFire)
+						m_rightFiring = true;
+				}
+				else if (keyEvent == KeyEvent.OnRelease)
+				{
+					if (AutomaticFire)
+						m_rightFiring = false;
+					else
+						FireRight();
+				}
+			}
 		}
 
 		public void Initialize(EntityBase entity)
@@ -111,11 +111,11 @@ namespace CryGameCode.Tanks
 
 		void Physicalize()
 		{
-            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Static);
+			var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Static);
 
-            physicalizationParams.mass = Mass;
+			physicalizationParams.mass = Mass;
 
-            TurretEntity.Physicalize(physicalizationParams);
+			TurretEntity.Physicalize(physicalizationParams);
 		}
 
 		void Serialize(CrySerialize serialize)
@@ -129,8 +129,8 @@ namespace CryGameCode.Tanks
 		{
 			if (Destroyed)
 				return;
-			
-			if(!TurretEntity.IsDestroyed)
+
+			if (!TurretEntity.IsDestroyed)
 				TurretEntity.Remove();
 
 			foreach (var projectile in ProjectileStorage)
@@ -190,11 +190,11 @@ namespace CryGameCode.Tanks
 				var gameMode = GameRules.Current as SinglePlayer;
 
 				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
-                if (projectile != null && projectile.IsDestroyed)
-                {
-                    ProjectileStorage.Remove(projectile);
-                    projectile = null;
-                }
+				if (projectile != null && projectile.IsDestroyed)
+				{
+					ProjectileStorage.Remove(projectile);
+					projectile = null;
+				}
 
 				if (projectile == null || !Projectile.RecyclingEnabled)
 				{

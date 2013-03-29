@@ -24,7 +24,7 @@ namespace CryGameCode
 			TimeScale.FVal = NewTimeScale;
 		}
 
-		public bool Update() 
+		public bool Update()
 		{
 			m_timeRemaining -= Time.DeltaTime / NewTimeScale;
 			if (m_timeRemaining <= 0)
@@ -44,7 +44,7 @@ namespace CryGameCode
 
 		CVar TimeScale { get { return CVar.Get("t_scale"); } }
 
-        public EntityBase Target { get { return null; } set { } }
+		public EntityBase Target { get { return null; } set { } }
 
 		float m_prevTimeScale;
 		float m_timeRemaining;

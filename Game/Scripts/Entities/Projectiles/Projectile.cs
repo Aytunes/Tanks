@@ -21,44 +21,44 @@ namespace CryGameCode.Projectiles
 		{
 			LoadObject(Model);
 
-            var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Particle);
+			var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Particle);
 
-            physicalizationParams.mass = Mass;
-            physicalizationParams.slot = 0;
+			physicalizationParams.mass = Mass;
+			physicalizationParams.slot = 0;
 
-            float radius = 0.005f;
-            physicalizationParams.particleParameters.thickness = radius * 2;
-            physicalizationParams.particleParameters.size = radius * 2;
+			float radius = 0.005f;
+			physicalizationParams.particleParameters.thickness = radius * 2;
+			physicalizationParams.particleParameters.size = radius * 2;
 
-            physicalizationParams.particleParameters.kAirResistance = 0;
-            physicalizationParams.particleParameters.kWaterResistance = 0.5f;
-            physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
-            physicalizationParams.particleParameters.accThrust = 0;
-            physicalizationParams.particleParameters.accLift = 0;
+			physicalizationParams.particleParameters.kAirResistance = 0;
+			physicalizationParams.particleParameters.kWaterResistance = 0.5f;
+			physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
+			physicalizationParams.particleParameters.accThrust = 0;
+			physicalizationParams.particleParameters.accLift = 0;
 
-            physicalizationParams.particleParameters.iPierceability = 8;
+			physicalizationParams.particleParameters.iPierceability = 8;
 
-            var singleContact = true;
-            if (singleContact)
-                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
+			var singleContact = true;
+			if (singleContact)
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
 
-            var noRoll = false;
-            if (noRoll)
-                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoRoll;
+			var noRoll = false;
+			if (noRoll)
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoRoll;
 
-            var noSpin = false;
-            if (noSpin)
-                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoSpin;
+			var noSpin = false;
+			if (noSpin)
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoSpin;
 
-            var noPathAlignment = false;
-            if (noPathAlignment)
-                physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
+			var noPathAlignment = false;
+			if (noPathAlignment)
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
 
-            // TODO: Set projectile surface type.
-            //physicalizationParams.particleParameters.surface_idx = 0;
+			// TODO: Set projectile surface type.
+			//physicalizationParams.particleParameters.surface_idx = 0;
 
 
-            Physicalize(physicalizationParams);
+			Physicalize(physicalizationParams);
 
 			ViewDistanceRatio = 255;
 		}
@@ -69,7 +69,7 @@ namespace CryGameCode.Projectiles
 				return;
 
 			RemoteLaunch(Position, Rotation, Speed);
-			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, Position, Rotation,  Speed);
+			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, Position, Rotation, Speed);
 		}
 
 		private Vec3 m_firePos;
@@ -88,13 +88,13 @@ namespace CryGameCode.Projectiles
 			Rotation = rot;
 			var dir = rot.Column1;
 
-            var physicalEntity = Physics as CryEngine.Physics.PhysicalEntityParticle;
+			var physicalEntity = Physics as CryEngine.Physics.PhysicalEntityParticle;
 
-            var particleParams = new CryEngine.Physics.ParticleParameters();
+			var particleParams = new CryEngine.Physics.ParticleParameters();
 			particleParams.velocity = speed;
-            particleParams.heading = dir;
+			particleParams.heading = dir;
 
-            physicalEntity.SetParameters(ref particleParams);
+			physicalEntity.SetParameters(ref particleParams);
 
 			if (DebugEnabled)
 				Debug.DrawDirection(Position, 1, dir * Speed, Color.White, 1);
@@ -120,22 +120,22 @@ namespace CryGameCode.Projectiles
 			if (targetEntityId != 0)
 			{
 				var target = Entity.Get(targetEntityId);
-                if (target != null)
-                {
-                    var damageableTarget = target as IDamageable;
-                    if (damageableTarget != null)
-                        damageableTarget.Damage(Damage, DamageType, hitPos, dir);
-                }
+				if (target != null)
+				{
+					var damageableTarget = target as IDamageable;
+					if (damageableTarget != null)
+						damageableTarget.Damage(Damage, DamageType, hitPos, dir);
+				}
 
-                if (TargetModifier != null)
-                {
-                    TargetModifier.Target = target;
+				if (TargetModifier != null)
+				{
+					TargetModifier.Target = target;
 
-                    var singlePlayer = GameRules.Current as SinglePlayer;
-                    singlePlayer.AddGameModifier(TargetModifier);
+					var singlePlayer = GameRules.Current as SinglePlayer;
+					singlePlayer.AddGameModifier(TargetModifier);
 
-                    TargetModifier.Begin();
-                }
+					TargetModifier.Begin();
+				}
 			}
 
 			if (ShouldExplode)
@@ -174,7 +174,7 @@ namespace CryGameCode.Projectiles
 		public virtual float MaximumExplosionRadius { get { return 30; } }
 		public virtual float ExplosionPressure { get { return 200; } }
 
-        public IGameModifier TargetModifier { get; set; }
+		public IGameModifier TargetModifier { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this projectile was fired.
