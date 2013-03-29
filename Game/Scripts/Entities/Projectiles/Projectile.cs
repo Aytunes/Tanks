@@ -65,6 +65,7 @@ namespace CryGameCode.Projectiles
 			physicalizationParams.particleParameters.accLift = 0;
 
 			physicalizationParams.particleParameters.iPierceability = 8;
+			physicalizationParams.particleParameters.surface_idx = Material.SurfaceType.Id;
 
 			physicalizationParams.particleParameters.velocity = speed;
 			physicalizationParams.particleParameters.heading = dir;
@@ -84,9 +85,6 @@ namespace CryGameCode.Projectiles
 			var noPathAlignment = false;
 			if (noPathAlignment)
 				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
-
-			// TODO: Set projectile surface type.
-			//physicalizationParams.particleParameters.surface_idx = 0;
 
 			Physicalize(physicalizationParams);
 
@@ -150,7 +148,7 @@ namespace CryGameCode.Projectiles
 				explosion.Explode();
 			}
 
-			if (Game.IsPureClient)
+			if (Game.IsPureClient || Game.IsEditor)
 				Hidden = true;
 
 			Fired = false;
