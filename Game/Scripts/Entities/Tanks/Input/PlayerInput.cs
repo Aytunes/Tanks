@@ -42,7 +42,8 @@ namespace CryGameCode.Tanks
 					GameCVars.cam_type = 0;
 			});
 
-			Input.MouseEvents += OnMouseEvent;
+			if (Game.IsClient)
+				Input.MouseEvents += OnMouseEvent;
 		}
 
 		public void OnMouseEvent(MouseEventArgs e)
@@ -64,6 +65,9 @@ namespace CryGameCode.Tanks
 
 		public void Update()
 		{
+			if (!Game.IsClient)
+				return;
+
 			if (HasAnyFlag(InputFlags.MoveBack, InputFlags.MoveForward, InputFlags.MoveLeft, InputFlags.MoveRight))
 				UpdatePos(Input.MouseX, Input.MouseY);
 		}
