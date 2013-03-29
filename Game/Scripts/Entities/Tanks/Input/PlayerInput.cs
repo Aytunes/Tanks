@@ -84,7 +84,7 @@ namespace CryGameCode.Tanks
 
         public void OnMouseEvent(MouseEventArgs e)
         {
-            if(e.MouseEvent == MouseEvent.Move)
+			if (e.MouseEvent == MouseEvent.Move)
             {
                 m_mousePositionX = e.X;
                 m_mousePositionY = e.Y;
@@ -136,7 +136,10 @@ namespace CryGameCode.Tanks
 		public void Destroy()
 		{
 			if (Owner.IsLocalClient)
+			{
+				Input.MouseEvents -= OnMouseEvent;
 				Input.ActionmapEvents.RemoveAll(this);
+			}
 		}
 
 		void SetFlag(InputFlags flag, KeyEvent keyEvent)
