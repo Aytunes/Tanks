@@ -180,11 +180,8 @@ namespace CryGameCode.Tanks
 
 			Turret.Update();
 
-			if (Physics.Status != null)
-			{
-				float blend = MathHelpers.Clamp(Time.DeltaTime / 0.15f, 0, 1.0f);
-				GroundNormal = (GroundNormal + blend * (Physics.Status.Living.GroundNormal - GroundNormal));
-			}
+			float blend = MathHelpers.Clamp(Time.DeltaTime / 0.15f, 0, 1.0f);
+			GroundNormal = (GroundNormal + blend * (Physics.LivingStatus.GroundNormal - GroundNormal));
 
 			if (Game.IsPureClient)
 			{

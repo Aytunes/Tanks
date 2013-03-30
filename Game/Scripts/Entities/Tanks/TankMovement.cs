@@ -64,9 +64,11 @@ namespace CryGameCode.Tanks
 			else
 				normalizedVelocity = forwardDir.Normalized;
 
-			var groundFriction = Physics.Status.Living.GroundSurfaceType.Parameters.Friction;
+			var livingStatus = Physics.LivingStatus;
 
-			var onGround = !Physics.Status.Living.IsFlying;
+			var groundFriction = livingStatus.GroundSurfaceType.Parameters.Friction;
+
+			var onGround = !livingStatus.IsFlying;
 
 			var slopeAngle = onGround ? NormalToAngle(GroundNormal) : MathHelpers.DegreesToRadians(90);
 
@@ -93,6 +95,8 @@ namespace CryGameCode.Tanks
 
 			var turnRot = Quat.CreateRotationZ(angularAcceleration * frameTime);
 			moveRequest.rotation = turnRot;
+
+			// Align tank to slope
 			var slopeProjection = Vec3.CreateProjection(prevRotation.Column1, GroundNormal);
 			slopeProjection.Normalize();
 
