@@ -5,6 +5,7 @@
 		None,
 		Bullet,
 		Explosive,
-		Laser
+		Laser,
+		Collision
 	}
 }

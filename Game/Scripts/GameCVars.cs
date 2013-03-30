@@ -4,6 +4,8 @@ using System.Reflection;
 using CryEngine;
 using CryEngine.Extensions;
 
+using CryGameCode.Entities.Buildings;
+
 namespace CryGameCode.Tanks
 {
 	public static class GameCVars
@@ -81,6 +83,22 @@ namespace CryGameCode.Tanks
 			{
 				ForceTankType = string.Empty;
 			}, "Resets the forced turret type, set via SetTurretType.", CVarFlags.Cheat, true);
+
+			ConsoleCommand.Register("SpawnAutoTurret", (e) =>
+			{
+				if (!Game.IsServer)
+					return;
+
+				var singlePlayer = GameRules.Current as SinglePlayer;
+
+				var selector = new System.Random();
+				
+				var randomPlayer = singlePlayer.Players.ElementAt(selector.Next(singlePlayer.Players.Count()));
+				if (randomPlayer != null)
+				{
+					var autoTurret = Entity.Spawn<AutoTurret>("pew", randomPlayer.Position + new Vec3(0, 0, 20));
+				}
+			}, "Spawns a auto turret above a random player", CVarFlags.None, true);
 		}
 
 		public static string ForceTankType;

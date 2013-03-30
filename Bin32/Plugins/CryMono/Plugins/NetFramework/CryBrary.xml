@@ -363,6 +363,11 @@
             Called prior to updating physics, useful for requesting movement.
             </summary>
         </member>
+        <member name="M:CryEngine.Actor.OnCollision(CryEngine.ColliderInfo,CryEngine.ColliderInfo,CryEngine.Vec3,CryEngine.Vec3,System.Single,System.Single)">
+            <summary>
+            Sent on entity collision.
+            </summary>
+        </member>
         <member name="M:CryEngine.Actor.Get(System.Int32)">
             <summary>
             Gets the actor with the specified channel id if it exists.
@@ -1034,15 +1039,10 @@
             <param name="areaEntityId"></param>
             <param name="fade"></param>
         </member>
-        <member name="M:CryEngine.Entity.OnCollision(CryEngine.EntityId,CryEngine.Vec3,CryEngine.Vec3,System.Int16,CryEngine.Vec3)">
+        <member name="M:CryEngine.Entity.OnCollision(CryEngine.ColliderInfo,CryEngine.ColliderInfo,CryEngine.Vec3,CryEngine.Vec3,System.Single,System.Single)">
             <summary>
             Sent on entity collision.
             </summary>
-            <param name="colliderId"></param>
-            <param name="hitPos"></param>
-            <param name="dir"></param>
-            <param name="materialId"></param>
-            <param name="contactNormal"></param>
         </member>
         <member name="M:CryEngine.Entity.OnInit">
             <summary>
@@ -1999,6 +1999,16 @@
         <member name="F:CryEngine.PlaneIntersectionType.Intersecting">
             <summary>
             The object is intersecting the plane.
+            </summary>
+        </member>
+        <member name="F:CryEngine.PhysicsForeignIdentifiers.UserDefined">
+            <summary>
+            All user defined foreign ids should start from this enum.
+            </summary>
+        </member>
+        <member name="F:CryEngine.ColliderInfo.velocity">
+            <summary>
+            Velocity at the contact point
             </summary>
         </member>
         <member name="F:CryEngine.PhysicalFlagsParameters.flagsOR">

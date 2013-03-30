@@ -207,7 +207,7 @@ namespace CryGameCode.Tanks
 					projectile.Rotation = TurretEntity.Rotation.Normalized;
 				}
 
-				projectile.Launch();
+				projectile.Launch(Owner.Id);
 
 				//OnFire(jointAbsolute.T);
 			}

@@ -24,20 +24,21 @@ namespace CryGameCode.Projectiles
 			GameObject.SetAspectProfile(EntityAspects.Physics, (ushort)PhysicalizationType.Particle);
 		}
 
-		public void Launch()
+		public void Launch(EntityId shooterId)
 		{
 			if (!Game.IsServer)
 				return;
 
-			RemoteLaunch(Position, Rotation, Speed);
-			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, Position, Rotation, Speed);
+			RemoteLaunch(shooterId, Position, Rotation, Speed);
+			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, shooterId, Position, Rotation, Speed);
 		}
 
 		private Vec3 m_firePos;
 
 		[RemoteInvocation]
-		private void RemoteLaunch(Vec3 pos, Quat rot, float speed)
+		private void RemoteLaunch(EntityId shooterId, Vec3 pos, Quat rot, float speed)
 		{
+			ShooterId = shooterId;
 			Fired = true;
 
 			if (Game.IsPureClient)
@@ -104,7 +105,7 @@ namespace CryGameCode.Projectiles
 			Debug.DrawSphere(pos, 1, Color.White, 1f);
 		}
 
-		protected override void OnCollision(EntityId targetEntityId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
+		protected override void OnCollision(ColliderInfo source, ColliderInfo target, Vec3 hitPos, Vec3 contactNormal, float penetration, float radius)
 		{
 			// In standby waiting to be fired, don't track collisions.
 			if (!Fired)
@@ -113,20 +114,22 @@ namespace CryGameCode.Projectiles
 			if (Game.IsServer && DebugEnabled)
 				RemoteInvocation(RemoteHit, NetworkTarget.ToAllClients, hitPos, m_firePos);
 
-			// Id 0 is the terrain
-			if (targetEntityId != 0)
+			var otherEntity = source.Entity;
+			if (otherEntity == this)
+				otherEntity = target.Entity;
+
+			if (otherEntity != null)
 			{
-				var target = Entity.Get(targetEntityId);
-                if (target != null)
+				if (otherEntity != null)
                 {
-                    var damageableTarget = target as IDamageable;
+					var damageableTarget = otherEntity as IDamageable;
                     if (damageableTarget != null)
-                        damageableTarget.Damage(Damage, DamageType, hitPos, dir);
+                        damageableTarget.Damage(Damage, DamageType, hitPos, Vec3.Zero);
                 }
 
                 if (TargetModifier != null)
                 {
-                    TargetModifier.Target = target;
+					TargetModifier.Target = otherEntity;
 
                     var singlePlayer = GameRules.Current as SinglePlayer;
                     singlePlayer.AddGameModifier(TargetModifier);
@@ -148,7 +151,7 @@ namespace CryGameCode.Projectiles
 				{
 					Epicenter = Position,
 					EpicenterImpulse = Position,
-					Direction = dir,
+					Direction = Vec3.Zero,
 					MinRadius = MinimumExplosionRadius,
 					Radius = ExplosionRadius,
 					MaxRadius = MaximumExplosionRadius,
@@ -179,6 +182,8 @@ namespace CryGameCode.Projectiles
 		public virtual float ExplosionPressure { get { return 200; } }
 
         public IGameModifier TargetModifier { get; set; }
+
+		public EntityId ShooterId { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether this projectile was fired.

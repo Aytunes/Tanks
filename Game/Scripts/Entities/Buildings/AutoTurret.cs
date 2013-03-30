@@ -6,6 +6,7 @@ using System.Text;
 using CryEngine;
 
 using CryGameCode.Tanks;
+using CryGameCode.Projectiles;
 
 namespace CryGameCode.Entities.Buildings
 {
@@ -24,6 +25,16 @@ namespace CryGameCode.Entities.Buildings
 			OnDeath += OnDied;
 		}
 
+		protected override bool OnRemove()
+		{
+ 			 foreach (var projectile in ProjectileStorage)
+				projectile.Remove();
+
+			ProjectileStorage.Clear();
+
+			return true;
+		}
+
 		protected override void PostSerialize()
 		{
 			Reset();
@@ -31,6 +42,9 @@ namespace CryGameCode.Entities.Buildings
 
 		void Reset()
 		{
+			if (IsDestroyed)
+				return;
+
 			ReceiveUpdates = true;
 
 			LoadObject(Model);
@@ -50,62 +64,136 @@ namespace CryGameCode.Entities.Buildings
 			Hidden = false;
 
 			Range = 500;
+
+			Active = false;
 		}
 
-		protected override void OnCollision(EntityId colliderId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
+		protected override void OnCollision(ColliderInfo source, ColliderInfo target, Vec3 hitPos, Vec3 contactNormal, float penetration, float radius)
 		{
-			// collided with terrain
-			if (colliderId == 0)
+			Debug.LogAlways("Collided, target foreign id was {0} and source was {1}", target.foreignId, source.foreignId);
+
+			// collided with terrain or a static object.
+			if (!Active && (source.foreignId < PhysicsForeignIdentifiers.Entity || target.foreignId < PhysicsForeignIdentifiers.Entity))
 			{
 				DePhysicalize();
 
 				Physicalize(new PhysicalizationParams(PhysicalizationType.Static));
+
+				Active = true;
+
+				Position = Position - new Vec3(0, 0, 1.5f);
+			}
+			else
+			{
+				var otherEntity = source.Entity;
+				if(otherEntity == this)
+					otherEntity = target.Entity;
+
+				if(otherEntity != null)
+					Debug.LogAlways("collided with {0}", otherEntity.Name);
+
+				if (otherEntity is Tank && !Active) // Landed on a tank, kill it.
+				{
+					var tank = otherEntity as Tank;
+					tank.Damage(tank.Health, DamageType.Collision, hitPos, Vec3.Zero);
+				}
+				else if (otherEntity is Projectile) // Some heartless noob shot us. Shoot back.
+				{
+					var projectile = otherEntity as Projectile;
+
+					if(projectile.ShooterId != 0)
+						lastTarget = Entity.Get(projectile.ShooterId);
+				}
 			}
 		}
 
 		public override void OnUpdate()
 		{
-			if (IsDead)
+			if (IsDead || !Active)
 				return;
 
 			var position = Position;
 
-			var bbox = new BoundingBox(new Vec3(position.X - Range, position.Y - Range, position.Z - Range), new Vec3(position.X + Range, position.Y + Range, position.Z + Range));
+			// See if the path to the target is unobstructed.
+			var hits = Ray.Cast(FireHelperPosition, Rotation.Column0.Normalized * Range, EntityQueryFlags.All, RayWorldIntersectionFlags.AnyHit);
+			Debug.DrawDirection(FireHelperPosition, 3.0f, Rotation.Column0.Normalized * Range, Color.Green, 0.3f);
 
-			var possibleTargets = Entity.QueryProximity<Tank>(bbox);
-
-			float closestDistanceSquared = Range * Range;
-			Tank closestTank = null;
-
-			foreach (var tank in possibleTargets)
+			if (hits.Count() > 0)
 			{
-				var tankPosition = tank.Position;
-				Vec3 deltaDist = tankPosition - position;
+				var hit = hits.ElementAt(0);
 
-				float distanceSquared = deltaDist.LengthSquared;
+				Debug.DrawSphere(hit.Point, 3.0f, Color.Black, 1.0f);
 
-				if (distanceSquared < closestDistanceSquared)
-				{
-					closestTank = tank;
-					closestDistanceSquared = distanceSquared;
-				}
+				if (hit.Entity != null)
+					lastTarget = hit.Entity;
 			}
 
-			if (closestTank != null)
-				FireAt(closestTank);
+			if (lastTarget != null)
+			{
+				FireAt(lastTarget);
+
+				var positionDelta = lastTarget.Position - position;
+				positionDelta.Normalize();
+
+				Rotation = Quat.CreateSlerp(Rotation, Quat.CreateRotationVDir(positionDelta), Time.DeltaTime * 10);
+			}
+			else
+			{
+				// Change rotation direction randomly, but not more than once per 3s.
+				if (Time.FrameStartTime - timeSinceLastRotationChange > 3000)
+				{
+					var random = new Random();
+
+					if (random.Next(100) == 0) // change rotation direction
+					{
+						currentRotationDirection *= -1;
+
+						timeSinceLastRotationChange = Time.FrameStartTime;
+					}
+				}
+
+				Rotation *= Quat.CreateRotationZ(currentRotationDirection * Time.DeltaTime * RotationSpeed);
+			}
+		}
+
+		public Vec3 FireHelperPosition
+		{
+			get
+			{
+				return Position + Rotation * new Vec3(2.5f, 0, 2.5f);
+			}
 		}
 
 		void FireAt(EntityBase target)
 		{
 			if (Time.FrameStartTime > lastShot + (TimeBetweenShots * 1000))
 			{
+				Debug.LogAlways("Firing at {0}", target.Name);
+
 				lastShot = Time.FrameStartTime;
 
-				var turretPos = Position + Rotation * new Vec3(2, 0, 1); // temporary offset, remove when we have helpers.
 				Vec3 direction = target.Position - Position;
 				direction.Normalize();
 
-				Entity.Spawn<Projectiles.Bullet>("pain", turretPos, Quat.CreateRotationVDir(direction));
+				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
+				if (projectile != null && projectile.IsDestroyed)
+				{
+					ProjectileStorage.Remove(projectile);
+					projectile = null;
+				}
+
+				if (projectile == null || !Projectile.RecyclingEnabled)
+				{
+					projectile = CryEngine.Entity.Spawn<Bullet>("pain", FireHelperPosition, Quat.CreateRotationVDir(Rotation.Column0)) as Projectile;
+					ProjectileStorage.Add(projectile);
+				}
+				else	
+				{
+					projectile.Position = FireHelperPosition;
+					projectile.Rotation = Quat.CreateRotationVDir(Rotation.Column0);
+				}
+
+				projectile.Launch(this.Id);
 			}
 		}
 
@@ -119,6 +207,17 @@ namespace CryGameCode.Entities.Buildings
 		float lastShot;
 		float TimeBetweenShots { get { return 0.1f; } }
 
+		EntityBase lastTarget;
+
+		int currentRotationDirection = 1;
+		float timeSinceLastRotationChange;
+
+		public float RotationSpeed { get { return 2.5f; } }
+
 		public float Range { get; set; }
+
+		public bool Active { get; set; }
+
+		HashSet<Projectile> ProjectileStorage = new HashSet<Projectile>();
 	}
 }
