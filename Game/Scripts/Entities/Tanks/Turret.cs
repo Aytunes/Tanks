@@ -159,18 +159,8 @@ namespace CryGameCode.Tanks
 
 			var dir = tankInput.MouseWorldPosition - TurretEntity.Position;
 
-			var ownerRotation = Owner.Rotation;
-			var attachmentRotation = TurretEntity.Rotation;
-
-			rotationZ = Quat.CreateSlerp(rotationZ, Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)), Time.DeltaTime * 10);
-
-			attachmentRotation = rotationZ;
-			attachmentRotation.Normalize();
-
-			TurretEntity.Rotation = attachmentRotation;
+			TurretEntity.Rotation = Owner.Rotation * Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y));
 		}
-
-		Quat rotationZ;
 
 		#region Weapons
 		protected virtual void ChargeWeapon() { }
