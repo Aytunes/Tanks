@@ -10,6 +10,20 @@ namespace CryGameCode
 	{
 		private Dictionary<string, TeamData> m_teams;
 
+		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
+		{
+			base.OnClientEnteredGame(channelId, playerId, reset, loadingSaveGame);
+
+			// Notify late-joining players of dead drills
+			foreach (var team in m_teams.Values)
+			{
+				var drill = team.Drill;
+
+				if (drill.IsDead)
+					drill.RemoteInvocation(OnDrillDeath, NetworkTarget.ToClientChannel, drill.Id, false, channelId: channelId);
+			}
+		}
+
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
 			if (!Game.IsServer)
@@ -32,17 +46,6 @@ namespace CryGameCode
 
 					m_teams.Add(team, new TeamData(drill));
 					Debug.LogAlways("Found {0}'s drill at {1}", team, drill.Position);
-				}
-			}
-			else
-			{
-				// Notify late-joining players of dead drills
-				foreach (var team in m_teams.Values)
-				{
-					var drill = team.Drill;
-
-					if (drill.IsDead)
-						drill.RemoteInvocation(OnDrillDeath, NetworkTarget.ToClientChannel, drill.Id, false, channelId: channelId);
 				}
 			}
 
