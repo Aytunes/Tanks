@@ -2001,12 +2001,12 @@
             The object is intersecting the plane.
             </summary>
         </member>
-        <member name="F:CryEngine.PhysicalEntityFlagsParameters.flagsOR">
+        <member name="F:CryEngine.PhysicalFlagsParameters.flagsOR">
             <summary>
             when settin
             </summary>
         </member>
-        <member name="F:CryEngine.PhysicalEntityFlagsParameters.flagsAND">
+        <member name="F:CryEngine.PhysicalFlagsParameters.flagsAND">
             <summary>
              when getting
             </summary>
