@@ -67,6 +67,8 @@ namespace CryGameCode.Tanks
 			var livingStatus = Physics.LivingStatus;
 
 			var groundFriction = livingStatus.GroundSurfaceType.Parameters.Friction;
+			if (groundFriction == 0)
+				groundFriction = 1;
 
 			var onGround = !livingStatus.IsFlying;
 

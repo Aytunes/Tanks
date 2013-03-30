@@ -65,7 +65,7 @@ namespace CryGameCode.Tanks
 
 		public void Update()
 		{
-			if (!Game.IsClient)
+			if (!Owner.IsLocalClient)
 				return;
 
 			if (HasAnyFlag(InputFlags.MoveBack, InputFlags.MoveForward, InputFlags.MoveLeft, InputFlags.MoveRight))
