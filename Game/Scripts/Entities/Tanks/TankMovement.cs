@@ -95,16 +95,13 @@ namespace CryGameCode.Tanks
 			// M = I * a
 			var angularAcceleration = totalMomentum / momentumIntertia;
 
-			var turnRot = Quat.CreateRotationZ(angularAcceleration * frameTime);
-			moveRequest.rotation = turnRot;
+			var right = prevRotation.Column0;
+			var forward = (GroundNormal % right).Normalized;
 
-			// Align tank to slope
-			var slopeProjection = Vec3.CreateProjection(prevRotation.Column1, GroundNormal);
-			slopeProjection.Normalize();
-
-			moveRequest.rotation *= prevRotation.Inverted * Quat.CreateRotationVDir(slopeProjection);
+			moveRequest.rotation = prevRotation.Inverted * new Quat(Matrix33.CreateFromVectors(forward % GroundNormal, forward, GroundNormal));
 			moveRequest.rotation.Normalize();
 
+			moveRequest.rotation *= Quat.CreateRotationZ(angularAcceleration * frameTime);
 
 			///////////////////////////
 			// Velocity
