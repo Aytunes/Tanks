@@ -52,10 +52,10 @@ namespace CryGameCode.Entities.Buildings
 			Range = 500;
 		}
 
-		protected override void OnCollision(EntityId colliderId, Vec3 hitPos, Vec3 dir, short materialId, Vec3 contactNormal)
+		protected override void OnCollision(ColliderInfo source, ColliderInfo target, Vec3 hitPos, Vec3 contactNormal, float penetration, float radius)
 		{
 			// collided with terrain
-			if (colliderId == 0)
+			if (!Active && (source.foreignId == PhysicsForeignIdentifiers.Terrain || target.foreignId == PhysicsForeignIdentifiers.Terrain))
 			{
 				DePhysicalize();
 
