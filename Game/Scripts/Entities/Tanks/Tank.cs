@@ -158,7 +158,6 @@ namespace CryGameCode.Tanks
 			physicalizationParams.livingDimensions.sizeCollider = new Vec3(2.2f, 2.2f, 1.2f);
 			physicalizationParams.livingDimensions.heightPivot = 0;
 
-			physicalizationParams.livingDynamics.gravity = Vec3.Zero;
 			physicalizationParams.livingDynamics.kAirControl = 0;
 
 			Physicalize(physicalizationParams);
@@ -289,5 +288,7 @@ namespace CryGameCode.Tanks
 		/// Time at which the player was last spawned.
 		/// </summary>
 		public float SpawnTime { get; set; }
+
+		public bool AlignGravityToUpVector { get; set; }
 	}
 }

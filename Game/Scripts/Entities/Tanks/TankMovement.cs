@@ -73,6 +73,18 @@ namespace CryGameCode.Tanks
 			var totalForce = m_treads[0].Force + m_treads[1].Force;
 
 			///////////////////////////
+			// Set physics parameters
+			///////////////////////////
+			var simulationParams = PhysicalSimulationParameters.Create();
+
+			if (AlignGravityToUpVector)
+				simulationParams.gravity = prevRotation.Column2.Normalized * CVar.Get("p_gravity_z").FVal;
+			else
+				simulationParams.gravity = new Vec3(0, 0, CVar.Get("p_gravity_z").FVal);
+
+			Physics.SetSimulationParameters(ref simulationParams);
+
+			///////////////////////////
 			// Rotation
 			///////////////////////////
 			var totalMomentum = m_treads[0].Force * m_treads[0].LocalPos.X + m_treads[1].Force * m_treads[1].LocalPos.X;
