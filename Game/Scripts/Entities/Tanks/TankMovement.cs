@@ -2,6 +2,8 @@
 
 using CryEngine;
 
+using CryGameCode.Network;
+
 namespace CryGameCode.Tanks
 {
 	public partial class Tank

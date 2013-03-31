@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Linq;
+
 using CryEngine;
 using CryEngine.Serialization;
+
 using CryGameCode.Entities;
+using CryGameCode.Network;
 
 namespace CryGameCode.Tanks
 {
@@ -92,23 +95,38 @@ namespace CryGameCode.Tanks
 			serialize.BeginGroup("TankActor");
 
 			// input aspect
-			if (aspect == (int)NetAspects.Input)
+			switch ((NetAspects)aspect)
 			{
-				if (Input != null)
-					Input.NetSerialize(serialize);
-				else
-					serialize.FlagPartialRead();
-			}
-			else if (aspect == (int)NetAspects.Movement)
-			{
-				if (Game.IsServer)
-				{
-					m_serverPos = Position;
-					m_serverRot = Rotation;
-				}
+				case NetAspects.Input:
+					{
+						if (Input != null)
+							Input.NetSerialize(serialize);
+						else
+							serialize.FlagPartialRead();
+					}
+					break;
+				case NetAspects.Movement:
+					{
+						if (Game.IsServer)
+						{
+							m_serverPos = Position;
+							m_serverRot = Rotation;
+						}
 
-				serialize.Value("pos", ref m_serverPos, "wrld");
-				serialize.Value("rot", ref m_serverRot);
+						serialize.Value("pos", ref m_serverPos, "wrld");
+						serialize.Value("rot", ref m_serverRot);
+					}
+					break;
+				case NetAspects.Health:
+					{
+						var health = Health;
+						if(!Game.IsServer && serialize.IsWriting)
+
+
+						serialize.Value("health", ref health, "hlth");
+						Health = health;
+					}
+					break;
 			}
 
 			serialize.EndGroup();

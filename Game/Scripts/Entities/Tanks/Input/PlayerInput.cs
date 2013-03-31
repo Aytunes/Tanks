@@ -6,6 +6,8 @@ using System.Text;
 using CryEngine;
 using CryEngine.Serialization;
 
+using CryGameCode.Network;
+
 namespace CryGameCode.Tanks
 {
 	public class PlayerInput
