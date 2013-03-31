@@ -147,6 +147,7 @@
     <Compile Include="Network\NetAspects.cs" />
     <Compile Include="GameRules\SinglePlayer.cs" />
     <Compile Include="Network\NetSerializationException.cs" />
+    <Compile Include="Network\NetworkValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Libs\Config\defaultProfile.xml">
