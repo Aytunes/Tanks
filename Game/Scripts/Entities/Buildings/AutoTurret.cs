@@ -214,7 +214,7 @@ namespace CryGameCode.Entities.Buildings
 		int currentRotationDirection = 1;
 		float timeSinceLastRotationChange;
 
-		public float RotationSpeed { get { return 2.5f; } }
+		public float RotationSpeed { get { return 2.0f; } }
 		/// <summary>
 		/// Rotation speed when a target has been found
 		/// </summary>
