@@ -25,6 +25,7 @@ namespace CryGameCode.Tanks
 			Input.OnInputChanged += OnInputChanged;
 
 			OnDeath += OnDied;
+			OnDamaged += OnDamage;
 		}
 
 		public void OnInputChanged(InputFlags flags, KeyEvent keyEvent)
@@ -107,9 +108,6 @@ namespace CryGameCode.Tanks
 					break;
 				case NetAspects.Movement:
 					{
-						if (!Game.IsServer && serialize.IsWriting)
-							throw new NetSerializationException(string.Format("Client with entityId {0} and channelId {1} attempted to write to Server movement aspect", Id, ChannelId));
-
 						if (Game.IsServer)
 						{
 							m_serverPos = Position;
@@ -122,8 +120,6 @@ namespace CryGameCode.Tanks
 					break;
 				case NetAspects.Health:
 					{
-						if (!Game.IsServer && serialize.IsWriting)
-							throw new NetSerializationException(string.Format("Client with entityId {0} and channelId {1} attempted to write to Server health aspect", Id, ChannelId));
 
 						var health = Health;
 
