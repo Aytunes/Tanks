@@ -5,20 +5,20 @@ namespace CryGameCode.Entities
 {
 	public abstract class DamageableActor : Actor, IDamageable
 	{
-		public void Damage(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void Damage(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
 			NetworkValidator.Server("No client-side damage");
 
 			if (IsDead)
 				return;
 
-			RemoteDamage(damage, (int)type, pos, dir);
-			RemoteInvocation(RemoteDamage, NetworkTarget.ToAllClients, damage, (int)type, pos, dir);
+			RemoteDamage(sender, damage, (int)type, pos, dir);
+			RemoteInvocation(RemoteDamage, NetworkTarget.ToAllClients, sender, damage, (int)type, pos, dir);
 
 			if (IsDead)
 			{
-				RemoteDeath(damage, (int)type, pos, dir);
-				RemoteInvocation(RemoteDeath, NetworkTarget.ToAllClients, damage, (int)type, pos, dir);
+				RemoteDeath(sender, damage, (int)type, pos, dir);
+				RemoteInvocation(RemoteDeath, NetworkTarget.ToAllClients, sender, damage, (int)type, pos, dir);
 			}
 		}
 
@@ -34,19 +34,19 @@ namespace CryGameCode.Entities
 		}
 
 		[RemoteInvocation]
-		private void RemoteDamage(float damage, int type, Vec3 pos, Vec3 dir)
+		private void RemoteDamage(EntityId sender, float damage, int type, Vec3 pos, Vec3 dir)
 		{
 			Health = MathHelpers.Max(Health - damage, 0);
 
 			if (OnDamaged != null)
-				OnDamaged(damage, (DamageType)type, pos, dir);
+				OnDamaged(sender, damage, (DamageType)type, pos, dir);
 		}
 
 		[RemoteInvocation]
-		private void RemoteDeath(float damage, int type, Vec3 pos, Vec3 dir)
+		private void RemoteDeath(EntityId sender, float damage, int type, Vec3 pos, Vec3 dir)
 		{
 			if (OnDeath != null)
-				OnDeath(damage, (DamageType)type, pos, dir);
+				OnDeath(sender, damage, (DamageType)type, pos, dir);
 		}
 	
 		public event OnDamagedDelegate OnDamaged;

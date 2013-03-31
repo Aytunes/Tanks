@@ -7,7 +7,7 @@ using CryEngine;
 
 namespace CryGameCode.Entities
 {
-	public delegate void OnDamagedDelegate(float damage, DamageType type, Vec3 pos, Vec3 dir);
+	public delegate void OnDamagedDelegate(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir);
 
 	public interface IDamageable
 	{
@@ -15,7 +15,7 @@ namespace CryGameCode.Entities
 		float MaxHealth { get; }
 		bool IsDead { get; }
 
-		void Damage(float damage, DamageType type, Vec3 pos, Vec3 dir);
+		void Damage(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir);
 		void Heal(float amount);
 
 		void InitHealth(float amount);

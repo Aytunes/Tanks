@@ -122,7 +122,7 @@ namespace CryGameCode.Projectiles
 			{
 				var damageableTarget = otherEntity as IDamageable;
 				if (damageableTarget != null)
-					damageableTarget.Damage(Damage, DamageType, hitPos, Vec3.Zero);
+					damageableTarget.Damage(ShooterId, Damage, DamageType, hitPos, Vec3.Zero);
 
 				if (TargetModifier != null)
 				{
