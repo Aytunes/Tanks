@@ -60,7 +60,7 @@ namespace CryGameCode.Tanks
 			m_mouseWorldPos = Renderer.ScreenToWorld(m_mousePositionX, m_mousePositionY);
 
 			if (Owner != null && Owner.GameObject != null)
-				Owner.GameObject.NotifyNetworkStateChange(Aspect);
+				Owner.GameObject.NotifyNetworkStateChange((int)NetAspects.Input);
 		}
 
 		public void Update()
@@ -138,7 +138,7 @@ namespace CryGameCode.Tanks
 						{
 							Flags |= flag;
 
-							Owner.GameObject.NotifyNetworkStateChange(Aspect);
+							Owner.GameObject.NotifyNetworkStateChange((int)NetAspects.Input);
 
 							if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
@@ -151,7 +151,7 @@ namespace CryGameCode.Tanks
 						{
 							Flags &= ~flag;
 
-							Owner.GameObject.NotifyNetworkStateChange(Aspect);
+							Owner.GameObject.NotifyNetworkStateChange((int)NetAspects.Input);
 
 							if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
@@ -176,8 +176,6 @@ namespace CryGameCode.Tanks
 
 			return false;
 		}
-
-		public static int Aspect = 256;
 
 		InputFlags m_flags;
 		public InputFlags Flags { get { return m_flags; } set { m_flags = value; } }

@@ -8,7 +8,6 @@ namespace CryGameCode.Tanks
 	{
 		#region NetConstants
 
-		const int MovementAspect = 128;
 		const float MaxDelta = 2;
 		const float MinDelta = 0.2f;
 		const float DeltaMult = 2f;
@@ -144,7 +143,7 @@ namespace CryGameCode.Tanks
 			AddMovement(ref moveRequest);
 
 			if (Game.IsServer)
-				GameObject.NotifyNetworkStateChange(MovementAspect);
+				GameObject.NotifyNetworkStateChange((int)NetAspects.Movement);
 		}
 
 		private Material GetTrackMaterial(float moveDirection)

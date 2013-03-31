@@ -92,15 +92,14 @@ namespace CryGameCode.Tanks
 			serialize.BeginGroup("TankActor");
 
 			// input aspect
-			if (aspect == PlayerInput.Aspect)
+			if (aspect == (int)NetAspects.Input)
 			{
 				if (Input != null)
 					Input.NetSerialize(serialize);
 				else
 					serialize.FlagPartialRead();
 			}
-
-			if (aspect == MovementAspect)
+			else if (aspect == (int)NetAspects.Movement)
 			{
 				if (Game.IsServer)
 				{
