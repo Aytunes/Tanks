@@ -8,6 +8,7 @@ using CryEngine.Extensions;
 
 using CryGameCode.Entities;
 using CryGameCode.Tanks;
+using CryGameCode.Telemetry;
 
 namespace CryGameCode
 {
@@ -19,6 +20,12 @@ namespace CryGameCode
 	{
 		public SinglePlayer()
 		{
+			if (Game.IsServer)
+			{
+				var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+				Metrics.Record(new MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
+			}
+			
 			ReceiveUpdates = true;
 		}
 

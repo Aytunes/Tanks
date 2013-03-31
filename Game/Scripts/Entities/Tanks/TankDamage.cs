@@ -28,7 +28,7 @@ namespace CryGameCode.Tanks
 
 			if (Game.IsServer)
 			{
-				Metrics.Kills.Record(new KillData { Position = pos, DamageType = type });
+				Metrics.Record(new KillData { Position = pos, DamageType = type });
 			}
 		}
 
