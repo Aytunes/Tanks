@@ -20,6 +20,7 @@ namespace CryGameCode.Tanks
 			m_treads[1] = new TankTread(this, new Vec2(-1.5f, 0), 3000.0f);
 
 			MaxHealth = 100;
+			Health = MaxHealth;
 
 			Input = new PlayerInput(this);
 			Input.OnInputChanged += OnInputChanged;
@@ -120,11 +121,7 @@ namespace CryGameCode.Tanks
 					break;
 				case NetAspects.Health:
 					{
-
-						var health = Health;
-
-						serialize.Value("health", ref health, "hlth");
-						Health = health;
+						serialize.Value("health", ref m_health, "hlth");
 					}
 					break;
 			}

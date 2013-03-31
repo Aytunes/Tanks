@@ -92,13 +92,32 @@ namespace CryGameCode.Tanks
 				var singlePlayer = GameRules.Current as SinglePlayer;
 
 				var selector = new System.Random();
-				
+
 				var randomPlayer = singlePlayer.Players.ElementAt(selector.Next(singlePlayer.Players.Count()));
 				if (randomPlayer != null)
 				{
 					var autoTurret = Entity.Spawn<AutoTurret>("pew", randomPlayer.Position + new Vec3(0, 0, 20));
 				}
 			}, "Spawns a auto turret above a random player", CVarFlags.None, true);
+
+			ConsoleCommand.Register("DamageEntity", (e) =>
+			{
+				if (!Game.IsServer || e.Args.Length < 1)
+					return;
+
+				// First parameter has to be target name
+				var damageableEntity = Entity.Find(e.Args[0]) as Entities.IDamageable;
+				if (damageableEntity == null)
+					return;
+
+				var damage = damageableEntity.MaxHealth;
+				// Second parameter is optional and specifies damage amount, otherwise fatal.
+				if (e.Args.Length > 1)
+					damage = int.Parse(e.Args[1]);
+
+				damageableEntity.Damage(damage, Entities.DamageType.None, Vec3.Zero, Vec3.Zero);
+
+			}, "Damages an entity", CVarFlags.None, true);
 		}
 
 		public static string ForceTankType;

@@ -6,15 +6,17 @@ namespace CryGameCode.Entities
 	{
 		public void Damage(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
+			if (IsDead)
+				return;
+
 			var healthAfter = Health - damage;
-			var wasDead = IsDead;
 
 			Health = MathHelpers.Max(healthAfter, 0);
 
 			if (OnDamaged != null)
 				OnDamaged(damage, type, pos, dir);
 
-			if (!wasDead && healthAfter <= 0 && OnDeath != null)
+			if (healthAfter <= 0 && OnDeath != null)
 				OnDeath(damage, type, pos, dir);
 		}
 
