@@ -19,11 +19,6 @@ namespace CryGameCode.Tanks
 			ToggleSpectatorPoint();
 		}
 
-		public void OnDamage(float damage, DamageType type, Vec3 pos, Vec3 dir)
-		{
-			GameObject.NotifyNetworkStateChange((int)NetAspects.Health);
-		}
-
 		void Hide(bool hide)
 		{
 			Hidden = hide;

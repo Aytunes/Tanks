@@ -19,14 +19,10 @@ namespace CryGameCode.Tanks
 			m_treads[0] = new TankTread(this, new Vec2(1.5f, 0), 3000.0f);
 			m_treads[1] = new TankTread(this, new Vec2(-1.5f, 0), 3000.0f);
 
-			MaxHealth = 100;
-			Health = MaxHealth;
-
 			Input = new PlayerInput(this);
 			Input.OnInputChanged += OnInputChanged;
 
 			OnDeath += OnDied;
-			OnDamaged += OnDamage;
 		}
 
 		public void OnInputChanged(InputFlags flags, KeyEvent keyEvent)
@@ -117,11 +113,6 @@ namespace CryGameCode.Tanks
 
 						serialize.Value("pos", ref m_serverPos, "wrld");
 						serialize.Value("rot", ref m_serverRot);
-					}
-					break;
-				case NetAspects.Health:
-					{
-						serialize.Value("health", ref m_health, "hlth");
 					}
 					break;
 			}

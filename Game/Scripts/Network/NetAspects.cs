@@ -9,6 +9,5 @@ namespace CryGameCode.Network
 	{
 		Movement = 128,
 		Input = 256,
-		Health = 512,
 	}
 }
