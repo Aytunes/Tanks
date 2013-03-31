@@ -6,7 +6,7 @@ namespace CryGameCode.Telemetry.Implementations
 	{
 		public void Send(string category, string data)
 		{
-			Debug.LogAlways("Incoming telemetry, {0}: {1}", category, data);
+			Debug.LogAlways("[Telemetry] {0}: {1}", category, data);
 		}
 	}
 }

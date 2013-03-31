@@ -16,7 +16,7 @@ namespace CryGameCode.Telemetry
 						  where type.Implements<ITelemetrySender>()
 						  select (ITelemetrySender)Activator.CreateInstance(type);
 
-			Debug.LogAlways("Registered {0} telemetry senders:");
+			Debug.LogAlways("Registered {0} telemetry senders", senders.Count());
 
 			foreach (var sender in senders)
 				Debug.LogAlways(sender.GetType().Name);
