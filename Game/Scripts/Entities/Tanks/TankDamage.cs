@@ -14,11 +14,7 @@ namespace CryGameCode.Tanks
 			Turret.Destroy();
 			Turret = null;
 
-			// Don't remove tank if it was placed by hand via the Editor.
-			if (Flags.HasFlag(EntityFlags.NoSave))
-				Remove();
-			else
-				Hide(true);
+			ToggleSpectatorPoint();
 		}
 
 		void Hide(bool hide)
