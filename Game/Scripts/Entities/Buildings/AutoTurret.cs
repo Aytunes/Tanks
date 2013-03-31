@@ -115,6 +115,9 @@ namespace CryGameCode.Entities.Buildings
 			if (IsDead || !Active)
 				return;
 
+			if (Time.FrameStartTime - timeSinceSeenTarget > 3000)
+				lastTarget = null;
+
 			var position = Position;
 
 			// See if the path to the target is unobstructed.
@@ -125,10 +128,12 @@ namespace CryGameCode.Entities.Buildings
 			{
 				var hit = hits.ElementAt(0);
 
-				Debug.DrawSphere(hit.Point, 3.0f, Color.Black, 1.0f);
-
 				if (hit.Entity != null)
+				{
+					timeSinceSeenTarget = Time.FrameStartTime;
+
 					lastTarget = hit.Entity;
+				}
 			}
 
 			if (lastTarget != null)
@@ -199,6 +204,7 @@ namespace CryGameCode.Entities.Buildings
 
 		public void OnDied(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
+			Active = false;
 			Hidden = true;
 		}
 
@@ -207,6 +213,7 @@ namespace CryGameCode.Entities.Buildings
 		float lastShot;
 		float TimeBetweenShots { get { return 0.1f; } }
 
+		public float timeSinceSeenTarget;
 		EntityBase lastTarget;
 
 		int currentRotationDirection = 1;
