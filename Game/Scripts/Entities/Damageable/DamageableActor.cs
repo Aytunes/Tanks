@@ -16,13 +16,13 @@ namespace CryGameCode.Entities
 
 			Health = MathHelpers.Max(healthAfter, 0);
 
-			RemoteDamage(damage, type, pos, dir);
-			RemoteInvocation(RemoteDamage, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, damage, type, pos, dir);
+			RemoteDamage(damage, (int)type, pos, dir);
+			RemoteInvocation(RemoteDamage, NetworkTarget.ToAllClients, damage, (int)type, pos, dir);
 
 			if (healthAfter <= 0)
 			{
-				RemoteDeath(damage, type, pos, dir);
-				RemoteInvocation(RemoteDeath, NetworkTarget.ToAllClients, damage, type, pos, dir);
+				RemoteDeath(damage, (int)type, pos, dir);
+				RemoteInvocation(RemoteDeath, NetworkTarget.ToAllClients, damage, (int)type, pos, dir);
 			}
 		}
 
@@ -38,17 +38,17 @@ namespace CryGameCode.Entities
 		}
 
 		[RemoteInvocation]
-		private void RemoteDamage(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		private void RemoteDamage(float damage, int type, Vec3 pos, Vec3 dir)
 		{
 			if (OnDamaged != null)
-				OnDamaged(damage, type, pos, dir);
+				OnDamaged(damage, (DamageType)type, pos, dir);
 		}
 
 		[RemoteInvocation]
-		private void RemoteDeath(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		private void RemoteDeath(float damage, int type, Vec3 pos, Vec3 dir)
 		{
 			if (OnDeath != null)
-				OnDeath(damage, type, pos, dir);
+				OnDeath(damage, (DamageType)type, pos, dir);
 		}
 	
 		public event OnDamagedDelegate OnDamaged;
