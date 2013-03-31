@@ -9,14 +9,21 @@ namespace CryGameCode.Tanks
 	{
 		public void OnDied(float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
-			Debug.DrawText("Died!", 3, Color.Red, 5);
+			if (IsLocalClient)
+			{
+				Debug.DrawText("Died!", 3, Color.Red, 5);
 
-			SpawnTime = -1;
+				SpawnTime = -1;
 
-			Turret.Destroy();
-			Turret = null;
+				Turret.Destroy();
+				Turret = null;
 
-			ToggleSpectatorPoint();
+				ToggleSpectatorPoint();
+			}
+			else
+			{
+				Hide(true);
+			}
 		}
 
 		void Hide(bool hide)

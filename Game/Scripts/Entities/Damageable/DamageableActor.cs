@@ -12,14 +12,10 @@ namespace CryGameCode.Entities
 			if (IsDead)
 				return;
 
-			var healthAfter = Health - damage;
-
-			Health = MathHelpers.Max(healthAfter, 0);
-
 			RemoteDamage(damage, (int)type, pos, dir);
 			RemoteInvocation(RemoteDamage, NetworkTarget.ToAllClients, damage, (int)type, pos, dir);
 
-			if (healthAfter <= 0)
+			if (IsDead)
 			{
 				RemoteDeath(damage, (int)type, pos, dir);
 				RemoteInvocation(RemoteDeath, NetworkTarget.ToAllClients, damage, (int)type, pos, dir);
@@ -40,6 +36,8 @@ namespace CryGameCode.Entities
 		[RemoteInvocation]
 		private void RemoteDamage(float damage, int type, Vec3 pos, Vec3 dir)
 		{
+			Health = MathHelpers.Max(Health - damage, 0);
+
 			if (OnDamaged != null)
 				OnDamaged(damage, (DamageType)type, pos, dir);
 		}
