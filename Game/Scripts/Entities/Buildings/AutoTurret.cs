@@ -82,6 +82,11 @@ namespace CryGameCode.Entities.Buildings
 				Active = true;
 
 				Position = Position - new Vec3(0, 0, 1.5f);
+
+				// pick a random direction
+				var random = new Random();
+
+				currentRotationDirection = random.Next(1) - 1;
 			}
 			else
 			{
@@ -132,6 +137,7 @@ namespace CryGameCode.Entities.Buildings
 			{
 				FireAt(lastTarget);
 
+				// Workaround for offset auto-turret rotation pivot.
 				var positionDelta = -Quat.CreateRotationVDir((lastTarget.Position - position).Normalized).Column0;
 
 				Rotation = Quat.CreateSlerp(Rotation, Quat.CreateRotationVDir(positionDelta), Time.DeltaTime * RotationSpeedFiring);
