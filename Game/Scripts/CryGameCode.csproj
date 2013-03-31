@@ -150,8 +150,9 @@
     <Compile Include="Network\NetworkValidator.cs" />
     <Compile Include="Telemetry\Implementations\ConsoleTelemetrySender.cs" />
     <Compile Include="Telemetry\KillData.cs" />
+    <Compile Include="Telemetry\MatchData.cs" />
     <Compile Include="Telemetry\Telemetry.cs" />
-    <Compile Include="Telemetry\TelemetryReceiver.cs" />
+    <Compile Include="Telemetry\Processor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Libs\Config\defaultProfile.xml">
