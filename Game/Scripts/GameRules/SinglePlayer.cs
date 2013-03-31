@@ -20,8 +20,12 @@ namespace CryGameCode
 	{
 		public SinglePlayer()
 		{
-			var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
-			Metrics.Record(new MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
+			if (Game.IsServer)
+			{
+				var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+				Metrics.Record(new MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
+			}
+			
 			ReceiveUpdates = true;
 		}
 
