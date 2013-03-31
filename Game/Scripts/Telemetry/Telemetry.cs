@@ -1,4 +1,8 @@
-﻿using CryGameCode.Telemetry;
+﻿using System.Reflection;
+using System.Linq;
+using CryEngine;
+using CryEngine.Extensions;
+using System;
 
 namespace CryGameCode.Telemetry
 {
@@ -8,7 +12,26 @@ namespace CryGameCode.Telemetry
 
 		static Metrics()
 		{
-			Kills = new TelemetryReceiver<KillData>();
+			var senders = from type in Assembly.GetExecutingAssembly().GetTypes()
+						  where type.Implements<ITelemetrySender>()
+						  select (ITelemetrySender)Activator.CreateInstance(type);
+
+			Debug.LogAlways("Registered {0} telemetry senders:");
+
+			foreach (var sender in senders)
+				Debug.LogAlways(sender.GetType().Name);
+			
+			Kills = new TelemetryReceiver<KillData>(senders);
 		}
+	}
+
+	public interface ITelemetrySender
+	{
+		void Send(string category, string data);
+	}
+
+	public interface ITelemetryData
+	{
+		string Serialize();
 	}
 }
