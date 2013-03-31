@@ -204,6 +204,7 @@ namespace CryGameCode.Tanks
 
 					var clr = deltaLength > 2 ? Color.Red : Color.White;
 					Renderer.DrawTextToScreen(10, 50, 2, clr, "Delta: {0}", deltaLength);
+					Renderer.DrawTextToScreen(10, 70, 2, Color.White, "Health: {0}", m_health);
 				}
 
 				// Start forcing sync if we have to

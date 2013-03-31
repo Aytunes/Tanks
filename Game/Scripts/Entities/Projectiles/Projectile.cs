@@ -118,24 +118,21 @@ namespace CryGameCode.Projectiles
 			if (otherEntity == this)
 				otherEntity = target.Entity;
 
-			if (otherEntity != null)
+			if (Game.IsServer && otherEntity != null)
 			{
-				if (otherEntity != null)
-                {
-					var damageableTarget = otherEntity as IDamageable;
-                    if (damageableTarget != null)
-                        damageableTarget.Damage(Damage, DamageType, hitPos, Vec3.Zero);
-                }
+				var damageableTarget = otherEntity as IDamageable;
+				if (damageableTarget != null)
+					damageableTarget.Damage(Damage, DamageType, hitPos, Vec3.Zero);
 
-                if (TargetModifier != null)
-                {
+				if (TargetModifier != null)
+				{
 					TargetModifier.Target = otherEntity;
 
-                    var singlePlayer = GameRules.Current as SinglePlayer;
-                    singlePlayer.AddGameModifier(TargetModifier);
+					var singlePlayer = GameRules.Current as SinglePlayer;
+					singlePlayer.AddGameModifier(TargetModifier);
 
-                    TargetModifier.Begin();
-                }
+					TargetModifier.Begin();
+				}
 			}
 
 			if (Game.IsClient)
@@ -181,7 +178,7 @@ namespace CryGameCode.Projectiles
 		public virtual float MaximumExplosionRadius { get { return 30; } }
 		public virtual float ExplosionPressure { get { return 200; } }
 
-        public IGameModifier TargetModifier { get; set; }
+		public IGameModifier TargetModifier { get; set; }
 
 		public EntityId ShooterId { get; set; }
 
