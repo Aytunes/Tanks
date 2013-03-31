@@ -132,10 +132,9 @@ namespace CryGameCode.Entities.Buildings
 			{
 				FireAt(lastTarget);
 
-				var positionDelta = lastTarget.Position - position;
-				positionDelta.Normalize();
+				var positionDelta = -Quat.CreateRotationVDir((lastTarget.Position - position).Normalized).Column0;
 
-				Rotation = Quat.CreateSlerp(Rotation, Quat.CreateRotationVDir(positionDelta), Time.DeltaTime * 10);
+				Rotation = Quat.CreateSlerp(Rotation, Quat.CreateRotationVDir(positionDelta), Time.DeltaTime * RotationSpeedFiring);
 			}
 			else
 			{
@@ -171,9 +170,6 @@ namespace CryGameCode.Entities.Buildings
 				Debug.LogAlways("Firing at {0}", target.Name);
 
 				lastShot = Time.FrameStartTime;
-
-				Vec3 direction = target.Position - Position;
-				direction.Normalize();
 
 				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
 				if (projectile != null && projectile.IsDestroyed)
@@ -213,6 +209,10 @@ namespace CryGameCode.Entities.Buildings
 		float timeSinceLastRotationChange;
 
 		public float RotationSpeed { get { return 2.5f; } }
+		/// <summary>
+		/// Rotation speed when a target has been found
+		/// </summary>
+		public float RotationSpeedFiring { get { return 1.0f; } }
 
 		public float Range { get; set; }
 
