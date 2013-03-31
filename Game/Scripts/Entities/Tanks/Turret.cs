@@ -130,7 +130,7 @@ namespace CryGameCode.Tanks
 			if (Destroyed)
 				return;
 
-			if (!TurretEntity.IsDestroyed)
+			if (TurretEntity != null && !TurretEntity.IsDestroyed)
 				TurretEntity.Remove();
 
 			foreach (var projectile in ProjectileStorage)
