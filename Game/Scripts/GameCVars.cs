@@ -115,7 +115,7 @@ namespace CryGameCode.Tanks
 				if (e.Args.Length > 1)
 					damage = int.Parse(e.Args[1]);
 
-				damageableEntity.Damage(damage, Entities.DamageType.None, Vec3.Zero, Vec3.Zero);
+				damageableEntity.Damage(0, damage, Entities.DamageType.None, Vec3.Zero, Vec3.Zero);
 
 			}, "Damages an entity", CVarFlags.None, true);
 		}

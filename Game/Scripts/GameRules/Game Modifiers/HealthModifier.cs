@@ -25,7 +25,7 @@ namespace CryGameCode
 			m_remainingHeal = HealthRestoration;
 
 			var damageableTarget = Target as IDamageable;
-			damageableTarget.OnDamaged += (damage, type, pos, dir) =>
+			damageableTarget.OnDamaged += (sender, damage, type, pos, dir) =>
 			{
 				// cancel heal if target took damage
 				End();

@@ -95,7 +95,7 @@ namespace CryGameCode.Entities.Buildings
 				if (otherEntity is Tank && !Active) // Landed on a tank, kill it.
 				{
 					var tank = otherEntity as Tank;
-					tank.Damage(tank.Health, DamageType.Collision, hitPos, Vec3.Zero);
+					tank.Damage(Id, tank.Health, DamageType.Collision, hitPos, Vec3.Zero);
 				}
 				else if (otherEntity is Projectile) // Some heartless noob shot us. Shoot back.
 				{
@@ -197,7 +197,7 @@ namespace CryGameCode.Entities.Buildings
 			}
 		}
 
-		public void OnDied(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void OnDied(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
 			Hidden = true;
 		}

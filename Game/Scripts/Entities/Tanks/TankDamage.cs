@@ -7,12 +7,13 @@ namespace CryGameCode.Tanks
 {
 	public partial class Tank
 	{
-		public void OnDied(float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void OnDied(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir)
 		{
+			var message = string.Format("{0} was killed by {1}", Name, Entity.Get(sender).Name);
+			Debug.DrawText(message, 2, Color.White, 2);
+
 			if (IsLocalClient)
 			{
-				Debug.DrawText("Died!", 3, Color.Red, 5);
-
 				SpawnTime = -1;
 
 				Turret.Destroy();
