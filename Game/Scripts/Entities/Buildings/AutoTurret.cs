@@ -63,8 +63,6 @@ namespace CryGameCode.Entities.Buildings
 
 			Hidden = false;
 
-			Range = 500;
-
 			Active = false;
 		}
 
@@ -220,7 +218,7 @@ namespace CryGameCode.Entities.Buildings
 		/// </summary>
 		public float RotationSpeedFiring { get { return 1.0f; } }
 
-		public float Range { get; set; }
+		public float Range { get { return 35; } }
 
 		public bool Active { get; set; }
 
