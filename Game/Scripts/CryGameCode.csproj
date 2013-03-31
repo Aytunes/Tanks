@@ -146,6 +146,7 @@
     <Compile Include="GameRules\Native\GameRulesNativeCallbacks.cs" />
     <Compile Include="Network\NetAspects.cs" />
     <Compile Include="GameRules\SinglePlayer.cs" />
+    <Compile Include="Network\NetSerializationException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Libs\Config\defaultProfile.xml">
