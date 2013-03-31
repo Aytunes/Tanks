@@ -148,6 +148,9 @@
     <Compile Include="GameRules\SinglePlayer.cs" />
     <Compile Include="Network\NetSerializationException.cs" />
     <Compile Include="Network\NetworkValidator.cs" />
+    <Compile Include="Telemetry\KillData.cs" />
+    <Compile Include="Telemetry\Telemetry.cs" />
+    <Compile Include="Telemetry\TelemetryReceiver.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\Libs\Config\defaultProfile.xml">

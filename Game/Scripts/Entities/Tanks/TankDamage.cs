@@ -1,7 +1,7 @@
 ﻿using CryEngine;
 using CryGameCode.Entities;
-
 using CryGameCode.Network;
+using CryGameCode.Telemetry;
 
 namespace CryGameCode.Tanks
 {
@@ -24,6 +24,11 @@ namespace CryGameCode.Tanks
 			else
 			{
 				Hide(true);
+			}
+
+			if (Game.IsServer)
+			{
+				Metrics.Kills.Record(new KillData { Position = pos, DamageType = type });
 			}
 		}
 
