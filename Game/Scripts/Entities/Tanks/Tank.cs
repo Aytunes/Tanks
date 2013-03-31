@@ -16,8 +16,8 @@ namespace CryGameCode.Tanks
 			Debug.LogAlways("[Enter] Tank.ctor: actor {0}", Id);
 			//0 - right tread
 			//1 - left tread
-			m_treads[0] = new TankTread(this, new Vec2(1.5f, 0), 3000.0f);
-			m_treads[1] = new TankTread(this, new Vec2(-1.5f, 0), 3000.0f);
+			m_treads[0] = new TankTread(this, new Vec2(1.5f, 0), 5000.0f);
+			m_treads[1] = new TankTread(this, new Vec2(-1.5f, 0), 5000.0f);
 
 			Input = new PlayerInput(this);
 			Input.OnInputChanged += OnInputChanged;

@@ -23,7 +23,7 @@ namespace CryGameCode.Tanks
 		const float TankFrontalArea = 20.6f;
 		const float TankDragCoefficient = 0.8f;
 		const float AirDensity = 1.27f;
-		const float momentumIntertia = 2000.0f; // kg*m²
+		const float momentumIntertia = 4000.0f; // kg*m²
 
 		#endregion
 
@@ -148,6 +148,8 @@ namespace CryGameCode.Tanks
 				Renderer.DrawTextToScreen(100, 140, 1.2f, Color.Red, "forceRight: {0}", Math.Floor(m_treads[0].Force));
 				Renderer.DrawTextToScreen(100, 150, 1.3f, Color.Green, "totalMomentum: {0}", Math.Floor(totalMomentum));
 				Renderer.DrawTextToScreen(100, 160, 1.3f, Color.Blue, "lThrottle: {0} rThrottle: {1}", m_treads[1].GetThrottle(), m_treads[0].GetThrottle());
+				Renderer.DrawTextToScreen(100, 170, 1.3f, Color.Green, "slopeAngle: {0}", slopeAngle);
+
 			}
 
 			AddMovement(ref moveRequest);
