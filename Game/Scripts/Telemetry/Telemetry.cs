@@ -5,6 +5,7 @@ using System.Reflection;
 using CryEngine;
 using CryEngine.Extensions;
 using CryGameCode.Telemetry;
+using CryGameCode.Network;
 
 namespace CryGameCode
 {
@@ -15,6 +16,8 @@ namespace CryGameCode
 
 		static Metrics()
 		{
+			NetworkValidator.Server("Metrics are DS-only");
+
 			m_processors = new Dictionary<Type, TelemetryProcessor>();
 
 			var senders = from type in Assembly.GetExecutingAssembly().GetTypes()
