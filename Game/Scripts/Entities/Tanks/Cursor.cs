@@ -17,6 +17,7 @@ namespace CryGameCode.Tanks
 
 			LoadLight(light);
 			LoadObject("objects/effects/particle_effects/bubble/3dbubble.cgf");
+			ViewDistanceRatio = 255;
 
 			ReceiveUpdates = true;
 		}
