@@ -1,5 +1,6 @@
 ﻿using CryEngine;
 using CryGameCode.Network;
+using System;
 
 namespace CryGameCode.Entities
 {
@@ -38,18 +39,22 @@ namespace CryGameCode.Entities
 		{
 			Health = MathHelpers.Max(Health - damage, 0);
 
+			var args = new DamageEventArgs { Source = sender, Damage = damage, Type = (DamageType)type, Position = pos, Direction = dir };
+
 			if (OnDamaged != null)
-				OnDamaged(sender, damage, (DamageType)type, pos, dir);
+				OnDamaged(this, args);
 		}
 
 		[RemoteInvocation]
 		private void RemoteDeath(EntityId sender, float damage, int type, Vec3 pos, Vec3 dir)
 		{
+			var args = new DamageEventArgs { Source = sender, Damage = damage, Type = (DamageType)type, Position = pos, Direction = dir };
+
 			if (OnDeath != null)
-				OnDeath(sender, damage, (DamageType)type, pos, dir);
+				OnDeath(this, args);
 		}
-	
-		public event OnDamagedDelegate OnDamaged;
-		public event OnDamagedDelegate OnDeath;
+
+		public event EventHandler<DamageEventArgs> OnDamaged;
+		public event EventHandler<DamageEventArgs> OnDeath;
 	}
 }

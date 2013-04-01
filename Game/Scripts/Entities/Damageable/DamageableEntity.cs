@@ -1,4 +1,5 @@
 ﻿using CryEngine;
+using System;
 
 namespace CryGameCode.Entities
 {
@@ -15,11 +16,13 @@ namespace CryGameCode.Entities
 
 			Health = MathHelpers.Max(healthAfter, 0);
 
+			var args = new DamageEventArgs { Source = sender, Damage = damage, Type = type, Position = pos, Direction = dir };
+
 			if (OnDamaged != null)
-				OnDamaged(sender, damage, type, pos, dir);
+				OnDamaged(this, args);
 
 			if (!wasDead && healthAfter <= 0 && OnDeath != null)
-				OnDeath(sender, damage, type, pos, dir);
+				OnDeath(this, args);
 		}
 
 		public void Heal(float amount)
@@ -32,7 +35,7 @@ namespace CryGameCode.Entities
 			Health = MaxHealth = amount;
 		}
 
-		public event OnDamagedDelegate OnDamaged;
-		public event OnDamagedDelegate OnDeath;
+		public event EventHandler<DamageEventArgs> OnDamaged;
+		public event EventHandler<DamageEventArgs> OnDeath;
 	}
 }
