@@ -59,7 +59,7 @@ namespace CryGameCode.Entities.Buildings
 			Physics.Resting = false;
 			Physics.AddImpulse(new Vec3(0, 0, -1));
 
-			Health = MaxHealth = 100;
+			Health = MaxHealth = 200;
 
 			Hidden = false;
 
@@ -223,7 +223,7 @@ namespace CryGameCode.Entities.Buildings
 		/// <summary>
 		/// Rotation speed when a target has been found
 		/// </summary>
-		public float RotationSpeedFiring { get { return 1.0f; } }
+		public float RotationSpeedFiring { get { return 2.0f; } }
 
 		public float Range { get { return 35; } }
 
