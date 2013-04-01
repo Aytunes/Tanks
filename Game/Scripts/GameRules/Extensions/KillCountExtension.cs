@@ -8,6 +8,7 @@ namespace CryGameCode.Extensions
 	public class KillCountExtension : GameRulesExtension
 	{
 		private Dictionary<Tank, int> m_counts;
+		private bool m_viewData;
 
 		protected override void Init()
 		{
@@ -19,10 +20,38 @@ namespace CryGameCode.Extensions
 				Rules.ClientDisconnected += Disconnect;
 				Rules.TankDied += TankDied;
 			}
+			else
+			{
+				ReceiveUpdates = true;
+
+				Input.ActionmapEvents.Add("ui_down", (e) =>
+				{
+					if (e.KeyEvent == KeyEvent.OnPress)
+						m_viewData = true;
+					else if (e.KeyEvent == KeyEvent.OnRelease)
+						m_viewData = false;
+				});
+			}
+		}
+
+		public override void OnUpdate()
+		{
+			if (m_viewData)
+			{
+				var height = 100;
+				Renderer.DrawTextToScreen(10, height, 2, Color.White, "{0} players:", m_counts.Count);
+
+				foreach (var kvp in m_counts)
+				{
+					height += 20;
+					Renderer.DrawTextToScreen(10, height, 2, Color.White, "{0}: {1}", kvp.Key.Name, kvp.Value);
+				}
+			}
 		}
 
 		protected override bool OnRemove()
 		{
+			Input.ActionmapEvents.RemoveAll(this);
 			Rules.ClientConnected -= Connect;
 			Rules.ClientDisconnected -= Disconnect;
 			Rules.TankDied -= TankDied;
@@ -49,6 +78,8 @@ namespace CryGameCode.Extensions
 			// Get state for existing clients
 			foreach (var player in Rules.Players)
 				RemoteInvocation(UpdateCount, NetworkTarget.ToClientChannel, player.Id, m_counts[player], channelId: e.ChannelID);
+
+			RemoteInvocation(UpdateCount, NetworkTarget.ToAllClients, e.Tank.Id, 0);
 		}
 
 		private void Disconnect(object sender, ConnectionEventArgs e)
@@ -60,8 +91,13 @@ namespace CryGameCode.Extensions
 		private void UpdateCount(EntityId id, int count)
 		{
 			var killer = Entity.Get<Tank>(id);
-			m_counts[killer] = count;
-			Debug.LogAlways("{0} now has {1} kills", killer.Name, m_counts[killer]);
+
+			if (!m_counts.ContainsKey(killer))
+				m_counts.Add(killer, count);
+			else
+				m_counts[killer] = count;
+			
+			Debug.LogAlways("{0} now has {1} kills", killer.Name, count);
 		}
 	}
 }
