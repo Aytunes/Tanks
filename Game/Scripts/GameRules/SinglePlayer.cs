@@ -9,6 +9,7 @@ using CryEngine.Extensions;
 using CryGameCode.Entities;
 using CryGameCode.Tanks;
 using CryGameCode.Telemetry;
+using CryGameCode.Extensions;
 
 namespace CryGameCode
 {
@@ -18,6 +19,8 @@ namespace CryGameCode
 	[GameRules(Default = true)]
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
+		private GameRulesExtension[] m_extensions;
+
 		public SinglePlayer()
 		{
 			if (Game.IsServer)
@@ -25,7 +28,14 @@ namespace CryGameCode
 				var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
 				Metrics.Record(new MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
 			}
-			
+
+			m_extensions = (from type in Assembly.GetExecutingAssembly().GetTypes()
+							where type.Implements<GameRulesExtension>()
+							select (GameRulesExtension)Entity.Spawn("Extension", type)).ToArray();
+
+			foreach (var extension in m_extensions)
+				extension.Register(this);
+
 			ReceiveUpdates = true;
 		}
 
@@ -54,6 +64,8 @@ namespace CryGameCode
 			var tank = Actor.Get<Tank>(channelId);
 			tank.OnLeftGame();
 
+			tank.OnDeath -= OnTankDied;
+
 			m_playerBuffer.Remove(tank);
 
 			Actor.Remove(channelId);
@@ -63,6 +75,10 @@ namespace CryGameCode
 		{
 			Debug.LogAlways("[Enter] SinglePlayer.OnClientEnteredGame: channel {0}, player {1}", channelId, playerId);
 			var actor = Actor.Get<Tank>(playerId);
+
+			ClientConnected.Raise(this, new ConnectionEventArgs { ChannelID = channelId, Tank = actor });
+
+			actor.OnDeath += OnTankDied;
 
 			actor.OnEnteredGame();
 			actor.RemoteInvocation(OnEnteredGame, NetworkTarget.ToRemoteClients, channelId, playerId);
@@ -85,6 +101,11 @@ namespace CryGameCode
 			var actor = Actor.Get<Tank>(playerId);
 
 			actor.OnEnteredGame();
+		}
+
+		protected void OnTankDied(object sender, DamageEventArgs e)
+		{
+			TankDied.Raise(sender, e);
 		}
 
 		/// <summary>
@@ -193,5 +214,24 @@ namespace CryGameCode
 		}
 
 		List<IGameModifier> m_activeGameModifiers = new List<IGameModifier>();
+
+		public event EventHandler<ConnectionEventArgs> ClientConnected;
+		public event EventHandler<ConnectionEventArgs> ClientDisconnected;
+		public event EventHandler<DamageEventArgs> TankDied;
+	}
+
+	public class ConnectionEventArgs : EventArgs
+	{
+		public int ChannelID { get; set; }
+		public Tank Tank { get; set; }
+	}
+
+	public static class EventExtensions
+	{
+		public static void Raise<T>(this EventHandler<T> evt, object sender, T args) where T : EventArgs
+		{
+			if (evt != null)
+				evt(sender, args);
+		}
 	}
 }

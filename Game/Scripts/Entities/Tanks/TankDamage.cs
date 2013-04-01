@@ -7,9 +7,6 @@ namespace CryGameCode.Tanks
 	{
 		public void OnDied(object sender, DamageEventArgs e)
 		{
-			var message = string.Format("{0} was killed by {1}", Name, Entity.Get(e.Source).Name);
-			Debug.DrawText(message, 2, Color.White, 2);
-
 			if (IsLocalClient)
 			{
 				SpawnTime = -1;
