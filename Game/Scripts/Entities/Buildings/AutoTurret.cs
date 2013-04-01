@@ -202,7 +202,7 @@ namespace CryGameCode.Entities.Buildings
 			}
 		}
 
-		public void OnDied(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void OnDied(object sender, DamageEventArgs e)
 		{
 			Active = false;
 			Hidden = true;
