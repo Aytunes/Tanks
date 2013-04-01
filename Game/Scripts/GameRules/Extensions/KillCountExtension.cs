@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using CryEngine;
 using CryGameCode.Entities;
 using CryGameCode.Tanks;
@@ -85,6 +86,7 @@ namespace CryGameCode.Extensions
 		private void Disconnect(object sender, ConnectionEventArgs e)
 		{
 			m_counts.Remove(e.Tank);
+			RemoteInvocation(NotifyCleanup, NetworkTarget.ToAllClients);
 		}
 
 		[RemoteInvocation]
@@ -98,6 +100,14 @@ namespace CryGameCode.Extensions
 				m_counts[killer] = count;
 			
 			Debug.LogAlways("{0} now has {1} kills", killer.Name, count);
+		}
+
+		[RemoteInvocation]
+		private void NotifyCleanup()
+		{
+			var toRemove = m_counts.Keys.Where(t => t.IsDestroyed).ToArray();
+			foreach (var tank in toRemove)
+				m_counts.Remove(tank);
 		}
 	}
 }
