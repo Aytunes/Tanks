@@ -47,7 +47,7 @@ namespace CryGameCode.Tanks
 			if (Game.IsServer)
 				owner.Input.OnInputChanged += OnInput;
 
-			owner.OnDestroyed += (x) => { Destroy(); };
+			owner.OnDeath += (s, e) => { Destroy(); };
 		}
 
 		void OnInput(InputFlags flags, KeyEvent keyEvent)
