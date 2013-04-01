@@ -66,6 +66,8 @@ namespace CryGameCode
 
 			tank.OnDeath -= OnTankDied;
 
+			ClientDisconnected.Raise(this, new ConnectionEventArgs { Tank = tank, ChannelID = channelId });
+
 			m_playerBuffer.Remove(tank);
 
 			Actor.Remove(channelId);
