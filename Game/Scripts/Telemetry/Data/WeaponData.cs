@@ -1,5 +1,4 @@
 ﻿using CryEngine;
-using CryGameCode;
 using CryGameCode.Entities;
 
 namespace CryGameCode.Telemetry
@@ -8,5 +7,12 @@ namespace CryGameCode.Telemetry
 	{
 		public Vec3 Position { get; set; }
 		public DamageType DamageType { get; set; }
+	}
+
+	public struct WeaponFiredData
+	{
+		public Vec3 Position { get; set; }
+		public Vec3 Rotation { get; set; }
+		public string Name { get; set; }
 	}
 }

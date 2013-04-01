@@ -1,5 +1,6 @@
 ﻿using CryEngine;
 using CryGameCode.Entities;
+using CryGameCode.Network;
 
 namespace CryGameCode.Projectiles
 {
@@ -26,8 +27,7 @@ namespace CryGameCode.Projectiles
 
 		public void Launch(EntityId shooterId)
 		{
-			if (!Game.IsServer)
-				return;
+			NetworkValidator.Server("Projectile launching");
 
 			RemoteLaunch(shooterId, Position, Rotation, Speed);
 			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, shooterId, Position, Rotation, Speed);

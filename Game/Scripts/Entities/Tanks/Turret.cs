@@ -193,17 +193,20 @@ namespace CryGameCode.Tanks
 					projectile = null;
 				}
 
+				var turretRot = TurretEntity.Rotation.Normalized;
+
 				if (projectile == null || !Projectile.RecyclingEnabled)
 				{
-					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, TurretEntity.Rotation.Normalized) as Projectile;
+					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, turretRot) as Projectile;
 					ProjectileStorage.Add(projectile);
 				}
 				else
 				{
 					projectile.Position = jointAbsolute.T;
-					projectile.Rotation = TurretEntity.Rotation.Normalized;
+					projectile.Rotation = turretRot;
 				}
 
+				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T, Rotation = turretRot.Column1 });
 				projectile.Launch(Owner.Id);
 
 				//OnFire(jointAbsolute.T);
