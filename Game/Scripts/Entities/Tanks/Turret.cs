@@ -100,6 +100,7 @@ namespace CryGameCode.Tanks
 			TurretEntity = entity;
 
 			entity.LoadObject(Model);
+			entity.ViewDistanceRatio = 255;
 
 			entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
 
