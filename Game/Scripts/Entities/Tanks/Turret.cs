@@ -158,16 +158,24 @@ namespace CryGameCode.Tanks
 
 			var tankInput = Owner.Input;
 
-			var dir = tankInput.MouseWorldPosition - TurretEntity.Position;
+			if (GameCVars.cam_type == (int)CameraType.FirstPerson)
+			{
+				var delta = m_lastMouseX - tankInput.MouseX;
+				TurretEntity.Rotation *= Quat.CreateRotationZ(delta * 0.3f * (float)Math.PI / 180.0f);//TODO: take sensitivity cvar into account
+				m_lastMouseX = tankInput.MouseX;
+			}
+			else
+			{
+				var dir = tankInput.MouseWorldPosition - TurretEntity.Position;
 
-			var ownerRotation = Owner.Rotation;
+				var ownerRotation = Owner.Rotation;
 
-			var forward = Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)).Column1;
-			Vec3 up = ownerRotation.Column2;
+				var forward = Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)).Column1;
+				Vec3 up = ownerRotation.Column2;
 
-			var rotation = new Quat(Matrix33.CreateFromVectors(forward % up, forward, up)).Normalized;
-
-			TurretEntity.Rotation = rotation;
+				var rotation = new Quat(Matrix33.CreateFromVectors(forward % up, forward, up)).Normalized;
+				TurretEntity.Rotation = rotation;
+			}
 		}
 
 		#region Weapons
@@ -245,6 +253,7 @@ namespace CryGameCode.Tanks
 		/// This way we don't have to spawn new ones all the time.
 		/// </summary>
 		public HashSet<Projectile> ProjectileStorage = new HashSet<Projectile>();
+		private int m_lastMouseX;
 		#endregion
 
 		#region Config
