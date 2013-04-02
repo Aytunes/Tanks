@@ -156,11 +156,25 @@ namespace CryGameCode.Projectiles
 				};
 
 				explosion.Explode();
+                
+                foreach (var affectedPhysicalEntity in explosion.AffectedEntities)
+                {
+                    var entity = affectedPhysicalEntity.Owner;
+                    var damageable = entity as IDamageable;
+                    if (damageable == null)
+                        continue;
+
+                    var distance = System.Math.Abs((Position - entity.Position).Length);
+
+                    var damage = ExplosionRelativeDamage * (1 - (distance / MaximumExplosionRadius));
+
+                    damageable.Damage(0, damage, DamageType.Explosive, Vec3.Zero, Vec3.Zero);
+                }
 			}
 
 			if (Game.IsPureClient || Game.IsEditor)
 				Hidden = true;
-
+            
 			Fired = false;
 		}
 
@@ -177,6 +191,7 @@ namespace CryGameCode.Projectiles
 		public virtual float ExplosionRadius { get { return 15; } }
 		public virtual float MaximumExplosionRadius { get { return 30; } }
 		public virtual float ExplosionPressure { get { return 200; } }
+        public virtual float ExplosionRelativeDamage { get { return 5; } }
 
 		public IGameModifier TargetModifier { get; set; }
 
