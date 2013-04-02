@@ -9,13 +9,15 @@ namespace CryGameCode.Tanks
 		{
 			var light = new LightParams
 			{
-				radius = 5,
+				radius = 15,
 				color = Color.Red,
-				hdrDynamic = 2
+				hdrDynamic = 2,
+				flags = LightFlags.CastShadows
 			};
 
 			LoadLight(light);
 			LoadObject("objects/effects/particle_effects/bubble/3dbubble.cgf");
+			ViewDistanceRatio = 255;
 
 			ReceiveUpdates = true;
 		}

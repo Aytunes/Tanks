@@ -59,11 +59,9 @@ namespace CryGameCode.Entities.Buildings
 			Physics.Resting = false;
 			Physics.AddImpulse(new Vec3(0, 0, -1));
 
-			Health = MaxHealth = 100;
+			Health = MaxHealth = 200;
 
 			Hidden = false;
-
-			Range = 500;
 
 			Active = false;
 		}
@@ -82,6 +80,11 @@ namespace CryGameCode.Entities.Buildings
 				Active = true;
 
 				Position = Position - new Vec3(0, 0, 1.5f);
+
+				// pick a random direction
+				var random = new Random();
+
+				currentRotationDirection = random.Next(1) - 1;
 			}
 			else
 			{
@@ -112,6 +115,9 @@ namespace CryGameCode.Entities.Buildings
 			if (IsDead || !Active)
 				return;
 
+			if (Time.FrameStartTime - timeSinceSeenTarget > 3000)
+				lastTarget = null;
+
 			var position = Position;
 
 			// See if the path to the target is unobstructed.
@@ -122,20 +128,22 @@ namespace CryGameCode.Entities.Buildings
 			{
 				var hit = hits.ElementAt(0);
 
-				Debug.DrawSphere(hit.Point, 3.0f, Color.Black, 1.0f);
-
 				if (hit.Entity != null)
+				{
+					timeSinceSeenTarget = Time.FrameStartTime;
+
 					lastTarget = hit.Entity;
+				}
 			}
 
 			if (lastTarget != null)
 			{
 				FireAt(lastTarget);
 
-				var positionDelta = lastTarget.Position - position;
-				positionDelta.Normalize();
+				// Workaround for offset auto-turret rotation pivot.
+				var positionDelta = -Quat.CreateRotationVDir((lastTarget.Position - position).Normalized).Column0;
 
-				Rotation = Quat.CreateSlerp(Rotation, Quat.CreateRotationVDir(positionDelta), Time.DeltaTime * 10);
+				Rotation = Quat.CreateSlerp(Rotation, Quat.CreateRotationVDir(positionDelta), Time.DeltaTime * RotationSpeedFiring);
 			}
 			else
 			{
@@ -172,9 +180,6 @@ namespace CryGameCode.Entities.Buildings
 
 				lastShot = Time.FrameStartTime;
 
-				Vec3 direction = target.Position - Position;
-				direction.Normalize();
-
 				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
 				if (projectile != null && projectile.IsDestroyed)
 				{
@@ -197,8 +202,9 @@ namespace CryGameCode.Entities.Buildings
 			}
 		}
 
-		public void OnDied(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void OnDied(object sender, DamageEventArgs e)
 		{
+			Active = false;
 			Hidden = true;
 		}
 
@@ -207,14 +213,19 @@ namespace CryGameCode.Entities.Buildings
 		float lastShot;
 		float TimeBetweenShots { get { return 0.1f; } }
 
+		public float timeSinceSeenTarget;
 		EntityBase lastTarget;
 
 		int currentRotationDirection = 1;
 		float timeSinceLastRotationChange;
 
-		public float RotationSpeed { get { return 2.5f; } }
+		public float RotationSpeed { get { return 2.0f; } }
+		/// <summary>
+		/// Rotation speed when a target has been found
+		/// </summary>
+		public float RotationSpeedFiring { get { return 2.0f; } }
 
-		public float Range { get; set; }
+		public float Range { get { return 35; } }
 
 		public bool Active { get; set; }
 

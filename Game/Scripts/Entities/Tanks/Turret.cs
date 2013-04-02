@@ -47,7 +47,7 @@ namespace CryGameCode.Tanks
 			if (Game.IsServer)
 				owner.Input.OnInputChanged += OnInput;
 
-			owner.OnDestroyed += (x) => { Destroy(); };
+			owner.OnDeath += (s, e) => { Destroy(); };
 		}
 
 		void OnInput(InputFlags flags, KeyEvent keyEvent)
@@ -100,6 +100,7 @@ namespace CryGameCode.Tanks
 			TurretEntity = entity;
 
 			entity.LoadObject(Model);
+			entity.ViewDistanceRatio = 255;
 
 			entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
 
@@ -130,7 +131,7 @@ namespace CryGameCode.Tanks
 			if (Destroyed)
 				return;
 
-			if (!TurretEntity.IsDestroyed)
+			if (TurretEntity != null && !TurretEntity.IsDestroyed)
 				TurretEntity.Remove();
 
 			foreach (var projectile in ProjectileStorage)
@@ -157,16 +158,24 @@ namespace CryGameCode.Tanks
 
 			var tankInput = Owner.Input;
 
-			var dir = tankInput.MouseWorldPosition - TurretEntity.Position;
+			if (GameCVars.cam_type == (int)CameraType.FirstPerson)
+			{
+				var delta = m_lastMouseX - tankInput.MouseX;
+				TurretEntity.Rotation *= Quat.CreateRotationZ(delta * 0.3f * (float)Math.PI / 180.0f);//TODO: take sensitivity cvar into account
+				m_lastMouseX = tankInput.MouseX;
+			}
+			else
+			{
+				var dir = tankInput.MouseWorldPosition - TurretEntity.Position;
 
-			var ownerRotation = Owner.Rotation;
+				var ownerRotation = Owner.Rotation;
 
-			var forward = Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)).Column1;
-			Vec3 up = ownerRotation.Column2;
+				var forward = Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)).Column1;
+				Vec3 up = ownerRotation.Column2;
 
-			var rotation = new Quat(Matrix33.CreateFromVectors(forward % up, forward, up)).Normalized;
-
-			TurretEntity.Rotation = rotation;
+				var rotation = new Quat(Matrix33.CreateFromVectors(forward % up, forward, up)).Normalized;
+				TurretEntity.Rotation = rotation;
+			}
 		}
 
 		#region Weapons
@@ -193,17 +202,20 @@ namespace CryGameCode.Tanks
 					projectile = null;
 				}
 
+				var turretRot = TurretEntity.Rotation.Normalized;
+
 				if (projectile == null || !Projectile.RecyclingEnabled)
 				{
-					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, TurretEntity.Rotation.Normalized) as Projectile;
+					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, turretRot) as Projectile;
 					ProjectileStorage.Add(projectile);
 				}
 				else
 				{
 					projectile.Position = jointAbsolute.T;
-					projectile.Rotation = TurretEntity.Rotation.Normalized;
+					projectile.Rotation = turretRot;
 				}
 
+				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T, Rotation = turretRot.Column1 });
 				projectile.Launch(Owner.Id);
 
 				//OnFire(jointAbsolute.T);
@@ -241,6 +253,7 @@ namespace CryGameCode.Tanks
 		/// This way we don't have to spawn new ones all the time.
 		/// </summary>
 		public HashSet<Projectile> ProjectileStorage = new HashSet<Projectile>();
+		private int m_lastMouseX;
 		#endregion
 
 		#region Config

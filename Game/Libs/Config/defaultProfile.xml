@@ -63,7 +63,7 @@
 			</ps3pad>
 		</action>
 
-		<action name="ui_down" onPress="1" onHold="1" holdTriggerDelay="0.15" holdRepeatDelay="0.15" >
+		<action name="ui_down" onPress="1" onRelease="1" onHold="1" holdTriggerDelay="0.15" holdRepeatDelay="0.15" >
 			<keyboard>
 				<inputdata input="down" />
 				<inputdata input="tab" />

@@ -10,7 +10,7 @@ namespace CryGameCode.Tanks
 		public override string Model { get { return "objects/tanks/turret_rocket.chr"; } }
 		public override string LeftHelper { get { return "turret_term_2"; } }
 		public override string RightHelper { get { return "turret_term_1"; } }
-		public override float TimeBetweenShots { get { return 0.3f; } }
+		public override float TimeBetweenShots { get { return 2f; } }
 		public override Type ProjectileType { get { return typeof(Rocket); } }
 	}
 }

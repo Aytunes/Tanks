@@ -159,12 +159,6 @@ CGameStartup::CGameStartup()
 
 CGameStartup::~CGameStartup()
 {
-	if(gEnv->pMonoScriptSystem)
-	{
-		gEnv->pMonoScriptSystem->Release();
-		gEnv->pMonoScriptSystem = nullptr;
-	}
-
 	if(m_cryMonoDll)
 	{
 		CryFreeLibrary(m_cryMonoDll);

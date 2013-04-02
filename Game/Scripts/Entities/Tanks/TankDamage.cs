@@ -1,17 +1,12 @@
 ﻿using CryEngine;
 using CryGameCode.Entities;
-using CryGameCode.Network;
-using CryGameCode.Telemetry;
 
 namespace CryGameCode.Tanks
 {
 	public partial class Tank
 	{
-		public void OnDied(EntityId sender, float damage, DamageType type, Vec3 pos, Vec3 dir)
+		public void OnDied(object sender, DamageEventArgs e)
 		{
-			var message = string.Format("{0} was killed by {1}", Name, Entity.Get(sender).Name);
-			Debug.DrawText(message, 2, Color.White, 2);
-
 			if (IsLocalClient)
 			{
 				SpawnTime = -1;
@@ -28,7 +23,7 @@ namespace CryGameCode.Tanks
 
 			if (Game.IsServer)
 			{
-				Metrics.Kills.Record(new KillData { Position = pos, DamageType = type });
+				Metrics.Record(new Telemetry.KillData { Position = e.Position, DamageType = e.Type });
 			}
 		}
 
