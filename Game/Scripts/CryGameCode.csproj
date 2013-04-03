@@ -154,7 +154,7 @@
     <Compile Include="Network\NetworkValidator.cs" />
     <Compile Include="Telemetry\Data\MatchData.cs" />
     <Compile Include="Telemetry\Data\WeaponData.cs" />
-    <Compile Include="Telemetry\Implementations\ConsoleTelemetrySender.cs" />
+    <Compile Include="Telemetry\Implementations\FileTelemetry.cs" />
     <Compile Include="Telemetry\Processor.cs" />
     <Compile Include="Telemetry\Telemetry.cs" />
   </ItemGroup>

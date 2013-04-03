@@ -8,8 +8,8 @@ using CryEngine.Extensions;
 
 using CryGameCode.Entities;
 using CryGameCode.Tanks;
-using CryGameCode.Telemetry;
 using CryGameCode.Extensions;
+using CryGameCode.Network;
 
 namespace CryGameCode
 {
@@ -23,18 +23,18 @@ namespace CryGameCode
 
 		public SinglePlayer()
 		{
-			if (Game.IsServer)
-			{
-				var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
-				Metrics.Record(new MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
-			}
-
 			m_extensions = (from type in Assembly.GetExecutingAssembly().GetTypes()
 							where type.Implements<GameRulesExtension>()
 							select (GameRulesExtension)Entity.Spawn("Extension", type)).ToArray();
 
 			foreach (var extension in m_extensions)
 				extension.Register(this);
+
+			if (Game.IsServer)
+			{
+				var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
+			}
 
 			ReceiveUpdates = true;
 		}
