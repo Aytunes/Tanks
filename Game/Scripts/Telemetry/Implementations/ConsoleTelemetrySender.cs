@@ -1,10 +1,11 @@
 ﻿using CryEngine;
+using System.Threading;
 
 namespace CryGameCode.Telemetry.Implementations
 {
 	public class ConsoleTelemetrySender : ITelemetrySender
 	{
-		static int telem_debug = 0;
+		static int telem_debug = 1;
 
 		public ConsoleTelemetrySender()
 		{
