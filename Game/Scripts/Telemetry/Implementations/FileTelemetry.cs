@@ -22,6 +22,8 @@ namespace CryGameCode.Telemetry.Implementations
 				Directory.CreateDirectory(TelemDir);
 
 			m_stream = new StreamWriter(Path.Combine(TelemDir, filename), true);
+
+			m_stream.WriteLine();
 			m_stream.WriteLine("Started at {0}", date.ToShortTimeString());
 		}
 
@@ -35,6 +37,7 @@ namespace CryGameCode.Telemetry.Implementations
 
 		public void Dispose()
 		{
+			m_stream.WriteLine("Log closed normally");
 			m_stream.Close();
 		}
 	}

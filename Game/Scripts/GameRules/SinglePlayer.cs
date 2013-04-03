@@ -31,10 +31,7 @@ namespace CryGameCode
 				extension.Register(this);
 
 			if (Game.IsServer)
-			{
-				var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
-				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
-			}
+				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name });
 
 			ReceiveUpdates = true;
 		}
