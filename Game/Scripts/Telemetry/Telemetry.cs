@@ -17,7 +17,7 @@ namespace CryGameCode
 		private Dictionary<Type, TelemetryProcessor> m_processors;
 		private TelemetryWriter[] m_senders;
 		private Thread m_telemThread;
-		private ConcurrentQueue<object> m_pool;
+		private BlockingCollection<object> m_pool;
 		private static int m_debug = 1;
 
 		public static bool DebugEnabled { get { return m_debug != 0; } }
@@ -36,7 +36,7 @@ namespace CryGameCode
 
 			CVar.RegisterInt("telem_debug", ref m_debug, "Toggles console output of telemetry data", CVarFlags.Cheat);
 
-			m_pool = new ConcurrentQueue<object>();
+			m_pool = new BlockingCollection<object>();
 			var types = Assembly.GetExecutingAssembly().GetTypes();
 
 			m_senders = (from type in types
@@ -84,24 +84,13 @@ namespace CryGameCode
 
 		public static void Record<T>(T info)
 		{
-			m_instance.m_pool.Enqueue(info);
+			m_instance.m_pool.Add(info);
 		}
 
 		private void DoWork()
 		{
 			while (true)
-			{
-				while (m_pool.IsEmpty)
-					Thread.Sleep(TimeSpan.FromSeconds(1));
-
-				Log("Clearing buffer (~{0} items)...", m_pool.Count);
-
-				object val;
-				while (m_pool.TryDequeue(out val))
-					Process(val);
-
-				Log("Buffer cleared");
-			}
+				Process(m_pool.Take());
 		}
 
 		private void Process(object val)
