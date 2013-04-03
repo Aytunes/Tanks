@@ -15,10 +15,15 @@ namespace CryGameCode.Telemetry
 			m_props = type.GetProperties();
 		}
 
-		public string Process(object info)
+		public string Process<T>(T info)
 		{
-			var values = m_props.Select(p => string.Format("{0}: {1}", p.Name, p.GetValue(info, null).ToString()));
-			return string.Join("|", values);
+			var values = m_props.Select(p =>
+			{
+				var propValue = p.GetValue(info, null).ToString();
+				return string.Format("{0} = {1}", p.Name, Uri.EscapeDataString(propValue));
+			});
+			
+			return string.Join("\t,", values);
 		}
 	}
 }
