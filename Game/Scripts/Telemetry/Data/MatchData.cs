@@ -6,4 +6,16 @@ namespace CryGameCode.Telemetry
 	{
 		public string GameRules { get; set; }
 	}
+
+	[TelemetryData]
+	public struct ClientConnected
+	{
+		public string Nickname { get; set; }
+	}
+
+	[TelemetryData]
+	public struct ClientDisconnected
+	{
+		public string Nickname { get; set; }
+	}
 }

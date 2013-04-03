@@ -46,6 +46,8 @@ namespace CryGameCode
 			if (!Game.IsServer)
 				return;
 
+			Metrics.Record(new Telemetry.ClientConnected { Nickname = playerName });
+
 			var tank = Actor.Create<Tank>(channelId, playerName);
 			if (tank == null)
 			{
@@ -64,6 +66,7 @@ namespace CryGameCode
 			tank.OnDeath -= OnTankDied;
 
 			ClientDisconnected.Raise(this, new ConnectionEventArgs { Tank = tank, ChannelID = channelId });
+			Metrics.Record(new Telemetry.ClientDisconnected { Nickname = tank.Name });
 
 			m_playerBuffer.Remove(tank);
 
