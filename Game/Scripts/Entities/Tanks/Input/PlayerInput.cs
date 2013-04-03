@@ -142,7 +142,7 @@ namespace CryGameCode.Tanks
 
 							Owner.GameObject.NotifyNetworkStateChange((int)NetAspects.Input);
 
-							if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
+							if (OnInputChanged != null && (Game.IsClient || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
 						}
 					}
@@ -155,7 +155,7 @@ namespace CryGameCode.Tanks
 
 							Owner.GameObject.NotifyNetworkStateChange((int)NetAspects.Input);
 
-							if (OnInputChanged != null && (Game.IsPureClient || !Game.IsMultiplayer))
+							if (OnInputChanged != null && (Game.IsClient || !Game.IsMultiplayer))
 								OnInputChanged(flag, keyEvent);
 						}
 					}
