@@ -157,7 +157,7 @@ namespace CryGameCode.Projectiles
 
 				explosion.Explode();
 
-				if (Game.IsServer)
+				/*if (Game.IsServer)
 				{
 					foreach (var affectedPhysicalEntity in explosion.AffectedEntities)
 					{
@@ -172,7 +172,7 @@ namespace CryGameCode.Projectiles
 
 						damageable.Damage(0, damage, DamageType.Explosive, Vec3.Zero, Vec3.Zero);
 					}
-				}
+				}*/
 			}
 
 			if (Game.IsPureClient || Game.IsEditor)
