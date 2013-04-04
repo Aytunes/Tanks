@@ -29,7 +29,7 @@ namespace CryGameCode
 		{
 			NetworkValidator.Server("Metrics are server-only");
 
-			if (m_instance != null)
+			if (m_instance != null && !m_instance.IsDestroyed)
 				throw new InvalidOperationException("Only one telemetry instance should exist");
 
 			m_instance = this;
