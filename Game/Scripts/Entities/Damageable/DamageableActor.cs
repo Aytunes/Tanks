@@ -14,12 +14,12 @@ namespace CryGameCode.Entities
 				return;
 
 			RemoteDamage(sender, damage, (int)type, pos, dir);
-			RemoteInvocation(RemoteDamage, NetworkTarget.ToAllClients, sender, damage, (int)type, pos, dir);
+			RemoteInvocation(RemoteDamage, NetworkTarget.ToRemoteClients, sender, damage, (int)type, pos, dir);
 
 			if (IsDead)
 			{
 				RemoteDeath(sender, damage, (int)type, pos, dir);
-				RemoteInvocation(RemoteDeath, NetworkTarget.ToAllClients, sender, damage, (int)type, pos, dir);
+				RemoteInvocation(RemoteDeath, NetworkTarget.ToRemoteClients, sender, damage, (int)type, pos, dir);
 			}
 		}
 

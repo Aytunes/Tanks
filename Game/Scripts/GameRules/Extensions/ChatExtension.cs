@@ -66,7 +66,7 @@ namespace CryGameCode.Extensions
 			}
 
 			Receive(sender, message);
-			RemoteInvocation(Receive, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, sender, message);
+			RemoteInvocation(Receive, NetworkTarget.ToRemoteClients, sender, message);
 		}
 
 		[RemoteInvocation]
