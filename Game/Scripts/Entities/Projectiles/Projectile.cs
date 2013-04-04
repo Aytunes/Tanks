@@ -59,7 +59,7 @@ namespace CryGameCode.Projectiles
 			physicalizationParams.particleParameters.thickness = radius * 2;
 			physicalizationParams.particleParameters.size = radius * 2;
 
-			physicalizationParams.particleParameters.kAirResistance = 0;
+			physicalizationParams.particleParameters.kAirResistance = 0.5f;
 			physicalizationParams.particleParameters.kWaterResistance = 0.5f;
 			physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
 			physicalizationParams.particleParameters.accThrust = 0;
@@ -120,9 +120,11 @@ namespace CryGameCode.Projectiles
 
 			if (Game.IsServer && otherEntity != null)
 			{
+				var totalDamage = (source.velocity.Length / Speed) * Damage;
+
 				var damageableTarget = otherEntity as IDamageable;
 				if (damageableTarget != null)
-					damageableTarget.Damage(ShooterId, Damage, DamageType, hitPos, Vec3.Zero);
+					damageableTarget.Damage(ShooterId, totalDamage, DamageType, hitPos, Vec3.Zero);
 
 				if (TargetModifier != null)
 				{
