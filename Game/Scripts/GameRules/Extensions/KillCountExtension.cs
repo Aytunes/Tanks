@@ -21,7 +21,8 @@ namespace CryGameCode.Extensions
 				Rules.ClientDisconnected += Disconnect;
 				Rules.TankDied += TankDied;
 			}
-			else
+			
+			if (Game.IsClient)
 			{
 				ReceiveUpdates = true;
 
