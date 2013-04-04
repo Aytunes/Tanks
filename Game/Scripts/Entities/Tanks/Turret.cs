@@ -17,6 +17,7 @@ namespace CryGameCode.Tanks
 	public class TurretEntity : Entity
 	{
 		private string m_tankName;
+		private TankTurret m_turret;
 
 		public override void OnSpawn()
 		{
@@ -32,9 +33,16 @@ namespace CryGameCode.Tanks
 			var owner = Entity.Find(m_tankName) as Tank;
 			if (owner != null && owner.Turret != null)
 			{
-				owner.Turret.Initialize(this);
+				m_turret = owner.Turret;
+				m_turret.Initialize(this);
 				ReceiveUpdates = false;
 			}
+		}
+
+		[RemoteInvocation]
+		public void RemoteFire(Vec3 pos)
+		{
+			m_turret.OnRemoteFire(pos);
 		}
 	}
 
@@ -91,7 +99,7 @@ namespace CryGameCode.Tanks
 			}
 		}
 
-		public void Initialize(EntityBase entity)
+		public void Initialize(TurretEntity entity)
 		{
 			Attachment = Owner.GetAttachment("turret");
 
@@ -218,7 +226,8 @@ namespace CryGameCode.Tanks
 				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T, Rotation = turretRot.Column1 });
 				projectile.Launch(Owner.Id);
 
-				//OnFire(jointAbsolute.T);
+				OnFire(jointAbsolute.T);
+				Owner.RemoteInvocation(TurretEntity.RemoteFire, NetworkTarget.ToRemoteClients, jointAbsolute.T);
 			}
 		}
 
@@ -231,6 +240,11 @@ namespace CryGameCode.Tanks
 		{
 			if (!string.IsNullOrEmpty(RightHelper))
 				Fire(ref m_lastRightShot, RightHelper);
+		}
+
+		public void OnRemoteFire(Vec3 pos)
+		{
+			OnFire(pos);
 		}
 
 		protected virtual void OnFire(Vec3 firePos) { }
@@ -281,7 +295,7 @@ namespace CryGameCode.Tanks
 
 		public Tank Owner { get; private set; }
 		public Attachment Attachment { get; private set; }
-		public EntityBase TurretEntity { get; private set; }
+		public TurretEntity TurretEntity { get; private set; }
 
 		public bool Destroyed { get; set; }
 	}
