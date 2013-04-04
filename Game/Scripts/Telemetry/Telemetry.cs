@@ -67,10 +67,10 @@ namespace CryGameCode
 
 		protected override bool OnRemove()
 		{
-			m_telemThread.Abort();
-
 			if (Game.IsServer)
 			{
+				m_telemThread.Abort();
+
 				foreach (var sender in m_senders)
 				{
 					var disposable = sender as IDisposable;
