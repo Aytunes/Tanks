@@ -189,7 +189,7 @@ namespace CryGameCode.Tanks
 			float blend = MathHelpers.Clamp(Time.DeltaTime / 0.15f, 0, 1.0f);
 			GroundNormal = (GroundNormal + blend * (Physics.LivingStatus.GroundNormal - GroundNormal));
 
-			if (Game.IsPureClient)
+			if (Game.IsClient)
 			{
 				var currentPos = Position;
 				var currentRot = Rotation;
@@ -214,7 +214,8 @@ namespace CryGameCode.Tanks
 					Position = m_serverPos;
 				}
 
-				Rotation = Quat.CreateNlerp(currentRot, m_serverRot, Time.DeltaTime * 20);
+				if (Game.IsPureClient)
+					Rotation = Quat.CreateNlerp(currentRot, m_serverRot, Time.DeltaTime * 20);
 			}
 
 			if (Turret != null && Turret.TurretEntity != null && !Turret.TurretEntity.IsDestroyed)
