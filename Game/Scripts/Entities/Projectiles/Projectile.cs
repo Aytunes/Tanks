@@ -158,20 +158,23 @@ namespace CryGameCode.Projectiles
 				};
 
 				explosion.Explode();
-                
-                foreach (var affectedPhysicalEntity in explosion.AffectedEntities)
-                {
-                    var entity = affectedPhysicalEntity.Owner;
-                    var damageable = entity as IDamageable;
-                    if (damageable == null)
-                        continue;
 
-                    var distance = System.Math.Abs((Position - entity.Position).Length);
+				/*if (Game.IsServer)
+				{
+					foreach (var affectedPhysicalEntity in explosion.AffectedEntities)
+					{
+						var entity = affectedPhysicalEntity.Owner;
+						var damageable = entity as IDamageable;
+						if (damageable == null)
+							continue;
 
-                    var damage = ExplosionRelativeDamage * (1 - (distance / MaximumExplosionRadius));
+						var distance = System.Math.Abs((Position - entity.Position).Length);
 
-                    damageable.Damage(0, damage, DamageType.Explosive, Vec3.Zero, Vec3.Zero);
-                }
+						var damage = ExplosionRelativeDamage * (1 - (distance / MaximumExplosionRadius));
+
+						damageable.Damage(0, damage, DamageType.Explosive, Vec3.Zero, Vec3.Zero);
+					}
+				}*/
 			}
 
 			if (Game.IsPureClient || Game.IsEditor)

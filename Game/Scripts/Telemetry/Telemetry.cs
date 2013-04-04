@@ -12,6 +12,7 @@ using CryGameCode.Telemetry;
 
 namespace CryGameCode
 {
+	[ServerOnly]
 	public class Metrics : GameRulesExtension
 	{
 		private Dictionary<Type, TelemetryProcessor> m_processors;
@@ -26,8 +27,7 @@ namespace CryGameCode
 
 		protected override void Init()
 		{
-			if (!Game.IsServer)
-				return;
+			NetworkValidator.Server("Metrics are server-only");
 
 			if (m_instance != null)
 				throw new InvalidOperationException("Only one telemetry instance should exist");

@@ -28,4 +28,8 @@ namespace CryGameCode.Network
 		{
 		}
 	}
+
+	public class ServerOnlyAttribute : Attribute
+	{
+	}
 }
