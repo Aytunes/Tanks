@@ -24,10 +24,10 @@ namespace CryGameCode.Extensions
 			{
 				var message = string.Join(" ", e.Args);
 
-				if (Game.IsClient)
-					RemoteInvocation(Broadcast, NetworkTarget.ToServer,  Actor.LocalClient.Name, message);
+				if (Game.IsPureClient)
+					RemoteInvocation(Broadcast, NetworkTarget.ToServer, Actor.LocalClient.Name, message);
 				else
-					Broadcast("Server", message);
+					Broadcast(Game.IsClient ? Actor.LocalClient.Name : "Server", message);
 			},
 			"Sends a message", CVarFlags.None, true);
 		}
@@ -66,7 +66,7 @@ namespace CryGameCode.Extensions
 			}
 
 			Receive(sender, message);
-			RemoteInvocation(Receive, NetworkTarget.ToAllClients, sender, message);
+			RemoteInvocation(Receive, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, sender, message);
 		}
 
 		[RemoteInvocation]
