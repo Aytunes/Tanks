@@ -28,7 +28,10 @@ namespace CryGameCode
 							select (GameRulesExtension)Entity.Spawn("Extension", type)).ToArray();
 
 			foreach (var extension in m_extensions)
-				extension.Register(this);
+			{
+				if (!extension.ServerOnly || Game.IsServer)
+					extension.Register(this);
+			}
 
 			if (Game.IsServer)
 				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name });
