@@ -104,6 +104,7 @@
     <Compile Include="Entities\Collectibles\InvisibilityCollectible.cs" />
     <Compile Include="Entities\Collectibles\TimeScaleCollectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />
+    <Compile Include="Entities\Garage\TankModel.cs" />
     <Compile Include="Entities\Tanks\TankTread.cs" />
     <Compile Include="GameRules\DestroyTheDrill.cs" />
     <Compile Include="GameRules\Extensions\ChatExtension.cs" />

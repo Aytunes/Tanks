@@ -6,11 +6,14 @@ using CryEngine.Serialization;
 
 using CryGameCode.Entities;
 using CryGameCode.Network;
+using CryGameCode.Entities.Garage;
 
 namespace CryGameCode.Tanks
 {
 	public partial class Tank : DamageableActor
 	{
+		public static readonly Vec3 TurretOffset = new Vec3(0, 0.69252968f, 2.05108f);
+
 		public Tank()
 		{
 			Debug.LogAlways("[Enter] Tank.ctor: actor {0}", Id);
@@ -30,19 +33,38 @@ namespace CryGameCode.Tanks
 			var flags = e.Flags;
 			var keyEvent = e.Event;
 
-			if (flags.IsSet(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease)
+			if (flags.IsSet(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease && IsDead)
 			{
 				var gameRules = GameRules.Current as SinglePlayer;
 
 				if (IsDead)
 				{
+					var dir = Input.MouseWorldPosition - Position;
+					var hits = Ray.Cast(Position, dir);
+
+					TankModel info = null;
+					foreach (var hit in hits)
+					{
+						var ent = hit.Entity as TankModel;
+
+						if (ent != null)
+						{
+							info = ent;
+							break;
+						}
+					}
+
+					if (info == null)
+					{
+						Debug.LogWarning("Garage raycast from {0} to {1} hit no tank", Position, Position + dir);
+						return;
+					}
+
 					// Set team &  type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
 					Team = gameRules.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameRules.Teams.Length));
 
-					if (string.IsNullOrEmpty(GameCVars.ForceTankType))
-						TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
-					else
-						TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
+					TurretTypeName = "CryGameCode.Tanks." + info.TurretType;
+					Debug.LogAlways("Got turret type {0}", TurretTypeName);
 
 					if (Game.IsServer)
 						gameRules.RequestRevive(Id, Team, TurretTypeName);
@@ -72,6 +94,9 @@ namespace CryGameCode.Tanks
 			Health = 0;
 			Hide(true);
 			ReceiveUpdates = true;
+
+			if (IsLocalClient)
+				Entity.Spawn<Cursor>("Cursor");
 		}
 
 		public void OnLeftGame()
@@ -140,9 +165,6 @@ namespace CryGameCode.Tanks
 
 			Hide(false);
 
-			if (IsLocalClient)
-				Entity.Spawn<Cursor>("Cursor");
-
 			SpawnTime = Time.FrameStartTime;
 		}
 
@@ -151,7 +173,11 @@ namespace CryGameCode.Tanks
 			Health = 0;
 
 			if (enteringGame)
+			{
 				ToggleSpectatorPoint();
+				if (IsLocalClient)
+					Entity.Spawn<Cursor>("Cursor");
+			}
 		}
 
 		void Physicalize()
@@ -222,7 +248,7 @@ namespace CryGameCode.Tanks
 			}
 
 			if (Turret != null && Turret.TurretEntity != null && !Turret.TurretEntity.IsDestroyed)
-				Turret.TurretEntity.Position = Position + Rotation * new Vec3(0, 0.69252968f, 2.05108f);
+				Turret.TurretEntity.Position = Position + Rotation * TurretOffset;
 		}
 
 		protected override void OnPrePhysicsUpdate()

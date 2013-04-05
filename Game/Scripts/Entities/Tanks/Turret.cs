@@ -50,6 +50,10 @@ namespace CryGameCode.Tanks
 	{
 		public TankTurret(Tank owner)
 		{
+			// Info only
+			if (owner == null)
+				return;
+
 			Owner = owner;
 
 			if (Game.IsServer)
