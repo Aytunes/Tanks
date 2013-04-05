@@ -65,21 +65,16 @@ namespace CryGameCode
 			Debug.LogAlways("Telemetry thread, {0}, started successfully", m_telemThread.ManagedThreadId);
 		}
 
-		protected override bool OnRemove()
+		protected override void Destroy()
 		{
-			if (Game.IsServer)
+			m_telemThread.Abort();
+
+			foreach (var sender in m_senders)
 			{
-				m_telemThread.Abort();
-
-				foreach (var sender in m_senders)
-				{
-					var disposable = sender as IDisposable;
-					if (disposable != null)
-						disposable.Dispose();
-				}
+				var disposable = sender as IDisposable;
+				if (disposable != null)
+					disposable.Dispose();
 			}
-
-			return true;
 		}
 
 		public static void Record<T>(T info)

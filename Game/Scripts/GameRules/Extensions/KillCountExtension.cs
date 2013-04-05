@@ -51,13 +51,12 @@ namespace CryGameCode.Extensions
 			}
 		}
 
-		protected override bool OnRemove()
+		protected override void Destroy()
 		{
 			Input.ActionmapEvents.RemoveAll(this);
 			Rules.ClientConnected -= Connect;
 			Rules.ClientDisconnected -= Disconnect;
 			Rules.TankDied -= TankDied;
-			return true;
 		}
 
 		private void TankDied(object sender, DamageEventArgs e)
