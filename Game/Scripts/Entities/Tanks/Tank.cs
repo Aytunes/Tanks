@@ -25,8 +25,11 @@ namespace CryGameCode.Tanks
 			OnDeath += OnDied;
 		}
 
-		public void OnInputChanged(InputFlags flags, KeyEvent keyEvent)
+		public void OnInputChanged(object sender, InputEventArgs e)
 		{
+			var flags = e.Flags;
+			var keyEvent = e.Event;
+
 			if (flags.IsSet(InputFlags.LeftMouseButton) && keyEvent == KeyEvent.OnRelease)
 			{
 				var gameRules = GameRules.Current as SinglePlayer;

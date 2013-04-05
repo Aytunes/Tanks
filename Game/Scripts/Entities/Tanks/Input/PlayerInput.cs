@@ -91,11 +91,11 @@ namespace CryGameCode.Tanks
 
 				var pressedKeys = changedKeys & (InputFlags)flags;
 				if (pressedKeys != 0)
-					OnInputChanged(pressedKeys, KeyEvent.OnPress);
+					OnInputChanged(this, new InputEventArgs { Flags = pressedKeys, Event = KeyEvent.OnPress });
 
 				var releasedKeys = changedKeys & m_flags;
 				if (releasedKeys != 0)
-					OnInputChanged(releasedKeys, KeyEvent.OnRelease);
+					OnInputChanged(this, new InputEventArgs { Flags = releasedKeys, Event = KeyEvent.OnRelease });
 			}
 
 			m_flags = (InputFlags)flags;
@@ -108,8 +108,7 @@ namespace CryGameCode.Tanks
 			serialize.EndGroup();
 		}
 
-		public delegate void OnInputChangedDelegate(InputFlags flags, KeyEvent keyEvent);
-		public event OnInputChangedDelegate OnInputChanged;
+		public event EventHandler<InputEventArgs> OnInputChanged;
 
 		void AddEvent(string actionMapName, InputFlags flag)
 		{
@@ -143,7 +142,7 @@ namespace CryGameCode.Tanks
 							Owner.GameObject.NotifyNetworkStateChange((int)NetAspects.Input);
 
 							if (OnInputChanged != null && (Game.IsClient || !Game.IsMultiplayer))
-								OnInputChanged(flag, keyEvent);
+								OnInputChanged(this, new InputEventArgs { Flags = flag, Event = keyEvent });
 						}
 					}
 					break;
@@ -156,7 +155,7 @@ namespace CryGameCode.Tanks
 							Owner.GameObject.NotifyNetworkStateChange((int)NetAspects.Input);
 
 							if (OnInputChanged != null && (Game.IsClient || !Game.IsMultiplayer))
-								OnInputChanged(flag, keyEvent);
+								OnInputChanged(this, new InputEventArgs { Flags = flag, Event = keyEvent });
 						}
 					}
 					break;
@@ -191,5 +190,11 @@ namespace CryGameCode.Tanks
 		public Vec3 MouseWorldPosition { get { return m_mouseWorldPos; } }
 
 		public Actor Owner { get; private set; }
+	}
+
+	public class InputEventArgs : EventArgs
+	{
+		public InputFlags Flags { get; set; }
+		public KeyEvent Event { get; set; }
 	}
 }

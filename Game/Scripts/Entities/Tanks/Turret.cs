@@ -58,11 +58,14 @@ namespace CryGameCode.Tanks
 			owner.OnDeath += (s, e) => { Destroy(); };
 		}
 
-		void OnInput(InputFlags flags, KeyEvent keyEvent)
+		void OnInput(object sender, InputEventArgs e)
 		{
 			// Workaround for firing directly after the user requested revival.
 			if (Owner.SpawnTime == -1 || Time.FrameStartTime - Owner.SpawnTime < 100)
 				return;
+
+			var flags = e.Flags;
+			var keyEvent = e.Event;
 
 			if (flags.IsSet(InputFlags.LeftMouseButton))
 			{
