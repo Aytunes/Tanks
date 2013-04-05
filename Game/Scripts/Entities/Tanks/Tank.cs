@@ -7,6 +7,7 @@ using CryEngine.Serialization;
 using CryGameCode.Entities;
 using CryGameCode.Network;
 using CryGameCode.Entities.Garage;
+using CryGameCode.Entities.Markers;
 
 namespace CryGameCode.Tanks
 {
@@ -24,6 +25,8 @@ namespace CryGameCode.Tanks
 
 			Input = new PlayerInput(this);
 			Input.OnInputChanged += OnInputChanged;
+
+			OverviewCamera = Entity.GetByClass<OverviewPoint>().FirstOrDefault();
 
 			OnDeath += OnDied;
 		}
