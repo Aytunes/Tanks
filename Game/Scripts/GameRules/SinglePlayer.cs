@@ -134,7 +134,7 @@ namespace CryGameCode
 
 				Debug.LogAlways("Reviving!");
 
-				var spawnPoint = FindSpawnPoint();
+				var spawnPoint = FindSpawnPoint(team);
 				if (spawnPoint != null)
 					spawnPoint.TrySpawn(tank);
 
