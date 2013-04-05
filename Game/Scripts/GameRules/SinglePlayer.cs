@@ -19,21 +19,27 @@ namespace CryGameCode
 	[GameRules(Default = true)]
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
-		private GameRulesExtension[] m_extensions;
+		private Dictionary<Type, GameRulesExtension> m_extensions;
 
 		public SinglePlayer()
 		{
 			m_extensions = (from type in Assembly.GetExecutingAssembly().GetTypes()
 							where type.Implements<GameRulesExtension>()
-							select (GameRulesExtension)Entity.Spawn("Extension", type)).ToArray();
+							select (GameRulesExtension)Entity.Spawn("Extension", type))
+							.ToDictionary(e => e.GetType(), e => e);
 
-			foreach (var extension in m_extensions)
+			foreach (var extension in m_extensions.Values)
 				extension.Register(this);
 
 			if (Game.IsServer)
 				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name });
 
 			ReceiveUpdates = true;
+		}
+
+		public T GetExtension<T>() where T : GameRulesExtension
+		{
+			return (T)m_extensions[typeof(T)];
 		}
 
 		public static Random Selector = new Random();
