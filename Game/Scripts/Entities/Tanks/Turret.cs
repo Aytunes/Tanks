@@ -208,13 +208,6 @@ namespace CryGameCode.Tanks
 				var jointAbsolute = TurretEntity.GetJointAbsolute(helper);
 				jointAbsolute.T = TurretEntity.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
 
-				var sound = Sound.CreateSound(FireSound);
-				if (sound != null)
-				{
-					sound.Position = jointAbsolute.T;
-					sound.Play();
-				}
-
 				var gameMode = GameRules.Current as SinglePlayer;
 
 				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
@@ -240,7 +233,7 @@ namespace CryGameCode.Tanks
 				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T, Rotation = turretRot.Column1 });
 				projectile.Launch(Owner.Id);
 
-				OnFire(jointAbsolute.T);
+				OnRemoteFire(jointAbsolute.T);
 				Owner.RemoteInvocation(TurretEntity.RemoteFire, NetworkTarget.ToRemoteClients, jointAbsolute.T);
 			}
 		}
@@ -259,6 +252,12 @@ namespace CryGameCode.Tanks
 		public void OnRemoteFire(Vec3 pos)
 		{
 			OnFire(pos);
+			var sound = Sound.CreateSound(FireSound);
+			if (sound != null)
+			{
+				sound.Position = pos;
+				sound.Play();
+			}
 		}
 
 		protected virtual void OnFire(Vec3 firePos) { }
