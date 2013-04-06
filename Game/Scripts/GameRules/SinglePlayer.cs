@@ -25,6 +25,7 @@ namespace CryGameCode
 		{
 			m_extensions = (from type in Assembly.GetExecutingAssembly().GetTypes()
 							where type.Implements<GameRulesExtension>()
+							orderby !type.ContainsAttribute<PriorityExtensionAttribute>()
 							select (GameRulesExtension)Entity.Spawn("Extension", type))
 							.ToDictionary(e => e.GetType(), e => e);
 

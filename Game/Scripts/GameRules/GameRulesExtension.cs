@@ -1,4 +1,5 @@
-﻿using CryEngine;
+﻿using System;
+using CryEngine;
 using CryEngine.Extensions;
 using CryGameCode.Network;
 
@@ -50,5 +51,9 @@ namespace CryGameCode.Extensions
 		protected virtual void Destroy()
 		{
 		}
+	}
+
+	public class PriorityExtensionAttribute : Attribute
+	{
 	}
 }
