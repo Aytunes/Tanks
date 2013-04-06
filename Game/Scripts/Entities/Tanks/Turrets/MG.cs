@@ -18,5 +18,7 @@ namespace CryGameCode.Tanks
 		public override Type ProjectileType { get { return typeof(MGBullet); } }
 		public override float TimeBetweenShots { get { return 0.1f; } }
 		public override bool AutomaticFire { get { return true; } }
+
+		public override string FireSound { get { return "Sounds/weapons:hmg_fire:fire_loop_3p"; } }
 	}
 }

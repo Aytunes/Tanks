@@ -184,6 +184,13 @@ namespace CryGameCode.Tanks
 				var jointAbsolute = TurretEntity.GetJointAbsolute(helper);
 				jointAbsolute.T = TurretEntity.Transform.TransformPoint(jointAbsolute.T) + jointAbsolute.Q * new Vec3(0, 0, 0);
 
+				var sound = Sound.CreateSound(FireSound);
+				if (sound != null)
+				{
+					sound.Position = jointAbsolute.T;
+					sound.Play();
+				}
+
 				var gameMode = GameRules.Current as SinglePlayer;
 
 				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
@@ -250,6 +257,8 @@ namespace CryGameCode.Tanks
 		public virtual float Mass { get { return 0; } }
 		public virtual float FrontalArea { get { return 0; } }
 		public virtual float DragCoefficient { get { return 0; } }
+
+		public virtual string FireSound { get { return "Sounds/weapons:scar:fire_single_3p"; } }
 		#endregion
 
 		public void Hide(bool hide)
