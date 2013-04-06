@@ -109,6 +109,7 @@
     <Compile Include="FlowNodes\Login.cs" />
     <Compile Include="GameRules\DestroyTheDrill.cs" />
     <Compile Include="GameRules\Extensions\ChatExtension.cs" />
+    <Compile Include="GameRules\Extensions\DSLoginExtension.cs" />
     <Compile Include="GameRules\Extensions\KillCountExtension.cs" />
     <Compile Include="GameRules\Game Modifiers\ArchangelModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\HealthModifier.cs" />
