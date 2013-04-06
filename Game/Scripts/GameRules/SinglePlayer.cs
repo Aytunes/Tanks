@@ -179,19 +179,6 @@ namespace CryGameCode
 			m_activeGameModifiers.Add(modifier);
 		}
 
-		public virtual string[] Teams
-		{
-			get
-			{
-				return new string[] { "red" };
-			}
-		}
-
-		public bool IsTeamValid(string team)
-		{
-			return Teams.Contains(team);
-		}
-
 		List<IGameModifier> m_activeGameModifiers = new List<IGameModifier>();
 
 		public static Random Selector = new Random();
