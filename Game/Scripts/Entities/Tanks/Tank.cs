@@ -218,17 +218,16 @@ namespace CryGameCode.Tanks
 			float blend = MathHelpers.Clamp(Time.DeltaTime / 0.15f, 0, 1.0f);
 			GroundNormal = (GroundNormal + blend * (Physics.LivingStatus.GroundNormal - GroundNormal));
 
+			var position = Position;
+
 			if (Game.IsClient && !Game.IsEditor)
 			{
-				var currentPos = Position;
-				var currentRot = Rotation;
-
-				m_currentDelta = m_serverPos - currentPos;
+				m_currentDelta = m_serverPos - position;
 				var deltaLength = m_currentDelta.Length;
 
 				if (IsLocalClient)
 				{
-					Renderer.DrawTextToScreen(10, 10, 2, Color.White, "Client pos: {0}", currentPos);
+					Renderer.DrawTextToScreen(10, 10, 2, Color.White, "Client pos: {0}", position);
 					Renderer.DrawTextToScreen(10, 30, 2, Color.White, "Server pos: {0}", m_serverPos);
 
 					var clr = deltaLength > 2 ? Color.Red : Color.White;
@@ -241,11 +240,12 @@ namespace CryGameCode.Tanks
 				if (m_currentDelta.Length > MaxDelta)
 				{
 					Position = m_serverPos;
+					position = m_serverPos;
 				}
 			}
 
 			if (Turret != null && Turret.TurretEntity != null && !Turret.TurretEntity.IsDestroyed)
-				Turret.TurretEntity.Position = Position + Rotation * TurretOffset;
+				Turret.TurretEntity.Position = position + Rotation * Turret.Attachment.DefaultAbsolute.T;
 		}
 
 		protected override void OnPrePhysicsUpdate()
