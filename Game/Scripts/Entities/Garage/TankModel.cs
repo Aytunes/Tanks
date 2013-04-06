@@ -13,7 +13,7 @@ namespace CryGameCode.Entities.Garage
 
 		public string Team { get; set; }
 
-		private Rigidbody m_turretInstance;
+		private EntityBase m_turretInstance;
 
 		protected override void  OnStartLevel()
 		{
@@ -55,8 +55,8 @@ namespace CryGameCode.Entities.Garage
 
 			var turretInfo = Activator.CreateInstance(requestedType, (Tank)null) as TankTurret;
 
-			m_turretInstance = Entity.Spawn<Rigidbody>("displayTurret");
-			m_turretInstance.Model = turretInfo.Model;
+			m_turretInstance = Entity.Spawn("displayTurret");
+			m_turretInstance.LoadObject(turretInfo.Model);
 			m_turretInstance.Position = Position + Rotation * Tank.TurretOffset;
 			m_turretInstance.Rotation = Rotation;
 		}
