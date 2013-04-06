@@ -36,4 +36,8 @@ namespace CryGameCode.Network
 	public class ServerOnlyAttribute : Attribute
 	{
 	}
+
+	public class ExcludeInEditorAttribute : Attribute
+	{
+	}
 }

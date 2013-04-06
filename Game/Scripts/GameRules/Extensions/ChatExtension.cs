@@ -6,14 +6,13 @@ using CryGameCode.Social;
 
 namespace CryGameCode.Extensions
 {
+	[ExcludeInEditor]
 	public class ChatExtension : GameRulesExtension
 	{
 		private ISocialChat m_chat;
 
 		protected override void Init()
 		{
-			m_chat = SocialPlatform.Active.Chat;
-
 			if (Game.IsServer)
 			{
 				Rules.ClientConnected += Connect;

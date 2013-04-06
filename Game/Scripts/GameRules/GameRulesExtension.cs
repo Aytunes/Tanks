@@ -25,11 +25,21 @@ namespace CryGameCode.Extensions
 			}
 		}
 
+		public bool RunInEditor
+		{
+			get
+			{
+				return !GetType().ContainsAttribute<ExcludeInEditorAttribute>();
+			}
+		}
+
 		public bool Active
 		{
 			get
 			{
-				return (!ServerOnly || Game.IsServer) && (!DSOnly || Game.IsDedicated);
+				return (!ServerOnly || Game.IsServer) &&
+					(!DSOnly || Game.IsDedicated) &&
+					(RunInEditor || !Game.IsEditor);
 			}
 		}
 
