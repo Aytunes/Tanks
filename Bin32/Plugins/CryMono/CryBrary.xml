@@ -3057,6 +3057,18 @@
             <param name="objectReference"></param>
             <returns>true if object had already been serialized.</returns>
         </member>
+        <member name="M:CryEngine.Serialization.CrySerializer.StartWrite(CryEngine.Serialization.ObjectReference)">
+            <summary>
+            Starts writing the specified reference.
+            </summary>
+            <param name="objectReference"></param>
+        </member>
+        <member name="M:CryEngine.Serialization.CrySerializer.StartRead">
+            <summary>
+            Starts reading an reference that was written with <see cref="M:CryEngine.Serialization.CrySerializer.StartWrite(CryEngine.Serialization.ObjectReference)"/>.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="P:CryEngine.Serialization.CrySerializer.ObjectReferences">
             <summary>
             We store a dictionary of all serialized objects in order to not create new instances of types with identical hash codes. (same objects)
