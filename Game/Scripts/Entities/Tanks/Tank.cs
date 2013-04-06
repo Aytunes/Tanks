@@ -218,7 +218,7 @@ namespace CryGameCode.Tanks
 			float blend = MathHelpers.Clamp(Time.DeltaTime / 0.15f, 0, 1.0f);
 			GroundNormal = (GroundNormal + blend * (Physics.LivingStatus.GroundNormal - GroundNormal));
 
-			if (Game.IsClient)
+			if (Game.IsClient && !Game.IsEditor)
 			{
 				var currentPos = Position;
 				var currentRot = Rotation;
