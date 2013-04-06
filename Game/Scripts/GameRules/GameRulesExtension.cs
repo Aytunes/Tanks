@@ -17,11 +17,19 @@ namespace CryGameCode.Extensions
 			}
 		}
 
+		public bool DSOnly
+		{
+			get
+			{
+				return GetType().ContainsAttribute<DedicatedServerOnlyAttribute>();
+			}
+		}
+
 		public bool Active
 		{
 			get
 			{
-				return !ServerOnly || Game.IsServer;
+				return (!ServerOnly || Game.IsServer) && (!DSOnly || Game.IsDedicated);
 			}
 		}
 

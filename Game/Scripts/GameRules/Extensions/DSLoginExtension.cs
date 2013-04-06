@@ -4,7 +4,7 @@ using CryGameCode.Social;
 
 namespace CryGameCode.Extensions
 {
-	[ServerOnly, PriorityExtension]
+	[DedicatedServerOnly, PriorityExtension]
 	public class DSLoginExtension : GameRulesExtension
 	{
 		protected override void Init()
