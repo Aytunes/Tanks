@@ -17,6 +17,7 @@ namespace CryGameCode.Tanks
 	public class TurretEntity : Entity
 	{
 		private string m_tankName;
+		private TankTurret m_turret;
 
 		public override void OnSpawn()
 		{
@@ -32,9 +33,16 @@ namespace CryGameCode.Tanks
 			var owner = Entity.Find(m_tankName) as Tank;
 			if (owner != null && owner.Turret != null)
 			{
-				owner.Turret.Initialize(this);
+				m_turret = owner.Turret;
+				m_turret.Initialize(this);
 				ReceiveUpdates = false;
 			}
+		}
+
+		[RemoteInvocation]
+		public void RemoteFire(Vec3 pos)
+		{
+			m_turret.OnRemoteFire(pos);
 		}
 	}
 
@@ -42,19 +50,26 @@ namespace CryGameCode.Tanks
 	{
 		public TankTurret(Tank owner)
 		{
+			// Info only
+			if (owner == null)
+				return;
+
 			Owner = owner;
 
 			if (Game.IsServer)
 				owner.Input.OnInputChanged += OnInput;
 
-			owner.OnDestroyed += (x) => { Destroy(); };
+			owner.OnDeath += (s, e) => { Destroy(); };
 		}
 
-		void OnInput(InputFlags flags, KeyEvent keyEvent)
+		void OnInput(object sender, InputEventArgs e)
 		{
 			// Workaround for firing directly after the user requested revival.
 			if (Owner.SpawnTime == -1 || Time.FrameStartTime - Owner.SpawnTime < 100)
 				return;
+
+			var flags = e.Flags;
+			var keyEvent = e.Event;
 
 			if (flags.IsSet(InputFlags.LeftMouseButton))
 			{
@@ -91,7 +106,7 @@ namespace CryGameCode.Tanks
 			}
 		}
 
-		public void Initialize(EntityBase entity)
+		public void Initialize(TurretEntity entity)
 		{
 			Attachment = Owner.GetAttachment("turret");
 
@@ -100,8 +115,9 @@ namespace CryGameCode.Tanks
 			TurretEntity = entity;
 
 			entity.LoadObject(Model);
+			entity.ViewDistanceRatio = 255;
 
-			entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
+			entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team.Name);
 
 			Physicalize();
 
@@ -157,16 +173,24 @@ namespace CryGameCode.Tanks
 
 			var tankInput = Owner.Input;
 
-			var dir = tankInput.MouseWorldPosition - TurretEntity.Position;
+			if (GameCVars.cam_type == (int)CameraType.FirstPerson)
+			{
+				var delta = m_lastMouseX - tankInput.MouseX;
+				TurretEntity.Rotation *= Quat.CreateRotationZ(delta * 0.3f * (float)Math.PI / 180.0f);//TODO: take sensitivity cvar into account
+				m_lastMouseX = tankInput.MouseX;
+			}
+			else
+			{
+				var dir = tankInput.MouseWorldPosition - TurretEntity.Position;
 
-			var ownerRotation = Owner.Rotation;
+				var ownerRotation = Owner.Rotation;
 
-			var forward = Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)).Column1;
-			Vec3 up = ownerRotation.Column2;
+				var forward = Quat.CreateRotationZ((float)Math.Atan2(-dir.X, dir.Y)).Column1;
+				Vec3 up = ownerRotation.Column2;
 
-			var rotation = new Quat(Matrix33.CreateFromVectors(forward % up, forward, up)).Normalized;
-
-			TurretEntity.Rotation = rotation;
+				var rotation = new Quat(Matrix33.CreateFromVectors(forward % up, forward, up)).Normalized;
+				TurretEntity.Rotation = rotation;
+			}
 		}
 
 		#region Weapons
@@ -200,20 +224,24 @@ namespace CryGameCode.Tanks
 					projectile = null;
 				}
 
+				var turretRot = TurretEntity.Rotation.Normalized;
+
 				if (projectile == null || !Projectile.RecyclingEnabled)
 				{
-					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, TurretEntity.Rotation.Normalized) as Projectile;
+					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, turretRot) as Projectile;
 					ProjectileStorage.Add(projectile);
 				}
 				else
 				{
 					projectile.Position = jointAbsolute.T;
-					projectile.Rotation = TurretEntity.Rotation.Normalized;
+					projectile.Rotation = turretRot;
 				}
 
+				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T, Rotation = turretRot.Column1 });
 				projectile.Launch(Owner.Id);
 
-				//OnFire(jointAbsolute.T);
+				OnFire(jointAbsolute.T);
+				Owner.RemoteInvocation(TurretEntity.RemoteFire, NetworkTarget.ToRemoteClients, jointAbsolute.T);
 			}
 		}
 
@@ -226,6 +254,11 @@ namespace CryGameCode.Tanks
 		{
 			if (!string.IsNullOrEmpty(RightHelper))
 				Fire(ref m_lastRightShot, RightHelper);
+		}
+
+		public void OnRemoteFire(Vec3 pos)
+		{
+			OnFire(pos);
 		}
 
 		protected virtual void OnFire(Vec3 firePos) { }
@@ -248,6 +281,7 @@ namespace CryGameCode.Tanks
 		/// This way we don't have to spawn new ones all the time.
 		/// </summary>
 		public HashSet<Projectile> ProjectileStorage = new HashSet<Projectile>();
+		private int m_lastMouseX;
 		#endregion
 
 		#region Config
@@ -277,7 +311,7 @@ namespace CryGameCode.Tanks
 
 		public Tank Owner { get; private set; }
 		public Attachment Attachment { get; private set; }
-		public EntityBase TurretEntity { get; private set; }
+		public TurretEntity TurretEntity { get; private set; }
 
 		public bool Destroyed { get; set; }
 	}

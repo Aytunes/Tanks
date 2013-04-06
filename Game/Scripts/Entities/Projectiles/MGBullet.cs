@@ -11,7 +11,7 @@ namespace CryGameCode.Projectiles
 		public override float Speed { get { return 1400; } }
 		public override string Effect { get { return "explosions.explosive_bullet.default"; } }
 		public override float EffectScale { get { return 0.3f; } }
-		public override float Damage { get { return 10; } }
+		public override float Damage { get { return 2; } }
 		public override DamageType DamageType { get { return DamageType.Explosive; } }
 		public override bool ShouldExplode { get { return false; } }
 	}

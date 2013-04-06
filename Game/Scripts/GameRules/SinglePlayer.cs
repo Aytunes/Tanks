@@ -8,7 +8,8 @@ using CryEngine.Extensions;
 
 using CryGameCode.Entities;
 using CryGameCode.Tanks;
-using CryGameCode.Telemetry;
+using CryGameCode.Extensions;
+using CryGameCode.Network;
 
 namespace CryGameCode
 {
@@ -18,23 +19,37 @@ namespace CryGameCode
 	[GameRules(Default = true)]
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
+		private Dictionary<Type, GameRulesExtension> m_extensions;
+
 		public SinglePlayer()
 		{
+			m_extensions = (from type in Assembly.GetExecutingAssembly().GetTypes()
+							where type.Implements<GameRulesExtension>()
+							select (GameRulesExtension)Entity.Spawn("Extension", type))
+							.ToDictionary(e => e.GetType(), e => e);
+
+			foreach (var extension in m_extensions.Values)
+				extension.Register(this);
+
 			if (Game.IsServer)
-			{
-				var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
-				Metrics.Record(new MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
-			}
+				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name });
 
 			Teams = new Team[] { new Team("Red"), new Team("Blue") };
 			
 			ReceiveUpdates = true;
 		}
 
+		public T GetExtension<T>() where T : GameRulesExtension
+		{
+			return (T)m_extensions[typeof(T)];
+		}
+
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
 			if (!Game.IsServer)
 				return;
+
+			Metrics.Record(new Telemetry.ClientConnected { Nickname = playerName });
 
 			var tank = Actor.Create<Tank>(channelId, playerName);
 			if (tank == null)
@@ -51,6 +66,11 @@ namespace CryGameCode
 			var tank = Actor.Get<Tank>(channelId);
 			tank.OnLeftGame();
 
+			tank.OnDeath -= OnTankDied;
+
+			ClientDisconnected.Raise(this, new ConnectionEventArgs { Tank = tank, ChannelID = channelId });
+			Metrics.Record(new Telemetry.ClientDisconnected { Nickname = tank.Name });
+
 			m_playerBuffer.Remove(tank);
 
 			Actor.Remove(channelId);
@@ -61,6 +81,10 @@ namespace CryGameCode
 			Debug.LogAlways("[Enter] SinglePlayer.OnClientEnteredGame: channel {0}, player {1}", channelId, playerId);
 			var actor = Actor.Get<Tank>(playerId);
 
+			ClientConnected.Raise(this, new ConnectionEventArgs { ChannelID = channelId, Tank = actor });
+
+			actor.OnDeath += OnTankDied;
+
 			actor.OnEnteredGame();
 			actor.RemoteInvocation(OnEnteredGame, NetworkTarget.ToRemoteClients, channelId, playerId);
 
@@ -69,7 +93,7 @@ namespace CryGameCode
 			{
 				player.RemoteInvocation(OnEnteredGame, NetworkTarget.ToClientChannel, channelId, player.Id, channelId: channelId);
 				player.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToClientChannel, player.Id, player.Position, player.Rotation,
-					player.Team, player.TurretTypeName, channelId: channelId);
+					player.Team.Name, player.TurretTypeName, channelId: channelId);
 			}
 
 			m_playerBuffer.Add(actor);
@@ -82,6 +106,11 @@ namespace CryGameCode
 			var actor = Actor.Get<Tank>(playerId);
 
 			actor.OnEnteredGame();
+		}
+
+		protected void OnTankDied(object sender, DamageEventArgs e)
+		{
+			TankDied.Raise(sender, e);
 		}
 
 		/// <summary>
@@ -104,16 +133,17 @@ namespace CryGameCode
 				// Select team with the least players in.
 				var team = Teams.Aggregate((selectedTeam, x) => (selectedTeam == null || x.Players.Count < selectedTeam.Players.Count) ? x : selectedTeam);
 
-				tank.Team = team.Name;
+				tank.Team = team;
 				team.Players.Add(tank);
 
 				tank.TurretTypeName = turretTypeName;
 
-				Debug.LogAlways("Reviving!");
-
-				var spawnPoint = FindSpawnPoint();
+				Debug.LogAlways("Trying to find spawnpoint for player {0} in team {1}", tank.Name, team.Name);
+				var spawnPoint = FindSpawnPoint(team.Name);
 				if (spawnPoint != null)
 					spawnPoint.TrySpawn(tank);
+				else
+					Debug.LogWarning("Could not find spawnpoint!");
 
 				var turretEntity = Entity.Spawn<TurretEntity>(tank.Name + "." + turretTypeName, null, null, null, true, EntityFlags.CastShadow);
 
@@ -124,17 +154,17 @@ namespace CryGameCode
 				tank.Turret.Initialize(turretEntity);
 
 				Debug.LogAlways("Invoking RMI OnRevivedPlayer");
-				tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, tank.Rotation, team.Name, turretTypeName);
+				tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToRemoteClients, actorId, tank.Position, tank.Rotation, team.Name, turretTypeName);
 			}
 		}
 
 		[RemoteInvocation]
-		void OnRevivedPlayer(EntityId actorId, Vec3 position, Quat rotation, string team, string turretTypeName)
+		void OnRevivedPlayer(EntityId actorId, Vec3 position, Quat rotation, string teamName, string turretTypeName)
 		{
 			Debug.LogAlways("OnRevivedPlayer");
 			var tank = Actor.Get<Tank>(actorId);
 
-			tank.Team = team;
+			tank.Team = Teams.FirstOrDefault(x => x.Name == teamName);
 			tank.TurretTypeName = turretTypeName;
 
 			tank.Position = position;
@@ -150,7 +180,7 @@ namespace CryGameCode
 			{
 				spawnpoints = spawnpoints.Where(x =>
 					{
-						return x.CanSpawn && (team == null || x.Team == team);
+						return x.CanSpawn && (team == null || x.Team.Equals(team, StringComparison.CurrentCultureIgnoreCase));
 					});
 
 				if (spawnpoints.Count() > 0)
@@ -184,9 +214,27 @@ namespace CryGameCode
 		public static Random Selector = new Random();
 
 		private HashSet<Tank> m_playerBuffer = new HashSet<Tank>();
-
 		public IEnumerable<Tank> Players { get { return m_playerBuffer; } }
 
 		public Team[] Teams { get; private set; }
+
+		public event EventHandler<ConnectionEventArgs> ClientConnected;
+		public event EventHandler<ConnectionEventArgs> ClientDisconnected;
+		public event EventHandler<DamageEventArgs> TankDied;
+	}
+
+	public class ConnectionEventArgs : EventArgs
+	{
+		public int ChannelID { get; set; }
+		public Tank Tank { get; set; }
+	}
+
+	public static class EventExtensions
+	{
+		public static void Raise<T>(this EventHandler<T> evt, object sender, T args) where T : EventArgs
+		{
+			if (evt != null)
+				evt(sender, args);
+		}
 	}
 }

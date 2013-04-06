@@ -39,7 +39,7 @@ namespace CryGameCode
 				{
 					var drill = drills.Single(d => d.Team == team.Name);
 
-					drill.OnDeath += (sender, damage, type, pos, dir) =>
+					drill.OnDeath += (sender, e) =>
 					{
 						drill.RemoteInvocation(OnDrillDeath, NetworkTarget.ToAllClients, drill.Id, true);
 					};

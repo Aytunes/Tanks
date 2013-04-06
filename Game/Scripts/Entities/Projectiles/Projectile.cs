@@ -1,5 +1,6 @@
 ﻿using CryEngine;
 using CryGameCode.Entities;
+using CryGameCode.Network;
 
 namespace CryGameCode.Projectiles
 {
@@ -26,8 +27,7 @@ namespace CryGameCode.Projectiles
 
 		public void Launch(EntityId shooterId)
 		{
-			if (!Game.IsServer)
-				return;
+			NetworkValidator.Server("Projectile launching");
 
 			RemoteLaunch(shooterId, Position, Rotation, Speed);
 			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, shooterId, Position, Rotation, Speed);
@@ -59,7 +59,7 @@ namespace CryGameCode.Projectiles
 			physicalizationParams.particleParameters.thickness = radius * 2;
 			physicalizationParams.particleParameters.size = radius * 2;
 
-			physicalizationParams.particleParameters.kAirResistance = 0;
+			physicalizationParams.particleParameters.kAirResistance = 0.5f;
 			physicalizationParams.particleParameters.kWaterResistance = 0.5f;
 			physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
 			physicalizationParams.particleParameters.accThrust = 0;
@@ -120,9 +120,11 @@ namespace CryGameCode.Projectiles
 
 			if (Game.IsServer && otherEntity != null)
 			{
+				var totalDamage = (source.velocity.Length / Speed) * Damage;
+
 				var damageableTarget = otherEntity as IDamageable;
 				if (damageableTarget != null)
-					damageableTarget.Damage(ShooterId, Damage, DamageType, hitPos, Vec3.Zero);
+					damageableTarget.Damage(ShooterId, totalDamage, DamageType, hitPos, Vec3.Zero);
 
 				if (TargetModifier != null)
 				{
@@ -156,11 +158,28 @@ namespace CryGameCode.Projectiles
 				};
 
 				explosion.Explode();
+
+				/*if (Game.IsServer)
+				{
+					foreach (var affectedPhysicalEntity in explosion.AffectedEntities)
+					{
+						var entity = affectedPhysicalEntity.Owner;
+						var damageable = entity as IDamageable;
+						if (damageable == null)
+							continue;
+
+						var distance = System.Math.Abs((Position - entity.Position).Length);
+
+						var damage = ExplosionRelativeDamage * (1 - (distance / MaximumExplosionRadius));
+
+						damageable.Damage(0, damage, DamageType.Explosive, Vec3.Zero, Vec3.Zero);
+					}
+				}*/
 			}
 
 			if (Game.IsPureClient || Game.IsEditor)
 				Hidden = true;
-
+            
 			Fired = false;
 		}
 
@@ -177,6 +196,7 @@ namespace CryGameCode.Projectiles
 		public virtual float ExplosionRadius { get { return 15; } }
 		public virtual float MaximumExplosionRadius { get { return 30; } }
 		public virtual float ExplosionPressure { get { return 200; } }
+        public virtual float ExplosionRelativeDamage { get { return 5; } }
 
 		public IGameModifier TargetModifier { get; set; }
 

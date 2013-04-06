@@ -35,7 +35,7 @@ namespace CryGameCode
 				entity.Position = pos;
 				entity.Rotation = rot;
 
-				RemoteInvocation(NetSpawn, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, entity.Id, pos);
+				RemoteInvocation(NetSpawn, NetworkTarget.ToRemoteClients, entity.Id, pos);
 
 				return true;
 			}
