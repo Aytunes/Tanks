@@ -144,6 +144,7 @@
     <Compile Include="GameRules\DeathMatch.cs" />
     <Compile Include="GameRules\Native\DisconnectionCause.cs" />
     <Compile Include="GameRules\Native\GameRulesNativeCallbacks.cs" />
+    <Compile Include="GameRules\Team.cs" />
     <Compile Include="Network\NetAspects.cs" />
     <Compile Include="GameRules\SinglePlayer.cs" />
     <Compile Include="Network\NetSerializationException.cs" />

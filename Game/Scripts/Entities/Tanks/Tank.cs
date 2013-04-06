@@ -33,18 +33,15 @@ namespace CryGameCode.Tanks
 
 				if (IsDead)
 				{
-					// Set team &  type, sent to server and remote clients on revival. (TODO: Allow picking via UI)
-					Team = gameRules.Teams.ElementAt(SinglePlayer.Selector.Next(0, gameRules.Teams.Length));
-
 					if (string.IsNullOrEmpty(GameCVars.ForceTankType))
 						TurretTypeName = GameCVars.TurretTypes[SinglePlayer.Selector.Next(GameCVars.TurretTypes.Count)].FullName;
 					else
 						TurretTypeName = "CryGameCode.Tanks." + GameCVars.ForceTankType;
 
 					if (Game.IsServer)
-						gameRules.RequestRevive(Id, Team, TurretTypeName);
+						gameRules.RequestRevive(Id, TurretTypeName);
 					else
-						RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Id, Team, TurretTypeName);
+						RemoteInvocation(gameRules.RequestRevive, NetworkTarget.ToServer, Id, TurretTypeName);
 				}
 				else if (IsDead)
 					Debug.LogAlways("Can not request revive on living actor.");
@@ -261,14 +258,10 @@ namespace CryGameCode.Tanks
 			get { return team ?? "red"; }
 			set
 			{
-				var gameRules = GameRules.Current as SinglePlayer;
-				if (gameRules.IsTeamValid(value))
-				{
-					team = value;
+				team = value;
 
-					// Load correct model for this team
-					ResetModel();
-				}
+				// Load correct model for this team
+				ResetModel();
 			}
 		}
 

@@ -25,14 +25,11 @@ namespace CryGameCode
 				var t = (DateTime.UtcNow - new DateTime(1970, 1, 1));
 				Metrics.Record(new MatchStarted { GameRules = GetType().Name, Time = (int)t.TotalSeconds });
 			}
+
+			Teams = new Team[] { new Team("Red"), new Team("Blue") };
 			
 			ReceiveUpdates = true;
 		}
-
-		public static Random Selector = new Random();
-		private List<Tank> m_playerBuffer = new List<Tank>();
-
-		public IEnumerable<Tank> Players { get { return m_playerBuffer; } }
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
@@ -94,7 +91,7 @@ namespace CryGameCode
 		/// <param name="team"></param>
 		/// <param name="turretTypeName"></param>
 		[RemoteInvocation]
-		public void RequestRevive(EntityId actorId, string team, string turretTypeName)
+		public void RequestRevive(EntityId actorId, string turretTypeName)
 		{
 			if (!Game.IsServer)
 				return;
@@ -104,8 +101,11 @@ namespace CryGameCode
 
 			if (tank.IsDead && !tank.IsDestroyed)
 			{
-				if (IsTeamValid(team))
-					tank.Team = team;
+				// Select team with the least players in.
+				var team = Teams.Aggregate((selectedTeam, x) => (selectedTeam == null || x.Players.Count < selectedTeam.Players.Count) ? x : selectedTeam);
+
+				tank.Team = team.Name;
+				team.Players.Add(tank);
 
 				tank.TurretTypeName = turretTypeName;
 
@@ -124,7 +124,7 @@ namespace CryGameCode
 				tank.Turret.Initialize(turretEntity);
 
 				Debug.LogAlways("Invoking RMI OnRevivedPlayer");
-				tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, tank.Rotation, team, turretTypeName);
+				tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToAllClients | NetworkTarget.NoLocalCalls, actorId, tank.Position, tank.Rotation, team.Name, turretTypeName);
 			}
 		}
 
@@ -193,5 +193,13 @@ namespace CryGameCode
 		}
 
 		List<IGameModifier> m_activeGameModifiers = new List<IGameModifier>();
+
+		public static Random Selector = new Random();
+
+		private HashSet<Tank> m_playerBuffer = new HashSet<Tank>();
+
+		public IEnumerable<Tank> Players { get { return m_playerBuffer; } }
+
+		public Team[] Teams { get; private set; }
 	}
 }
