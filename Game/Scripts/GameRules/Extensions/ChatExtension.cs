@@ -2,13 +2,18 @@
 using CryGameCode.Network;
 using System.Collections;
 using System;
+using CryGameCode.Social;
 
 namespace CryGameCode.Extensions
 {
 	public class ChatExtension : GameRulesExtension
 	{
+		private ISocialChat m_chat;
+
 		protected override void Init()
 		{
+			m_chat = SocialPlatform.Active.Chat;
+
 			if (Game.IsServer)
 			{
 				Rules.ClientConnected += Connect;
@@ -23,6 +28,8 @@ namespace CryGameCode.Extensions
 			ConsoleCommand.Register("say", (e) =>
 			{
 				var message = string.Join(" ", e.Args);
+
+				m_chat.Send(message);
 
 				if (Game.IsPureClient)
 					RemoteInvocation(Broadcast, NetworkTarget.ToServer, Actor.LocalClient.Name, message);

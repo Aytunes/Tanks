@@ -110,7 +110,6 @@
     <Compile Include="GameRules\DestroyTheDrill.cs" />
     <Compile Include="GameRules\Extensions\ChatExtension.cs" />
     <Compile Include="GameRules\Extensions\KillCountExtension.cs" />
-    <Compile Include="GameRules\Extensions\SocialExtension.cs" />
     <Compile Include="GameRules\Game Modifiers\ArchangelModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\HealthModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\InvisibilityModifier.cs" />
