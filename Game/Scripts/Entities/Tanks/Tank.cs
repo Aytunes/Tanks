@@ -242,9 +242,6 @@ namespace CryGameCode.Tanks
 				{
 					Position = m_serverPos;
 				}
-
-				if (Game.IsPureClient)
-					Rotation = Quat.CreateNlerp(currentRot, m_serverRot, Time.DeltaTime * 20);
 			}
 
 			if (Turret != null && Turret.TurretEntity != null && !Turret.TurretEntity.IsDestroyed)

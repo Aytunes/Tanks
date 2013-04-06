@@ -27,6 +27,9 @@ namespace CryGameCode.Tanks
 
 		#endregion
 
+		private float m_lastAngularAcceleration;
+		private float m_lastAngularAccelerationChanged;
+
 		float NormalToAngle(Vec3 normal)
 		{
 			return (float)Math.Atan2(Math.Sqrt(normal.X * normal.X + normal.Y * normal.Y), normal.Z);
@@ -96,6 +99,12 @@ namespace CryGameCode.Tanks
 			// M = I * a
 			var angularAcceleration = totalMomentum / momentumIntertia;
 
+			if (angularAcceleration != m_lastAngularAcceleration)
+			{
+				m_lastAngularAccelerationChanged = Time.FrameStartTime;
+				m_lastAngularAcceleration = angularAcceleration;
+			}
+
 			var right = prevRotation.Column0;
 			var forward = (GroundNormal % right).Normalized;
 
@@ -103,6 +112,13 @@ namespace CryGameCode.Tanks
 			moveRequest.rotation.Normalize();
 
 			moveRequest.rotation *= Quat.CreateRotationZ(angularAcceleration * frameTime);
+
+			//Only start interpolating shortly after acceleration changes have been made
+			if (Game.IsPureClient && (Time.FrameStartTime - m_lastAngularAccelerationChanged) >= 200.0f)
+			{
+				//Renderer.DrawTextToScreen(100, 80, 1.3f, Color.White, "Lerping! {0}", Time.FrameStartTime - m_lastAngularAccelerationChanged);
+				Rotation = Quat.CreateNlerp(Rotation, m_serverRot, Time.DeltaTime);
+			}
 
 			///////////////////////////
 			// Velocity
@@ -136,7 +152,6 @@ namespace CryGameCode.Tanks
 
 			if (Game.IsPureClient && m_currentDelta.Length > MinDelta)
 				moveRequest.velocity += m_currentDelta * DeltaMult * m_currentDelta.LengthSquared;
-
 
 			if (GameCVars.tank_debugMovement != 0)
 			{
