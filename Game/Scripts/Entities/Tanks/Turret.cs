@@ -50,6 +50,10 @@ namespace CryGameCode.Tanks
 	{
 		public TankTurret(Tank owner)
 		{
+			// Info only
+			if (owner == null)
+				return;
+
 			Owner = owner;
 
 			if (Game.IsServer)
@@ -113,7 +117,7 @@ namespace CryGameCode.Tanks
 			entity.LoadObject(Model);
 			entity.ViewDistanceRatio = 255;
 
-			entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team);
+			entity.Material = Material.Find("objects/tanks/tank_turrets_" + Owner.Team.Name);
 
 			Physicalize();
 
@@ -229,7 +233,7 @@ namespace CryGameCode.Tanks
 				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T, Rotation = turretRot.Column1 });
 				projectile.Launch(Owner.Id);
 
-				OnFire(jointAbsolute.T);
+				OnRemoteFire(jointAbsolute.T);
 				Owner.RemoteInvocation(TurretEntity.RemoteFire, NetworkTarget.ToRemoteClients, jointAbsolute.T);
 			}
 		}
@@ -248,6 +252,12 @@ namespace CryGameCode.Tanks
 		public void OnRemoteFire(Vec3 pos)
 		{
 			OnFire(pos);
+			var sound = Sound.CreateSound(FireSound);
+			if (sound != null)
+			{
+				sound.Position = pos;
+				sound.Play();
+			}
 		}
 
 		protected virtual void OnFire(Vec3 firePos) { }
@@ -280,6 +290,8 @@ namespace CryGameCode.Tanks
 		public virtual float Mass { get { return 0; } }
 		public virtual float FrontalArea { get { return 0; } }
 		public virtual float DragCoefficient { get { return 0; } }
+
+		public virtual string FireSound { get { return "Sounds/weapons:scar:fire_single_3p"; } }
 		#endregion
 
 		public void Hide(bool hide)

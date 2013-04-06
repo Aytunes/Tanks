@@ -25,5 +25,7 @@ namespace CryGameCode.Tanks
 		public override string RightHelper { get { return "turret_term_1"; } }
 		public override float TimeBetweenShots { get { return 2f; } }
 		public override Type ProjectileType { get { return typeof(Rocket); } }
+
+		public override string FireSound { get { return "Sounds/weapons:tank_main_cannon:fire_3p"; } }
 	}
 }

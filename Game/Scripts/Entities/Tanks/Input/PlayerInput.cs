@@ -44,6 +44,14 @@ namespace CryGameCode.Tanks
 					GameCVars.cam_type = 0;
 			});
 
+			Input.ActionmapEvents.Add("jump", (e) =>
+			{
+				var camera = Owner.OverviewCamera;
+
+				if (camera != null)
+					camera.Active = !camera.Active;
+			});
+
 			if (Game.IsClient)
 				Input.MouseEvents += OnMouseEvent;
 		}
@@ -189,7 +197,7 @@ namespace CryGameCode.Tanks
 		Vec3 m_mouseWorldPos;
 		public Vec3 MouseWorldPosition { get { return m_mouseWorldPos; } }
 
-		public Actor Owner { get; private set; }
+		public Tank Owner { get; private set; }
 	}
 
 	public class InputEventArgs : EventArgs

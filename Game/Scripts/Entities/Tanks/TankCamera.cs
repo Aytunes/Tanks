@@ -1,4 +1,5 @@
 ﻿using CryEngine;
+using CryGameCode.Entities.Markers;
 
 namespace CryGameCode.Tanks
 {
@@ -16,6 +17,8 @@ namespace CryGameCode.Tanks
 
 	public partial class Tank
 	{
+		public OverviewPoint OverviewCamera { get; private set; }
+
 		protected override void UpdateView(ref ViewParams viewParams)
 		{
 			viewParams.FieldOfView = MathHelpers.DegreesToRadians(60);
@@ -48,18 +51,31 @@ namespace CryGameCode.Tanks
 				}
 			}
 
-			switch ((CameraType)GameCVars.cam_type)
+			if (OverviewCamera != null && OverviewCamera.Active)
 			{
-				case CameraType.TopDown:
-					ViewTopDownCamera(ref viewParams);
-					break;
-				case CameraType.TopDown3D:
-					ViewTopDown3DCamera(ref viewParams);
-					break;
-				case CameraType.FirstPerson:
-					ViewFirstPerson(ref viewParams);
-					break;
+				ViewOverviewCamera(ref viewParams);
 			}
+			else
+			{
+				switch ((CameraType)GameCVars.cam_type)
+				{
+					case CameraType.TopDown:
+						ViewTopDownCamera(ref viewParams);
+						break;
+					case CameraType.TopDown3D:
+						ViewTopDown3DCamera(ref viewParams);
+						break;
+					case CameraType.FirstPerson:
+						ViewFirstPerson(ref viewParams);
+						break;
+				}
+			}
+		}
+
+		void ViewOverviewCamera(ref ViewParams viewParams)
+		{
+			viewParams.Position = Vec3.CreateLerp(viewParams.Position, OverviewCamera.Position, Time.DeltaTime * OverviewPoint.MoveLerpSpeed);
+			viewParams.Rotation = Quat.CreateNlerp(viewParams.Rotation, OverviewCamera.Rotation, Time.DeltaTime * OverviewPoint.RotationLerpSpeed);
 		}
 
 		void ViewTopDownCamera(ref ViewParams viewParams)

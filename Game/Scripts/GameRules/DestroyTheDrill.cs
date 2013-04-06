@@ -37,14 +37,16 @@ namespace CryGameCode
 
 				foreach (var team in Teams)
 				{
-					var drill = drills.Single(d => d.Team == team);
+					var drill = drills.Single(d => d.Team.Equals(team.Name, System.StringComparison.CurrentCultureIgnoreCase));
 
 					drill.OnDeath += (sender, e) =>
 					{
 						drill.RemoteInvocation(OnDrillDeath, NetworkTarget.ToAllClients, drill.Id, true);
 					};
 
-					m_teams.Add(team, new TeamData(drill));
+					if (team.ExtendedData == null)
+						team.ExtendedData = new TeamData(drill);
+
 					Debug.LogAlways("Found {0}'s drill at {1}", team, drill.Position);
 				}
 			}
@@ -66,24 +68,14 @@ namespace CryGameCode
 			drill.StopAnimation(blendOutTime: 1);
 		}
 
-		public override string[] Teams
+		public class TeamData : IExtendedTeamData
 		{
-			get
+			public TeamData(Drill drill)
 			{
-				return new[] { "red", "blue" };
+				Drill = drill;
 			}
-		}
-	}
 
-	public class TeamData
-	{
-		public Drill Drill { get; private set; }
-		public List<Tank> Players { get; private set; }
-
-		public TeamData(Drill drill)
-		{
-			Drill = drill;
-			Players = new List<Tank>();
+			public Drill Drill { get; private set; }
 		}
 	}
 }

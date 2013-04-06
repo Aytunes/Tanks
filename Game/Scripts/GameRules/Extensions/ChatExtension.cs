@@ -1,14 +1,20 @@
-﻿using CryEngine;
+﻿using System.Collections;
+using CryEngine;
 using CryGameCode.Network;
-using System.Collections;
-using System;
+using CryGameCode.Social;
+using System.Collections.Generic;
 
 namespace CryGameCode.Extensions
 {
+	[ExcludeInEditor]
 	public class ChatExtension : GameRulesExtension
 	{
+		private ISocialChat m_chat;
+
 		protected override void Init()
 		{
+			m_chat = SocialPlatform.Active.Chat;
+
 			if (Game.IsServer)
 			{
 				Rules.ClientConnected += Connect;
@@ -16,13 +22,15 @@ namespace CryGameCode.Extensions
 			}
 			if (Game.IsClient)
 			{
-				m_messages = new Queue();
+				m_messages = new Queue<string>();
 				ReceiveUpdates = true;
 			}
 
 			ConsoleCommand.Register("say", (e) =>
 			{
 				var message = string.Join(" ", e.Args);
+
+				m_chat.Send(message);
 
 				if (Game.IsPureClient)
 					RemoteInvocation(Broadcast, NetworkTarget.ToServer, Actor.LocalClient.Name, message);
@@ -37,7 +45,7 @@ namespace CryGameCode.Extensions
 			if (m_messages.Count > 0)
 			{
 				float y_start = 500;
-				foreach (string msg in m_messages)
+				foreach (var msg in m_messages)
 				{
 					Renderer.DrawTextToScreen(10, y_start, 1.3f, Color.White, msg);
 					y_start += 10;
@@ -82,6 +90,6 @@ namespace CryGameCode.Extensions
 			}
 		}
 
-		private Queue m_messages;
+		private Queue<string> m_messages;
 	}
 }

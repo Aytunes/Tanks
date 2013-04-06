@@ -1,4 +1,5 @@
-﻿using CryEngine;
+﻿using System;
+using CryEngine;
 using CryEngine.Extensions;
 using CryGameCode.Network;
 
@@ -16,11 +17,29 @@ namespace CryGameCode.Extensions
 			}
 		}
 
+		public bool DSOnly
+		{
+			get
+			{
+				return GetType().ContainsAttribute<DedicatedServerOnlyAttribute>();
+			}
+		}
+
+		public bool RunInEditor
+		{
+			get
+			{
+				return !GetType().ContainsAttribute<ExcludeInEditorAttribute>();
+			}
+		}
+
 		public bool Active
 		{
 			get
 			{
-				return !ServerOnly || Game.IsServer;
+				return (!ServerOnly || Game.IsServer) &&
+					(!DSOnly || Game.IsDedicated) &&
+					(RunInEditor || !Game.IsEditor);
 			}
 		}
 
@@ -50,5 +69,9 @@ namespace CryGameCode.Extensions
 		protected virtual void Destroy()
 		{
 		}
+	}
+
+	public class PriorityExtensionAttribute : Attribute
+	{
 	}
 }

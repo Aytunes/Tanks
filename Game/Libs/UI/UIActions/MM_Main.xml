@@ -1,19 +1,18 @@
 <Graph Description="" Group="MM_PagesMain" enabled="1" MultiPlayer="ClientServer">
  <Nodes>
-  <Node Id="1" Class="UI:Action:Start" pos="-270,-590,0" flags="0">
+  <Node Id="1" Class="UI:Action:Start" pos="-460,-570,0" flags="0">
    <Inputs UseAsState="1"/>
   </Node>
-  <Node Id="29" Name="Setup_page" Class="_commentbox" pos="-285.02795,-639.73553,0" flags="0">
-   <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
-   <ResizeBorder X="0" Y="0" Width="551.68896" Height="183.05533"/>
-   <NodeSize Width="551.68896" Height="210.44595"/>
-  </Node>
-  <Node Id="113" Class="UI:Action:Control" pos="-20,-580,0" flags="0">
+  <Node Id="113" Class="UI:Action:Control" pos="20,-580,0" flags="0">
    <Inputs uiActions_UIAction="MM_Multiplayer" Strict="1" Args=""/>
+  </Node>
+  <Node Id="114" Class="Social:Login" pos="-170,-560,0" flags="0">
+   <Inputs />
   </Node>
  </Nodes>
  <Edges>
-  <Edge nodeIn="113" nodeOut="1" portIn="Start" portOut="StartAction" enabled="1"/>
+  <Edge nodeIn="114" nodeOut="1" portIn="Activate" portOut="StartAction" enabled="1"/>
+  <Edge nodeIn="113" nodeOut="114" portIn="Start" portOut="Done" enabled="1"/>
  </Edges>
  <GraphTokens />
 </Graph>

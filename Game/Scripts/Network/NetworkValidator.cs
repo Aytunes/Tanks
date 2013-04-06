@@ -29,7 +29,15 @@ namespace CryGameCode.Network
 		}
 	}
 
+	public class DedicatedServerOnlyAttribute : Attribute
+	{
+	}
+
 	public class ServerOnlyAttribute : Attribute
+	{
+	}
+
+	public class ExcludeInEditorAttribute : Attribute
 	{
 	}
 }

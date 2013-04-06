@@ -93,7 +93,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="FlowNodes\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
@@ -104,9 +103,13 @@
     <Compile Include="Entities\Collectibles\InvisibilityCollectible.cs" />
     <Compile Include="Entities\Collectibles\TimeScaleCollectible.cs" />
     <Compile Include="Entities\Collectibles\HealthCollectible.cs" />
+    <Compile Include="Entities\Garage\TankModel.cs" />
+    <Compile Include="Entities\Markers\OverviewPoint.cs" />
     <Compile Include="Entities\Tanks\TankTread.cs" />
+    <Compile Include="FlowNodes\Login.cs" />
     <Compile Include="GameRules\DestroyTheDrill.cs" />
     <Compile Include="GameRules\Extensions\ChatExtension.cs" />
+    <Compile Include="GameRules\Extensions\DSLoginExtension.cs" />
     <Compile Include="GameRules\Extensions\KillCountExtension.cs" />
     <Compile Include="GameRules\Game Modifiers\ArchangelModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\HealthModifier.cs" />
@@ -148,10 +151,16 @@
     <Compile Include="GameRules\GameRulesExtension.cs" />
     <Compile Include="GameRules\Native\DisconnectionCause.cs" />
     <Compile Include="GameRules\Native\GameRulesNativeCallbacks.cs" />
+    <Compile Include="GameRules\Team.cs" />
     <Compile Include="GameRules\SinglePlayer.cs" />
     <Compile Include="Network\NetAspects.cs" />
     <Compile Include="Network\NetSerializationException.cs" />
     <Compile Include="Network\NetworkValidator.cs" />
+    <Compile Include="Social\ISocialChat.cs" />
+    <Compile Include="Social\ISocialGroup.cs" />
+    <Compile Include="Social\ISocialPlatform.cs" />
+    <Compile Include="Social\NullPlatform.cs" />
+    <Compile Include="Social\NullServices.cs" />
     <Compile Include="Telemetry\Data\MatchData.cs" />
     <Compile Include="Telemetry\Data\WeaponData.cs" />
     <Compile Include="Telemetry\Implementations\FileTelemetry.cs" />

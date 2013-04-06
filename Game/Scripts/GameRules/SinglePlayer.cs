@@ -19,27 +19,31 @@ namespace CryGameCode
 	[GameRules(Default = true)]
 	public class SinglePlayer : GameRulesNativeCallbacks
 	{
-		private GameRulesExtension[] m_extensions;
+		private Dictionary<Type, GameRulesExtension> m_extensions;
 
 		public SinglePlayer()
 		{
 			m_extensions = (from type in Assembly.GetExecutingAssembly().GetTypes()
 							where type.Implements<GameRulesExtension>()
-							select (GameRulesExtension)Entity.Spawn("Extension", type)).ToArray();
+							orderby !type.ContainsAttribute<PriorityExtensionAttribute>()
+							select (GameRulesExtension)Entity.Spawn("Extension", type))
+							.ToDictionary(e => e.GetType(), e => e);
 
-			foreach (var extension in m_extensions)
+			foreach (var extension in m_extensions.Values)
 				extension.Register(this);
 
 			if (Game.IsServer)
 				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name });
 
+			Teams = new Team[] { new Team("Red"), new Team("Blue") };
+			
 			ReceiveUpdates = true;
 		}
 
-		public static Random Selector = new Random();
-		private List<Tank> m_playerBuffer = new List<Tank>();
-
-		public IEnumerable<Tank> Players { get { return m_playerBuffer; } }
+		public T GetExtension<T>() where T : GameRulesExtension
+		{
+			return (T)m_extensions[typeof(T)];
+		}
 
 		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
@@ -90,7 +94,7 @@ namespace CryGameCode
 			{
 				player.RemoteInvocation(OnEnteredGame, NetworkTarget.ToClientChannel, channelId, player.Id, channelId: channelId);
 				player.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToClientChannel, player.Id, player.Position, player.Rotation,
-					player.Team, player.TurretTypeName, channelId: channelId);
+					player.Team.Name, player.TurretTypeName, channelId: channelId);
 			}
 
 			m_playerBuffer.Add(actor);
@@ -117,7 +121,7 @@ namespace CryGameCode
 		/// <param name="team"></param>
 		/// <param name="turretTypeName"></param>
 		[RemoteInvocation]
-		public void RequestRevive(EntityId actorId, string team, string turretTypeName)
+		public void RequestRevive(EntityId actorId, string turretTypeName)
 		{
 			if (!Game.IsServer)
 				return;
@@ -127,16 +131,20 @@ namespace CryGameCode
 
 			if (tank.IsDead && !tank.IsDestroyed)
 			{
-				if (IsTeamValid(team))
-					tank.Team = team;
+				// Select team with the least players in.
+				var team = Teams.Aggregate((selectedTeam, x) => (selectedTeam == null || x.Players.Count < selectedTeam.Players.Count) ? x : selectedTeam);
+
+				tank.Team = team;
+				team.Players.Add(tank);
 
 				tank.TurretTypeName = turretTypeName;
 
-				Debug.LogAlways("Reviving!");
-
-				var spawnPoint = FindSpawnPoint();
+				Debug.LogAlways("Trying to find spawnpoint for player {0} in team {1}", tank.Name, team.Name);
+				var spawnPoint = FindSpawnPoint(team.Name);
 				if (spawnPoint != null)
 					spawnPoint.TrySpawn(tank);
+				else
+					Debug.LogWarning("Could not find spawnpoint!");
 
 				var turretEntity = Entity.Spawn<TurretEntity>(tank.Name + "." + turretTypeName, null, null, null, true, EntityFlags.CastShadow);
 
@@ -147,17 +155,17 @@ namespace CryGameCode
 				tank.Turret.Initialize(turretEntity);
 
 				Debug.LogAlways("Invoking RMI OnRevivedPlayer");
-				tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToRemoteClients, actorId, tank.Position, tank.Rotation, team, turretTypeName);
+				tank.RemoteInvocation(OnRevivedPlayer, NetworkTarget.ToRemoteClients, actorId, tank.Position, tank.Rotation, team.Name, turretTypeName);
 			}
 		}
 
 		[RemoteInvocation]
-		void OnRevivedPlayer(EntityId actorId, Vec3 position, Quat rotation, string team, string turretTypeName)
+		void OnRevivedPlayer(EntityId actorId, Vec3 position, Quat rotation, string teamName, string turretTypeName)
 		{
 			Debug.LogAlways("OnRevivedPlayer");
 			var tank = Actor.Get<Tank>(actorId);
 
-			tank.Team = team;
+			tank.Team = Teams.FirstOrDefault(x => x.Name == teamName);
 			tank.TurretTypeName = turretTypeName;
 
 			tank.Position = position;
@@ -173,7 +181,7 @@ namespace CryGameCode
 			{
 				spawnpoints = spawnpoints.Where(x =>
 					{
-						return x.CanSpawn && (team == null || x.Team == team);
+						return x.CanSpawn && (team == null || x.Team.Equals(team, StringComparison.CurrentCultureIgnoreCase));
 					});
 
 				if (spawnpoints.Count() > 0)
@@ -202,20 +210,14 @@ namespace CryGameCode
 			m_activeGameModifiers.Add(modifier);
 		}
 
-		public virtual string[] Teams
-		{
-			get
-			{
-				return new string[] { "red" };
-			}
-		}
-
-		public bool IsTeamValid(string team)
-		{
-			return Teams.Contains(team);
-		}
-
 		List<IGameModifier> m_activeGameModifiers = new List<IGameModifier>();
+
+		public static Random Selector = new Random();
+
+		private HashSet<Tank> m_playerBuffer = new HashSet<Tank>();
+		public IEnumerable<Tank> Players { get { return m_playerBuffer; } }
+
+		public Team[] Teams { get; private set; }
 
 		public event EventHandler<ConnectionEventArgs> ClientConnected;
 		public event EventHandler<ConnectionEventArgs> ClientDisconnected;
