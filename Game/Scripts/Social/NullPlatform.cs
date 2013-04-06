@@ -28,6 +28,11 @@ namespace CryGameCode.Social.Null
 		{
 			Auth = auth;
 		}
+
+		protected void Log(string message, params object[] args)
+		{
+			Debug.LogAlways("[NullPlatform] " + message, args);
+		}
 	}
 
 	public class NullAuth

@@ -11,7 +11,7 @@ namespace CryGameCode.Social.Null
 
 		public void Send(string message)
 		{
-			Debug.LogAlways("Chat message from {0}: {1}", Auth.Nickname, message);
+			Log("Outgoing chat message (from {0}): {1}", Auth.Nickname, message);
 		}
 	}
 
