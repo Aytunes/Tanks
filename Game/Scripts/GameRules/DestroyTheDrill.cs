@@ -37,7 +37,7 @@ namespace CryGameCode
 
 				foreach (var team in Teams)
 				{
-					var drill = drills.Single(d => d.Team == team.Name);
+					var drill = drills.Single(d => d.Team.Equals(team.Name, System.StringComparison.CurrentCultureIgnoreCase));
 
 					drill.OnDeath += (sender, e) =>
 					{
