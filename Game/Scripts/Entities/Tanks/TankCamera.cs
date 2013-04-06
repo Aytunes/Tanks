@@ -74,8 +74,8 @@ namespace CryGameCode.Tanks
 
 		void ViewOverviewCamera(ref ViewParams viewParams)
 		{
-			viewParams.Position = OverviewCamera.Position;
-			viewParams.Rotation = OverviewCamera.Rotation;
+			viewParams.Position = Vec3.CreateLerp(viewParams.Position, OverviewCamera.Position, Time.DeltaTime * OverviewPoint.MoveLerpSpeed);
+			viewParams.Rotation = Quat.CreateNlerp(viewParams.Rotation, OverviewCamera.Rotation, Time.DeltaTime * OverviewPoint.RotationLerpSpeed);
 		}
 
 		void ViewTopDownCamera(ref ViewParams viewParams)
