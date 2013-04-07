@@ -156,6 +156,8 @@
     <Compile Include="Network\NetAspects.cs" />
     <Compile Include="Network\NetSerializationException.cs" />
     <Compile Include="Network\NetworkValidator.cs" />
+    <Compile Include="Network\WebRequestImpl.cs" />
+    <Compile Include="Network\WebRequestEntity.cs" />
     <Compile Include="Social\ISocialChat.cs" />
     <Compile Include="Social\ISocialGroup.cs" />
     <Compile Include="Social\ISocialPlatform.cs" />
