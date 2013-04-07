@@ -10,6 +10,7 @@ namespace CryGameCode.Extensions
 	public class ChatExtension : GameRulesExtension
 	{
 		private ISocialChat m_chat;
+		private string m_roomName;
 
 		protected override void Init()
 		{
@@ -19,6 +20,7 @@ namespace CryGameCode.Extensions
 			{
 				Rules.ClientConnected += Connect;
 				Rules.ClientDisconnected += Disconnect;
+				m_roomName = m_chat.CreateRoom();
 			}
 			if (Game.IsClient)
 			{
@@ -30,7 +32,7 @@ namespace CryGameCode.Extensions
 			{
 				var message = string.Join(" ", e.Args);
 
-				m_chat.Send(message);
+				m_chat.Send(m_roomName, message);
 
 				if (Game.IsPureClient)
 					RemoteInvocation(Broadcast, NetworkTarget.ToServer, Actor.LocalClient.Name, message);
@@ -56,11 +58,18 @@ namespace CryGameCode.Extensions
 		private void Connect(object sender, ConnectionEventArgs e)
 		{
 			Broadcast("[Join]", e.Tank.Name + " joined the game.");
+			RemoteInvocation(SetRoomId, NetworkTarget.ToClientChannel, m_roomName, channelId: e.ChannelID);
 		}
 
 		private void Disconnect(object sender, ConnectionEventArgs e)
 		{
 			Broadcast("[Quit]", e.Tank.Name + " has left the game.");
+		}
+
+		[RemoteInvocation]
+		private void SetRoomId(string id)
+		{
+			m_roomName = id;
 		}
 
 		[RemoteInvocation]

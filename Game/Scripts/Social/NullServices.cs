@@ -9,9 +9,14 @@ namespace CryGameCode.Social.Null
 		{
 		}
 
-		public void Send(string message)
+		public void Send(string roomId, string message)
 		{
-			Log("Outgoing chat message (from {0}): {1}", Auth.Nickname, message);
+			Log("Outgoing chat message to {0}: {1}", roomId, message);
+		}
+
+		public string CreateRoom()
+		{
+			return "nullroom";
 		}
 	}
 
