@@ -1,4 +1,6 @@
 ﻿using CryEngine;
+using CryEngine.Physics;
+
 using CryGameCode.Entities;
 using CryGameCode.Network;
 
@@ -40,9 +42,7 @@ namespace CryGameCode.Projectiles
 		{
 			ShooterId = shooterId;
 			Fired = true;
-
-			if (Game.IsPureClient)
-				Hidden = false;
+			Hidden = false;
 
 			Position = pos;
 			m_firePos = pos;
@@ -50,47 +50,62 @@ namespace CryGameCode.Projectiles
 			Rotation = rot;
 			var dir = rot.Column1;
 
-			var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Particle);
+			if (UseCount == 0)
+			{
+				var physicalizationParams = new PhysicalizationParams(PhysicalizationType.Particle);
 
-			physicalizationParams.mass = Mass;
-			physicalizationParams.slot = 0;
+				physicalizationParams.mass = Mass;
+				physicalizationParams.slot = 0;
 
-			float radius = 0.005f;
-			physicalizationParams.particleParameters.thickness = radius * 2;
-			physicalizationParams.particleParameters.size = radius * 2;
+				float radius = 0.005f;
+				physicalizationParams.particleParameters.thickness = radius * 2;
+				physicalizationParams.particleParameters.size = radius * 2;
 
-			physicalizationParams.particleParameters.kAirResistance = 0.5f;
-			physicalizationParams.particleParameters.kWaterResistance = 0.5f;
-			physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
-			physicalizationParams.particleParameters.accThrust = 0;
-			physicalizationParams.particleParameters.accLift = 0;
+				physicalizationParams.particleParameters.kAirResistance = 0.5f;
+				physicalizationParams.particleParameters.kWaterResistance = 0.5f;
+				physicalizationParams.particleParameters.gravity = new Vec3(0, 0, -9.81f);
+				physicalizationParams.particleParameters.accThrust = 0;
+				physicalizationParams.particleParameters.accLift = 0;
 
-			physicalizationParams.particleParameters.iPierceability = 8;
-			physicalizationParams.particleParameters.surface_idx = Material.SurfaceType.Id;
+				physicalizationParams.particleParameters.iPierceability = 8;
+				physicalizationParams.particleParameters.surface_idx = Material.SurfaceType.Id;
 
-			physicalizationParams.particleParameters.velocity = speed;
-			physicalizationParams.particleParameters.heading = dir;
+				physicalizationParams.particleParameters.velocity = speed;
+				physicalizationParams.particleParameters.heading = dir;
 
-			physicalizationParams.particleParameters.flags |= PhysicalizationFlags.LogCollisions;
-			physicalizationParams.particleParameters.flags |= PhysicalizationFlags.MonitorCollisions;
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.LogCollisions;
+				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.MonitorCollisions;
 
-			var singleContact = true;
-			if (singleContact)
-				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
+				var singleContact = false;
+				if (singleContact)
+					physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
 
-			var noRoll = false;
-			if (noRoll)
-				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoRoll;
+				var noRoll = false;
+				if (noRoll)
+					physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoRoll;
 
-			var noSpin = false;
-			if (noSpin)
-				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoSpin;
+				var noSpin = false;
+				if (noSpin)
+					physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoSpin;
 
-			var noPathAlignment = false;
-			if (noPathAlignment)
-				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
+				var noPathAlignment = false;
+				if (noPathAlignment)
+					physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_NoPathAlignment;
 
-			Physicalize(physicalizationParams);
+				Physicalize(physicalizationParams);
+			}
+			else // Reusing the projectile
+			{
+				var physicalEntity = Physics as PhysicalEntityParticle;
+
+				var particleParameters = ParticleParameters.Create();
+				particleParameters.velocity = speed;
+				particleParameters.heading = dir;
+
+				physicalEntity.SetParameters(ref particleParameters);
+			}
+
+			UseCount++;
 
 			ViewDistanceRatio = 255;
 
@@ -110,6 +125,8 @@ namespace CryGameCode.Projectiles
 			// In standby waiting to be fired, don't track collisions.
 			if (!Fired)
 				return;
+			else
+				Fired = false;
 
 			if (Game.IsServer && DebugEnabled)
 				RemoteInvocation(RemoteHit, NetworkTarget.ToAllClients, hitPos, m_firePos);
@@ -177,10 +194,7 @@ namespace CryGameCode.Projectiles
 				}*/
 			}
 
-			if (Game.IsPureClient || Game.IsEditor)
-				Hidden = true;
-            
-			Fired = false;
+			Hidden = true;
 		}
 
 		public abstract string Model { get; }
@@ -207,5 +221,7 @@ namespace CryGameCode.Projectiles
 		/// If false, this projectile is ready for re-use.
 		/// </summary>
 		public bool Fired { get; set; }
+
+		public int UseCount { get; set; }
 	}
 }

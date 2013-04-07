@@ -210,12 +210,7 @@ namespace CryGameCode.Tanks
 
 				var gameMode = GameRules.Current as SinglePlayer;
 
-				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired);
-				if (projectile != null && projectile.IsDestroyed)
-				{
-					ProjectileStorage.Remove(projectile);
-					projectile = null;
-				}
+				var projectile = ProjectileStorage.FirstOrDefault(x => !x.Fired && !x.IsDestroyed);
 
 				var turretRot = TurretEntity.Rotation.Normalized;
 
