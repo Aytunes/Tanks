@@ -14,11 +14,11 @@ namespace CryGameCode.Network
 	}
 
 	[Entity(Flags = EntityClassFlags.Invisible)]
-	public class XmlWebRequestEntity : WebRequestEntity<XDocument>
+	public class XmlWebRequestEntity : WebRequestEntity<XElement>
 	{
-		protected override XDocument Convert(string data)
+		protected override XElement Convert(string data)
 		{
-			return XDocument.Load(new StringReader(data));
+			return XDocument.Load(new StringReader(data)).Root;
 		}
 	}
 }

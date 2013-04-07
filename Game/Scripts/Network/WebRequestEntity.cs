@@ -4,20 +4,16 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using CryEngine;
+using System.Text;
 
 namespace CryGameCode.Network
 {
 	public abstract class WebRequestEntity<T> : Entity
 	{
-		private static int web_debug = 0;
-		public static bool DebugEnabled { get { return web_debug != 0; } }
-
-		static WebRequestEntity()
+		public void RegisterGet(string query, object[] args, Action<T> action)
 		{
-			CVar.RegisterInt("web_debug", ref web_debug);
+			RegisterGet(query + CreateQueryString(args), action);
 		}
-
-		private Dictionary<Task<T>, Action<T>> m_tasks = new Dictionary<Task<T>, Action<T>>();
 
 		public void RegisterGet(string query, Action<T> action)
 		{
@@ -25,8 +21,43 @@ namespace CryGameCode.Network
 			request.Proxy = null;
 			request.Method = "GET";
 
-			Log("Created request for {0}", query);
+			InternalRegister(action, request);
+		}
 
+		public void RegisterPost(string query, object[] args, Action<T> action)
+		{
+			RegisterPost(query, Encoding.UTF8.GetBytes(CreateQueryString(args)), action);
+		}
+
+		public void RegisterPost(string query, byte[] postData, Action<T> action)
+		{
+			var request = WebRequest.Create(query);
+			request.Proxy = null;
+			request.Method = "POST";
+			request.ContentType = "application/x-www-form-urlencoded";
+			request.ContentLength = postData.Length;
+
+			using (var stream = request.GetRequestStream())
+				stream.Write(postData, 0, postData.Length);
+
+			InternalRegister(action, request);
+		}
+
+		private string CreateQueryString(object[] args)
+		{
+			var builder = new StringBuilder();
+
+			for (var i = 0; i < args.Length - 1; i += 2)
+				builder.AppendFormat("{0}={1}&", args[i].ToString().ToLower(), Uri.EscapeDataString(args[i + 1].ToString()));
+
+			if (builder.Length > 0)
+				builder.Length -= 1;
+
+			return builder.ToString();
+		}
+
+		private void InternalRegister(Action<T> action, WebRequest request)
+		{
 			var responseTask = Task.Factory.FromAsync<WebResponse>(request.BeginGetResponse, request.EndGetResponse, null);
 
 			Log("Created response task");
@@ -110,5 +141,15 @@ namespace CryGameCode.Network
 		}
 
 		protected abstract T Convert(string data);
+
+		private static int web_debug = 0;
+		public static bool DebugEnabled { get { return web_debug != 0; } }
+
+		static WebRequestEntity()
+		{
+			CVar.RegisterInt("web_debug", ref web_debug);
+		}
+
+		private Dictionary<Task<T>, Action<T>> m_tasks = new Dictionary<Task<T>, Action<T>>();
 	}
 }
