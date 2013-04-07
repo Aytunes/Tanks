@@ -5273,6 +5273,11 @@
             and speed is of the essence.
             </remarks>
         </member>
+        <member name="F:CryEngine.Serialization.ObjectReference.m_forbiddenTypes">
+            <summary>
+            Types that we can't serialize
+            </summary>
+        </member>
         <member name="T:CryEngine.Testing.Assert">
             <summary>
             Contains methods used to make assertions for testing purposes.
