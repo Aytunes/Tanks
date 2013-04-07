@@ -216,17 +216,12 @@ namespace CryGameCode.Tanks
 
 				if (projectile == null || !Projectile.RecyclingEnabled)
 				{
-					projectile = CryEngine.Entity.Spawn("pain", ProjectileType, jointAbsolute.T, turretRot) as Projectile;
+					projectile = CryEngine.Entity.Spawn("pain", ProjectileType) as Projectile;
 					ProjectileStorage.Add(projectile);
-				}
-				else
-				{
-					projectile.Position = jointAbsolute.T;
-					projectile.Rotation = turretRot;
 				}
 
 				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T, Rotation = turretRot.Column1 });
-				projectile.Launch(Owner.Id);
+				projectile.Launch(Owner.Id, jointAbsolute.T, turretRot);
 
 				OnRemoteFire(jointAbsolute.T);
 				Owner.RemoteInvocation(TurretEntity.RemoteFire, NetworkTarget.ToRemoteClients, jointAbsolute.T);

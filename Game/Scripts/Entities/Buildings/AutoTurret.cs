@@ -189,16 +189,11 @@ namespace CryGameCode.Entities.Buildings
 
 				if (projectile == null || !Projectile.RecyclingEnabled)
 				{
-					projectile = CryEngine.Entity.Spawn<Bullet>("pain", FireHelperPosition, Quat.CreateRotationVDir(Rotation.Column0)) as Projectile;
+					projectile = CryEngine.Entity.Spawn<Bullet>("pain") as Projectile;
 					ProjectileStorage.Add(projectile);
 				}
-				else	
-				{
-					projectile.Position = FireHelperPosition;
-					projectile.Rotation = Quat.CreateRotationVDir(Rotation.Column0);
-				}
 
-				projectile.Launch(this.Id);
+				projectile.Launch(this.Id, FireHelperPosition, Quat.CreateRotationVDir(Rotation.Column0));
 			}
 		}
 

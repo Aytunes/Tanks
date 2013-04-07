@@ -27,12 +27,12 @@ namespace CryGameCode.Projectiles
 			GameObject.SetAspectProfile(EntityAspects.Physics, (ushort)PhysicalizationType.Particle);
 		}
 
-		public void Launch(EntityId shooterId)
+		public void Launch(EntityId shooterId, Vec3 position, Quat rotation)
 		{
 			NetworkValidator.Server("Projectile launching");
 
-			RemoteLaunch(shooterId, Position, Rotation, Speed);
-			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, shooterId, Position, Rotation, Speed);
+			RemoteLaunch(shooterId, position, rotation, Speed);
+			RemoteInvocation(RemoteLaunch, NetworkTarget.ToRemoteClients, shooterId, position, rotation, Speed);
 		}
 
 		private Vec3 m_firePos;
@@ -76,7 +76,7 @@ namespace CryGameCode.Projectiles
 				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.LogCollisions;
 				physicalizationParams.particleParameters.flags |= PhysicalizationFlags.MonitorCollisions;
 
-				var singleContact = false;
+				var singleContact = true;
 				if (singleContact)
 					physicalizationParams.particleParameters.flags |= PhysicalizationFlags.Particle_SingleContact;
 
