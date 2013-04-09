@@ -153,11 +153,11 @@
     <Compile Include="GameRules\Native\GameRulesNativeCallbacks.cs" />
     <Compile Include="GameRules\Team.cs" />
     <Compile Include="GameRules\SinglePlayer.cs" />
+    <Compile Include="Async\CallbackEntity.cs" />
     <Compile Include="Network\NetAspects.cs" />
     <Compile Include="Network\NetSerializationException.cs" />
     <Compile Include="Network\NetworkValidator.cs" />
-    <Compile Include="Network\WebRequestImpl.cs" />
-    <Compile Include="Network\WebRequestEntity.cs" />
+    <Compile Include="Network\Request.cs" />
     <Compile Include="Social\ISocialChat.cs" />
     <Compile Include="Social\ISocialGroup.cs" />
     <Compile Include="Social\ISocialPlatform.cs" />

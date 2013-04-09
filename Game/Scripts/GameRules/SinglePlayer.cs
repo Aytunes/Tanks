@@ -10,6 +10,7 @@ using CryGameCode.Entities;
 using CryGameCode.Tanks;
 using CryGameCode.Extensions;
 using CryGameCode.Network;
+using CryGameCode.Async;
 
 namespace CryGameCode
 {
@@ -36,7 +37,7 @@ namespace CryGameCode
 				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name });
 
 			Teams = new Team[] { new Team("Red"), new Team("Blue") };
-			
+
 			ReceiveUpdates = true;
 		}
 
