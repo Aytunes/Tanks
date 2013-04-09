@@ -26,6 +26,7 @@ namespace CryGameCode.Extensions
 			{
 				m_messages = new Queue<string>();
 				ReceiveUpdates = true;
+				RemoteInvocation(RequestRoomName, NetworkTarget.ToServer);
 			}
 
 			ConsoleCommand.Register("say", (e) =>
@@ -44,6 +45,9 @@ namespace CryGameCode.Extensions
 
 		public override void OnUpdate()
 		{
+			if (m_roomName == null)
+				RemoteInvocation(RequestRoomName, NetworkTarget.ToServer);
+
 			if (m_messages.Count > 0)
 			{
 				float y_start = 500;
@@ -58,7 +62,6 @@ namespace CryGameCode.Extensions
 		private void Connect(object sender, ConnectionEventArgs e)
 		{
 			Broadcast("[Join]", e.Tank.Name + " joined the game.");
-			RemoteInvocation(SetRoomId, NetworkTarget.ToClientChannel, m_roomName, channelId: e.ChannelID);
 		}
 
 		private void Disconnect(object sender, ConnectionEventArgs e)
@@ -67,8 +70,17 @@ namespace CryGameCode.Extensions
 		}
 
 		[RemoteInvocation]
-		private void SetRoomId(string id)
+		private void RequestRoomName()
 		{
+			NetworkValidator.Server("Server owns room name");
+			RemoteInvocation(SetRoomId, NetworkTarget.ToRemoteClients, string.Empty, m_roomName);
+		}
+
+		// TODO: Fix string RMIs
+		[RemoteInvocation]
+		private void SetRoomId(string dummy, string id)
+		{
+			Debug.LogAlways("Got new room name: {0}", id);
 			m_roomName = id;
 		}
 
