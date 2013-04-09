@@ -2165,6 +2165,12 @@
             The translation vector and a scalar (for uniform scaling?)
             </summary>
         </member>
+        <member name="P:CryEngine.QuatT.IsValid">
+            <summary>
+            Checks whether the transformation is valid.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:CryEngine.RemoteInvocationException">
             <summary>
             Thrown when an error related to a remote invocation (see <see cref="T:CryEngine.RemoteInvocationAttribute"/>) is caught.
@@ -3298,6 +3304,12 @@
             <returns>
             <c>true</c> if the specified <see cref="T:System.Object"/> is equal to this instance; otherwise, <c>false</c>.
             </returns>
+        </member>
+        <member name="P:CryEngine.BoundingBox.IsValid">
+            <summary>
+            Checks whether the bounding box is valid.
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:CryEngine.ContainmentType">
             <summary>
@@ -4577,6 +4589,12 @@
             Gets a value indicting whether this instance is normalized.
             </summary>
         </member>
+        <member name="P:CryEngine.Vec2.IsValid">
+            <summary>
+            Checks whether the vector is valid.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="P:CryEngine.Vec2.Item(System.Int32)">
             <summary>
             Gets or sets the component at the specified index.
@@ -5273,6 +5291,12 @@
             and speed is of the essence.
             </remarks>
         </member>
+        <member name="P:CryEngine.Vec4.IsValid">
+            <summary>
+            Checks whether the vector is valid.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="F:CryEngine.Serialization.ObjectReference.m_forbiddenTypes">
             <summary>
             Types that we can't serialize
@@ -5671,6 +5695,12 @@
             The identity <see cref="T:CryEngine.Quat"/> (0, 0, 0, 1).
             </summary>
         </member>
+        <member name="P:CryEngine.Quat.IsValid">
+            <summary>
+            Checks whether the quaternion is valid.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:CryEngine.ExcludeFromCompilationAttribute">
             <summary>
             If this attribute is attached to a class, it will be excluded from compilation.
@@ -5998,6 +6028,12 @@
             <param name="left">The first source vector.</param>
             <param name="right">The second source vector.</param>
             <returns>A vector containing the smallest components of the source vectors.</returns>
+        </member>
+        <member name="P:CryEngine.Vec3.IsValid">
+            <summary>
+            Checks whether the vector is valid.
+            </summary>
+            <returns></returns>
         </member>
         <member name="T:CryEngine.Utilities.PathUtils">
             <summary>
