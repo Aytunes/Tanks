@@ -22,6 +22,7 @@ namespace CryGameCode.Tanks
 		static void RegisterCameraCVars()
 		{
 			CVar.RegisterFloat("cam_posInterpolationSpeed", ref cam_posInterpolationSpeed);
+			CVar.RegisterFloat("cam_rotInterpolationSpeed", ref cam_rotInterpolationSpeed);
 
 			CVar.RegisterFloat("cam_minDistZ", ref cam_minDistZ);
 			CVar.RegisterFloat("cam_maxDistZ", ref cam_maxDistZ);
@@ -37,7 +38,8 @@ namespace CryGameCode.Tanks
 			CVar.RegisterInt("cam_type", ref cam_type);
 		}
 
-		public static float cam_posInterpolationSpeed = 1000;
+		public static float cam_posInterpolationSpeed = 5;
+		public static float cam_rotInterpolationSpeed = 5;
 
 		public static float cam_minDistZ = 37;
 		public static float cam_maxDistZ = 60;

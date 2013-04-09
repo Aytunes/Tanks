@@ -83,8 +83,16 @@ namespace CryGameCode.Tanks
 			var distZ = GameCVars.cam_minDistZ + (GameCVars.cam_minDistZ - GameCVars.cam_maxDistZ) * ZoomRatio;
 
 			viewParams.Position = viewParams.PositionLast;
-			MathHelpers.Interpolate(ref viewParams.Position, Position + new Vec3(0, GameCVars.cam_distY, distZ), GameCVars.cam_posInterpolationSpeed * Time.DeltaTime);
-			viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(GameCVars.cam_minAngleX + (GameCVars.cam_minAngleX - GameCVars.cam_maxAngleX) * ZoomRatio), 0, 0));
+			//MathHelpers.Interpolate(ref viewParams.Position, Position + new Vec3(0, GameCVars.cam_distY, distZ), GameCVars.cam_posInterpolationSpeed * Time.DeltaTime);
+
+			var position = Vec3.CreateLerp(viewParams.PositionLast, Position + new Vec3(0, GameCVars.cam_distY, distZ), Time.DeltaTime * GameCVars.cam_posInterpolationSpeed);
+			if (position.IsValid)
+				viewParams.Position = position;
+
+			var goalRotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(GameCVars.cam_minAngleX + (GameCVars.cam_minAngleX - GameCVars.cam_maxAngleX) * ZoomRatio), 0, 0));
+
+			viewParams.Rotation = Quat.CreateNlerp(viewParams.RotationLast, goalRotation, Time.DeltaTime * GameCVars.cam_rotInterpolationSpeed);
+
 		}
 
 		void ViewTopDown3DCamera(ref ViewParams viewParams)
