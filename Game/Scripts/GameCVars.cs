@@ -21,37 +21,89 @@ namespace CryGameCode.Tanks
 		#region Camera
 		static void RegisterCameraCVars()
 		{
-			CVar.RegisterFloat("cam_posInterpolationSpeed", ref cam_posInterpolationSpeed);
-
-			CVar.RegisterFloat("cam_minDistZ", ref cam_minDistZ);
-			CVar.RegisterFloat("cam_maxDistZ", ref cam_maxDistZ);
-
-			CVar.RegisterFloat("cam_distY", ref cam_distY);
-
-			CVar.RegisterFloat("cam_minAngleX", ref cam_minAngleX);
-			CVar.RegisterFloat("cam_maxAngleX", ref cam_maxAngleX);
-
+			RegisterTopDownCameraCVars();
+			RegisterTopDown3DCameraCVars();
+			RegisterTiltedCameraCVars();
+			
 			CVar.RegisterFloat("cam_zoomSpeed", ref cam_zoomSpeed);
 			CVar.RegisterInt("cam_maxZoomLevel", ref cam_maxZoomLevel);
 
 			CVar.RegisterInt("cam_type", ref cam_type);
 		}
 
-		public static float cam_posInterpolationSpeed = 1000;
+		#region Top down camera
+		static void RegisterTopDownCameraCVars()
+		{
+			CVar.RegisterFloat("cam_topDown_posInterpolationSpeed", ref cam_topDown_posInterpolationSpeed);
+			CVar.RegisterFloat("cam_topDown_rotInterpolationSpeed", ref cam_topDown_rotInterpolationSpeed);
 
-		public static float cam_minDistZ = 37;
-		public static float cam_maxDistZ = 60;
+			CVar.RegisterFloat("cam_topDown_minDistZ", ref cam_topDown_minDistZ);
+			CVar.RegisterFloat("cam_topDown_maxDistZ", ref cam_topDown_maxDistZ);
 
-		public static float cam_distY = -5;
+			CVar.RegisterFloat("cam_topDown_distY", ref cam_topDown_distY);
 
-		public static float cam_minAngleX = -80;
-		public static float cam_maxAngleX = -90;
+			CVar.RegisterFloat("cam_topDown_minAngleX", ref cam_topDown_minAngleX);
+			CVar.RegisterFloat("cam_topDown_maxAngleX", ref cam_topDown_maxAngleX);
+		}
+
+		public static float cam_topDown_posInterpolationSpeed = 5;
+		public static float cam_topDown_rotInterpolationSpeed = 5;
+
+		public static float cam_topDown_minDistZ = 37;
+		public static float cam_topDown_maxDistZ = 60;
+
+		public static float cam_topDown_distY = -5;
+
+		public static float cam_topDown_minAngleX = -80;
+		public static float cam_topDown_maxAngleX = -90;
+		#endregion
+
+		#region Top down 3D camera
+		static void RegisterTopDown3DCameraCVars()
+		{
+			CVar.RegisterFloat("cam_topDown3D_posInterpolationSpeed", ref cam_topDown3D_posInterpolationSpeed);
+
+			CVar.RegisterFloat("cam_topDown3D_minDistZ", ref cam_topDown3D_minDistZ);
+			CVar.RegisterFloat("cam_topDown3D_maxDistZ", ref cam_topDown3D_maxDistZ);
+		}
+
+		public static float cam_topDown3D_posInterpolationSpeed = 50;
+
+		public static float cam_topDown3D_minDistZ = 37;
+		public static float cam_topDown3D_maxDistZ = 60;
+		#endregion
 
 		public static float cam_zoomSpeed = 2;
-
 		public static int cam_maxZoomLevel = 8;
 
 		public static int cam_type = (int)CameraType.TopDown;
+		#endregion
+
+		#region Tilted camera
+		static void RegisterTiltedCameraCVars()
+		{
+			CVar.RegisterFloat("cam_tilted_posInterpolationSpeed", ref cam_tilted_posInterpolationSpeed);
+			CVar.RegisterFloat("cam_tilted_rotInterpolationSpeed", ref cam_tilted_rotInterpolationSpeed);
+
+			CVar.RegisterFloat("cam_tilted_minDistZ", ref cam_tilted_minDistZ);
+			CVar.RegisterFloat("cam_tilted_maxDistZ", ref cam_tilted_maxDistZ);
+
+			CVar.RegisterFloat("cam_tilted_distY", ref cam_tilted_distY);
+
+			CVar.RegisterFloat("cam_tilted_minAngleX", ref cam_tilted_minAngleX);
+			CVar.RegisterFloat("cam_tilted_maxAngleX", ref cam_tilted_maxAngleX);
+		}
+
+		public static float cam_tilted_posInterpolationSpeed = 5;
+		public static float cam_tilted_rotInterpolationSpeed = 5;
+
+		public static float cam_tilted_minDistZ = 37;
+		public static float cam_tilted_maxDistZ = 60;
+
+		public static float cam_tilted_distY = -17;
+
+		public static float cam_tilted_minAngleX = -60;
+		public static float cam_tilted_maxAngleX = -90;
 		#endregion
 
 		#region Tank movement

@@ -42,6 +42,9 @@ namespace CryGameCode.Entities.Collectibles
 
 		void SpawnCollectible()
 		{
+			if (Collectible != null && !Collectible.IsDestroyed)
+				Collectible.Remove();
+
 			var collectibleType = CollectibleTypes[SinglePlayer.Selector.Next(CollectibleTypes.Count)];
 
 			Collectible = Entity.Spawn("Collectible", collectibleType) as Collectible;
@@ -90,7 +93,9 @@ namespace CryGameCode.Entities.Collectibles
 				}
 				else if (entity is Projectile)
 				{
-					Debug.DrawText(string.Format("{0} DENIED A {1} COLLECTIBLE!", entity.Name.ToUpper(), Collectible.TypeName.ToUpper()), 3.0f, Color.Red, 2.0f);
+					var projectile = entity as Projectile;
+
+					Debug.DrawText(string.Format("{0} DENIED A {1} COLLECTIBLE!", projectile.Shooter.Name.ToUpper(), Collectible.TypeName.ToUpper()), 3.0f, Color.Red, 2.0f);
 				}
 				else
 					return;

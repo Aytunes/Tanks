@@ -4,8 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+
 using CryEngine;
 using CryEngine.Extensions;
+using CryEngine.Serialization;
+
 using CryGameCode.Extensions;
 using CryGameCode.Network;
 using CryGameCode.Telemetry;
@@ -13,7 +16,7 @@ using CryGameCode.Telemetry;
 namespace CryGameCode
 {
 	[ServerOnly]
-	public class Metrics : GameRulesExtension
+	public class Metrics : GameRulesExtension, ICrySerializable
 	{
 		private Dictionary<Type, TelemetryProcessor> m_processors;
 		private TelemetryWriter[] m_senders;
@@ -104,6 +107,14 @@ namespace CryGameCode
 		{
 			if (DebugEnabled)
 				Debug.LogAlways("[Telemetry] " + format, args);
+		}
+
+		public void Deserialize(CrySerializer serializer)
+		{
+		}
+
+		public void Serialize(CrySerializer serializer)
+		{
 		}
 	}
 

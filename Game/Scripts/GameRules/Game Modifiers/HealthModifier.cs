@@ -12,12 +12,12 @@ namespace CryGameCode
 	{
 		HealthModifier() { }
 
-		public HealthModifier(EntityBase target, float healthRestoration, float restorationTime)
+		public HealthModifier(EntityId targetId, float healthRestoration, float restorationTime)
 		{
 			HealthRestoration = healthRestoration;
 			RestorationTime = restorationTime;
 
-			Target = target;
+			Target = Entity.Get(targetId);
 		}
 
 		public void Begin()

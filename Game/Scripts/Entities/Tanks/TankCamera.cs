@@ -9,7 +9,11 @@ namespace CryGameCode.Tanks
 
 		TopDown,
 		TopDown3D,
+
+		Tilted,
+
 		FirstPerson,
+
 		None,
 
 		Last
@@ -68,6 +72,9 @@ namespace CryGameCode.Tanks
 					case CameraType.FirstPerson:
 						ViewFirstPerson(ref viewParams);
 						break;
+					case CameraType.Tilted:
+						ViewTiltedCamera(ref viewParams);
+						break;
 				}
 			}
 		}
@@ -80,22 +87,39 @@ namespace CryGameCode.Tanks
 
 		void ViewTopDownCamera(ref ViewParams viewParams)
 		{
-			var distZ = GameCVars.cam_minDistZ + (GameCVars.cam_minDistZ - GameCVars.cam_maxDistZ) * ZoomRatio;
+			var distZ = GameCVars.cam_topDown_minDistZ + (GameCVars.cam_topDown_minDistZ - GameCVars.cam_topDown_maxDistZ) * ZoomRatio;
 
-			viewParams.Position = viewParams.PositionLast;
-			MathHelpers.Interpolate(ref viewParams.Position, Position + new Vec3(0, GameCVars.cam_distY, distZ), GameCVars.cam_posInterpolationSpeed * Time.DeltaTime);
-			viewParams.Rotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(GameCVars.cam_minAngleX + (GameCVars.cam_minAngleX - GameCVars.cam_maxAngleX) * ZoomRatio), 0, 0));
+			var position = Vec3.CreateLerp(viewParams.PositionLast, Position + new Vec3(0, GameCVars.cam_topDown_distY, distZ), Time.DeltaTime * GameCVars.cam_topDown_posInterpolationSpeed);
+			if (position.IsValid)
+				viewParams.Position = position;
+
+			var goalRotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(GameCVars.cam_topDown_minAngleX + (GameCVars.cam_topDown_minAngleX - GameCVars.cam_topDown_maxAngleX) * ZoomRatio), 0, 0));
+
+			viewParams.Rotation = Quat.CreateNlerp(viewParams.RotationLast, goalRotation, Time.DeltaTime * GameCVars.cam_topDown_rotInterpolationSpeed);
+		}
+
+		void ViewTiltedCamera(ref ViewParams viewParams)
+		{
+			var distZ = GameCVars.cam_tilted_minDistZ + (GameCVars.cam_tilted_minDistZ - GameCVars.cam_tilted_maxDistZ) * ZoomRatio;
+
+			var position = Vec3.CreateLerp(viewParams.PositionLast, Position + new Vec3(0, GameCVars.cam_tilted_distY, distZ), Time.DeltaTime * GameCVars.cam_topDown_posInterpolationSpeed);
+			if (position.IsValid)
+				viewParams.Position = position;
+
+			var goalRotation = Quat.CreateRotationXYZ(new Vec3(MathHelpers.DegreesToRadians(GameCVars.cam_tilted_minAngleX + (GameCVars.cam_tilted_minAngleX - GameCVars.cam_tilted_maxAngleX) * ZoomRatio), 0, 0));
+
+			viewParams.Rotation = Quat.CreateNlerp(viewParams.RotationLast, goalRotation, Time.DeltaTime * GameCVars.cam_tilted_rotInterpolationSpeed);
 		}
 
 		void ViewTopDown3DCamera(ref ViewParams viewParams)
 		{
-			var distZ = GameCVars.cam_minDistZ + (GameCVars.cam_minDistZ - GameCVars.cam_maxDistZ) * ZoomRatio;
+			var distZ = GameCVars.cam_topDown3D_minDistZ + (GameCVars.cam_topDown3D_minDistZ - GameCVars.cam_topDown3D_maxDistZ) * ZoomRatio;
 
 			viewParams.Position = viewParams.PositionLast;
 
 			var desiredPosition = Position + GroundNormal * distZ;
 
-			MathHelpers.Interpolate(ref viewParams.Position, desiredPosition, GameCVars.cam_posInterpolationSpeed * Time.DeltaTime);
+			MathHelpers.Interpolate(ref viewParams.Position, desiredPosition, GameCVars.cam_topDown3D_posInterpolationSpeed * Time.DeltaTime);
 
 			var desiredRotation = Quat.CreateRotationVDir((Position - viewParams.Position).Normalized);
 
