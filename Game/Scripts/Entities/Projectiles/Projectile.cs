@@ -4,6 +4,8 @@ using CryEngine.Physics;
 using CryGameCode.Entities;
 using CryGameCode.Network;
 
+using CryGameCode.Extensions;
+
 namespace CryGameCode.Projectiles
 {
 	public abstract class Projectile : Entity
@@ -142,16 +144,6 @@ namespace CryGameCode.Projectiles
 				var damageableTarget = otherEntity as IDamageable;
 				if (damageableTarget != null)
 					damageableTarget.Damage(ShooterId, totalDamage, DamageType, hitPos, Vec3.Zero);
-
-				if (TargetModifier != null)
-				{
-					TargetModifier.Target = otherEntity;
-
-					var singlePlayer = GameRules.Current as SinglePlayer;
-					singlePlayer.AddGameModifier(TargetModifier);
-
-					TargetModifier.Begin();
-				}
 			}
 
 			if (Game.IsClient)
@@ -211,8 +203,6 @@ namespace CryGameCode.Projectiles
 		public virtual float MaximumExplosionRadius { get { return 30; } }
 		public virtual float ExplosionPressure { get { return 200; } }
         public virtual float ExplosionRelativeDamage { get { return 5; } }
-
-		public IGameModifier TargetModifier { get; set; }
 
 		public EntityId ShooterId { get; set; }
 

@@ -42,6 +42,9 @@ namespace CryGameCode.Entities.Collectibles
 
 		void SpawnCollectible()
 		{
+			if (Collectible != null && !Collectible.IsDestroyed)
+				Collectible.Remove();
+
 			var collectibleType = CollectibleTypes[SinglePlayer.Selector.Next(CollectibleTypes.Count)];
 
 			Collectible = Entity.Spawn("Collectible", collectibleType) as Collectible;

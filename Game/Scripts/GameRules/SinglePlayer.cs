@@ -36,8 +36,6 @@ namespace CryGameCode
 				Metrics.Record(new Telemetry.MatchStarted { GameRules = GetType().Name });
 
 			Teams = new Team[] { new Team("Red"), new Team("Blue") };
-			
-			ReceiveUpdates = true;
 		}
 
 		public T GetExtension<T>() where T : GameRulesExtension
@@ -190,27 +188,6 @@ namespace CryGameCode
 
 			return null;
 		}
-
-		public override void OnUpdate()
-		{
-			var removedModifiers = new List<IGameModifier>();
-
-			foreach (var gameModifier in m_activeGameModifiers)
-			{
-				if (!gameModifier.Update())
-					removedModifiers.Add(gameModifier);
-			}
-
-			foreach (var gameModifier in removedModifiers)
-				m_activeGameModifiers.Remove(gameModifier);
-		}
-
-		public void AddGameModifier(IGameModifier modifier)
-		{
-			m_activeGameModifiers.Add(modifier);
-		}
-
-		List<IGameModifier> m_activeGameModifiers = new List<IGameModifier>();
 
 		public static Random Selector = new Random();
 

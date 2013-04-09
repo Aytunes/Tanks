@@ -1,6 +1,7 @@
 ﻿using CryEngine;
 
 using CryGameCode.Tanks;
+using CryGameCode.Extensions;
 
 namespace CryGameCode.Entities.Collectibles
 {
@@ -10,12 +11,8 @@ namespace CryGameCode.Entities.Collectibles
 		{
 			var singlePlayer = GameRules.Current as SinglePlayer;
 
-			var modifier = new HealthModifier(tank, HealthRestoration, RestorationTime);
-			modifier.Begin();
-
-			singlePlayer.AddGameModifier(modifier);
-
-			modifier.OnEnd += () => { Remove(); };
+			var modifierManager = singlePlayer.GetExtension<GameModifierManagerExtension>();
+			var modifier = modifierManager.Add<HealthModifier>(tank.Id, HealthRestoration, RestorationTime);
 		}
 
 		public override string Model
