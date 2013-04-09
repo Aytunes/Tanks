@@ -18,6 +18,16 @@ namespace CryGameCode.Social.Null
 		{
 			return "nullroom";
 		}
+
+		public void AddUser(ulong userId, string roomId)
+		{
+			Log("Adding user {0} to {1}", userId, roomId);
+		}
+
+		public void AddGroup(ulong groupId, string roomId)
+		{
+			Log("Adding group {0} to {1}", groupId, roomId);
+		}
 	}
 
 	public class NullGroupService : NullService, ISocialGroup
