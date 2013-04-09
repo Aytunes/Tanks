@@ -206,6 +206,8 @@ namespace CryGameCode.Projectiles
 
 		public EntityId ShooterId { get; set; }
 
+		public EntityBase Shooter { get { return Entity.Get(ShooterId); } }
+
 		/// <summary>
 		/// Gets or sets a value indicating whether this projectile was fired.
 		/// If false, this projectile is ready for re-use.
