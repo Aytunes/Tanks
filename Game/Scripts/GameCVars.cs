@@ -44,9 +44,9 @@ namespace CryGameCode.Tanks
 		public static float cam_minDistZ = 37;
 		public static float cam_maxDistZ = 60;
 
-		public static float cam_distY = -5;
+		public static float cam_distY = -17;
 
-		public static float cam_minAngleX = -80;
+		public static float cam_minAngleX = -60;
 		public static float cam_maxAngleX = -90;
 
 		public static float cam_zoomSpeed = 2;
