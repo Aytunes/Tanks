@@ -12,6 +12,7 @@ namespace CryGameCode.Social
 	{
 		void Init(Dictionary<string, object> args);
 
+		ulong CurrentUser { get; }
 		ISocialChat Chat { get; }
 		ISocialGroup Group { get; }
 	}

@@ -37,7 +37,7 @@ namespace CryGameCode.Social.Null
 		public NullGroupService(NullAuth auth)
 			: base(auth)
 		{
-			m_groupInfo = new GroupInfo(0);
+			m_groupInfo = new GroupInfo(0, 0);
 		}
 
 		public GroupInfo CurrentGroup { get { return m_groupInfo; } }
