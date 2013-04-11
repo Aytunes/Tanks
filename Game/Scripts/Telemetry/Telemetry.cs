@@ -31,7 +31,11 @@ namespace CryGameCode
 		protected override void Init()
 		{
 			NetworkValidator.Server("Metrics are server-only");
+			Reset();
+		}
 
+		private void Reset()
+		{
 			if (m_instance != null && !m_instance.IsDestroyed)
 				throw new InvalidOperationException("Only one telemetry instance should exist");
 
@@ -111,6 +115,7 @@ namespace CryGameCode
 
 		public void Deserialize(CrySerializer serializer)
 		{
+			Init();
 		}
 
 		public void Serialize(CrySerializer serializer)
