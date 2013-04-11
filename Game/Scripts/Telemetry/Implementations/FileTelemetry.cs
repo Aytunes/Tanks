@@ -4,7 +4,7 @@ using CryEngine;
 
 namespace CryGameCode.Telemetry.Implementations
 {
-	public class FileTelemetryWriter : TelemetryWriter, IDisposable
+	public class FileTelemetryWriter : ITelemetryWriter, IDisposable
 	{
 		private const string TelemDir = "telem";
 		private StreamWriter m_stream;

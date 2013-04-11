@@ -7,6 +7,7 @@ namespace CryGameCode.Social.Null
 	{
 		public ISocialChat Chat { get; private set; }
 		public ISocialGroup Group { get; private set; }
+		public ulong CurrentUser { get { return 0; } }
 
 		public void Init(Dictionary<string, object> args)
 		{
