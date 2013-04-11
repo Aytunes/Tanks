@@ -128,7 +128,7 @@
 		<action name="moveright_reverse" onPress="1" onRelease="1" retriggerable="1" keyboard="e" />
 		<action name="moveforward" onPress="1" onRelease="1" retriggerable="1" keyboard="w" />
 		<action name="moveback" onPress="1" onRelease="1" retriggerable="1" keyboard="s" />
-		<action name="jump" onPress="1" onRelease="1" keyboard="space" xboxpad="xi_a" ps3pad="pad_cross"/>
+		<action name="jump" onPress="1" keyboard="space" xboxpad="xi_a" ps3pad="pad_cross"/>
 		<action name="rotateyaw" keyboard="maxis_x" />
 		<action name="rotatepitch" keyboard="maxis_y" />
 		<action name="zoom_in" onPress="1" onRelease="1" keyboard="mwheel_up" xboxpad="xi_shoulderr" ps3pad="pad_r1"/>
