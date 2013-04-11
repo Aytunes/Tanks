@@ -530,6 +530,26 @@
             A method, such as a website or email address, to contact the extension developer.
             </summary>
         </member>
+        <member name="F:CryEngine.CommandArgumentType.Normal">
+            <summary>
+            Argument was not preceeded by anything
+            </summary>
+        </member>
+        <member name="F:CryEngine.CommandArgumentType.Pre">
+            <summary>
+            Argument was preceeded by a minus sign
+            </summary>
+        </member>
+        <member name="F:CryEngine.CommandArgumentType.Post">
+            <summary>
+            Argument was preceeded by a plus sign
+            </summary>
+        </member>
+        <member name="F:CryEngine.CommandArgumentType.Executable">
+            <summary>
+            Argument is the executable filename
+            </summary>
+        </member>
         <member name="T:CryEngine.ByRefCVar">
             <summary>
             CVar pointing to a managed value by reference.

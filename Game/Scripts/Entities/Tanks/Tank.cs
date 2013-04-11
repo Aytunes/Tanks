@@ -116,7 +116,7 @@ namespace CryGameCode.Tanks
 
 		}
 
-		protected override void NetSerialize(CrySerialize serialize, int aspect, byte profile, int flags)
+		protected override void NetSerialize(ICrySerialize serialize, int aspect, byte profile, int flags)
 		{
 			serialize.BeginGroup("TankActor");
 
