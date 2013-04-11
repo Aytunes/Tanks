@@ -66,16 +66,16 @@ namespace CryGameCode.Network
 
 		private static string CreateQueryString(object[] args)
 		{
+			if (args.Length == 0)
+				return string.Empty;
+
 			var builder = new StringBuilder();
 
 			for (var i = 0; i < args.Length - 1; i += 2)
 				builder.AppendFormat("{0}={1}&", args[i].ToString().ToLower(), Uri.EscapeDataString(args[i + 1].ToString()));
 
-			if (builder.Length > 0)
-			{
-				builder.Insert(0, "?");
-				builder.Length -= 1;
-			}
+			builder.Insert(0, "?");
+			builder.Length -= 1;
 
 			return builder.ToString();
 		}
