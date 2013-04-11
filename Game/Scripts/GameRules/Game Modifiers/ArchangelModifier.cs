@@ -48,21 +48,12 @@ namespace CryGameCode
                     damageable.Damage(0, damage, DamageType.Explosive, Vec3.Zero, direction);
                 }
             }
-
-            if (OnEnd != null)
-                OnEnd();
-        }
-
-        public void Begin()
-        {
         }
 
         public bool Update()
         {
             return true;
         }
-
-        public event Action OnEnd;
 
         public EntityBase Target { get; set; }
 

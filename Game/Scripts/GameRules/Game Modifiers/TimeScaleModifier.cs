@@ -16,29 +16,19 @@ namespace CryGameCode
 			NewTimeScale = newTimeScale;
 
 			m_timeRemaining = duration;
-		}
 
-		public void Begin()
-		{
 			m_prevTimeScale = TimeScale.FVal;
-			TimeScale.FVal = NewTimeScale;
+			TimeScale.FVal = newTimeScale;
 		}
 
 		public bool Update()
 		{
 			m_timeRemaining -= Time.DeltaTime / NewTimeScale;
 			if (m_timeRemaining <= 0)
-			{
 				TimeScale.FVal = m_prevTimeScale;
-
-				if (OnEnd != null)
-					OnEnd();
-			}
 
 			return m_timeRemaining > 0;
 		}
-
-		public event Action OnEnd;
 
 		public float NewTimeScale { get; set; }
 
