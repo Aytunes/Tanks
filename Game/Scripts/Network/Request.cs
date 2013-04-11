@@ -72,7 +72,10 @@ namespace CryGameCode.Network
 				builder.AppendFormat("{0}={1}&", args[i].ToString().ToLower(), Uri.EscapeDataString(args[i + 1].ToString()));
 
 			if (builder.Length > 0)
+			{
+				builder.Insert(0, "?");
 				builder.Length -= 1;
+			}
 
 			return builder.ToString();
 		}
