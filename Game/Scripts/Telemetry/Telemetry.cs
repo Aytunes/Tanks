@@ -19,7 +19,7 @@ namespace CryGameCode
 	public class Metrics : GameRulesExtension, ICrySerializable
 	{
 		private Dictionary<Type, TelemetryProcessor> m_processors;
-		private TelemetryWriter[] m_senders;
+		private ITelemetryWriter[] m_senders;
 		private Thread m_telemThread;
 		private BlockingCollection<object> m_pool;
 		private static int m_debug = 1;
@@ -43,8 +43,8 @@ namespace CryGameCode
 			var types = Assembly.GetExecutingAssembly().GetTypes();
 
 			m_senders = (from type in types
-						 where type.Implements<TelemetryWriter>()
-						 select (TelemetryWriter)Activator.CreateInstance(type)).ToArray();
+						 where type.Implements<ITelemetryWriter>()
+						 select (ITelemetryWriter)Activator.CreateInstance(type)).ToArray();
 
 			Debug.LogAlways("Registered {0} telemetry senders:", m_senders.Length);
 
@@ -118,7 +118,7 @@ namespace CryGameCode
 		}
 	}
 
-	public interface TelemetryWriter
+	public interface ITelemetryWriter
 	{
 		void Write(string category, string data);
 	}
