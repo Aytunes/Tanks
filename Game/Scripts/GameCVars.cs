@@ -62,12 +62,14 @@ namespace CryGameCode.Tanks
 		static void RegisterTopDown3DCameraCVars()
 		{
 			CVar.RegisterFloat("cam_topDown3D_posInterpolationSpeed", ref cam_topDown3D_posInterpolationSpeed);
+			CVar.RegisterFloat("cam_topDown3D_rotInterpolationSpeed", ref cam_topDown3D_rotInterpolationSpeed);
 
 			CVar.RegisterFloat("cam_topDown3D_minDistZ", ref cam_topDown3D_minDistZ);
 			CVar.RegisterFloat("cam_topDown3D_maxDistZ", ref cam_topDown3D_maxDistZ);
 		}
 
 		public static float cam_topDown3D_posInterpolationSpeed = 50;
+		public static float cam_topDown3D_rotInterpolationSpeed = 50;
 
 		public static float cam_topDown3D_minDistZ = 37;
 		public static float cam_topDown3D_maxDistZ = 60;

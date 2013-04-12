@@ -123,7 +123,7 @@ namespace CryGameCode.Tanks
 
 			var desiredRotation = Quat.CreateRotationVDir((Position - viewParams.Position).Normalized);
 
-			viewParams.Rotation = Quat.CreateSlerp(viewParams.RotationLast, desiredRotation, Time.DeltaTime);
+			viewParams.Rotation = Quat.CreateSlerp(viewParams.RotationLast, desiredRotation, GameCVars.cam_topDown3D_rotInterpolationSpeed * Time.DeltaTime);
 		}
 
 		void ViewFirstPerson(ref ViewParams viewParams)
