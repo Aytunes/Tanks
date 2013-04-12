@@ -68,8 +68,8 @@ namespace CryGameCode.Tanks
 			CVar.RegisterFloat("cam_topDown3D_maxDistZ", ref cam_topDown3D_maxDistZ);
 		}
 
-		public static float cam_topDown3D_posInterpolationSpeed = 50;
-		public static float cam_topDown3D_rotInterpolationSpeed = 50;
+		public static float cam_topDown3D_posInterpolationSpeed = 100;
+		public static float cam_topDown3D_rotInterpolationSpeed = 150;
 
 		public static float cam_topDown3D_minDistZ = 37;
 		public static float cam_topDown3D_maxDistZ = 60;
