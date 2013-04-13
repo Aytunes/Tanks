@@ -96,7 +96,7 @@ namespace CryGameCode.Tanks
 			ReceiveUpdates = true;
 
 			if (IsLocalClient)
-				Entity.Spawn<Cursor>("Cursor");
+				Cursor = Entity.Spawn<Cursor>("Cursor");
 		}
 
 		public void OnLeftGame()
@@ -162,6 +162,9 @@ namespace CryGameCode.Tanks
 			Health = MaxHealth;
 
 			ResetModel();
+
+			if (IsLocalClient)
+				Cursor.UseOffset = true;
 
 			Hide(false);
 
@@ -261,6 +264,9 @@ namespace CryGameCode.Tanks
 			if (!IsDead)
 				return;
 
+			if (IsLocalClient)
+				Cursor.UseOffset = false;
+
 			var spectatorPoints = Entity.GetByClass<SpectatorPoint>();
 			var spectatorPointCount = spectatorPoints.Count();
 
@@ -317,5 +323,7 @@ namespace CryGameCode.Tanks
 		public float SpawnTime { get; set; }
 
 		public bool AlignGravityToUpVector { get; set; }
+
+		public Cursor Cursor { get; set; }
 	}
 }
