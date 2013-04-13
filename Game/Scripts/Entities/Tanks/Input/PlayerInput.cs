@@ -86,7 +86,7 @@ namespace CryGameCode.Tanks
 
 		public void PostUpdate() { }
 
-		public void NetSerialize(CryEngine.Serialization.CrySerialize serialize)
+		public void NetSerialize(CryEngine.Serialization.ICrySerialize serialize)
 		{
 			serialize.BeginGroup("PlayerInput");
 

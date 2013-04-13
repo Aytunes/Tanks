@@ -114,7 +114,6 @@
     <Compile Include="GameRules\Extensions\KillCountExtension.cs" />
     <Compile Include="GameRules\Game Modifiers\ArchangelModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\HealthModifier.cs" />
-    <Compile Include="GameRules\Game Modifiers\InvisibilityModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\TimeScaleModifier.cs" />
     <Compile Include="GameRules\Game Modifiers\IGameModifier.cs" />
     <Compile Include="Entities\Others\SpectatorPoint.cs" />

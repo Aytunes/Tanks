@@ -20,8 +20,8 @@ namespace CryGameCode.Tanks
 
 		//TODO: remove magic numbers
 		const float TankMass = 1000;
-		const float TankFrontalArea = 20.6f;
-		const float TankDragCoefficient = 0.8f;
+		const float TankFrontalArea = 25.6f;
+		const float TankDragCoefficient = 1.0f;
 		const float AirDensity = 1.27f;
 		const float momentumIntertia = 4000.0f; // kg*m²
 
@@ -47,9 +47,6 @@ namespace CryGameCode.Tanks
 
 			var frameTime = Time.DeltaTime;
 
-			// update desired movement changes based on input.
-			UpdateTreads(frameTime, Velocity);
-
 			var moveRequest = new EntityMovementRequest();
 			moveRequest.type = EntityMoveType.Normal;
 
@@ -57,7 +54,7 @@ namespace CryGameCode.Tanks
 			// Common
 			///////////////////////////
 
-			Vec3 prevVelocity = Velocity;
+			Vec3 prevVelocity = Physics.Velocity;
 			var prevRotation = Rotation;
 
 			var forwardDir = prevRotation.Column1;
@@ -79,6 +76,9 @@ namespace CryGameCode.Tanks
 			var slopeAngle = onGround ? NormalToAngle(GroundNormal) : MathHelpers.DegreesToRadians(90);
 
 			var totalForce = m_treads[0].Force + m_treads[1].Force;
+
+			// update desired movement changes based on input.
+			UpdateTreads(frameTime, prevVelocity);
 
 			///////////////////////////
 			// Set physics parameters

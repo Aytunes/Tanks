@@ -18,26 +18,15 @@ namespace CryGameCode
 			RestorationTime = restorationTime;
 
 			Target = Entity.Get(targetId);
-		}
 
-		public void Begin()
-		{
-			m_remainingHeal = HealthRestoration;
+			m_remainingHeal = healthRestoration;
 
 			var damageableTarget = Target as IDamageable;
 			damageableTarget.OnDamaged += (sender, e) =>
 			{
 				// cancel heal if target took damage
-				End();
+				m_remainingHeal = 0;
 			};
-		}
-
-		void End()
-		{
-			m_remainingHeal = 0;
-
-			if (OnEnd != null)
-				OnEnd();
 		}
 
 		public bool Update()
@@ -48,13 +37,8 @@ namespace CryGameCode
 			var damageableTarget = Target as IDamageable;
 			damageableTarget.Heal(heal);
 
-			if (m_remainingHeal <= 0)
-				End();
-
 			return m_remainingHeal > 0;
 		}
-
-		public event Action OnEnd;
 
 		public EntityBase Target { get; set; }
 
