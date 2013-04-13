@@ -113,13 +113,10 @@ namespace CryGameCode
 				Debug.LogAlways("[Telemetry] " + format, args);
 		}
 
-		public void Deserialize(CrySerializer serializer)
+		public void Serialize(ICrySerialize serialize)
 		{
-			Init();
-		}
-
-		public void Serialize(CrySerializer serializer)
-		{
+			if (serialize.IsReading)
+				Init();
 		}
 	}
 

@@ -284,11 +284,6 @@
             EntityId is mostly used in runtime for fast and unique identification of entities..
             </summary>
         </member>
-        <member name="P:CryEngine.EntityBase.Velocity">
-            <summary>
-            Gets or sets entity velocity as set by the physics system.
-            </summary>
-        </member>
         <member name="P:CryEngine.EntityBase.Physics">
             <summary>
             Gets the physical entity, contains essential functions for modifying the entitys existing physical state.
@@ -2044,6 +2039,11 @@
         <member name="T:CryEngine.Physics.PhysicalEntity">
             <summary>
             Physical entity present in the physics system.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Physics.PhysicalEntity.Velocity">
+            <summary>
+            Gets or sets entity velocity as set by the physics system.
             </summary>
         </member>
         <member name="P:CryEngine.Physics.PhysicalEntity.Resting">
