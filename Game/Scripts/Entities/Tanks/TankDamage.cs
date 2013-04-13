@@ -23,7 +23,7 @@ namespace CryGameCode.Tanks
 
 			if (Game.IsServer)
 			{
-				Metrics.Record(new Telemetry.KillData { Position = e.Position, DamageType = e.Type });
+				Metrics.Record(new Telemetry.KillData { Position = e.Position.ToIntVec2(), DamageType = e.Type });
 			}
 		}
 

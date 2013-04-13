@@ -25,7 +25,7 @@ namespace CryGameCode.Telemetry
 
 		private string CreateEntry(string name, object value)
 		{
-			return string.Format("{0}={1}", name, Uri.EscapeDataString(value.ToString()));
+			return string.Format("{0}={1}", name, value.ToString());
 		}
 	}
 }

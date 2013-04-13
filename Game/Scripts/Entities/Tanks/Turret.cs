@@ -220,7 +220,7 @@ namespace CryGameCode.Tanks
 					ProjectileStorage.Add(projectile);
 				}
 
-				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T, Rotation = turretRot.Column1 });
+				Metrics.Record(new Telemetry.WeaponFiredData { Name = ProjectileType.Name, Position = jointAbsolute.T.ToIntVec2() });
 				projectile.Launch(Owner.Id, jointAbsolute.T, turretRot);
 
 				OnRemoteFire(jointAbsolute.T);
