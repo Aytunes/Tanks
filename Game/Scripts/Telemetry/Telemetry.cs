@@ -115,7 +115,7 @@ namespace CryGameCode
 
 		public void Serialize(ICrySerialize serialize)
 		{
-			if (serialize.IsReading)
+			if (serialize.IsReading && Game.IsServer)
 				Init();
 		}
 	}
