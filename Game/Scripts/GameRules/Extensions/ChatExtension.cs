@@ -50,7 +50,12 @@ namespace CryGameCode.Extensions
 		private void RequestRoomUpdate()
 		{
 			var platform = SocialPlatform.Active;
-			RemoteInvocation(RequestRoomName, NetworkTarget.ToServer, string.Empty, m_group.CurrentGroup.ID.ToString(), platform.CurrentUser.ToString());
+
+			var currentGroup = m_group.CurrentGroup;
+			var groupId = currentGroup.ID;
+			var user = platform.CurrentUser;
+
+			RemoteInvocation(RequestRoomName, NetworkTarget.ToServer, string.Empty, groupId.ToString(), user.ToString());
 		}
 
 		private float m_lastRequest;
