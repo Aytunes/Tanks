@@ -51,6 +51,10 @@ namespace CryGameCode.Extensions
 		{
 			var platform = SocialPlatform.Active;
 
+			// HACK: Stop script reload errors
+			if (platform == null)
+				return;
+
 			var currentGroup = m_group.CurrentGroup;
 			var groupId = currentGroup.ID;
 			var user = platform.CurrentUser;
