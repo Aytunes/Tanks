@@ -501,7 +501,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameDll.cpp" />
-    <ClCompile Include="GameRulesHostMigration.cpp" />
     <ClCompile Include="GameStartup.cpp" />
     <ClCompile Include="HUD\UIEntityTag.cpp" />
     <ClCompile Include="HUD\UIGameEvents.cpp" />

@@ -1224,10 +1224,6 @@ void CGame::SetHostMigrationStateAndTime( EHostMigrationState newState, float ti
 	{
 		AbortHostMigration();
 	}
-
-	// Notify the gamerules
-	CGameRules *pGameRules = GetGameRules();
-	pGameRules->OnHostMigrationStateChanged();
 }
 
 //------------------------------------------------------------------------

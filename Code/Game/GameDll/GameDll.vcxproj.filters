@@ -229,9 +229,6 @@
     <ClCompile Include="HUD\UIManager.cpp">
       <Filter>HUD</Filter>
     </ClCompile>
-    <ClCompile Include="GameRulesHostMigration.cpp">
-      <Filter>GameRules</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameStartup.h">

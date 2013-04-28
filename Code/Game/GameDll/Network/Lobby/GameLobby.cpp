@@ -4980,7 +4980,6 @@ void CGameLobby::RemoveUser(SCryUserInfoResult* user)
 		if (pGameRules)
 		{
 			int channelId = (int) user->m_conID.m_uid;
-			pGameRules->OnUserLeftLobby(channelId);
 		}
 	}
 

@@ -60,47 +60,15 @@ CGameRules::CGameRules()
 	m_ignoreEntityNextCollision(0),
 	m_timeOfDayInitialized(false),
 	m_bBlockPlayerAddition(false),
-	m_pMigratingPlayerInfo(NULL),
-	m_pHostMigrationItemInfo(NULL),
 	m_migratingPlayerMaxCount(0),
-	m_pHostMigrationParams(NULL),
-	m_pHostMigrationClientParams(NULL),
-	m_hostMigrationClientHasRejoined(false),
 	m_explosionScreenFX(true)
 {
 	m_timeLimit = g_pGameCVars->g_timelimit;
-
-	if (gEnv->bMultiplayer)
-	{
-		m_migratingPlayerMaxCount = MAX_PLAYER_LIMIT;
-
-		if (gEnv->pConsole)
-		{
-			ICVar* pMaxPlayers = gEnv->pConsole->GetCVar("sv_maxplayers");
-			if (pMaxPlayers)
-			{
-				m_migratingPlayerMaxCount = pMaxPlayers->GetIVal();
-			}
-		}
-		m_pMigratingPlayerInfo = new SMigratingPlayerInfo[m_migratingPlayerMaxCount];
-		CRY_ASSERT(m_pMigratingPlayerInfo != NULL);
-
-		m_hostMigrationItemMaxCount = m_migratingPlayerMaxCount * 8;		// Allow for 8 items per person
-		m_pHostMigrationItemInfo = new SHostMigrationItemInfo[m_hostMigrationItemMaxCount];
-		CRY_ASSERT(m_pHostMigrationItemInfo != NULL);
-
-		m_hostMigrationCachedEntities.reserve(128);
-	}
 }
 
 //------------------------------------------------------------------------
 CGameRules::~CGameRules()
 {
-	SAFE_DELETE_ARRAY(m_pMigratingPlayerInfo)
-	SAFE_DELETE_ARRAY(m_pHostMigrationItemInfo);
-
-	SAFE_DELETE(m_pHostMigrationParams);
-	SAFE_DELETE(m_pHostMigrationClientParams);
 	if (m_pGameFramework)
 	{
 		if (m_pGameFramework->GetIGameRulesSystem())
@@ -108,14 +76,6 @@ CGameRules::~CGameRules()
 		
 		if(m_pGameFramework->GetIViewSystem())
 			m_pGameFramework->GetIViewSystem()->RemoveListener(this);
-	}
-
-	gEnv->pNetwork->RemoveHostMigrationEventListener(this);
-
-	if (g_pGame->GetHostMigrationState() != CGame::eHMS_NotMigrating)
-	{
-		// Quitting game mid-migration (probably caused by a failed migration), re-enable timers so that the game isn't paused if we join a new one!
-		g_pGame->AbortHostMigration();
 	}
 }
 
@@ -176,8 +136,6 @@ bool CGameRules::Init( IGameObject * pGameObject )
 
 	g_pGame->GetSPAnalyst()->Enable(!isMultiplayer);
 
-	gEnv->pNetwork->AddHostMigrationEventListener(this, "CGameRules");
-
 	if (g_pGame->GetHostMigrationState() != CGame::eHMS_NotMigrating)
 	{
 		// Quitting game mid-migration (probably caused by a failed migration), re-enable timers so that the game isn't paused if we join a new one!
@@ -218,29 +176,6 @@ void CGameRules::PostInitClient(int channelId)
 	// update team status on the client
 	for (TEntityTeamIdMap::const_iterator tit=m_entityteams.begin(); tit!=m_entityteams.end(); ++tit)
 		GetGameObject()->InvokeRMIWithDependentObject(ClSetTeam(), SetTeamParams(tit->first, tit->second), eRMI_ToClientChannel, tit->first, channelId);
-
-	if (g_pGame->GetHostMigrationState() != CGame::eHMS_NotMigrating)
-	{
-		// Tell this client who else has made it
-		for (int i = 0; i < MAX_PLAYERS; ++ i)
-		{
-			TNetChannelID migratedChannelId = m_migratedPlayerChannels[i];
-			if (migratedChannelId)
-			{
-				IActor *pActor = GetActorByChannelId(migratedChannelId);
-				if (pActor)
-				{
-					EntityParams params;
-					params.entityId = pActor->GetEntityId();
-					GetGameObject()->InvokeRMIWithDependentObject(ClHostMigrationPlayerJoined(), params, eRMI_ToClientChannel|eRMI_NoLocalCalls, params.entityId, channelId);
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
 }
 
 //------------------------------------------------------------------------
@@ -472,16 +407,6 @@ bool CGameRules::OnClientConnect(int channelId, bool isReset)
 	bool useExistingActor = false;
 	IActor *pActor = NULL;
 
-	// Check if there's a migrating player for this channel
-	int migratingIndex = GetMigratingPlayerIndex(channelId);
-	if (migratingIndex >= 0)
-	{
-		useExistingActor = true;
-		pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActor(m_pMigratingPlayerInfo[migratingIndex].m_originalEntityId);
-		pActor->SetMigrating(true);
-		CryLog("CGameRules::OnClientConnect() migrating player, channelId=%i, name=%s", channelId, pActor->GetEntity()->GetName());
-	}
-
 	if (!useExistingActor)
 	{
 		string playerName;
@@ -521,18 +446,6 @@ bool CGameRules::OnClientConnect(int channelId, bool isReset)
 
 		//notify client he has entered the game
 		GetGameObject()->InvokeRMIWithDependentObject(ClEnteredGame(), NoParams(), eRMI_ToClientChannel, pActor->GetEntityId(), channelId);
-	}
-
-	if (migratingIndex != -1)
-	{
-		FinishMigrationForPlayer(migratingIndex);
-	}
-	else if (g_pGame->GetHostMigrationState() != CGame::eHMS_NotMigrating)
-	{
-		// This is a new client joining while we're migrating, need to tell them to pause game etc
-		const float timeSinceStateChange = g_pGame->GetTimeSinceHostMigrationStateChanged();
-		SMidMigrationJoinParams params(int(g_pGame->GetHostMigrationState()), timeSinceStateChange);
-		GetGameObject()->InvokeRMI(ClMidMigrationJoin(), params, eRMI_ToClientChannel, channelId);
 	}
 
 	CGameLobby* pGameLobby = g_pGame->GetGameLobby();
@@ -1235,18 +1148,6 @@ int CGameRules::GetChannelTeam(int channelId) const
 }
 
 //------------------------------------------------------------------------
-void CGameRules::AddGameRulesListener(SGameRulesListener* pRulesListener)
-{
-	stl::push_back_unique(m_rulesListeners, pRulesListener);
-}
-
-//------------------------------------------------------------------------
-void CGameRules::RemoveGameRulesListener(SGameRulesListener* pRulesListener)
-{
-	stl::find_and_erase(m_rulesListeners, pRulesListener);
-}
-
-//------------------------------------------------------------------------
 void CGameRules::SendTextMessage(ETextMessageType type, const char *msg, unsigned int to, int channelId,
 																 const char *p0, const char *p1, const char *p2, const char *p3)
 {
@@ -1573,72 +1474,6 @@ void CGameRules::ShowScores(bool show)
 }
 
 //------------------------------------------------------------------------
-void CGameRules::UpdateAffectedEntitiesSet(TExplosionAffectedEntities &affectedEnts, const pe_explosion *pExplosion)
-{
-	if (pExplosion)
-	{
-		for (int i=0; i<pExplosion->nAffectedEnts; ++i)
-		{ 
-			if (IEntity *pEntity = gEnv->pEntitySystem->GetEntityFromPhysics(pExplosion->pAffectedEnts[i]))
-			{ 
-				if (IScriptTable *pEntityTable = pEntity->GetScriptTable())
-				{
-					IPhysicalEntity* pEnt = pEntity->GetPhysics();
-					if (pEnt)
-					{
-						float affected=gEnv->pPhysicalWorld->IsAffectedByExplosion(pEnt);
-
-						AddOrUpdateAffectedEntity(affectedEnts, pEntity, affected);
-					}
-				}
-			}
-		}
-	}
-}
-
-//------------------------------------------------------------------------
-void CGameRules::AddOrUpdateAffectedEntity(TExplosionAffectedEntities &affectedEnts, IEntity* pEntity, float affected)
-{
-	TExplosionAffectedEntities::iterator it=affectedEnts.find(pEntity);
-	if (it!=affectedEnts.end())
-	{
-		if (it->second<affected)
-			it->second=affected;
-	}
-	else
-		affectedEnts.insert(TExplosionAffectedEntities::value_type(pEntity, affected));
-}
-
-//------------------------------------------------------------------------
-void CGameRules::CommitAffectedEntitiesSet(SmartScriptTable &scriptExplosionInfo, TExplosionAffectedEntities &affectedEnts)
-{
-	CScriptSetGetChain explosion(scriptExplosionInfo);
-
-	SmartScriptTable affected;
-	SmartScriptTable affectedObstruction;
-
-	if (scriptExplosionInfo->GetValue("AffectedEntities", affected) && 
-		scriptExplosionInfo->GetValue("AffectedEntitiesObstruction", affectedObstruction))
-	{
-		if (affectedEnts.empty())
-		{
-			affected->Clear();
-			affectedObstruction->Clear();
-		}
-		else
-		{
-			int k=0;      
-			for (TExplosionAffectedEntities::const_iterator it=affectedEnts.begin(),end=affectedEnts.end(); it!=end; ++it)
-			{
-				float obstruction = 1.0f-it->second;
-				affected->SetAt(++k, it->first->GetScriptTable());
-				affectedObstruction->SetAt(k, obstruction);
-			}
-		}
-	}
-}
-
-//------------------------------------------------------------------------
 void CGameRules::Restart()
 {
 	if (gEnv->bServer)
@@ -1711,43 +1546,16 @@ void CGameRules::OnEndGame()
 //------------------------------------------------------------------------
 void CGameRules::GameOver(int localWinner)
 {
-	if(m_rulesListeners.empty() == false)
-	{
-		TGameRulesListenerVec::iterator iter = m_rulesListeners.begin();
-		while (iter != m_rulesListeners.end())
-		{
-			(*iter)->GameOver(localWinner);
-			++iter;
-		}
-	}
 }
 
 //------------------------------------------------------------------------
 void CGameRules::EnteredGame()
 {
-	if(m_rulesListeners.empty() == false)
-	{
-		TGameRulesListenerVec::iterator iter = m_rulesListeners.begin();
-		while (iter != m_rulesListeners.end())
-		{
-			(*iter)->EnteredGame();
-			++iter;
-		}
-	}
 }
 
 //------------------------------------------------------------------------
 void CGameRules::EndGameNear(EntityId id)
 {
-	if(m_rulesListeners.empty() == false)
-	{
-		TGameRulesListenerVec::iterator iter = m_rulesListeners.begin();
-		while(iter != m_rulesListeners.end())
-		{
-			(*iter)->EndGameNear(id);
-			++iter;
-		}
-	}
 }
 
 //------------------------------------------------------------------------
@@ -2030,10 +1838,6 @@ void CGameRules::GetMemoryUsage(ICrySizer * s) const
 	s->AddContainer(m_respawndata);
 	s->AddContainer(m_respawns);
 	s->AddContainer(m_removals);
-#ifndef OLD_VOICE_SYSTEM_DEPRECATED
-	s->AddContainer(m_teamVoiceGroups);
-#endif
-	s->AddContainer(m_rulesListeners);
 
 	for (TTeamIdMap::const_iterator iter = m_teams.begin(); iter != m_teams.end(); ++iter)
 		s->Add(iter->first);
@@ -2111,4 +1915,17 @@ bool CGameRules::IsRealActor(EntityId actorId) const
 		}
 		return false;
 	}
+}
+
+void CGameRules::ClearAllMigratingPlayers()
+{
+}
+
+EntityId CGameRules::SetChannelForMigratingPlayer(const char* name, uint16 channelID)
+{
+	return 0;
+}
+
+void CGameRules::StoreMigratingPlayer(IActor* pActor)
+{
 }
