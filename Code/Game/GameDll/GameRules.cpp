@@ -73,9 +73,6 @@ CGameRules::~CGameRules()
 	{
 		if (m_pGameFramework->GetIGameRulesSystem())
 			m_pGameFramework->GetIGameRulesSystem()->SetCurrentGameRules(0);
-		
-		if(m_pGameFramework->GetIViewSystem())
-			m_pGameFramework->GetIViewSystem()->RemoveListener(this);
 	}
 }
 
@@ -98,10 +95,6 @@ bool CGameRules::Init( IGameObject * pGameObject )
 	m_pMaterialManager = gEnv->p3DEngine->GetMaterialManager();
 	s_invulnID = m_pMaterialManager->GetSurfaceTypeManager()->GetSurfaceTypeByName("mat_invulnerable")->GetId();
 	s_barbWireID = m_pMaterialManager->GetSurfaceTypeManager()->GetSurfaceTypeByName("mat_metal_barbwire")->GetId();
-
-	//Register as ViewSystem listener (for cut-scenes, ...)
-	if(m_pGameFramework->GetIViewSystem())
-		m_pGameFramework->GetIViewSystem()->AddListener(this);
 
 	m_pGameFramework->GetIGameRulesSystem()->SetCurrentGameRules(this);
 
@@ -1872,26 +1865,6 @@ bool CGameRules::NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 prof
 		}
 
 		return true;
-}
-
-bool CGameRules::OnBeginCutScene(IAnimSequence* pSeq, bool bResetFX)
-{
-	if(!pSeq)
-		return false;
-
-	m_explosionScreenFX = false;
-
-	return true;
-}
-
-bool CGameRules::OnEndCutScene(IAnimSequence* pSeq)
-{
-	if(!pSeq)
-		return false;
-
-	m_explosionScreenFX = true;
-
-	return true;
 }
 
 //------------------------------------------------------------------------

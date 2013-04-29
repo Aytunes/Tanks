@@ -95,9 +95,7 @@ public:
 	virtual void OnOwnClientEnteredGame() = 0;
 };
 
-class CGameRules 
-	:	public CGameObjectExtensionHelper<CGameRules, IGameRules, 64>
-	,   public IViewSystemListener
+class CGameRules : public CGameObjectExtensionHelper<CGameRules, IGameRules, 64>
 {
 public:
 
@@ -140,13 +138,6 @@ public:
 	virtual void PostRemoteSpawn() {};
 	virtual void GetMemoryUsage(ICrySizer * s) const;
 	//~IGameObjectExtension
-
-	// IViewSystemListener
-	virtual bool OnBeginCutScene(IAnimSequence* pSeq, bool bResetFX);
-	virtual bool OnEndCutScene(IAnimSequence* pSeq);
-	virtual void OnPlayCutSceneSound(IAnimSequence* pSeq, ISound* pSound) {};
-	virtual bool OnCameraChange(const SCameraParams& cameraParams){ return true; };
-	// ~IViewSystemListener
 
 	//IGameRules
 	virtual bool ShouldKeepClient(int channelId, EDisconnectionCause cause, const char *desc) const;
