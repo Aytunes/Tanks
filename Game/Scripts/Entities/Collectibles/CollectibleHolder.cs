@@ -74,7 +74,7 @@ namespace CryGameCode.Entities.Collectibles
 				Activate();
 		}
 
-		protected override void OnEnterArea(EntityId entityId, int areaEntityId, float fade)
+		protected override void OnEnterArea(EntityId entityId, int areaId, EntityId areaEntityId)
 		{
 			// Pick up if active
 

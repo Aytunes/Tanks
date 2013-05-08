@@ -2157,10 +2157,9 @@
             Attempt to reload scripts again
             </summary>
         </member>
-        <member name="F:CryEngine.Initialization.EntityRegistrationParams.propertyFolders">
+        <member name="F:CryEngine.Initialization.EntityRegistrationParams.properties">
             <summary>
-            EntityPropertyFolder array containing properties.
-            The first index contains a fake folder which is referred to as the default category.
+            EntityProperty array containing properties.
             </summary>
         </member>
         <member name="T:CryEngine.ScriptInstanceDestroyedException">
