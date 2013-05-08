@@ -78,7 +78,7 @@ namespace CryGameCode.Tanks
 		public static float cam_zoomSpeed = 2;
 		public static int cam_maxZoomLevel = 8;
 
-		public static int cam_type = (int)CameraType.TopDown;
+		public static int cam_type = (int)CameraType.TopDown3D;
 		#endregion
 
 		#region Tilted camera

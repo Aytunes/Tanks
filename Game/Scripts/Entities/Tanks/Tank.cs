@@ -222,25 +222,32 @@ namespace CryGameCode.Tanks
 			GroundNormal = (GroundNormal + blend * (Physics.LivingStatus.GroundNormal - GroundNormal));
 
 			var position = Position;
+			var rotation = Rotation;
 
 			if (Game.IsClient && !Game.IsEditor)
 			{
-				m_currentDelta = m_serverPos - position;
-				var deltaLength = m_currentDelta.Length;
+				m_currentPosDelta = m_serverPos - position;
+				m_currentRotDelta = m_serverRot / rotation;
+
+				var deltaLength = m_currentPosDelta.Length;
 
 				if (IsLocalClient)
 				{
 					Renderer.DrawTextToScreen(10, 10, 2, Color.White, "Client pos: {0}", position);
 					Renderer.DrawTextToScreen(10, 30, 2, Color.White, "Server pos: {0}", m_serverPos);
 
-					var clr = deltaLength > 2 ? Color.Red : Color.White;
-					Renderer.DrawTextToScreen(10, 50, 2, clr, "Delta: {0}", deltaLength);
-					Renderer.DrawTextToScreen(10, 70, 2, Color.White, "Health: {0}", m_health);
+					var clrPos = deltaLength > 2 ? Color.Red : Color.White;
+					Renderer.DrawTextToScreen(10, 50, 2, clrPos, "Pos delta: {0}", deltaLength);
+
+					Renderer.DrawTextToScreen(10, 70, 2, Color.White, "Client rot: {0}", rotation.Angles);
+					Renderer.DrawTextToScreen(10, 90, 2, Color.White, "Server rot: {0}", m_serverRot.Angles);
+
+					Renderer.DrawTextToScreen(10, 110, 2, Color.White, "Health: {0}", m_health);
 				}
 
 				// Start forcing sync if we have to
 				// TODO: Tweak based on connection
-				if (m_currentDelta.Length > MaxDelta)
+				if (m_currentPosDelta.Length > MaxDelta)
 				{
 					Position = m_serverPos;
 					position = m_serverPos;
@@ -301,7 +308,8 @@ namespace CryGameCode.Tanks
 			}
 		}
 
-		private Vec3 m_currentDelta;
+		private Vec3 m_currentPosDelta;
+		private Quat m_currentRotDelta;
 		private Vec3 m_serverPos;
 		private Quat m_serverRot;
 

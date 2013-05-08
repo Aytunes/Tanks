@@ -118,8 +118,12 @@ namespace CryGameCode.Tanks
 			viewParams.Position = viewParams.PositionLast;
 
 			var desiredPosition = Position + GroundNormal * distZ;
+			var delta = viewParams.Position - desiredPosition;
 
 			MathHelpers.Interpolate(ref viewParams.Position, desiredPosition, GameCVars.cam_topDown3D_posInterpolationSpeed * Time.DeltaTime);
+
+			if (delta.Length < 0.2f)
+				return;
 
 			var desiredRotation = Quat.CreateRotationVDir((Position - viewParams.Position).Normalized);
 

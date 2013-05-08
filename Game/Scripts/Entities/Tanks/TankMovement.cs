@@ -111,14 +111,10 @@ namespace CryGameCode.Tanks
 			moveRequest.rotation = prevRotation.Inverted * new Quat(Matrix33.CreateFromVectors(forward % GroundNormal, forward, GroundNormal));
 			moveRequest.rotation.Normalize();
 
+			if (m_currentRotDelta.Angles.Length > 0.2f)
+				moveRequest.rotation *= m_currentRotDelta;
+			
 			moveRequest.rotation *= Quat.CreateRotationZ(angularAcceleration * frameTime);
-
-			//Only start interpolating shortly after acceleration changes have been made
-			if (Game.IsPureClient && (Time.FrameStartTime - m_lastAngularAccelerationChanged) >= 200.0f)
-			{
-				//Renderer.DrawTextToScreen(100, 80, 1.3f, Color.White, "Lerping! {0}", Time.FrameStartTime - m_lastAngularAccelerationChanged);
-				Rotation = Quat.CreateNlerp(Rotation, m_serverRot, Time.DeltaTime);
-			}
 
 			///////////////////////////
 			// Velocity
@@ -150,8 +146,8 @@ namespace CryGameCode.Tanks
 
 			moveRequest.velocity = prevVelocity + (forwardAcceleration - frictionDeceleration - dragDeceleration);
 
-			if (Game.IsPureClient && m_currentDelta.Length > MinDelta)
-				moveRequest.velocity += m_currentDelta * DeltaMult * m_currentDelta.LengthSquared;
+			if (Game.IsPureClient && m_currentPosDelta.Length > MinDelta)
+				moveRequest.velocity += m_currentPosDelta * DeltaMult * m_currentPosDelta.LengthSquared;
 
 			if (GameCVars.tank_debugMovement != 0)
 			{
