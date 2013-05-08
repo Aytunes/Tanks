@@ -34,10 +34,20 @@ namespace CryGameCode
 			{
 				m_teams = new Dictionary<string, TeamData>();
 				var drills = Entity.GetByClass<Drill>();
+				if (drills.Count() == 0)
+				{
+					Debug.LogWarning("[DestroyTheDrill.OnClientConnect] No drills found!");
+					return;
+				}
 
 				foreach (var team in Teams)
 				{
-					var drill = drills.Single(d => d.Team.Equals(team.Name, System.StringComparison.CurrentCultureIgnoreCase));
+					var drill = drills.FirstOrDefault(d => d.Team.Equals(team.Name, System.StringComparison.CurrentCultureIgnoreCase));
+					if (drill == null)
+					{
+						Debug.LogWarning("Failed to find drill for team {0}", team.Name);
+						continue;
+					}
 
 					drill.OnDeath += (sender, e) =>
 					{
