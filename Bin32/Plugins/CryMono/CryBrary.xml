@@ -835,6 +835,11 @@
             Gets or sets the helper graphic displayed inside Sandbox.
             </summary>
         </member>
+        <member name="P:CryEngine.Area.Handle">
+            <summary>
+            IArea pointer
+            </summary>
+        </member>
         <member name="T:CryEngine.EditorPropertyType">
             <summary>
             Defines the list of supported editor types.
@@ -1030,29 +1035,23 @@
             Called when the level is started.
             </summary>
         </member>
-        <member name="M:CryEngine.Entity.OnEnterArea(CryEngine.EntityId,System.Int32,System.Single)">
+        <member name="M:CryEngine.Entity.OnEnterArea(CryEngine.EntityId,System.Int32,CryEngine.EntityId)">
             <summary>
             Sent when entity enters to the area proximity.
             </summary>
             <param name="entityId"></param>
-            <param name="areaEntityId"></param>
-            <param name="fade"></param>
         </member>
-        <member name="M:CryEngine.Entity.OnMoveInsideArea(CryEngine.EntityId,System.Int32,System.Single)">
+        <member name="M:CryEngine.Entity.OnMoveInsideArea(CryEngine.EntityId,System.Int32,CryEngine.EntityId)">
             <summary>
             Sent when entity moves inside the area proximity.
             </summary>
             <param name="entityId"></param>
-            <param name="areaId"></param>
-            <param name="fade"></param>
         </member>
-        <member name="M:CryEngine.Entity.OnLeaveArea(CryEngine.EntityId,System.Int32,System.Single)">
+        <member name="M:CryEngine.Entity.OnLeaveArea(CryEngine.EntityId,System.Int32,CryEngine.EntityId)">
             <summary>
             Sent when entity leaves the area proximity.
             </summary>
             <param name="entityId"></param>
-            <param name="areaEntityId"></param>
-            <param name="fade"></param>
         </member>
         <member name="M:CryEngine.Entity.OnCollision(CryEngine.ColliderInfo,CryEngine.ColliderInfo,CryEngine.Vec3,CryEngine.Vec3,System.Single,System.Single)">
             <summary>
