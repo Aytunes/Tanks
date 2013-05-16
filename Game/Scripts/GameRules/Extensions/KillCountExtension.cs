@@ -11,7 +11,7 @@ namespace CryGameCode.Extensions
 		private Dictionary<Tank, int> m_counts;
 		private bool m_viewData;
 
-		protected override void Init()
+		protected override bool Init()
 		{
 			m_counts = new Dictionary<Tank, int>();
 
@@ -34,6 +34,8 @@ namespace CryGameCode.Extensions
 						m_viewData = false;
 				});
 			}
+
+			return true;
 		}
 
 		public override void OnUpdate()

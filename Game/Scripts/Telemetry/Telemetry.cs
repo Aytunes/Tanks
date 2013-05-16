@@ -28,10 +28,12 @@ namespace CryGameCode
 
 		private static Metrics m_instance;
 
-		protected override void Init()
+		protected override bool Init()
 		{
 			NetworkValidator.Server("Metrics are server-only");
 			Reset();
+
+			return true;
 		}
 
 		private void Reset()

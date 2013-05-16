@@ -43,15 +43,18 @@ namespace CryGameCode.Extensions
 			}
 		}
 
-		public void Register(SinglePlayer rules)
+		public bool Register(SinglePlayer rules)
 		{
 			if (!Active)
-				return;
+				return false;
 
 			Debug.LogAlways("Registered new GameRules extension: {0}", GetType().Name);
 			Rules = rules;
 
-			Init();
+			if (!Init())
+				Debug.LogWarning("Failed to register extension!");
+			
+			return true;
 		}
 
 		protected override bool OnRemove()
@@ -62,8 +65,9 @@ namespace CryGameCode.Extensions
 			return true;
 		}
 
-		protected virtual void Init()
+		protected virtual bool Init()
 		{
+			return true;
 		}
 
 		protected virtual void Destroy()

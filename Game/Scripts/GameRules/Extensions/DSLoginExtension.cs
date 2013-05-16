@@ -7,7 +7,7 @@ namespace CryGameCode.Extensions
 	[DedicatedServerOnly, PriorityExtension]
 	public class DSLoginExtension : GameRulesExtension
 	{
-		protected override void Init()
+		protected override bool Init()
 		{
 			var args = new Dictionary<string, object>
 			{
@@ -15,6 +15,8 @@ namespace CryGameCode.Extensions
 			};
 
 			SocialPlatform.Init(args);
+
+			return true;
 		}
 	}
 }

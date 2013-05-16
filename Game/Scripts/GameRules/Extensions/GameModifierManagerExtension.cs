@@ -11,9 +11,11 @@ namespace CryGameCode.Extensions
 	[ServerOnly]
 	public class GameModifierManagerExtension : GameRulesExtension
 	{
-		protected override void Init()
+		protected override bool Init()
 		{
 			ReceiveUpdates = true;
+
+			return true;
 		}
 
 		public override void OnUpdate()

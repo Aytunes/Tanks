@@ -14,9 +14,12 @@ namespace CryGameCode.Extensions
 
 		private string m_roomName;
 
-		protected override void Init()
+		protected override bool Init()
 		{
 			var platform = SocialPlatform.Active;
+			if (platform == null)
+				return false;
+
 			m_chat = platform.Chat;
 			m_group = platform.Group;
 
@@ -45,6 +48,8 @@ namespace CryGameCode.Extensions
 					Broadcast(Game.IsClient ? Actor.LocalClient.Name : "Server", message);
 			},
 			"Sends a message", CVarFlags.None, true);
+
+			return true;
 		}
 
 		private void RequestRoomUpdate()
