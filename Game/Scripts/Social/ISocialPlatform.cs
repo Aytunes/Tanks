@@ -24,7 +24,7 @@ namespace CryGameCode.Social
 		public static void Init(Dictionary<string, object> args)
 		{
 			var options = (from type in Assembly.GetExecutingAssembly().GetTypes()
-						   where type.Implements<ISocialPlatform>() && type.ContainsAttribute<ActivePlatformAttribute>()
+						   where type.Implements<ISocialPlatform>() && type.ContainsAttribute<ActivePlatformAttribute>() && !type.Equals(typeof(NullPlatform))
 						   select type)
 						  .ToArray();
 
