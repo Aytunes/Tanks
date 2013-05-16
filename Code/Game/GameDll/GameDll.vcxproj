@@ -500,12 +500,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClientSynchedStorage.cpp" />
     <ClCompile Include="GameDll.cpp" />
     <ClCompile Include="GameStartup.cpp" />
+    <ClCompile Include="HUD\UIDialogs.cpp" />
+    <ClCompile Include="HUD\UIEntityDynTexTag.cpp" />
     <ClCompile Include="HUD\UIEntityTag.cpp" />
     <ClCompile Include="HUD\UIGameEvents.cpp" />
+    <ClCompile Include="HUD\UIInput.cpp" />
     <ClCompile Include="HUD\UILobbyMP.cpp" />
-    <ClCompile Include=".\HUD\UIDialogs.cpp" />
+    <ClCompile Include="HUD\UIManager.cpp" />
+    <ClCompile Include="HUD\UIMenuEvents.cpp" />
+    <ClCompile Include="HUD\UIMultiPlayer.cpp" />
+    <ClCompile Include="HUD\UISettings.cpp" />
     <ClCompile Include="HUD\WarningsManager.cpp" />
     <ClCompile Include="Network\DownloadMgr.cpp" />
     <ClCompile Include="Network\FriendManager\GameFriendsManager.cpp" />
@@ -524,18 +531,17 @@
     <ClCompile Include="Network\Lobby\SessionSearchSimulator.cpp" />
     <ClCompile Include="Network\RecordingBuffer.cpp" />
     <ClCompile Include="Network\Squad\SquadManager.cpp" />
+    <ClCompile Include="ServerSynchedStorage.cpp" />
+    <ClCompile Include="SynchedStorage.cpp" />
     <ClCompile Include="Utility\CryHash.cpp" />
     <ClCompile Include="EditorGame.cpp" />
     <ClCompile Include="CachedAIValues.cpp" />
-    <ClCompile Include="ClientSynchedStorage.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameActions.cpp" />
     <ClCompile Include="GameCVars.cpp" />
     <ClCompile Include="GameFactory.cpp" />
     <ClCompile Include="ScriptControlledPhysics.cpp" />
-    <ClCompile Include="ServerSynchedStorage.cpp" />
     <ClCompile Include="SPAnalyst.cpp" />
-    <ClCompile Include="SynchedStorage.cpp" />
     <ClCompile Include="AutoEnum.cpp" />
     <ClCompile Include="Utility\CryWatch.cpp" />
     <ClCompile Include="NetInputChainDebug.cpp" />
@@ -543,23 +549,11 @@
     <ClCompile Include="Utility\SingleAllocTextBlock.cpp" />
     <ClCompile Include="StatsAgent.cpp" />
     <ClCompile Include="Utility\StringUtils.cpp" />
-    <ClCompile Include="HUD\BitmapUi.cpp" />
-    <ClCompile Include="HUD\UIEntityDynTexTag.cpp" />
-    <ClCompile Include="HUD\UIInput.cpp" />
-    <ClCompile Include="HUD\UIManager.cpp" />
-    <ClCompile Include="HUD\UIMenuEvents.cpp" />
-    <ClCompile Include="HUD\UIMultiPlayer.cpp" />
-    <ClCompile Include="HUD\UISettings.cpp" />
     <ClCompile Include="GameRules.cpp" />
-    <ClCompile Include="GameRulesClientServer.cpp" />
     <ClCompile Include="Audio\BattleStatus.cpp" />
-    <ClCompile Include="Audio\GameAudio.cpp" />
-    <ClCompile Include="Audio\ScriptBind_GameAudio.cpp" />
     <ClCompile Include="Audio\SoundMoods.cpp" />
     <ClCompile Include="GameMechanismManager\GameMechanismBase.cpp" />
     <ClCompile Include="GameMechanismManager\GameMechanismManager.cpp" />
-    <ClCompile Include="ClientGameTokenSynch.cpp" />
-    <ClCompile Include="ServerGameTokenSynch.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -578,12 +572,19 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClientSynchedStorage.h" />
     <ClInclude Include="GameStartup.h" />
     <ClInclude Include="HUD\IUIGameEventSystem.h" />
+    <ClInclude Include="HUD\UIDialogs.h" />
+    <ClInclude Include="HUD\UIEntityDynTexTag.h" />
     <ClInclude Include="HUD\UIEntityTag.h" />
     <ClInclude Include="HUD\UIGameEvents.h" />
+    <ClInclude Include="HUD\UIInput.h" />
     <ClInclude Include="HUD\UILobbyMP.h" />
-    <ClInclude Include=".\HUD\UIDialogs.h" />
+    <ClInclude Include="HUD\UIManager.h" />
+    <ClInclude Include="HUD\UIMenuEvents.h" />
+    <ClInclude Include="HUD\UIMultiPlayer.h" />
+    <ClInclude Include="HUD\UISettings.h" />
     <ClInclude Include="HUD\WarningsManager.h" />
     <ClInclude Include="ITelemetryCollector.h" />
     <ClInclude Include="Network\DownloadMgr.h" />
@@ -609,18 +610,17 @@
     <ClInclude Include="Network\Lobby\SessionSearchSimulator.h" />
     <ClInclude Include="Network\RecordingBuffer.h" />
     <ClInclude Include="Network\Squad\SquadManager.h" />
+    <ClInclude Include="ServerSynchedStorage.h" />
+    <ClInclude Include="SynchedStorage.h" />
     <ClInclude Include="Utility\CryHash.h" />
     <ClInclude Include="EditorGame.h" />
     <ClInclude Include="CachedAIValues.h" />
-    <ClInclude Include="ClientSynchedStorage.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameActions.h" />
     <ClInclude Include="GameCVars.h" />
     <ClInclude Include="GameFactory.h" />
     <ClInclude Include="ScriptControlledPhysics.h" />
-    <ClInclude Include="ServerSynchedStorage.h" />
     <ClInclude Include="SPAnalyst.h" />
-    <ClInclude Include="SynchedStorage.h" />
     <ClInclude Include="AutoEnum.h" />
     <ClInclude Include="Utility\CryWatch.h" />
     <ClInclude Include="NetInputChainDebug.h" />
@@ -628,23 +628,12 @@
     <ClInclude Include="Utility\SingleAllocTextBlock.h" />
     <ClInclude Include="StatsAgent.h" />
     <ClInclude Include="Utility\StringUtils.h" />
-    <ClInclude Include="HUD\BitmapUi.h" />
-    <ClInclude Include="HUD\UIEntityDynTexTag.h" />
-    <ClInclude Include="HUD\UIInput.h" />
-    <ClInclude Include="HUD\UIManager.h" />
-    <ClInclude Include="HUD\UIMenuEvents.h" />
-    <ClInclude Include="HUD\UIMultiPlayer.h" />
-    <ClInclude Include="HUD\UISettings.h" />
     <ClInclude Include="GameRules.h" />
     <ClInclude Include="Audio\BattleStatus.h" />
-    <ClInclude Include="Audio\GameAudio.h" />
-    <ClInclude Include="Audio\ScriptBind_GameAudio.h" />
     <ClInclude Include="Audio\SoundMoods.h" />
     <ClInclude Include="GameMechanismManager\GameMechanismBase.h" />
     <ClInclude Include="GameMechanismManager\GameMechanismEvents.h" />
     <ClInclude Include="GameMechanismManager\GameMechanismManager.h" />
-    <ClInclude Include="ClientGameTokenSynch.h" />
-    <ClInclude Include="ServerGameTokenSynch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>

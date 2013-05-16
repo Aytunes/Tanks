@@ -120,18 +120,6 @@ void CUIMultiPlayer::InitEventSystem()
 	}
 
 	{
-		SUIEventDesc evtDesc("EnableUpdateScores", "Enables the scoreboard to be updated in MP");
-		evtDesc.AddParam<SUIParameterDesc::eUIPT_Bool>("Enable", "Enable flag");
-		m_eventDispatcher.RegisterEvent(evtDesc, &CUIMultiPlayer::EnableUpdateScores);
-	}
-
-	{
-		SUIEventDesc evtDesc("SetPlayerName", "Set the name of the local player in mp");
-		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Name", "Local player name");
-		m_eventDispatcher.RegisterEvent(evtDesc, &CUIMultiPlayer::SetPlayerName);
-	}
-
-	{
 		SUIEventDesc evtDesc("ConnectToServer", "Connect to a server");
 		evtDesc.AddParam<SUIParameterDesc::eUIPT_String>("Address", "server address");
 		m_eventDispatcher.RegisterEvent(evtDesc, &CUIMultiPlayer::ConnectToServer);
@@ -181,10 +169,7 @@ void CUIMultiPlayer::PlayerJoined(EntityId playerid, const string& name)
 	m_Players[playerid].name = name;
 
 	if (gEnv->pGame->GetIGameFramework()->GetClientActorId() == playerid)
-	{
-		SubmitNewName();
 		return;
-	}
 
 	m_eventSender.SendEvent<eUIE_PlayerJoined>(playerid, name);
 }
@@ -265,19 +250,6 @@ void CUIMultiPlayer::GetPlayerName()
 }
 
 ////////////////////////////////////////////////////////////////////////////
-void CUIMultiPlayer::EnableUpdateScores(bool enable)
-{
-	g_pGame->GetGameRules()->ShowScores(enable);
-}
-
-////////////////////////////////////////////////////////////////////////////
-void CUIMultiPlayer::SetPlayerName( const string& newname )
-{
-	m_LocalPlayerName = newname;
-	SubmitNewName();
-}
-
-////////////////////////////////////////////////////////////////////////////
 void CUIMultiPlayer::ConnectToServer( const string& server )
 {
 	if (gEnv->IsEditor()) return;
@@ -297,24 +269,6 @@ void CUIMultiPlayer::OnSendChatMessage( const string& message )
 {
 	g_pGame->GetGameRules()->SendChatMessage(eChatToAll, gEnv->pGame->GetIGameFramework()->GetClientActorId(), 0, message.c_str() );
 }
-
-
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-void CUIMultiPlayer::SubmitNewName()
-{
-	if (m_LocalPlayerName.empty())
-		return;
-
-	INetChannel* pNetChannel = g_pGame->GetIGameFramework()->GetClientChannel();
-	if (pNetChannel && pNetChannel->GetNickname() && strcmp(pNetChannel->GetNickname(), m_LocalPlayerName.c_str()) == 0 )
-		return;
-
-	IActor* pLocalPlayer = g_pGame->GetIGameFramework()->GetClientActor();
-	if (pLocalPlayer && g_pGame->GetGameRules())
-		g_pGame->GetGameRules()->RenamePlayer( pLocalPlayer, m_LocalPlayerName.c_str() );
-};
 
 ////////////////////////////////////////////////////////////////////////////
 string CUIMultiPlayer::GetPlayerNameById( EntityId playerid )

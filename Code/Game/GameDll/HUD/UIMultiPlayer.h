@@ -48,14 +48,10 @@ private:
 	// UI events
 	void RequestPlayers();
 	void GetPlayerName();
-	void EnableUpdateScores(bool enable);
-	void SetPlayerName( const string& newname );
 	void ConnectToServer( const string& server );
 	void GetServerName();
 	void OnSendChatMessage( const string& message );
 
-
-	void SubmitNewName();
 	string GetPlayerNameById( EntityId playerid );
 
 private:

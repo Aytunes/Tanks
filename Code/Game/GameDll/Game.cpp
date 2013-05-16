@@ -17,7 +17,6 @@
 #include "GameActions.h"
 
 #include "GameRules.h"
-#include "Audio/GameAudio.h"
 
 #include <ICryPak.h>
 #include <CryPath.h>
@@ -41,9 +40,6 @@
 
 #include "Nodes/G2FlowBaseNode.h"
 
-#include "ServerSynchedStorage.h"
-#include "ClientSynchedStorage.h"
-
 #include "SPAnalyst.h"
 
 #include "ISaveGame.h"
@@ -53,7 +49,6 @@
 
 #include <IMonoScriptSystem.h>
 
-#include "HUD/BitmapUi.h"
 #include "HUD/UIManager.h"
 // #include "HUD/UIWarnings.h"
 #include "IMaterialEffects.h"
@@ -92,11 +87,6 @@ CGame::CGame()
 : m_pFramework(0),
 	m_pConsole(0),
 	m_pPlayerProfileManager(0),
-	m_pGameAudio(0),
-	m_pServerSynchedStorage(0),
-	m_pClientSynchedStorage(0),
-	m_pServerGameTokenSynch(0),
-	m_pClientGameTokenSynch(0),
 	m_pLobbySessionHandler(0),
 	m_clientActorId(-1),
 	m_pSPAnalyst(0),
@@ -128,7 +118,6 @@ CGame::~CGame()
 	m_pFramework->EndGameContext();
 	m_pFramework->UnregisterListener(this);
 	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
-	SAFE_DELETE(m_pGameAudio);
 	//SAFE_DELETE(m_pCameraManager);
 	SAFE_DELETE(m_pSPAnalyst);
 	SAFE_DELETE(m_pGameMechanismManager);
@@ -137,7 +126,6 @@ CGame::~CGame()
 	g_pGame = 0;
 	g_pGameCVars = 0;
 	g_pGameActions = 0;
-	SAFE_DELETE(m_pBitmapUi);
 	SAFE_DELETE(m_pRayCaster);
 	SAFE_DELETE(m_pGameActions);
 	SAFE_DELETE(m_pIntersectionTester);
@@ -295,24 +283,11 @@ bool CGame::Init(IGameFramework *pFramework)
 	else
 		GameWarning("[GameProfiles]: PlayerProfileManager not available. Running without.");
 
-	if (!m_pServerSynchedStorage)
-		m_pServerSynchedStorage = new CServerSynchedStorage(GetIGameFramework());
+	m_pFramework->RegisterListener(this,"Game", eFLPriority_Game);
 
-	if (!m_pGameAudio)
-		m_pGameAudio = new CGameAudio();
-
-  m_pFramework->RegisterListener(this,"Game", eFLPriority_Game);
-
-	if ( gEnv->pScaleformGFx && gEnv->pScaleformGFx->IsScaleformSupported() )
+	if (gEnv->pScaleformGFx && gEnv->pScaleformGFx->IsScaleformSupported())
 	{
 		CUIManager::Init();
-	}
-	else
-	{
-		if ( m_pBitmapUi == NULL )
-		{
-			m_pBitmapUi = new CBitmapUi();
-		}
 	}
 
 	//Even if there's no online multiplayer, we're still required to initialize the lobby as it hosts the PS3 trophies.
@@ -360,14 +335,6 @@ bool CGame::Init(IGameFramework *pFramework)
 
 		m_pGameLobbyManager = new CGameLobbyManager();
 
-		ICVar* pMaxPlayers = gEnv->pConsole->GetCVar("sv_maxplayers");
-		if(pMaxPlayers)
-		{
-			pMaxPlayers->SetOnChangeCallback(VerifyMaxPlayers);
-			pMaxPlayers->Set(MAX_PLAYER_LIMIT);
-		}
-
-
 		ICryLobby *pLobby = gEnv->pNetwork->GetLobby();
 		ICryLobbyService *pLobbyService = pLobby ? pLobby->GetLobbyService(eCLS_Online) : NULL;
 		ICryLobbyUI *pLobbyUI = pLobbyService ? pLobbyService->GetLobbyUI() : NULL;
@@ -396,12 +363,6 @@ bool CGame::Init(IGameFramework *pFramework)
 	m_pIntersectionTester = new GlobalIntersectionTester;
 	m_pIntersectionTester->SetQuota(6);
 
-	if (m_pServerSynchedStorage == NULL)
-		m_pServerSynchedStorage = new CServerSynchedStorage(GetIGameFramework());
-
-	if (m_pServerGameTokenSynch == NULL)
-		m_pServerGameTokenSynch = new CServerGameTokenSynch(m_pFramework->GetIGameTokenSystem());
-	
 #ifdef GAME_DEBUG_MEM
 	DumpMemInfo("CGame::Init end");
 #endif
@@ -439,19 +400,6 @@ void CGame::RegisterGameFlowNodes()
 	GetMonoScriptSystem()->RegisterFlownodes();
 }
 
-void CGame::ResetServerGameTokenSynch()
-{
-	if (m_pServerGameTokenSynch)
-	{
-		m_pServerGameTokenSynch->~CServerGameTokenSynch();
-		new(m_pServerGameTokenSynch) CServerGameTokenSynch(m_pFramework->GetIGameTokenSystem());
-	}
-	else
-	{
-		m_pServerGameTokenSynch = new CServerGameTokenSynch(m_pFramework->GetIGameTokenSystem());
-	}
-}
-
 // Small test for the IPathfinder.h interfaces
 /*
 extern INavPath *g_testPath;
@@ -479,12 +427,7 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 			m_pIntersectionTester->Update(frameTime);
 	}
 
-	if (m_pFramework->IsGamePaused() == false)
-	{
-		m_pGameAudio->Update();
-
-	}
-	else
+	if (m_pFramework->IsGamePaused())
 	{
 		if (m_hostMigrationState == eHMS_WaitingForPlayers)
 		{
@@ -527,23 +470,6 @@ int CGame::Update(bool haveFocus, unsigned int updateFlags)
 	CheckReloadLevel();
 
 	return bRun ? 1 : 0;
-}
-
-void CGame::ConfigureGameChannel(bool isServer, IProtocolBuilder *pBuilder)
-{
-	if (isServer)
-	{
-		m_pServerSynchedStorage->DefineProtocol(pBuilder);
-		m_pServerGameTokenSynch->DefineProtocol(pBuilder);
-	}
-	else
-	{
-		m_pClientSynchedStorage = new CClientSynchedStorage(GetIGameFramework());
-		m_pClientSynchedStorage->DefineProtocol(pBuilder);
-
-		m_pClientGameTokenSynch = new CClientGameTokenSynch(m_pFramework->GetIGameTokenSystem());
-		m_pClientGameTokenSynch->DefineProtocol(pBuilder);
-	}
 }
 
 void CGame::EditorResetGame(bool bStart)
@@ -615,12 +541,7 @@ string CGame::InitMapReloading()
 void CGame::Shutdown()
 {
 	if (m_pPlayerProfileManager)
-	{
 		m_pPlayerProfileManager->LogoutUser(m_pPlayerProfileManager->GetCurrentUser());
-	}
-
-	SAFE_DELETE(m_pServerSynchedStorage);
-	SAFE_DELETE(m_pServerGameTokenSynch);
 
 	if ( gEnv->pScaleformGFx && gEnv->pScaleformGFx->IsScaleformSupported() )
 	{
@@ -646,90 +567,12 @@ void CGame::OnPostUpdate(float fDeltaTime)
 	//m_pCameraManager->Update();
 }
 
-void CGame::OnSaveGame(ISaveGame* pSaveGame)
-{
-	ScopedSwitchToGlobalHeap useGlobalHeap;
-
-	IActor*		pActor = GetIGameFramework()->GetClientActor();
-	GetGameRules()->PlayerPosForRespawn(pActor, true);
-
-	//save difficulty
-	pSaveGame->AddMetadata("sp_difficulty", g_pGameCVars->g_difficultyLevel);
-
-	//write file to profile
-	if(m_pPlayerProfileManager)
-	{
-		const char* saveGameFolder = m_pPlayerProfileManager->GetSharedSaveGameFolder();
-		const bool bSaveGameFolderShared = saveGameFolder && *saveGameFolder;
-		const char *user = m_pPlayerProfileManager->GetCurrentUser();
-		if(IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(user))
-		{
-			string filename(pSaveGame->GetFileName());
-			CryFixedStringT<128> profilename(pProfile->GetName());
-			profilename+='_';
-			filename = filename.substr(filename.rfind('/')+1);
-			// strip profileName_ prefix
-			if (bSaveGameFolderShared)
-			{
-				if(strnicmp(filename.c_str(), profilename.c_str(), profilename.length()) == 0)
-					filename = filename.substr(profilename.length());
-			}
-			pProfile->SetAttribute("Singleplayer.LastSavedGame", filename);
-		}
-	}
-
-	pSaveGame->AddMetadata("v_altitudeLimit", g_pGameCVars->pAltitudeLimitCVar->GetString());
-}
-
-void CGame::OnLoadGame(ILoadGame* pLoadGame)
-{
-	int difficulty = g_pGameCVars->g_difficultyLevel;
-	pLoadGame->GetMetadata("sp_difficulty", difficulty);
-	if(difficulty != g_pGameCVars->g_difficultyLevel)
-	{
-		IPlayerProfile *pProfile = m_pPlayerProfileManager->GetCurrentProfile(m_pPlayerProfileManager->GetCurrentUser());
-		if(pProfile)
-		{
-			pProfile->SetAttribute("Singleplayer.LastSelectedDifficulty", difficulty);
-			pProfile->SetAttribute("Option.g_difficultyLevel", difficulty);
-			IPlayerProfileManager::EProfileOperationResult result;
-			const int reason = 0;
-			m_pPlayerProfileManager->SaveProfile(m_pPlayerProfileManager->GetCurrentUser(), result, reason);
-		}		
-	}
-
-	// altitude limit
-	const char* v_altitudeLimit =	pLoadGame->GetMetadata("v_altitudeLimit");
-	if (v_altitudeLimit && *v_altitudeLimit)
-		g_pGameCVars->pAltitudeLimitCVar->ForceSet(v_altitudeLimit);
-	else
-	{
-		CryFixedStringT<128> buf;
-		buf.FormatFast("%g", g_pGameCVars->v_altitudeLimitDefault());
-		g_pGameCVars->pAltitudeLimitCVar->ForceSet(buf.c_str());
-	}
-}
-
 void CGame::OnActionEvent(const SActionEvent& event)
 { 
 	switch(event.m_event)
-  {
-  case  eAE_channelDestroyed:
-    GameChannelDestroyed(event.m_value == 1);
-    break;
-	case eAE_serverIp:
-		if(gEnv->bServer && GetServerSynchedStorage())
-		{
-			GetServerSynchedStorage()->SetGlobalValue(GLOBAL_SERVER_IP_KEY,string(event.m_description));
-			GetServerSynchedStorage()->SetGlobalValue(GLOBAL_SERVER_PUBLIC_PORT_KEY,event.m_value);
-		}
-		break;
-	case eAE_serverName:
-		if(gEnv->bServer && GetServerSynchedStorage())
-			GetServerSynchedStorage()->SetGlobalValue(GLOBAL_SERVER_NAME_KEY,string(event.m_description));
-		break;
+	{
 	case eAE_unloadLevel:
-			m_clientActorId = 0;
+		m_clientActorId = 0;
 		break;
 	case eAE_mapCmdIssued:
 		if (gEnv->bMultiplayer)
@@ -740,26 +583,8 @@ void CGame::OnActionEvent(const SActionEvent& event)
 			}
 		}
 		break;
-  }
-}
-
-
-void CGame::GameChannelDestroyed(bool isServer)
-{
-  if (!isServer)
-  {
-	SAFE_DELETE(m_pClientSynchedStorage);
-	SAFE_DELETE(m_pClientGameTokenSynch);
-
-	if (!gEnv->pSystem->IsSerializingFile())
-	{
-		CryFixedStringT<128> buf;
-		buf.FormatFast("%g", g_pGameCVars->v_altitudeLimitDefault());
-		g_pGameCVars->pAltitudeLimitCVar->ForceSet(buf.c_str());
 	}
-  }
 }
-
 
 void CGame::BlockingProcess(BlockingConditionFunction f)
 {
@@ -957,18 +782,6 @@ void CGame::GetMemoryStatistics(ICrySizer * s) const
 
 	if (m_pPlayerProfileManager)
 	  m_pPlayerProfileManager->GetMemoryUsage(s);
-
-	if (m_pServerSynchedStorage)
-		m_pServerSynchedStorage->GetMemoryUsage(s);
-
-	if (m_pClientSynchedStorage)
-		m_pClientSynchedStorage->GetMemoryUsage(s);
-
-	if (m_pServerGameTokenSynch)
-		m_pServerGameTokenSynch->GetMemoryUsage(s);
-
-	if (m_pClientGameTokenSynch)
-		m_pClientGameTokenSynch->GetMemoryUsage(s);
 }
 
 void CGame::OnClearPlayerIds()
@@ -1146,13 +959,6 @@ void CGame::ClearGameSessionHandler()
 uint32 CGame::GetRandomNumber()
 {
 	return m_randomGenerator.Generate();
-}
-
-void CGame::VerifyMaxPlayers(ICVar * pVar)
-{
-	int nPlayers = pVar->GetIVal();
-	if (nPlayers < 2)
-		pVar->Set(2);
 }
 
 //------------------------------------------------------------------------

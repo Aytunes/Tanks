@@ -10,9 +10,9 @@ namespace CryGameCode
 	{
 		private Dictionary<string, TeamData> m_teams;
 
-		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
+		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset)
 		{
-			base.OnClientEnteredGame(channelId, playerId, reset, loadingSaveGame);
+			base.OnClientEnteredGame(channelId, playerId, reset);
 
 			// Notify late-joining players of dead drills
 			foreach (var team in m_teams.Values)
@@ -24,10 +24,10 @@ namespace CryGameCode
 			}
 		}
 
-		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
+		public override bool OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
 			if (!Game.IsServer)
-				return;
+				return false;
 
 			// Lazy retrieval for gamerules-related entities
 			if (m_teams == null)
@@ -37,7 +37,7 @@ namespace CryGameCode
 				if (drills.Count() == 0)
 				{
 					Debug.LogWarning("[DestroyTheDrill.OnClientConnect] No drills found!");
-					return;
+					return false;
 				}
 
 				foreach (var team in Teams)
@@ -61,7 +61,7 @@ namespace CryGameCode
 				}
 			}
 
-			base.OnClientConnect(channelId, isReset, playerName);
+			return base.OnClientConnect(channelId, isReset, playerName);
 		}
 
 		[RemoteInvocation]

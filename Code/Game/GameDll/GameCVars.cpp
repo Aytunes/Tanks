@@ -18,7 +18,6 @@
 #include <IGameObject.h>
 #include <IActorSystem.h>
 #include <IItemSystem.h>
-#include "ServerSynchedStorage.h"
 #include "NetInputChainDebug.h"
 #include "INetworkService.h"
 
@@ -1085,12 +1084,6 @@ void SCVars::ReleaseCVars()
 }
 
 //------------------------------------------------------------------------
-void CGame::CmdDumpSS(IConsoleCmdArgs *pArgs)
-{
-	g_pGame->GetSynchedStorage()->Dump();
-}
-
-//------------------------------------------------------------------------
 void CGame::RegisterConsoleVars()
 {
 	assert(m_pConsole);
@@ -1313,16 +1306,9 @@ void CGame::RegisterConsoleCommands()
 	REGISTER_COMMAND("loadactionmap", CmdLoadActionmap, VF_NULL, "Loads a key configuration file");
 	REGISTER_COMMAND("restartgame", CmdRestartGame, VF_NULL, "Restarts CryENGINE completely.");
 
-	REGISTER_COMMAND("name", CmdName, VF_RESTRICTEDMODE, "Sets player name.");
-	REGISTER_COMMAND("loadLastSave", CmdLoadLastSave, VF_NULL, "Loads the last savegame if available.");
-	REGISTER_COMMAND("sv_restart", CmdRestart, VF_NULL, "Restarts the round.");
 	REGISTER_COMMAND("sv_say", CmdSay, VF_NULL, "Broadcasts a message to all clients.");
 
-	REGISTER_COMMAND("dumpss", CmdDumpSS, VF_NULL, "test synched storage.");
-
   REGISTER_COMMAND("g_reloadGameRules", CmdReloadGameRules, VF_NULL, "Reload GameRules script");
-  REGISTER_COMMAND("g_quickGame", CmdQuickGame, VF_NULL, "Quick connect to good server.");
-  REGISTER_COMMAND("g_quickGameStop", CmdQuickGameStop, VF_NULL, "Cancel quick game search.");
 
   REGISTER_COMMAND("g_nextlevel", CmdNextLevel,VF_NULL,"Switch to next level in rotation or restart current one.");
 
@@ -1331,14 +1317,6 @@ void CGame::RegisterConsoleCommands()
 	REGISTER_COMMAND("connect_crynet",CmdCryNetConnect,VF_NULL,"Connect to online game server");
 	REGISTER_COMMAND("test_pathfinder",CmdTestPathfinder,VF_CHEAT,"");
 	REGISTER_COMMAND("preloadforstats","PreloadForStats()",VF_CHEAT,"Preload multiplayer assets for memory statistics.");
-
-
-
-
-
-
-
-
 
 	REGISTER_COMMAND("StartVideoCapture", CmdStartVideoCapture, VF_NULL, "sets special settings for nice video captures and starts capturing.");
 	REGISTER_COMMAND("EndVideoCapture", CmdEndVideoCapture, VF_NULL, "ends capturing and restores the original settings.");
@@ -1390,42 +1368,6 @@ void CGame::UnregisterConsoleCommands()
 
 	m_pConsole->RemoveCommand("g_hitDeathReactions_reload");
 	m_pConsole->RemoveCommand("g_hitDeathReactions_dumpAssetUsage");
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdName(IConsoleCmdArgs *pArgs)
-{
-	if (!gEnv->IsClient())
-		return;
-
-	IActor *pClientActor=g_pGame->GetIGameFramework()->GetClientActor();
-	if (!pClientActor)
-		return;
-
-	CGameRules *pGameRules = g_pGame->GetGameRules();
-	if (pGameRules)
-		pGameRules->RenamePlayer(pGameRules->GetActorByEntityId(pClientActor->GetEntityId()), pArgs->GetArg(1));
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdLoadLastSave(IConsoleCmdArgs *pArgs)
-{
-	if (!gEnv->IsClient() || gEnv->bMultiplayer)
-		return;
-
-	const string& file = g_pGame->GetLastSaveGame();
-	if(file.length())
-	{
-		if(!g_pGame->GetIGameFramework()->LoadGame(file.c_str(), true))
-			g_pGame->GetIGameFramework()->LoadGame(file.c_str(), false);
-	}
-}
-
-//------------------------------------------------------------------------
-void CGame::CmdRestart(IConsoleCmdArgs *pArgs)
-{
-	if(g_pGame && g_pGame->GetGameRules())
-		g_pGame->GetGameRules()->Restart();
 }
 
 #undef GetCommandLine

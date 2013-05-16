@@ -743,7 +743,6 @@ CGameLobby::CGameLobby( CGameLobbyManager* pMgr )
 
 #if ENABLE_CHAT_MESSAGES
 	gEnv->pConsole->AddCommand("gl_say", CmdChatMessage, 0, CVARHELP("Send a chat message"));
-	gEnv->pConsole->AddCommand("gl_teamsay", CmdChatMessageTeam, 0, CVARHELP("Send a chat message to team"));
 #endif
 
 	gEnv->pConsole->AddCommand("gl_StartGame", CmdStartGame, 0, CVARHELP("force start a game"));
@@ -5386,7 +5385,7 @@ void CGameLobby::SendPacket(GameUserPacketDefinitions packetType, SCryMatchMakin
 			CRY_ASSERT(!m_server);
 
 #ifndef _RELEASE
-			CryLog("CLIENT Send: eGUPD_SendChatMessage channel:%d team:%d, message:%s", m_chatMessageStore.conId.m_uid, m_chatMessageStore.teamId, m_chatMessageStore.message.c_str());
+			CryLog("CLIENT Send: eGUPD_SendChatMessage channel:%d message:%s", m_chatMessageStore.conId.m_uid, m_chatMessageStore.message.c_str());
 #endif
 			
 			uint8 messageLength = m_chatMessageStore.message.size();
@@ -5396,7 +5395,6 @@ void CGameLobby::SendPacket(GameUserPacketDefinitions packetType, SCryMatchMakin
 				if (packet.CreateWriteBuffer(MaxBufferSize))
 				{
 					packet.StartWrite(packetType, true);
-					packet.WriteUINT8(m_chatMessageStore.teamId);
 					packet.WriteUINT8(messageLength + 1);  // +1 is null teminator
 					packet.WriteString(m_chatMessageStore.message.c_str(), messageLength + 1);  // +1 is null teminator
 				}
@@ -5415,7 +5413,7 @@ void CGameLobby::SendPacket(GameUserPacketDefinitions packetType, SCryMatchMakin
 			CRY_ASSERT(m_server);
 
 #ifndef _RELEASE
-			CryLog("SERVER SEND to %d: eGUPD_ChatMessage channel:%d team:%d, message:%s", connectionUID.m_uid, m_chatMessageStore.conId.m_uid, m_chatMessageStore.teamId, m_chatMessageStore.message.c_str());
+			CryLog("SERVER SEND to %d: eGUPD_ChatMessage channel:%d message:%s", connectionUID.m_uid, m_chatMessageStore.conId.m_uid, m_chatMessageStore.message.c_str());
 #endif
 
 			uint8 messageLength = m_chatMessageStore.message.size();
@@ -5426,7 +5424,6 @@ void CGameLobby::SendPacket(GameUserPacketDefinitions packetType, SCryMatchMakin
 				{
 					packet.StartWrite(packetType, true);
 					packet.WriteConnectionUID(m_chatMessageStore.conId);
-					packet.WriteUINT8(m_chatMessageStore.teamId);
 					packet.WriteUINT8(messageLength + 1);  // +1 is null teminator
 					packet.WriteString(m_chatMessageStore.message.c_str(), messageLength + 1);  // +1 is null teminator
 				}
@@ -6112,7 +6109,6 @@ void CGameLobby::ReadPacket(SCryLobbyUserPacketData** ppPacketData)
 			CRY_ASSERT(m_server);
 
 			m_chatMessageStore.Clear();
-			m_chatMessageStore.teamId = pPacket->ReadUINT8();
 
 			uint8 messageSize = pPacket->ReadUINT8(); // includes +1 for null terminator
 			CRY_ASSERT(messageSize <= MAX_CHATMESSAGE_LENGTH);
@@ -6135,7 +6131,6 @@ void CGameLobby::ReadPacket(SCryLobbyUserPacketData** ppPacketData)
 
 			SChatMessage chatMessage;
 			chatMessage.conId = pPacket->ReadConnectionUID();
-			chatMessage.teamId = pPacket->ReadUINT8();
 
 			uint8 messageSize = pPacket->ReadUINT8(); // includes +1 for null terminator
 			CRY_ASSERT(messageSize <= MAX_CHATMESSAGE_LENGTH);
@@ -6888,7 +6883,7 @@ void CGameLobby::RecievedChatMessage(const SChatMessage* message)
 	}
 	else
 	{
-		CryLog("[Unknown] %s> %s", (message->teamId==0)?"":"[team] ", message->message.c_str());
+		CryLog("[Unknown] %s", message->message.c_str());
 	}
 }
 
@@ -6897,7 +6892,7 @@ void CGameLobby::SendChatMessageToClients()
 	CRY_ASSERT(m_server);
 
 #ifndef _RELEASE
-	CryLog("SERVER SendChatMessageToClients: channel:%d  team:%d, message:%s", m_chatMessageStore.conId.m_uid, m_chatMessageStore.teamId, m_chatMessageStore.message.c_str());
+	CryLog("SERVER SendChatMessageToClients: channel:%d  message:%s", m_chatMessageStore.conId.m_uid, m_chatMessageStore.message.c_str());
 #endif
 
 	const int nameSize = m_nameList.Size();
@@ -6905,26 +6900,13 @@ void CGameLobby::SendChatMessageToClients()
 	{
 		SSessionNames::SSessionName &player = m_nameList.m_sessionNames[i];
 
-		int playerTeam = player.m_teamId;
-		if ((m_state == eLS_Game) && g_pGame->GetGameRules())
+		if (!gEnv->IsDedicated() && i==0) // Assume the server at this point is 0 - only on non-dedicated
 		{
-			IActor *pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActorByChannelId(player.m_conId.m_uid);
-			if (pActor)
-			{
-				playerTeam = g_pGame->GetGameRules()->GetTeam(pActor->GetEntityId());
-			}
+			RecievedChatMessage(&m_chatMessageStore);
 		}
-
-		if (m_chatMessageStore.teamId==0 || m_chatMessageStore.teamId==playerTeam)
+		else
 		{
-			if (!gEnv->IsDedicated() && i==0) // Assume the server at this point is 0 - only on non-dedicated
-			{
-				RecievedChatMessage(&m_chatMessageStore);
-			}
-			else
-			{
-				SendPacket(eGUPD_ChatMessage, player.m_conId);
-			}
+			SendPacket(eGUPD_ChatMessage, player.m_conId);
 		}
 	}
 	
@@ -6940,7 +6922,7 @@ void CGameLobby::CmdChatMessage(IConsoleCmdArgs* pCmdArgs)
 		CGameLobby* pLobby = g_pGame->GetGameLobby();
 		if(pLobby)
 		{
-			pLobby->SendChatMessage(false, pCmdArgs->GetArg(1));
+			pLobby->SendChatMessage(pCmdArgs->GetArg(1));
 		}
 	}
 	else
@@ -6950,44 +6932,17 @@ void CGameLobby::CmdChatMessage(IConsoleCmdArgs* pCmdArgs)
 }
 
 //static-------------------------------------------------------------------------
-void CGameLobby::CmdChatMessageTeam(IConsoleCmdArgs* pCmdArgs)
-{
-	if (pCmdArgs->GetArg(1))
-	{
-		CGameLobby* pLobby = g_pGame->GetGameLobby();
-		if(pLobby)
-		{
-			pLobby->SendChatMessage(true, pCmdArgs->GetArg(1));
-		}
-	}
-	else
-	{
-		CryLog("gl_teamsay : you must provide a message");
-	}	
-}
-
-//static-------------------------------------------------------------------------
-void CGameLobby::SendChatMessageTeamCheckProfanityCallback( CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg )
+void CGameLobby::SendChatMessageCheckProfanityCallback_Static( CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg )
 {
 	CGameLobby* pLobby = g_pGame->GetGameLobby();
 	if(pLobby)
 	{
-		pLobby->SendChatMessageCheckProfanityCallback(true, taskID, error, pString, isProfanity, pArg );
-	}
-}
-
-//static-------------------------------------------------------------------------
-void CGameLobby::SendChatMessageAllCheckProfanityCallback( CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg )
-{
-	CGameLobby* pLobby = g_pGame->GetGameLobby();
-	if(pLobby)
-	{
-		pLobby->SendChatMessageCheckProfanityCallback(false, taskID, error, pString, isProfanity, pArg );
+		pLobby->SendChatMessageCheckProfanityCallback(taskID, error, pString, isProfanity, pArg );
 	}
 }
 
 //-------------------------------------------------------------------------
-void CGameLobby::SendChatMessageCheckProfanityCallback( const bool team, CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg )
+void CGameLobby::SendChatMessageCheckProfanityCallback( CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg )
 {
 	CryLog("CGameLobby::SendChatMessageCheckProfanityCallback()");
 	INDENT_LOG_DURING_SCOPE();
@@ -7004,27 +6959,7 @@ void CGameLobby::SendChatMessageCheckProfanityCallback( const bool team, CryLobb
 			{
 				SSessionNames::SSessionName &localPlayer = m_nameList.m_sessionNames[0];
 
-				int teamId = 0;
-				if (team)
-				{
-					teamId = localPlayer.m_teamId;
-
-					if ((m_state == eLS_Game) && g_pGame->GetGameRules())
-					{
-						IActor *pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActorByChannelId(localPlayer.m_conId.m_uid);
-						if (pActor)
-						{
-							teamId = g_pGame->GetGameRules()->GetTeam(pActor->GetEntityId());
-						}
-					}
-
-					if (teamId == 0)
-					{
-						CryLog("Send team message : not on a team so sending to all");
-					}
-				}
-
-				pGameLobby->m_chatMessageStore.Set(localPlayer.m_conId, teamId, pString);
+				pGameLobby->m_chatMessageStore.Set(localPlayer.m_conId, pString);
 
 				if (pGameLobby->m_chatMessageStore.message.size()>0)
 				{
@@ -7044,7 +6979,7 @@ void CGameLobby::SendChatMessageCheckProfanityCallback( const bool team, CryLobb
 }
 
 //-------------------------------------------------------------------------
-void CGameLobby::SendChatMessage(bool team, const char* message)
+void CGameLobby::SendChatMessage(const char* message)
 {
 	CryLog("CGameLobby::SendChatMessage()");
 	INDENT_LOG_DURING_SCOPE();
@@ -7062,44 +6997,11 @@ void CGameLobby::SendChatMessage(bool team, const char* message)
 		{
 			SSessionNames::SSessionName &localPlayer = m_nameList.m_sessionNames[0];
 
-			int teamId = 0;
-
-			if (team)
-			{
-				teamId = localPlayer.m_teamId;
-
-				if ((m_state == eLS_Game) && g_pGame->GetGameRules())
-				{
-					IActor *pActor = g_pGame->GetIGameFramework()->GetIActorSystem()->GetActorByChannelId(localPlayer.m_conId.m_uid);
-					if (pActor)
-					{
-						teamId = g_pGame->GetGameRules()->GetTeam(pActor->GetEntityId());
-					}
-				}
-
-				if (teamId == 0)
-				{
-					CryLog("Send team message : not on a team so sending to all");
-					team = false;
-				}
-			}
-
-			CryLobbyCheckProfanityCallback whichFunctor;
-
-			if(team)
-			{
-				whichFunctor = SendChatMessageTeamCheckProfanityCallback;
-			}
-			else
-			{
-				whichFunctor = SendChatMessageAllCheckProfanityCallback;
-			}
-
 			// Trigger a task to check the profanity, the callback will actualy send the data is the string isn't profane.
 			ICryLobbyService*	pLobbyService = gEnv->pNetwork->GetLobby()->GetLobbyService();
 			if ( pLobbyService )
 			{
-				ECryLobbyError	error =	pLobbyService->CheckProfanity( message, &m_profanityTask, whichFunctor, NULL );
+				ECryLobbyError	error =	pLobbyService->CheckProfanity( message, &m_profanityTask, SendChatMessageCheckProfanityCallback_Static, NULL );
 				if(error!=eCLE_Success)
 				{
 					CryLog("Unable to check for profanity in '%s'", message);
@@ -8804,8 +8706,6 @@ void CGameLobby::MatchmakingSessionEndCallback(CryLobbyTaskID taskID, ECryLobbyE
 	ENSURE_ON_MAIN_THREAD;
 
 	CryLog("[GameLobby] MatchmakingSessionEndCallback %s %d Lobby: %p", error == eCLE_Success ? "succeeded with error" : "failed with error", error, pArg);
-
-	g_pGame->ResetServerGameTokenSynch();
 
 	CGameLobby *pGameLobby = static_cast<CGameLobby*>(pArg);
 	if (pGameLobby->NetworkCallbackReceived(taskID, error))

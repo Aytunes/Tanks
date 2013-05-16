@@ -25,18 +25,10 @@
 #include <IActorSystem.h>
 #include <StlUtils.h>
 #include "RayCastQueue.h"
-#include "ClientSynchedStorage.h"
-#include "ServerSynchedStorage.h"
-#include "ClientGameTokenSynch.h"
-#include "ServerGameTokenSynch.h"
-#include "Audio/GameAudio.h"
 #include <IntersectionTestQueue.h>
 #include "ILevelSystem.h"
 
 #include "Network/GameNetworkDefines.h"
-
-
-
 
 #define GAME_NAME				"CryENGINE3"
 #define GAME_LONGNAME		"CryENGINE3_Sample"
@@ -53,15 +45,8 @@ struct IActionMap;
 struct IActionFilter;
 class  CGameActions;
 class CGameRules;
-class CSynchedStorage;
-class CClientSynchedStorage;
-class CServerSynchedStorage;
-class CClientGameTokenSynch;
-class CServerGameTokenSynch;
 struct SCVars;
 class CSPAnalyst;
-class CGameAudio;
-class CBitmapUi;
 
 class CGameBrowser;
 class CGameLobby;
@@ -171,7 +156,7 @@ public:
 	VIRTUAL bool  CompleteInit();
 	VIRTUAL void  Shutdown();
 	VIRTUAL int   Update(bool haveFocus, unsigned int updateFlags);
-	VIRTUAL void  ConfigureGameChannel(bool isServer, IProtocolBuilder *pBuilder);
+	VIRTUAL void  ConfigureGameChannel(bool isServer, IProtocolBuilder *pBuilder) {}
 	VIRTUAL void  EditorResetGame(bool bStart);
 	VIRTUAL void  PlayerIdSet(EntityId playerId);
 	VIRTUAL string  InitMapReloading();
@@ -201,14 +186,13 @@ public:
 
   // IGameFrameworkListener
   VIRTUAL void OnPostUpdate(float fDeltaTime);
-  VIRTUAL void OnSaveGame(ISaveGame* pSaveGame);
-  VIRTUAL void OnLoadGame(ILoadGame* pLoadGame);
+  VIRTUAL void OnSaveGame(ISaveGame* pSaveGame) {}
+  VIRTUAL void OnLoadGame(ILoadGame* pLoadGame) {}
 	VIRTUAL void OnLevelEnd(const char* nextLevel) {};
   VIRTUAL void OnActionEvent(const SActionEvent& event);
   // ~IGameFrameworkListener
 
   void BlockingProcess(BlockingConditionFunction f);
-  void GameChannelDestroyed(bool isServer);  
 
 	void SetExclusiveControllerFromPreviousInput();
 	void SetPreviousExclusiveControllerDeviceIndex(unsigned int idx) { m_previousInputControllerDeviceIndex = idx; }
@@ -233,35 +217,9 @@ public:
 	CGameActions&	Actions() const {	return *m_pGameActions;	};
 
 	CGameRules *GetGameRules() const;
-	virtual IGameAudio *GetGameAudio() const { return m_pGameAudio; }
-	
+
   ILINE GlobalRayCaster& GetRayCaster() { assert(m_pRayCaster); return *m_pRayCaster; }
 	GlobalIntersectionTester& GetIntersectionTester() { assert(m_pIntersectionTester); return *m_pIntersectionTester; }
-
-	ILINE CSynchedStorage *GetSynchedStorage() const
-	{
-		if (m_pServerSynchedStorage && gEnv->bServer)
-			return m_pServerSynchedStorage;
-
-		return m_pClientSynchedStorage;
-	}
-
-	ILINE CServerSynchedStorage *GetServerSynchedStorage() const
-	{
-		return m_pServerSynchedStorage;
-	}
-
-	ILINE CServerGameTokenSynch *GetServerGameTokenSynch() const
-	{
-		return m_pServerGameTokenSynch;
-	}
-
-	ILINE CClientGameTokenSynch *GetClientGameTokenSynch() const
-	{
-		return m_pClientGameTokenSynch;
-	}
-
-	void ResetServerGameTokenSynch(void);
 
 #if IMPLEMENT_PC_BLADES
 	CGameFriendsManager* GetGameFriendsManager() { return m_gameFriendMgr; }
@@ -317,9 +275,6 @@ public:
 
 	EntityId GetClientActorId() const { return m_clientActorId; }
 
-	CBitmapUi* GetBitmapUI() { return m_pBitmapUi; }
-
-	static void VerifyMaxPlayers(ICVar * pVar);
 protected:
 	VIRTUAL void CheckReloadLevel();
 
@@ -333,11 +288,6 @@ protected:
 	// marcok: this is bad and evil ... should be removed soon
 	static void CmdRestartGame(IConsoleCmdArgs *pArgs);
 
-	static void CmdDumpSS(IConsoleCmdArgs *pArgs);
-
-	static void CmdName(IConsoleCmdArgs *pArgs);
-	static void CmdLoadLastSave(IConsoleCmdArgs *pArgs);
-	static void CmdRestart(IConsoleCmdArgs *pArgs);
 	static void CmdSay(IConsoleCmdArgs *pArgs);
 	static void CmdLoadActionmap(IConsoleCmdArgs *pArgs);
   static void CmdReloadGameRules(IConsoleCmdArgs *pArgs);
@@ -360,16 +310,6 @@ protected:
 
 
 
-
-
-
-
-
-
-
-
-
-
 	CRndGen m_randomGenerator;
 	IGameFramework			*m_pFramework;
 	IConsole						*m_pConsole;
@@ -381,12 +321,6 @@ protected:
 	IActionMap					*m_pMultiplayerAM;
 	CGameActions				*m_pGameActions;	
 	IPlayerProfileManager* m_pPlayerProfileManager;
-
-	CServerSynchedStorage	*m_pServerSynchedStorage;
-	CClientSynchedStorage	*m_pClientSynchedStorage;
-
-	CClientGameTokenSynch	*m_pClientGameTokenSynch;
-	CServerGameTokenSynch *m_pServerGameTokenSynch;
 
 	CSPAnalyst          *m_pSPAnalyst;
 	bool								m_inDevMode;
@@ -402,11 +336,7 @@ protected:
 	typedef std::map<string, string, stl::less_stricmp<string> > TLevelMapMap;
 	TLevelMapMap m_mapNames;
 
-	CGameAudio			*m_pGameAudio;
-
 	CGameMechanismManager* m_pGameMechanismManager;
-
-	CBitmapUi* m_pBitmapUi;
 
 	// Game side browser - searching for games
 	CGameBrowser* m_pGameBrowser;

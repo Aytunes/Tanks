@@ -1,147 +1,46 @@
-/*************************************************************************
-	Crytek Source File.
-	Copyright (C), Crytek Studios, 2001-2004.
-	-------------------------------------------------------------------------
-	$Id$
-	$DateTime$
-	Description: 
-
-	-------------------------------------------------------------------------
-	History:
-	- 7:2:2006   15:38 : Created by Marcio Martins
-
-*************************************************************************/
 #ifndef __GAMERULES_H__
 #define __GAMERULES_H__
-
-#if _MSC_VER > 1000
-# pragma once
-#endif
 
 #include "Game.h"
 #include <IGameObject.h>
 #include <IGameRulesSystem.h>
-#include "SynchedStorage.h"
-#include <queue>
 #include "IViewSystem.h"
 
 #include <MonoCommon.h>
 
-struct IGameObject;
-struct IActorSystem;
-
-#define GAMERULES_INVOKE_ON_TEAM(team, rmi, params)	\
-{ \
-	TPlayerTeamIdMap::const_iterator _team=m_playerteams.find(team); \
-	if (_team!=m_playerteams.end()) \
-	{ \
-	const TPlayers &_players=_team->second; \
-	for (TPlayers::const_iterator _player=_players.begin();_player!=_players.end(); ++_player) \
-	GetGameObject()->InvokeRMI(rmi, params, eRMI_ToClientChannel, GetChannelId(*_player)); \
-	} \
-} \
-
-#define GAMERULES_INVOKE_ON_TEAM_NOLOCAL(team, rmi, params)	\
-{ \
-	TPlayerTeamIdMap::const_iterator _team=m_playerteams.find(team); \
-	if (_team!=m_playerteams.end()) \
-	{ \
-	const TPlayers &_players=_team->second; \
-	for (TPlayers::const_iterator _player=_players.begin();_player!=_players.end(); ++_player) \
-	GetGameObject()->InvokeRMI(rmi, params, eRMI_ToClientChannel|eRMI_NoLocalCalls, GetChannelId(*_player)); \
-	} \
-} \
-
-
-#define ACTOR_INVOKE_ON_TEAM(team, rmi, params)	\
-{ \
-	TPlayerTeamIdMap::const_iterator _team=m_playerteams.find(team); \
-	if (_team!=playerteams.end()) \
-	{ \
-	const TPlayers &_players=_team.second; \
-	for (TPlayers::const_iterator _player=_players.begin();_player!=_players.end(); ++_player) \
-		{ \
-		CActor *pActor=GetActorByEntityId(*_player); \
-		if (pActor) \
-		pActor->GetGameObject()->InvokeRMI(rmi, params, eRMI_ToClientChannel, GetChannelId(*_player)); \
-		} \
-	} \
-} \
-
-
-#define ACTOR_INVOKE_ON_TEAM_NOLOCAL(team, rmi, params)	\
-{ \
-	TPlayerTeamIdMap::const_iterator _team=m_playerteams.find(team); \
-	if (_team!=playerteams.end()) \
-	{ \
-	const TPlayers &_players=_team.second; \
-	for (TPlayers::const_iterator _player=_players.begin();_player!=_players.end(); ++_player) \
-		{ \
-		CActor *pActor=GetActorByEntityId(*_player); \
-		if (pActor) \
-		pActor->GetGameObject()->InvokeRMI(rmi, params, eRMI_ToClientChannel|eRMI_NoLocalCalls, GetChannelId(*_player)); \
-		} \
-	} \
-} \
-
-class IGameRulesClientConnectionListener
+class CGameRules : public CGameObjectExtensionHelper<CGameRules, IGameRules>
 {
 public:
-	virtual ~IGameRulesClientConnectionListener() {}
-
-	virtual void OnClientConnect(int channelId, bool isReset, EntityId playerId) = 0;
-	virtual void OnClientDisconnect(int channelId, EntityId playerId) = 0;
-	virtual void OnClientEnteredGame(int channelId, bool isReset, EntityId playerId) = 0;
-	virtual void OnOwnClientEnteredGame() = 0;
-};
-
-class CGameRules : public CGameObjectExtensionHelper<CGameRules, IGameRules, 64>
-{
-public:
-
-	typedef std::vector<EntityId>								TPlayers;
-	typedef std::vector<EntityId>								TEntityIdVec;
-	typedef std::set<CryUserID>									TCryUserIdSet;
-
-	struct SGameRulesListener
-	{
-		virtual ~SGameRulesListener() {}
-		virtual void GameOver(int localWinner) = 0;
-		virtual void EnteredGame() = 0;
-		virtual void EndGameNear(EntityId id) = 0;
-		virtual void ClientEnteredGame( EntityId clientId ) {}
-		virtual void ClientDisconnect( EntityId clientId ) {}
-	};
-
 	CGameRules();
 	virtual ~CGameRules();
+
 	//IGameObjectExtension
-	virtual bool Init( IGameObject * pGameObject );
-	virtual void PostInit( IGameObject * pGameObject );
-	virtual void InitClient(int channelId);
-	virtual void PostInitClient(int channelId);
+	virtual bool Init(IGameObject * pGameObject);
+	virtual void PostInit(IGameObject * pGameObject) {}
+	virtual void InitClient(int channelId) {}
+	virtual void PostInitClient(int channelId) {}
 	virtual bool ReloadExtension( IGameObject * pGameObject, const SEntitySpawnParams &params ) { return false; }
 	virtual void PostReloadExtension( IGameObject * pGameObject, const SEntitySpawnParams &params ) {}
 	virtual bool GetEntityPoolSignature( TSerialize signature ) { return false; }
-	virtual void Release();
-	virtual void FullSerialize( TSerialize ser );
-	virtual bool NetSerialize( TSerialize ser, EEntityAspects aspect, uint8 profile, int flags );
-	virtual void PostSerialize();
+	virtual void Release() { delete this; }
+	virtual void FullSerialize(TSerialize ser) {}
+	virtual bool NetSerialize(TSerialize ser, EEntityAspects aspect, uint8 profile, int flags) { return true; }
+	virtual void PostSerialize() {}
 	virtual void SerializeSpawnInfo( TSerialize ser ) {}
 	virtual ISerializableInfoPtr GetSpawnInfo() {return 0;}
-	virtual void Update( SEntityUpdateContext& ctx, int updateSlot );
-	virtual void HandleEvent( const SGameObjectEvent& );
-	virtual void ProcessEvent( SEntityEvent& );
+	virtual void Update(SEntityUpdateContext& ctx, int updateSlot) {}
+	virtual void HandleEvent(const SGameObjectEvent&) {}
+	virtual void ProcessEvent(SEntityEvent&) {}
 	virtual void SetChannelId(uint16 id) {};
 	virtual void SetAuthority( bool auth ) {}
 	virtual void PostUpdate( float frameTime ) {}
 	virtual void PostRemoteSpawn() {};
-	virtual void GetMemoryUsage(ICrySizer * s) const;
+	virtual void GetMemoryUsage(ICrySizer * s) const { s->Add(*this); }
 	//~IGameObjectExtension
 
 	//IGameRules
 	virtual bool ShouldKeepClient(int channelId, EDisconnectionCause cause, const char *desc) const;
-	virtual void PrecacheLevel();
+	virtual void PrecacheLevel() {}
 	virtual void PrecacheLevelResource(const char* resourceName, EGameResourceType resourceType) {};
 
 	virtual XmlNodeRef FindPrecachedXmlFile(const char *sFilename) { return 0; }
@@ -152,16 +51,16 @@ public:
 	virtual void OnClientDisconnect(int channelId, EDisconnectionCause cause, const char *desc, bool keepClient);
 	virtual bool OnClientEnteredGame(int channelId, bool isReset);
 
-	virtual void OnEntitySpawn(IEntity *pEntity);
-	virtual void OnEntityRemoved(IEntity *pEntity);
+	virtual void OnEntitySpawn(IEntity *pEntity) {}
+	virtual void OnEntityRemoved(IEntity *pEntity) {}
 	
 	virtual void OnItemDropped(EntityId itemId, EntityId actorId) {}
 	virtual void OnItemPickedUp(EntityId itemId, EntityId actorId) {}
 
 	virtual void SendTextMessage(ETextMessageType type, const char *msg, uint32 to=eRMI_ToAllClients, int channelId=-1,
-		const char *p0=0, const char *p1=0, const char *p2=0, const char *p3=0);
-	virtual void SendChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char *msg);
-	virtual bool CanReceiveChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId) const;
+		const char *p0=0, const char *p1=0, const char *p2=0, const char *p3=0) {}
+	virtual void SendChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char *msg) {}
+	virtual bool CanReceiveChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId) const { return false; }
 
 	virtual void ClientSimpleHit(const SimpleHitInfo &simpleHitInfo) {}
 	virtual void ServerSimpleHit(const SimpleHitInfo &simpleHitInfo) {}
@@ -180,109 +79,34 @@ public:
 
 	virtual bool IsFrozen(EntityId id) const { return false; }
 
-	virtual void ResetGameTime();
-	virtual float GetRemainingGameTime() const;
-	virtual void SetRemainingGameTime(float seconds);
-	virtual void ClearAllMigratingPlayers(void);
-	virtual EntityId SetChannelForMigratingPlayer(const char* name, uint16 channelID);
-	virtual void StoreMigratingPlayer(IActor* pActor);
+	virtual void ResetGameTime() {}
+	virtual float GetRemainingGameTime() const { return 0; }
+	virtual void SetRemainingGameTime(float seconds) {}
+	virtual void ClearAllMigratingPlayers(void) {}
+	virtual EntityId SetChannelForMigratingPlayer(const char* name, uint16 channelID) { return 0; }
+	virtual void StoreMigratingPlayer(IActor* pActor) {}
 
 	// Summary
 	// Determines if a projectile spawned by the client is hitting a friendly AI
-	virtual bool IsClientFriendlyProjectile(const EntityId projectileId, const EntityId targetEntityId) ;
-	virtual bool IsTimeLimited() const;
+	virtual bool IsClientFriendlyProjectile(const EntityId projectileId, const EntityId targetEntityId) { return false; }
+	virtual bool IsTimeLimited() const { return false; }
 
-	virtual void ResetRoundTime();
-	virtual float GetRemainingRoundTime() const;
-	virtual bool IsRoundTimeLimited() const;
+	virtual void ResetRoundTime() {}
+	virtual float GetRemainingRoundTime() const { return 0; }
+	virtual bool IsRoundTimeLimited() const { return false; }
 
-	virtual void ResetPreRoundTime();
-	virtual float GetRemainingPreRoundTime() const;
+	virtual void ResetPreRoundTime() {}
+	virtual float GetRemainingPreRoundTime() const { return 0; }
 
-	virtual void ResetReviveCycleTime();
-	virtual float GetRemainingReviveCycleTime() const;
+	virtual void ResetReviveCycleTime() {}
+	virtual float GetRemainingReviveCycleTime() const { return 0; }
 
-	virtual void ResetGameStartTimer(float time=-1);
-	virtual float GetRemainingStartTimer() const;
+	virtual void ResetGameStartTimer(float time = -1) {}
+	virtual float GetRemainingStartTimer() const { return 0; }
 
 	virtual bool OnCollision(const SGameCollision& event);
 	virtual void OnCollision_NotifyAI( const EventPhys * pEvent ) {}
 	virtual void OnEntityReused(IEntity *pEntity, SEntitySpawnParams &params, EntityId prevId) {};
-	//~IGameRules
-
-	virtual void RegisterConsoleCommands(IConsole *pConsole);
-	virtual void UnregisterConsoleCommands(IConsole *pConsole);
-	virtual void RegisterConsoleVars(IConsole *pConsole);
-
-	virtual void OnRevive(IActor *pActor, const Vec3 &pos, const Quat &rot, int teamId);
-	virtual void OnReviveInVehicle(IActor *pActor, EntityId vehicleId, int seatId, int teamId);
-	virtual void OnKill(IActor *pActor, EntityId shooterId, const char *weaponClassName, int damage, int material, int hit_type);
-	virtual void OnTextMessage(ETextMessageType type, const char *msg,
-		const char *p0=0, const char *p1=0, const char *p2=0, const char *p3=0);
-	virtual void OnChatMessage(EChatMessageType type, EntityId sourceId, EntityId targetId, const char *msg, bool teamChatOnly);
-	virtual void OnKillMessage(EntityId targetId, EntityId shooterId, const char *weaponClassName, float damage, int material, int hit_type);
-
-	IActor *GetActorByChannelId(int channelId) const;
-	bool IsRealActor(EntityId actorId) const;
-	IActor *GetActorByEntityId(EntityId entityId) const;
-	ILINE const char *GetActorNameByEntityId(EntityId entityId) const
-	{
-		IActor *pActor=GetActorByEntityId(entityId);
-		if (pActor)
-			return pActor->GetEntity()->GetName();
-		return 0;
-	}
-	ILINE const char *GetActorName(IActor *pActor) const { return pActor->GetEntity()->GetName(); };
-	int GetChannelId(EntityId entityId) const;
-	bool IsDead(EntityId entityId) const;
-	void ShowScores(bool show);
-	void KnockActorDown( EntityId actorEntityId );
-
-	//------------------------------------------------------------------------
-	// player
-	virtual void RevivePlayer(IActor *pActor, const Vec3 &pos, const Quat &angles, int teamId=0, bool clearInventory=true);
-	virtual void RevivePlayerInVehicle(IActor *pActor, EntityId vehicleId, int seatId, int teamId=0, bool clearInventory=true);
-	virtual void RenamePlayer(IActor *pActor, const char *name);
-	virtual string VerifyName(const char *name, IEntity *pEntity=0);
-	virtual bool IsNameTaken(const char *name, IEntity *pEntity=0);
-	virtual void ChangeTeam(IActor *pActor, int teamId);
-	virtual void ChangeTeam(IActor *pActor, const char *teamName);
-	//tagging time serialization limited to 0-60sec
-	virtual int GetPlayerCount(bool inGame=false) const;
-	virtual EntityId GetPlayer(int idx);
-	virtual void GetPlayers(TPlayers &players);
-	virtual bool IsPlayerInGame(EntityId playerId) const;
-	virtual bool IsPlayerActivelyPlaying(EntityId playerId) const;	// [playing / dead / waiting to respawn (inc spectating while dead): true] [not yet joined game / selected Spectate: false]
-	virtual bool IsChannelInGame(int channelId) const;
-
-	//------------------------------------------------------------------------
-	// teams
-	virtual int CreateTeam(const char *name);
-	virtual void RemoveTeam(int teamId);
-	virtual const char *GetTeamName(int teamId) const;
-	virtual int GetTeamId(const char *name) const;
-	virtual int GetTeamCount() const;
-	virtual int GetTeamPlayerCount(int teamId, bool inGame=false) const;
-	virtual int GetTeamChannelCount(int teamId, bool inGame=false) const;
-	virtual EntityId GetTeamPlayer(int teamId, int idx);
-
-	virtual void GetTeamPlayers(int teamId, TPlayers &players);
-	
-	virtual void SetTeam(int teamId, EntityId entityId);
-	virtual int GetTeam(EntityId entityId) const;
-	virtual int GetChannelTeam(int channelId) const;
-
-	//------------------------------------------------------------------------
-	// game	
-	virtual void Restart();
-	virtual void NextLevel();
-	virtual void ResetEntities();
-	virtual void OnEndGame();
-	virtual void EnteredGame();
-	virtual void GameOver(int localWinner);
-	virtual void EndGameNear(EntityId id);
-	void ClientDisconnect_NotifyListeners( EntityId clientId );
-	void ClientEnteredGame_NotifyListeners( EntityId clientId );
 
 	virtual void CreateEntityRespawnData(EntityId entityId);
 	virtual bool HasEntityRespawnData(EntityId entityId) const;
@@ -292,277 +116,12 @@ public:
 	virtual void ScheduleEntityRemoval(EntityId entityId, float timer, bool visibility);
 	virtual void AbortEntityRemoval(EntityId entityId);
 
-	virtual void UpdateEntitySchedules(float frameTime);
-	
-	virtual void ForceScoreboard(bool force);
-	virtual void FreezeInput(bool freeze);
+	virtual void ShowStatus() {}
+	//~IGameRules
 
-	virtual void ShowStatus();
+	void OnEditorReset(bool enterGameMode);
 
-	//misc 
-	// Next time CGameRules::OnCollision is called, it will skip this entity and return false
-	// This will prevent squad mates to be hit by the player
-	void SetEntityToIgnore(EntityId id) { m_ignoreEntityNextCollision = id;}
-
-	template<typename T>
-	void SetSynchedGlobalValue(TSynchedKey key, const T &value)
-	{
-		assert(gEnv->bServer);
-		g_pGame->GetSynchedStorage()->SetGlobalValue(key, value);
-	};
-
-	template<typename T>
-	bool GetSynchedGlobalValue(TSynchedKey key, T &value)
-	{
-		if (!g_pGame->GetSynchedStorage())
-			return false;
-		return g_pGame->GetSynchedStorage()->GetGlobalValue(key, value);
-	}
-
-	int GetSynchedGlobalValueType(TSynchedKey key) const
-	{
-		if (!g_pGame->GetSynchedStorage())
-			return eSVT_None;
-		return g_pGame->GetSynchedStorage()->GetGlobalValueType(key);
-	}
-
-	template<typename T>
-	void SetSynchedEntityValue(EntityId id, TSynchedKey key, const T &value)
-	{
-		assert(gEnv->bServer);
-		g_pGame->GetSynchedStorage()->SetEntityValue(id, key, value);
-	}
-	template<typename T>
-	bool GetSynchedEntityValue(EntityId id, TSynchedKey key, T &value)
-	{
-		return g_pGame->GetSynchedStorage()->GetEntityValue(id, key, value);
-	}
-	
-	int GetSynchedEntityValueType(EntityId id, TSynchedKey key) const
-	{
-		return g_pGame->GetSynchedStorage()->GetEntityValueType(id, key);
-	}
-
-	void ResetSynchedStorage()
-	{
-		g_pGame->GetSynchedStorage()->Reset();
-	}
-
-	void ForceSynchedStorageSynch(int channel);
-
-
-	void PlayerPosForRespawn(IActor *pPlayer, bool save);
-	void SPNotifyPlayerKill(EntityId targetId, EntityId weaponId, bool bHeadShot);
-
-	string GetPlayerName(int channelId, bool bVerifyName = false);
-
-	struct ChatMessageParams
-	{
-		uint8 type;
-		EntityId sourceId;
-		EntityId targetId;
-		string msg;
-		bool onlyTeam;
-
-		ChatMessageParams() {};
-		ChatMessageParams(EChatMessageType _type, EntityId src, EntityId trg, const char *_msg, bool _onlyTeam)
-		: type(_type),
-			sourceId(src),
-			targetId(trg),
-			msg(_msg),
-			onlyTeam(_onlyTeam)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("type", type, 'ui3');
-			ser.Value("source", sourceId, 'eid');
-			if (type == eChatToTarget)
-				ser.Value("target", targetId, 'eid');
-			ser.Value("message", msg);
-			ser.Value("onlyTeam", onlyTeam, 'bool');
-		}
-	};
-
-	struct BoolParam
-	{
-		bool success;
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("success", success, 'bool');
-		}
-	};
-
-	struct TextMessageParams
-	{
-		uint8	type;
-		string msg;
-
-		uint8 nparams;
-		string params[4];
-
-		TextMessageParams() {};
-		TextMessageParams(ETextMessageType _type, const char *_msg)
-		: type(_type),
-			msg(_msg),
-			nparams(0)
-		{
-		};
-		TextMessageParams(ETextMessageType _type, const char *_msg, 
-			const char *p0=0, const char *p1=0, const char *p2=0, const char *p3=0)
-		: type(_type),
-			msg(_msg),
-			nparams(0)
-		{
-			if (!AddParam(p0)) return;
-			if (!AddParam(p1)) return;
-			if (!AddParam(p2)) return;
-			if (!AddParam(p3)) return;
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("type", type, 'ui3');
-			ser.Value("message", msg);
-			ser.Value("nparams", nparams, 'ui3');
-
-			for (int i=0;i<nparams; ++i)
-				ser.Value("param", params[i]);
-		}
-
-		bool AddParam(const char *param)
-		{
-			if (!param || nparams>3)
-				return false;
-			params[nparams++]=param;
-			return true;
-		}
-	};
-
-	struct SetTeamParams
-	{
-		int				teamId;
-		EntityId	entityId;
-
-		SetTeamParams() {};
-		SetTeamParams(EntityId _entityId, int _teamId)
-		: entityId(_entityId),
-			teamId(_teamId)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("entityId", entityId, 'eid');
-			ser.Value("teamId", teamId, 'team');
-		}
-	};
-
-	struct ChangeTeamParams
-	{
-		EntityId	entityId;
-		int				teamId;
-
-		ChangeTeamParams() {};
-		ChangeTeamParams(EntityId _entityId, int _teamId)
-			: entityId(_entityId),
-				teamId(_teamId)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("entityId", entityId, 'eid');
-			ser.Value("teamId", teamId, 'team');
-		}
-	};
-
-	struct RenameEntityParams
-	{
-		EntityId	entityId;
-		string		name;
-
-		RenameEntityParams() {};
-		RenameEntityParams(EntityId _entityId, const char *name)
-			: entityId(_entityId),
-				name(name)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("entityId", entityId, 'eid');
-			ser.Value("name", name);
-		}
-	};
-
-	struct SetGameTimeParams
-	{
-		CTimeValue endTime;
-
-		SetGameTimeParams() {};
-		SetGameTimeParams(CTimeValue _endTime)
-		: endTime(_endTime)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("endTime", endTime);
-		}
-	};
-
-	struct EntityParams
-	{
-		EntityId entityId;
-		EntityParams() {};
-		EntityParams(EntityId entId)
-		: entityId(entId)
-		{
-		}
-
-		void SerializeWith(TSerialize ser)
-		{
-			ser.Value("entityId", entityId, 'eid');
-		}
-	};
-
-	struct NoParams
-	{
-		NoParams() {};
-		void SerializeWith(TSerialize ser) {};
-	};
-
-	DECLARE_SERVER_RMI_NOATTACH(SvRequestChatMessage, ChatMessageParams, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClChatMessage, ChatMessageParams, eNRT_ReliableUnordered);
-
-	DECLARE_SERVER_RMI_NOATTACH(SvRequestRename, RenameEntityParams, eNRT_ReliableOrdered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClRenameEntity, RenameEntityParams, eNRT_ReliableOrdered);
-
-	DECLARE_SERVER_RMI_NOATTACH(SvRequestChangeTeam, ChangeTeamParams, eNRT_ReliableOrdered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClSetTeam, SetTeamParams, eNRT_ReliableOrdered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClTextMessage, TextMessageParams, eNRT_ReliableUnordered);
-
-	DECLARE_CLIENT_RMI_NOATTACH(ClSetGameTime, SetGameTimeParams, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClSetRoundTime, SetGameTimeParams, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClSetPreRoundTime, SetGameTimeParams, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClSetReviveCycleTime, SetGameTimeParams, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClSetGameStartTimer, SetGameTimeParams, eNRT_ReliableUnordered);
-
-	DECLARE_CLIENT_RMI_NOATTACH(ClEnteredGame, NoParams, eNRT_ReliableUnordered);
-
-	DECLARE_CLIENT_RMI_NOATTACH(ClPlayerJoined, RenameEntityParams, eNRT_ReliableUnordered);
-	DECLARE_CLIENT_RMI_NOATTACH(ClPlayerLeft, RenameEntityParams, eNRT_ReliableUnordered);
-
-	typedef std::map<int, EntityId>				TTeamIdEntityIdMap;
-	typedef std::map<EntityId, int>				TEntityTeamIdMap;
-	typedef std::map<int, TPlayers>				TPlayerTeamIdMap;
-	typedef std::map<int, EntityId>				TChannelTeamIdMap;
-	typedef std::map<string, int>					TTeamIdMap;
-
-	typedef std::map<int, int>						THitMaterialMap;
-	typedef std::map<int, string>					THitTypeMap;
+	bool IsRealActor(EntityId actorId) const;
 
 	typedef struct SEntityRespawnData
 	{
@@ -599,75 +158,11 @@ public:
 	typedef std::map<EntityId, SEntityRemovalData>	TEntityRemovalMap;
 
 protected:
-	static void CmdDebugTeams(IConsoleCmdArgs *pArgs);
-
-	void CreateScriptExplosionInfo(SmartScriptTable &scriptExplosionInfo, const ExplosionInfo &explosionInfo);
-	void ChatLog(EChatMessageType type, EntityId sourceId, EntityId targetId, const char *msg);
-
-	IGameFramework			*m_pGameFramework;
-	IGameplayRecorder		*m_pGameplayRecorder;
-	ISystem							*m_pSystem;
-	IActorSystem				*m_pActorSystem;
-	IEntitySystem				*m_pEntitySystem;
-	IScriptSystem				*m_pScriptSystem;
-	IMaterialManager		*m_pMaterialManager;
-
-	INetChannel					*m_pClientNetChannel;
-
-	std::vector<int>		m_channelIds;
-	
-	TTeamIdMap					m_teams;
-	TEntityTeamIdMap		m_entityteams;
-	TTeamIdEntityIdMap	m_teamdefaultspawns;
-	TPlayerTeamIdMap		m_playerteams;
-	TChannelTeamIdMap		m_channelteams;
-	int									m_teamIdGen;
-
 	TEntityRespawnDataMap	m_respawndata;
 	TEntityRespawnMap			m_respawns;
 	TEntityRemovalMap			m_removals;
 
-	bool	m_bBlockPlayerAddition;
-
-	CTimeValue					m_endTime;	// time the game will end. 0 for unlimited
-	CTimeValue					m_roundEndTime;	// time the round will end. 0 for unlimited
-	CTimeValue					m_preRoundEndTime;	// time the pre round will end. 0 for no preround
-	CTimeValue					m_reviveCycleEndTime; // time for reinforcements.
-	CTimeValue					m_gameStartTime; // time for game start, <= 0 means game started already
-	CTimeValue					m_gameStartedTime;	// time the game started at.
-	CTimeValue					m_cachedServerTime; // server time as of the last call to CGameRules::Update(...)
-	CTimeValue					m_hostMigrationTimeSinceGameStarted;
-	float						m_timeLimit;
-
-	static int					s_invulnID;
-	static int          s_barbWireID;
-
-	EntityId					  m_ignoreEntityNextCollision;
-
-	bool                m_timeOfDayInitialized;
-
-	bool                m_explosionScreenFX;
-
 	IMonoObject *m_pScript;
-	typedef std::vector<IGameRulesClientConnectionListener*> TClientConnectionListenersVec;
-	TClientConnectionListenersVec m_clientConnectionListeners;
-
-	// Used to store the pertinent details of migrating player entities so they
-	// can be reconstructed as close as possible to their state prior to migration
-	uint32 m_migratingPlayerMaxCount;
-
-	static const int MAX_PLAYERS = MAX_PLAYER_LIMIT;
-	TNetChannelID m_migratedPlayerChannels[MAX_PLAYERS];
-
-
-	uint32 m_hostMigrationItemMaxCount;
-
-	bool m_hostMigrationClientHasRejoined;
-
-	TEntityIdVec m_hostMigrationCachedEntities;
-	TEntityIdVec m_entityEventDoneListeners;
-
-	TCryUserIdSet m_participatingUsers;
 };
 
 #endif //__GAMERULES_H__

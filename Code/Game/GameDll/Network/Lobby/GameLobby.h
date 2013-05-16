@@ -388,8 +388,7 @@ public:
 
 #if ENABLE_CHAT_MESSAGES
 	static void CmdChatMessage(IConsoleCmdArgs* pCmdArgs);
-	static void CmdChatMessageTeam(IConsoleCmdArgs* pCmdArgs);
-	void SendChatMessage(bool team, const char* message);
+	void SendChatMessage(const char* message);
 #endif
 
 	static void CmdStartGame(IConsoleCmdArgs* pCmdArgs);
@@ -698,7 +697,7 @@ private:
 			Clear();
 		}
 
-		void Set(SCryMatchMakingConnectionUID inConId, int inTeamId, const char* inMessage)
+		void Set(SCryMatchMakingConnectionUID inConId, const char* inMessage)
 		{
 			if (inMessage)
 			{
@@ -712,19 +711,16 @@ private:
 				}
 			}
 			conId = inConId;
-			teamId = inTeamId;
 		}
 
 		void Clear()
 		{
 			message.clear();
 			conId = CryMatchMakingInvalidConnectionUID;
-			teamId = 0;
 		}
 
 		CryFixedStringT<MAX_CHATMESSAGE_LENGTH> message;
 		SCryMatchMakingConnectionUID conId;
-		int teamId;
 	};
 
 	typedef CryFixedStringT<MAX_CHATMESSAGE_LENGTH> TChatMessageDisplayString;
@@ -964,9 +960,8 @@ private:
 
 	static void TaskStartedCallback(CLobbyTaskQueue::ESessionTask task, void *pArg);
 
-	static void SendChatMessageAllCheckProfanityCallback( CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg );
-	static void SendChatMessageTeamCheckProfanityCallback( CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg );
-	void SendChatMessageCheckProfanityCallback( const bool team, CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg );
+	static void SendChatMessageCheckProfanityCallback_Static( CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg );
+	void SendChatMessageCheckProfanityCallback( CryLobbyTaskID taskID, ECryLobbyError error, const char* pString, bool isProfanity, void* pArg );
 
 	static void MatchmakingSessionClosed(UCryLobbyEventData eventData, void *userParam, int reason);	// reason is of type CMPMenuHub::EDisconnectError
 

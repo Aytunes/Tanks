@@ -45,10 +45,10 @@ namespace CryGameCode
 			return (T)m_extensions[typeof(T)];
 		}
 
-		public override void OnClientConnect(int channelId, bool isReset = false, string playerName = "")
+		public override bool OnClientConnect(int channelId, bool isReset = false, string playerName = "")
 		{
 			if (!Game.IsServer)
-				return;
+				return false;
 
 			Metrics.Record(new Telemetry.ClientConnected { Nickname = playerName });
 
@@ -56,10 +56,12 @@ namespace CryGameCode
 			if (tank == null)
 			{
 				Debug.Log("[SinglePlayer.OnClientConnect] Failed to create the player. Check the log for errors.");
-				return;
+				return false;
 			}
 
 			tank.ToggleSpectatorPoint();
+
+			return true;
 		}
 
 		public override void OnClientDisconnect(int channelId)
@@ -77,7 +79,7 @@ namespace CryGameCode
 			Actor.Remove(channelId);
 		}
 
-		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset, bool loadingSaveGame)
+		public override void OnClientEnteredGame(int channelId, EntityId playerId, bool reset)
 		{
 			Debug.LogAlways("[Enter] SinglePlayer.OnClientEnteredGame: channel {0}, player {1}", channelId, playerId);
 			var actor = Actor.Get<Tank>(playerId);

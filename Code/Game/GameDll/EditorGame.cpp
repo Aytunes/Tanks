@@ -200,26 +200,12 @@ bool CEditorGame::SetGameMode(bool bGameMode)
 	if (ok)
 	{
 		if(gEnv->IsEditor())
-		{
 			m_pGame->EditorResetGame(bGameMode);
-		}
 
-		IGameFramework * pGameFramework = m_pGame->GetIGameFramework();
+		gEnv->pGameFramework->OnEditorSetGameMode(bGameMode);
 
-		pGameFramework->OnEditorSetGameMode(bGameMode);
-
-		IActor *pActor = m_pGame->GetIGameFramework()->GetClientActor();
-		if (pActor)
-		{
-			if (bGameMode)
-			{
-				// Revive actor in its current location (it will be moved to the editor viewpoint location later)
-				const Vec3 pos = pActor->GetEntity()->GetWorldPos();
-				const Quat rot = pActor->GetEntity()->GetWorldRotation();
-				const int teamId = g_pGame->GetGameRules()->GetTeam(pActor->GetEntityId());
-				g_pGame->GetGameRules()->RevivePlayer(pActor, pos, rot, teamId);
-			}
-		}
+		if(CGameRules *pGameRules = g_pGame->GetGameRules())
+			pGameRules->OnEditorReset(bGameMode);
 	}
 	else
 	{
