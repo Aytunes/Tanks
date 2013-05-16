@@ -224,7 +224,7 @@ namespace CryGameCode.Tanks
 			var position = Position;
 			var rotation = Rotation;
 
-			if (Game.IsClient && !Game.IsEditor)
+			if (Game.IsPureClient)
 			{
 				m_currentPosDelta = m_serverPos - position;
 				m_currentRotDelta = m_serverRot / rotation;
