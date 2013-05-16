@@ -500,7 +500,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ClientSynchedStorage.cpp" />
     <ClCompile Include="GameDll.cpp" />
     <ClCompile Include="GameStartup.cpp" />
     <ClCompile Include="HUD\UIDialogs.cpp" />
@@ -531,8 +530,6 @@
     <ClCompile Include="Network\Lobby\SessionSearchSimulator.cpp" />
     <ClCompile Include="Network\RecordingBuffer.cpp" />
     <ClCompile Include="Network\Squad\SquadManager.cpp" />
-    <ClCompile Include="ServerSynchedStorage.cpp" />
-    <ClCompile Include="SynchedStorage.cpp" />
     <ClCompile Include="Utility\CryHash.cpp" />
     <ClCompile Include="EditorGame.cpp" />
     <ClCompile Include="CachedAIValues.cpp" />
@@ -572,7 +569,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ClientSynchedStorage.h" />
     <ClInclude Include="GameStartup.h" />
     <ClInclude Include="HUD\IUIGameEventSystem.h" />
     <ClInclude Include="HUD\UIDialogs.h" />
@@ -610,8 +606,6 @@
     <ClInclude Include="Network\Lobby\SessionSearchSimulator.h" />
     <ClInclude Include="Network\RecordingBuffer.h" />
     <ClInclude Include="Network\Squad\SquadManager.h" />
-    <ClInclude Include="ServerSynchedStorage.h" />
-    <ClInclude Include="SynchedStorage.h" />
     <ClInclude Include="Utility\CryHash.h" />
     <ClInclude Include="EditorGame.h" />
     <ClInclude Include="CachedAIValues.h" />

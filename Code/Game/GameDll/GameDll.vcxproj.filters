@@ -22,9 +22,6 @@
     <Filter Include="GameRules">
       <UniqueIdentifier>{cac6e1d2-4b92-4e8c-b687-f82b3de968a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Game Files\Synched Storage">
-      <UniqueIdentifier>{789eeb38-0bc5-4122-83d6-a8ea638543ba}</UniqueIdentifier>
-    </Filter>
     <Filter Include="HUD">
       <UniqueIdentifier>{3092d19b-4458-458f-a2a4-ba106e6fd2c5}</UniqueIdentifier>
     </Filter>
@@ -117,15 +114,6 @@
     <ClCompile Include="StdAfx.cpp" />
     <ClCompile Include="Utility\CryHash.cpp">
       <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="ClientSynchedStorage.cpp">
-      <Filter>Game Files\Synched Storage</Filter>
-    </ClCompile>
-    <ClCompile Include="ServerSynchedStorage.cpp">
-      <Filter>Game Files\Synched Storage</Filter>
-    </ClCompile>
-    <ClCompile Include="SynchedStorage.cpp">
-      <Filter>Game Files\Synched Storage</Filter>
     </ClCompile>
     <ClCompile Include="HUD\UIManager.cpp">
       <Filter>HUD</Filter>
@@ -286,15 +274,6 @@
     </ClInclude>
     <ClInclude Include="Utility\CryHash.h">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="ClientSynchedStorage.h">
-      <Filter>Game Files\Synched Storage</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerSynchedStorage.h">
-      <Filter>Game Files\Synched Storage</Filter>
-    </ClInclude>
-    <ClInclude Include="SynchedStorage.h">
-      <Filter>Game Files\Synched Storage</Filter>
     </ClInclude>
     <ClInclude Include="HUD\UIManager.h">
       <Filter>HUD</Filter>
