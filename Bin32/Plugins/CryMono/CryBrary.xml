@@ -335,11 +335,79 @@
             Gets or sets the channel id, index to the net channel in use by this actor.
             </summary>
         </member>
+        <member name="M:CryEngine.Actor.OnInit">
+            <summary>
+            Called after level has been loaded, is not called on serialization.
+            Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
+            </summary>
+        </member>
         <member name="M:CryEngine.Actor.OnEditorReset(System.Boolean)">
             <summary>
             Called when resetting the state of the entity in Editor.
             </summary>
             <param name="enteringGame">true if currently entering gamemode, false if exiting.</param>
+        </member>
+        <member name="M:CryEngine.Actor.OnCollision(CryEngine.ColliderInfo,CryEngine.ColliderInfo,CryEngine.Vec3,CryEngine.Vec3,System.Single,System.Single)">
+            <summary>
+            Sent on entity collision.
+            </summary>
+        </member>
+        <member name="M:CryEngine.Actor.OnStartGame">
+            <summary>
+            Called when game is started (games may start multiple times)
+            </summary>
+        </member>
+        <member name="M:CryEngine.Actor.OnStartLevel">
+            <summary>
+            Called when the level is started.
+            </summary>
+        </member>
+        <member name="M:CryEngine.Actor.OnEnterArea(CryEngine.EntityId,System.Int32,CryEngine.EntityId)">
+            <summary>
+            Sent when entity enters to the area proximity.
+            </summary>
+            <param name="entityId"></param>
+        </member>
+        <member name="M:CryEngine.Actor.OnMoveInsideArea(CryEngine.EntityId,System.Int32,CryEngine.EntityId)">
+            <summary>
+            Sent when entity moves inside the area proximity.
+            </summary>
+            <param name="entityId"></param>
+        </member>
+        <member name="M:CryEngine.Actor.OnLeaveArea(CryEngine.EntityId,System.Int32,CryEngine.EntityId)">
+            <summary>
+            Sent when entity leaves the area proximity.
+            </summary>
+            <param name="entityId"></param>
+        </member>
+        <member name="M:CryEngine.Actor.OnMove(CryEngine.EntityMoveFlags)">
+            <summary>
+            Called when the entities local or world transformation matrix changes. (Position / Rotation / Scale)
+            </summary>
+        </member>
+        <member name="M:CryEngine.Actor.OnAttach(CryEngine.EntityId)">
+            <summary>
+            Called whenever another entity has been linked to this entity.
+            </summary>
+            <param name="child"></param>
+        </member>
+        <member name="M:CryEngine.Actor.OnDetach(CryEngine.EntityId)">
+            <summary>
+            Called whenever another entity has been unlinked from this entity.
+            </summary>
+            <param name="child"></param>
+        </member>
+        <member name="M:CryEngine.Actor.OnDetachThis(CryEngine.EntityId)">
+            <summary>
+            Called whenever this entity is unliked from another entity.
+            </summary>
+            <param name="parent"></param>
+        </member>
+        <member name="M:CryEngine.Actor.OnAnimationEvent(CryEngine.AnimationEvent)">
+            <summary>
+            Called when an animation event (placed on animations via the Character Editor) is encountered.
+            </summary>
+            <param name="animEvent"></param>
         </member>
         <member name="M:CryEngine.Actor.UpdateView(CryEngine.ViewParams@)">
             <summary>
@@ -352,16 +420,6 @@
             Called after updating the view associated to this actor.
             </summary>
             <param name="viewParams"></param>
-        </member>
-        <member name="M:CryEngine.Actor.OnPrePhysicsUpdate">
-            <summary>
-            Called prior to updating physics, useful for requesting movement.
-            </summary>
-        </member>
-        <member name="M:CryEngine.Actor.OnCollision(CryEngine.ColliderInfo,CryEngine.ColliderInfo,CryEngine.Vec3,CryEngine.Vec3,System.Single,System.Single)">
-            <summary>
-            Sent on entity collision.
-            </summary>
         </member>
         <member name="M:CryEngine.Actor.Get(System.Int32)">
             <summary>
@@ -737,6 +795,65 @@
             CVar created using CVarAttribute, targeting a property.
             </summary>
         </member>
+        <member name="F:CryEngine.PathResolutionRules.RealPath">
+            <summary>
+            If used, the source path will be treated as the destination path
+            and no transformations will be done. Pass this flag when the path is to be the actual
+            path on the disk/in the packs and doesn't need adjustment (or after it has come through adjustments already)
+            if this is set, AdjustFileName will not map the input path into the master folder (Ex: Shaders will not be converted to Game\Shaders)
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.AlwaysCopyDestination">
+            <summary>
+            AdjustFileName will always copy the file path to the destination path:
+            regardless of the returned value, szDestpath can be used
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.AddTrailingSlash">
+            <summary>
+            Adds trailing slash to the path
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.NoFullPath">
+            <summary>
+            if this is set, AdjustFileName will not make relative paths into full paths
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.RedirectToDisc">
+            <summary>
+            if this is set, AdjustFileName will redirect path to disc
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.ForWriting">
+            <summary>
+            if this is set, AdjustFileName will not adjust path for writing files
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.NoLowerCase">
+            <summary>
+            if this is set, AdjustFileName will not convert the path to low case
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.PakInMemory">
+            <summary>
+            if this is set, the pak would be stored in memory
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.FileNamesAsCrc32">
+            <summary>
+            Store all file names as crc32 in a flat directory structure.
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.CheckModPaths">
+            <summary>
+            if this is set, AdjustFileName will try to find the file under any mod paths we know about
+            </summary>
+        </member>
+        <member name="F:CryEngine.PathResolutionRules.NeverInPaks">
+            <summary>
+            if this is set, AdjustFileName will always check the filesystem/disk and not check inside open paks
+            </summary>
+        </member>
         <member name="P:CryEngine.SurfaceType.Id">
             <summary>
             Gets the unique identifier of this surface type.
@@ -1003,27 +1120,22 @@
             Invalidate the TriggerBounds, so it gets recalculated and catches things which are already inside when it gets enabled.
             </summary>
         </member>
-        <member name="M:CryEngine.Entity.OnSpawn">
+        <member name="M:CryEngine.Entity.OnInit">
             <summary>
-            This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
+            Called after level has been loaded, is not called on serialization.
+            Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
             </summary>
-        </member>
-        <member name="M:CryEngine.Entity.OnPostSpawn(System.Object[])">
-            <summary>
-            Called after spawning, with the parameters supplied to Entity.Spawn.
-            </summary>
-        </member>
-        <member name="M:CryEngine.Entity.OnRemove">
-            <summary>
-            Called when the entity is being removed.
-            </summary>
-            <returns>True to allow removal, false to deny.</returns>
         </member>
         <member name="M:CryEngine.Entity.OnEditorReset(System.Boolean)">
             <summary>
             Called when resetting the state of the entity in Editor.
             </summary>
             <param name="enteringGame">true if currently entering gamemode, false if exiting.</param>
+        </member>
+        <member name="M:CryEngine.Entity.OnCollision(CryEngine.ColliderInfo,CryEngine.ColliderInfo,CryEngine.Vec3,CryEngine.Vec3,System.Single,System.Single)">
+            <summary>
+            Sent on entity collision.
+            </summary>
         </member>
         <member name="M:CryEngine.Entity.OnStartGame">
             <summary>
@@ -1053,17 +1165,6 @@
             </summary>
             <param name="entityId"></param>
         </member>
-        <member name="M:CryEngine.Entity.OnCollision(CryEngine.ColliderInfo,CryEngine.ColliderInfo,CryEngine.Vec3,CryEngine.Vec3,System.Single,System.Single)">
-            <summary>
-            Sent on entity collision.
-            </summary>
-        </member>
-        <member name="M:CryEngine.Entity.OnInit">
-            <summary>
-            Called after level has been loaded, is not called on serialization.
-            Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
-            </summary>
-        </member>
         <member name="M:CryEngine.Entity.OnMove(CryEngine.EntityMoveFlags)">
             <summary>
             Called when the entities local or world transformation matrix changes. (Position / Rotation / Scale)
@@ -1086,6 +1187,28 @@
             Called whenever this entity is unliked from another entity.
             </summary>
             <param name="parent"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnAnimationEvent(CryEngine.AnimationEvent)">
+            <summary>
+            Called when an animation event (placed on animations via the Character Editor) is encountered.
+            </summary>
+            <param name="animEvent"></param>
+        </member>
+        <member name="M:CryEngine.Entity.OnSpawn">
+            <summary>
+            This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
+            </summary>
+        </member>
+        <member name="M:CryEngine.Entity.OnPostSpawn(System.Object[])">
+            <summary>
+            Called after spawning, with the parameters supplied to Entity.Spawn.
+            </summary>
+        </member>
+        <member name="M:CryEngine.Entity.OnRemove">
+            <summary>
+            Called when the entity is being removed.
+            </summary>
+            <returns>True to allow removal, false to deny.</returns>
         </member>
         <member name="M:CryEngine.Entity.OnPropertyChanged(System.Reflection.MemberInfo,CryEngine.EditorPropertyType,System.Object)">
             <summary>
@@ -2015,6 +2138,11 @@
             The object is intersecting the plane.
             </summary>
         </member>
+        <member name="P:CryEngine.AnimationEvent.CustomParameter">
+            <summary>
+            Meaning depends on event - sound: sound path, effect: effect name
+            </summary>
+        </member>
         <member name="F:CryEngine.PhysicsForeignIdentifiers.UserDefined">
             <summary>
             All user defined foreign ids should start from this enum.
@@ -2218,6 +2346,21 @@
         <member name="F:CryEngine.Utilities.ProjectSettings.ExceptionMessage">
             <summary>
             Message displayed in the exception form when an exception has been thrown.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Utilities.ProjectSettings.ConfigFolder">
+            <summary>
+            Gets the folder containing CryMono configuration files.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Utilities.ProjectSettings.PluginsFolder">
+            <summary>
+            Directory from which CryMono will load managed plugins.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Utilities.ProjectSettings.MonoFolder">
+            <summary>
+            Gets the Mono folder containing essential Mono libraries and configuration files.
             </summary>
         </member>
         <member name="T:CryEngine.AnimationFlags">
@@ -6053,41 +6196,26 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:CryEngine.Utilities.PathUtils">
+        <member name="T:CryEngine.Utilities.CryPak">
             <summary>
-            Provides a clean method of retrieving commonly used engine filepaths.
+            Direct interface to the Crytek pack files management system
             </summary>
         </member>
-        <member name="P:CryEngine.Utilities.PathUtils.RootFolder">
+        <member name="P:CryEngine.Utilities.CryPak.RootFolder">
             <summary>
             Gets the root engine folder.
             </summary>
             <returns>The filepath to the root folder as a string, ex:</returns>
             <example>"C:\CryENGINE3"</example>
         </member>
-        <member name="P:CryEngine.Utilities.PathUtils.BinaryFolder">
+        <member name="P:CryEngine.Utilities.CryPak.BinaryFolder">
             <summary>
             Gets the folder containing binaries relevant to current build type (Bin32 / Bin64).
             </summary>
             <returns>The filepath to the Binary folder as a string, ex:
             <example>"C:\CryENGINE3\Bin32"</example></returns>
         </member>
-        <member name="P:CryEngine.Utilities.PathUtils.ConfigFolder">
-            <summary>
-            Gets the folder containing CryMono configuration files.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Utilities.PathUtils.PluginsFolder">
-            <summary>
-            Directory from which CryMono will load managed plugins.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Utilities.PathUtils.MonoFolder">
-            <summary>
-            Gets the Mono folder containing essential Mono libraries and configuration files.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Utilities.PathUtils.EngineFolder">
+        <member name="P:CryEngine.Utilities.CryPak.EngineFolder">
             <summary>
             Gets the engine folder.
             CryENGINE uses this store engine content which is not specific to the game being developed, i.e. shaders and configuration files.
@@ -6095,7 +6223,7 @@
             <returns>The filepath to the Engine folder as a string, ex:
             <example>"C:\CryENGINE3\Engine"</example></returns>
         </member>
-        <member name="P:CryEngine.Utilities.PathUtils.GameFolder">
+        <member name="P:CryEngine.Utilities.CryPak.GameFolder">
             <summary>
             Gets the current game folder.
             CryENGINE uses this as the root for all game-related content.
@@ -6103,23 +6231,13 @@
             <returns>The filepath to the Game folder as a string, ex:
             <example>"C:\CryENGINE3\Game"</example></returns>
         </member>
-        <member name="P:CryEngine.Utilities.PathUtils.ScriptsFolder">
+        <member name="P:CryEngine.Utilities.CryPak.ScriptsFolder">
             <summary>
             Gets the folder in which the engine stores scripts.
             We use this as the root for our .cs files and .dll plugins.
             </summary>
             <returns>The filepath to the Scripts folder as a string, ex:
             <example>"C:\CryENGINE3\Game\Scripts"</example></returns>
-        </member>
-        <member name="P:CryEngine.Utilities.PathUtils.CryMonoScriptsFolder">
-            <summary>
-            Directory from which CryMono loads scripts, e.g. *.cs files.
-            </summary>
-        </member>
-        <member name="P:CryEngine.Utilities.PathUtils.TempFolder">
-            <summary>
-            Gets the directory CryMono uses to store temporary files.
-            </summary>
         </member>
         <member name="M:CryEngine.Initialization.ScriptManager.RegisterFlownodes">
             <summary>
