@@ -2275,6 +2275,26 @@
             position where the last contact with the ground occured
             </summary>
         </member>
+        <member name="T:CryEngine.Profiling.FrameProfiler">
+            <summary>
+            A profiler counter with a unique name and data.
+            Multiple <see cref="T:CryEngine.Profiling.FrameProfilerSection"/>s can be executed for this profiler,
+            and will be merged into their parent profiler.
+            </summary>
+        </member>
+        <member name="P:CryEngine.Profiling.FrameProfiler.Handle">
+            <summary>
+            CFrameProfiler *
+            </summary>
+        </member>
+        <member name="T:CryEngine.Profiling.FrameProfilerSection">
+            <summary>
+            Frame profiler sections are placed where the code needs to be profiled.
+            Every time this object is constructed and destructed, the time between
+            the constructor and destructor is merged into the <see cref="P:CryEngine.Profiling.FrameProfilerSection.FrameProfiler"/>
+            instance.
+            </summary>
+        </member>
         <member name="M:CryEngine.Native.NativeScriptSystemMethods.RevertAppDomain">
             <summary>
             Revert the last script reload attempt.
