@@ -795,6 +795,16 @@
             CVar created using CVarAttribute, targeting a property.
             </summary>
         </member>
+        <member name="F:CryEngine.LogType.Input">
+            <summary>
+            e.g. "e_CaptureFolder ?" or all printouts from history or auto completion
+            </summary>
+        </member>
+        <member name="F:CryEngine.LogType.InputResponse">
+            <summary>
+            e.g. "Set output folder for video capturing" in response to "e_CaptureFolder ?"
+            </summary>
+        </member>
         <member name="F:CryEngine.PathResolutionRules.RealPath">
             <summary>
             If used, the source path will be treated as the destination path
@@ -5944,14 +5954,14 @@
             Contains methods useful for tracking down bugs.
             </summary>
         </member>
-        <member name="M:CryEngine.Debug.Log(System.String,System.Object[])">
+        <member name="M:CryEngine.Debug.Log(System.String,CryEngine.LogType,System.Object[])">
             <summary>
             Logs a message to the console
             </summary>
             <param name="format"></param>
             <param name="args"></param>
         </member>
-        <member name="M:CryEngine.Debug.Log(System.String)">
+        <member name="M:CryEngine.Debug.Log(System.String,CryEngine.LogType)">
             <summary>
             Logs a message to the console
             </summary>
@@ -5964,6 +5974,18 @@
             <param name="args"></param>
         </member>
         <member name="M:CryEngine.Debug.LogAlways(System.String)">
+            <summary>
+            Logs a message to the console, regardless of log_verbosity settings
+            </summary>
+        </member>
+        <member name="M:CryEngine.Debug.LogError(System.String,System.Object[])">
+            <summary>
+            Logs an error to console
+            </summary>
+            <param name="format"></param>
+            <param name="args"></param>
+        </member>
+        <member name="M:CryEngine.Debug.LogError(System.String)">
             <summary>
             Logs a message to the console, regardless of log_verbosity settings
             </summary>
