@@ -335,7 +335,7 @@
             Gets or sets the channel id, index to the net channel in use by this actor.
             </summary>
         </member>
-        <member name="M:CryEngine.Actor.OnInit">
+        <member name="M:CryEngine.Actor.OnLevelLoaded">
             <summary>
             Called after level has been loaded, is not called on serialization.
             Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
@@ -1120,7 +1120,7 @@
             Invalidate the TriggerBounds, so it gets recalculated and catches things which are already inside when it gets enabled.
             </summary>
         </member>
-        <member name="M:CryEngine.Entity.OnInit">
+        <member name="M:CryEngine.Entity.OnLevelLoaded">
             <summary>
             Called after level has been loaded, is not called on serialization.
             Note that this is called prior to GameRules.OnClientConnect and OnClientEnteredGame!
@@ -1196,7 +1196,8 @@
         </member>
         <member name="M:CryEngine.Entity.OnSpawn">
             <summary>
-            This callback is called when this entity has finished spawning. The entity has been created and added to the list of entities.
+            This callback is called when this entity has spawned. The entity has been created and added to the list of entities.
+            Some functionality is not yet available at the point this method is called. For all game object interactions, use <see cref="M:CryEngine.Entity.OnPostSpawn(System.Object[])"/>.
             </summary>
         </member>
         <member name="M:CryEngine.Entity.OnPostSpawn(System.Object[])">

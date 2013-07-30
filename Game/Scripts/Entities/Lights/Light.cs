@@ -7,7 +7,7 @@ namespace CryGameCode.Entities.Lights
 	{
 		const int LightSlot = 1;
 
-		protected override void OnInit()
+		public override void OnSpawn()
 		{
 			Flags |= EntityFlags.ClientOnly;
 			OnEditorReset(true);
