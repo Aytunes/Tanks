@@ -1252,6 +1252,11 @@
             Preferred over <see cref="M:CryEngine.Flowgraph.FlowNode.OnUpdate"/> due to supporting <see cref="M:CryEngine.Flowgraph.FlowNode.GetPortValue``1(System.Action{``0})"/> within the update loop.
             </summary>
         </member>
+        <member name="M:CryEngine.Flowgraph.FlowNode.OnRemove">
+            <summary>
+            Called when the node is removed.
+            </summary>
+        </member>
         <member name="M:CryEngine.Flowgraph.FlowNode.OnUpdate">
             <summary>
             Called each frame if script has been set to be regularly updated. (See <see cref="P:CryEngine.CryScriptInstance.ReceiveUpdates"/>)
